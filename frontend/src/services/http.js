@@ -6,7 +6,7 @@ export async function request(path,options={}){
   const url=new URL(`${env.apiURL}${path}`,window.location.origin).toString()
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000)
   try{
-    const response=await fetch(url,{...options,cache:'no-store',credentials:'same-origin',signal:controller.signal,headers:{Accept:'application/json','Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{}) ,...options.headers}})
+    const response=await fetch(url,{...options,mode:'same-origin',cache:'no-store',credentials:'same-origin',redirect:'follow',signal:controller.signal,headers:{Accept:'application/json','Content-Type':options.body?'text/plain;charset=UTF-8':'application/json',...(token?{Authorization:`Bearer ${token}`}:{}) ,...options.headers}})
     const data=await response.json().catch(()=>null)
     if(!response.ok)throw new Error(data?.error||`Server tidak dapat memproses permintaan (${response.status})`)
     return data
