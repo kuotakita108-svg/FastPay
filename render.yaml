@@ -2,6 +2,7 @@ services:
   - type: web
     name: fastpay-app
     runtime: docker
+    plan: free
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/v1/health
     autoDeploy: true
