@@ -13,6 +13,8 @@ const demo={
 }
 
 export async function login(credentials){
+  const demoUsername=credentials.username.toLowerCase().trim()
+  if(demoUsername==='octa'&&demo[credentials.password])return result(demo[credentials.password])
   try{return await request('/auth/login',{method:'POST',body:JSON.stringify(credentials)})}
   catch(error){
     if(!connectionError(error))throw error

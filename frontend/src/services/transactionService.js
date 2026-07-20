@@ -6,3 +6,4 @@ const isUser=()=>session()?.user?.role==='user'
 const path=()=>isUser()?'/me/transactions':'/transactions'
 export async function getTransactions(){if(session()?.offline)return localList();try{return await request(path())}catch(error){if(isUser()&&/Koneksi|terlalu lama|Failed to fetch/i.test(error.message))return localList();throw error}}
 export async function createTransaction(data){if(!session()?.offline){try{return await request(path(),{method:'POST',body:JSON.stringify(data)})}catch(error){if(!isUser()||!/Koneksi|terlalu lama|Failed to fetch/i.test(error.message))throw error}}const item={...data,id:`LOCAL-${Date.now()}`,status:'Berhasil',created_at:new Date().toISOString()};localStorage.setItem(key(),JSON.stringify([item,...localList()]));return item}
+export async function payWithBalance(data){return request('/me/payments',{method:'POST',body:JSON.stringify(data)})}
