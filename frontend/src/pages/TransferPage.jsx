@@ -33,6 +33,13 @@ import ovoLogo from "../assets/providers/ovo.svg";
 import shopeepayLogo from "../assets/providers/shopeepay.png";
 import linkajaLogo from "../assets/providers/linkaja.svg";
 import fastpayLogo from "../assets/images/fastpay-logo-header.png";
+import cimbLogo from "../assets/providers/official/cimb-niaga.svg";
+import permataLogo from "../assets/providers/official/permatabank.svg";
+import jagoLogo from "../assets/providers/official/jago.svg";
+import seabankLogo from "../assets/providers/official/seabank.svg";
+import danamonLogo from "../assets/providers/official/danamon.svg";
+import isakuLogo from "../assets/providers/official/isaku.svg";
+import astrapayLogo from "../assets/providers/official/astrapay.svg";
 
 const channels = [
   {
@@ -112,6 +119,13 @@ const logoMap = {
   ShopeePay: shopeepayLogo,
   LinkAja: linkajaLogo,
   "FastPay ID": fastpayLogo,
+  "CIMB Niaga": cimbLogo,
+  PermataBank: permataLogo,
+  "Bank Jago": jagoLogo,
+  SeaBank: seabankLogo,
+  "Bank Danamon": danamonLogo,
+  "i.saku": isakuLogo,
+  AstraPay: astrapayLogo,
 };
 const providerLogo = (name) =>
   Object.entries(logoMap).find(([key]) => name.startsWith(key))?.[1];
