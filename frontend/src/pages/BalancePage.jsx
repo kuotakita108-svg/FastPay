@@ -47,8 +47,8 @@ export default function BalancePage(){
 
       <section className="wallet-actions" aria-label="Menu saldo">
         <button type="button" onClick={topUp}><i><Plus/></i><strong>Isi Saldo</strong><small>Tambah dana</small></button>
-        <button type="button"><i><ArrowUpRight/></i><strong>Kirim</strong><small>Ke pengguna</small></button>
-        <button type="button"><i><ArrowDownToLine/></i><strong>Tarik</strong><small>Ke rekening</small></button>
+        <button type="button" onClick={()=>navigate('/app/balance/send')}><i><ArrowUpRight/></i><strong>Kirim</strong><small>Ke pengguna</small></button>
+        <button type="button" onClick={()=>navigate('/app/balance/withdraw')}><i><ArrowDownToLine/></i><strong>Tarik</strong><small>Ke rekening</small></button>
         <button type="button"><i><ReceiptText/></i><strong>Tagihan</strong><small>Bayar cepat</small></button>
       </section>
 
