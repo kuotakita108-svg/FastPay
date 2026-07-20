@@ -1,0 +1,43 @@
+name: Build FastPay APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/android-apk.yml'
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install and build web app
+        working-directory: frontend
+        env:
+          VITE_API_URL: https://fastpay-app.pages.dev/api/v1
+        run: npm ci && npm run build
+      - name: Sync Android project
+        working-directory: frontend
+        run: npx cap sync android
+      - name: Build debug APK
+        working-directory: frontend/android
+        run: chmod +x gradlew && ./gradlew assembleDebug
+      - name: Upload FastPay APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FastPay-Android
+          path: frontend/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30

@@ -1,0 +1,9 @@
+{
+  "appId": "id.fastpay.app",
+  "appName": "FastPay",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https",
+    "allowNavigation": ["fastpay-app.pages.dev"]
+  }
+}
