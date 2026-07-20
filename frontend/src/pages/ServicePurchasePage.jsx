@@ -6,6 +6,7 @@ import {getProducts} from '../services/productService'
 import {rupiah} from '../utils/currency'
 import {serviceConfig} from '../constants/services'
 import {detectOperator} from '../constants/operators'
+import {fallbackProducts} from '../constants/fallbackProducts'
 import MobileNav from '../components/mobile/MobileNav'
 
 const automatic=['pulsa','data']
@@ -15,7 +16,7 @@ const phoneServices=['pulsa','data','ewallet','pascabayar']
 export default function ServicePurchasePage(){
  const {type}=useParams(),navigate=useNavigate(),config=serviceConfig[type]||serviceConfig.pulsa,{data=[]}=useAsync(getProducts)
  const [target,setTarget]=useState(''),[provider,setProvider]=useState(''),[catalog,setCatalog]=useState(false),[mode,setMode]=useState('product'),[selected,setSelected]=useState(null),[freeAmount,setFreeAmount]=useState('')
- const products=useMemo(()=>data?.filter(product=>product.category===config.category&&product.operator===provider)||[],[data,config.category,provider])
+ const products=useMemo(()=>{const normalize=value=>String(value||'').trim().toLocaleLowerCase('id-ID'),remote=Array.isArray(data)?data.filter(product=>normalize(product.category)===normalize(config.category)&&normalize(product.operator)===normalize(provider)):[];return remote.length?remote:fallbackProducts(config.category,provider)},[data,config.category,provider])
  const amount=mode==='custom'?Number(freeAmount):selected?.price||0
  const changeTarget=value=>{setTarget(value);setCatalog(false);setSelected(null);if(automatic.includes(type))setProvider(detectOperator(value)?.name||'')}
  const checkout=()=>navigate('/app/checkout',{state:{type,title:config.title,target,provider,product:selected?.name||(mode==='custom'?`${config.title} ${rupiah(amount)}`:config.title),amount}})
