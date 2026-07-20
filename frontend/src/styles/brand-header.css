@@ -1,0 +1,3 @@
+.reference-header .dashboard-brand{height:44px;max-width:190px;display:flex;align-items:center;gap:0}
+.reference-header .dashboard-brand img{display:block;width:178px;max-width:100%;height:43px;object-fit:contain;object-position:left center;filter:drop-shadow(0 3px 6px #0b2f6a24)}
+@media(max-width:350px){.reference-header .dashboard-brand{max-width:155px}.reference-header .dashboard-brand img{width:150px;height:38px}}
