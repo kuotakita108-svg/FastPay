@@ -21,3 +21,5 @@ Thumbs.db
 *.log
 *.exe
 coverage/
+.wrangler/
+.dev.vars*
