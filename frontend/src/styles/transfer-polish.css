@@ -14,7 +14,8 @@
 .transfer-head > i {
   width: 39px;
   height: 39px;
-  background: #fff url("../assets/images/fastpay-logo-header.png") center/31px
+  overflow: hidden;
+  background: #fff url("../assets/images/fastpay-logo-header.png") center/68px
     auto no-repeat;
   box-shadow: 0 5px 13px #271a8440;
 }
@@ -105,19 +106,26 @@
 }
 .transfer-providers > button > i.provider-logo {
   overflow: hidden;
-  width: 54px;
-  height: 42px;
-  padding: 4px;
+  width: 45px;
+  height: 38px;
+  padding: 7px;
   background: #fff;
   border: 1px solid #e5e7ef;
   box-shadow: 0 4px 12px #252b4510;
 }
 .provider-logo img {
   display: block;
-  width: 100%;
-  height: 100%;
+  width: auto;
+  height: auto;
+  max-width: 31px;
+  max-height: 23px;
+  margin: auto;
   object-fit: contain;
   object-position: center;
+}
+.transfer-providers > button:nth-child(n + 6) .provider-logo img {
+  max-width: 33px;
+  max-height: 19px;
 }
 .provider-logo b {
   display: grid;
