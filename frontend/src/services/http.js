@@ -1,1 +1,18 @@
-import {env} from '../config/env';export async function request(path,options={}){let token='';try{token=JSON.parse(localStorage.getItem('fastpay_session'))?.token||''}catch{/* belum login */}const response=await fetch(`${env.apiURL}${path}`,{headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{}) ,...options.headers},...options});const data=await response.json().catch(()=>null);if(!response.ok)throw new Error(data?.error||'Server tidak dapat memproses permintaan');return data}
+import {env} from '../config/env'
+
+export async function request(path,options={}){
+  let token=''
+  try{token=JSON.parse(localStorage.getItem('fastpay_session'))?.token||''}catch{/* belum login */}
+  const url=new URL(`${env.apiURL}${path}`,window.location.origin).toString()
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000)
+  try{
+    const response=await fetch(url,{...options,cache:'no-store',credentials:'same-origin',signal:controller.signal,headers:{Accept:'application/json','Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{}) ,...options.headers}})
+    const data=await response.json().catch(()=>null)
+    if(!response.ok)throw new Error(data?.error||`Server tidak dapat memproses permintaan (${response.status})`)
+    return data
+  }catch(error){
+    if(error.name==='AbortError')throw new Error('Koneksi ke server terlalu lama. Periksa internet lalu coba lagi.',{cause:error})
+    if(error instanceof TypeError)throw new Error('Koneksi FastPay gagal. Muat ulang halaman lalu coba kembali.',{cause:error})
+    throw error
+  }finally{clearTimeout(timer)}
+}
