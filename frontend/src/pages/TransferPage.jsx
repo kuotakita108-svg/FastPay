@@ -22,6 +22,7 @@ import {
   payWithBalance,
 } from "../services/transactionService";
 import { rupiah } from "../utils/currency";
+import { request } from "../services/http";
 import bcaLogo from "../assets/providers/official/bca.png";
 import briLogo from "../assets/providers/official/bri.png";
 import bniLogo from "../assets/providers/official/bni.png";
@@ -97,16 +98,6 @@ const providers = {
     "Mandiri Virtual Account",
   ],
 };
-const names = [
-  "Andi Pratama",
-  "Siti Nurhaliza",
-  "Rizky Ramadhan",
-  "Nadia Putri",
-  "Dimas Saputra",
-  "Ayu Lestari",
-  "Budi Santoso",
-  "Maya Anindita",
-];
 const logoMap = {
   BCA: bcaLogo,
   BRI: briLogo,
@@ -143,18 +134,6 @@ function ProviderLogo({ name, index }) {
     </i>
   );
 }
-const verify = (number, provider) => {
-  const digits = number.replace(/\D/g, ""),
-    seed = digits.split("").reduce((sum, value) => sum + Number(value), 0);
-  return {
-    name: names[seed % names.length],
-    number: digits,
-    provider,
-    verified: true,
-    reference: `FPV-${Date.now().toString().slice(-8)}`,
-  };
-};
-
 export default function TransferPage() {
   const location = useLocation(),
     navigate = useNavigate(),
@@ -181,13 +160,25 @@ export default function TransferPage() {
     setNumber("");
     setRecipient(null);
   };
-  const lookup = () => {
+  const lookup = async () => {
     setError("");
     if (!provider) return setError("Pilih bank atau penyedia tujuan");
     if (number.replace(/\D/g, "").length < 6)
       return setError("Nomor tujuan belum lengkap");
-    setRecipient(verify(number, provider));
-    setStep("amount");
+    setProcessing(true);
+    try {
+      const detail = await request("/services/recipient-lookup", {
+        method: "POST",
+        body: JSON.stringify({ channel, provider, number }),
+      });
+      setRecipient(detail);
+      setStep("amount");
+    } catch (current) {
+      setRecipient(null);
+      setError(current.message);
+    } finally {
+      setProcessing(false);
+    }
   };
   const review = () => {
     setError("");
@@ -384,8 +375,8 @@ export default function TransferPage() {
                   />
                 </div>
               </label>
-              <button className="transfer-main" onClick={lookup}>
-                Cek Detail Penerima <ChevronRight />
+<button className="transfer-main" onClick={lookup} disabled={processing}>
+                {processing ? "Memverifikasi..." : "Cek Detail Penerima"} <ChevronRight />
               </button>
             </section>
           )}
