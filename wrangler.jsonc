@@ -1,12 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "fastpay",
-  "main": "worker/index.js",
+  "name": "fastpay-mobile",
   "compatibility_date": "2026-07-20",
-  "assets": {
-    "directory": "./frontend/dist",
-    "binding": "ASSETS",
-    "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*"]
-  }
+  "pages_build_output_dir": "./frontend/dist",
+  "d1_databases": [{"binding":"DB","database_name":"fastpay-db","database_id":"74929be0-f0b5-4dac-85b3-ca175c579165"}]
 }
