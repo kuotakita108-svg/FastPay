@@ -1,0 +1,1 @@
+import {MessageCircleQuestion,ChevronRight} from 'lucide-react';export default function HelpCard(){return <section className="mobile-help"><i><MessageCircleQuestion/></i><div><strong>Ada kendala transaksi?</strong><p>Baca pusat bantuan atau hubungi tim FastPay.</p></div><button><ChevronRight/></button></section>}

@@ -1,0 +1,1 @@
+import {Signal} from 'lucide-react';export default function OperatorBadge({operator}){if(!operator)return <span className="operator-waiting"><Signal size={15}/>Operator terdeteksi otomatis</span>;return <span className="operator-badge" style={{'--operator':operator.color}}><i>{operator.code}</i>{operator.name} terdeteksi</span>}

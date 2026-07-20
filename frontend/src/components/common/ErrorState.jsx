@@ -1,0 +1,1 @@
+import {CircleAlert,RefreshCw} from 'lucide-react';export default function ErrorState({message,onRetry}){return <div className="state-card"><CircleAlert/><h2>Data belum dapat dimuat</h2><p>{message}</p><button className="secondary-button" onClick={onRetry}><RefreshCw size={16}/> Coba Lagi</button></div>}

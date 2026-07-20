@@ -1,0 +1,25 @@
+import js from '@eslint/js'
+import globals from 'globals'
+import hooks from 'eslint-plugin-react-hooks'
+import refresh from 'eslint-plugin-react-refresh'
+
+export default [
+  { ignores: ['dist'] },
+  {
+    files: ['**/*.{js,jsx}'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      globals: globals.browser,
+      parserOptions: { ecmaVersion: 'latest', ecmaFeatures: { jsx: true }, sourceType: 'module' },
+    },
+    plugins: { 'react-hooks': hooks, 'react-refresh': refresh },
+    rules: {
+      ...js.configs.recommended.rules,
+      ...hooks.configs.recommended.rules,
+      ...refresh.configs.vite.rules,
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      'react-refresh/only-export-components': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+    },
+  },
+]

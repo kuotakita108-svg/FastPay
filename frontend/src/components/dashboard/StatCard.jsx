@@ -1,0 +1,1 @@
+import {TrendingUp} from 'lucide-react';export default function StatCard({label,value,growth,icon:Icon,tone}){return <article className={`stat-card ${tone}`}><div className="stat-heading"><span>{label}</span><i><Icon size={19}/></i></div><strong className="stat-value">{value}</strong><small><TrendingUp size={13}/> <b>{growth}%</b> dari minggu lalu</small></article>}

@@ -1,0 +1,1 @@
+import {request} from './http';const isUser=()=>{try{return JSON.parse(localStorage.getItem('fastpay_session'))?.user?.role==='user'}catch{return false}};const path=()=>isUser()?'/me/transactions':'/transactions';export const getTransactions=()=>request(path());export const createTransaction=data=>request(path(),{method:'POST',body:JSON.stringify(data)});

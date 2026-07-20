@@ -1,0 +1,1 @@
+export const rupiah=value=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(value);export const shortRupiah=value=>`Rp ${(value/1e6).toLocaleString('id-ID',{maximumFractionDigits:1})} jt`;

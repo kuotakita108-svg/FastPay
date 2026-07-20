@@ -1,0 +1,1 @@
+export const formatDate=value=>new Intl.DateTimeFormat('id-ID',{day:'numeric',month:'short',year:'numeric'}).format(new Date(value));export const relativeTime=value=>{const minutes=Math.max(0,Math.floor((Date.now()-new Date(value))/60000));return minutes<60?`${minutes} menit lalu`:minutes<1440?`${Math.floor(minutes/60)} jam lalu`:formatDate(value)};
