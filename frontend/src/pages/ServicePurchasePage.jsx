@@ -8,10 +8,27 @@ import {serviceConfig} from '../constants/services'
 import {detectOperator} from '../constants/operators'
 import {fallbackProducts} from '../constants/fallbackProducts'
 import MobileNav from '../components/mobile/MobileNav'
+import communicationHero from '../assets/service-heroes/communication.png'
+import financeHero from '../assets/service-heroes/finance.png'
+import healthHero from '../assets/service-heroes/health.png'
+import utilitiesHero from '../assets/service-heroes/utilities.png'
+import entertainmentHero from '../assets/service-heroes/entertainment.png'
+import educationHero from '../assets/service-heroes/education.png'
+import vehicleHero from '../assets/service-heroes/vehicle.png'
+import propertyHero from '../assets/service-heroes/property.png'
+import travelHero from '../assets/service-heroes/travel.png'
 
 const automatic=['pulsa','data']
 const custom=['pulsa','ewallet']
 const phoneServices=['pulsa','data','ewallet','pascabayar']
+const serviceHeroes={
+ pulsa:communicationHero,data:communicationHero,pascabayar:communicationHero,
+ ewallet:financeHero,bank:financeHero,insurance:financeHero,
+ bpjs:healthHero,
+ pln:utilitiesHero,pdam:utilitiesHero,gas:utilitiesHero,internet:utilitiesHero,telkom:utilitiesHero,tv:utilitiesHero,
+ game:entertainmentHero,voucher:entertainmentHero,
+ school:educationHero,vehicle:vehicleHero,property:propertyHero,travel:travelHero,
+}
 
 export default function ServicePurchasePage(){
  const {type}=useParams(),navigate=useNavigate(),config=serviceConfig[type]||serviceConfig.pulsa,{data=[]}=useAsync(getProducts)
@@ -22,7 +39,7 @@ export default function ServicePurchasePage(){
  const checkout=()=>navigate('/app/checkout',{state:{type,title:config.title,target,provider,product:selected?.name||(mode==='custom'?`${config.title} ${rupiah(amount)}`:config.title),amount}})
  return <main className={`mobile-app modern-purchase service-${type}`}>
   <header className="purchase-head modern"><button onClick={()=>navigate(-1)}><ArrowLeft/></button><div><strong>{config.title}</strong><small>Layanan resmi FastPay</small></div><i><ShieldCheck/></i></header>
-  <section className="service-intro"><span>{config.title}</span><h1>Transaksi lebih praktis dan aman</h1><p>Masukkan data tujuan, pilih penyedia, lalu tentukan produk yang kamu inginkan.</p></section>
+  <section className="service-intro service-person-hero"><img src={serviceHeroes[type]||communicationHero} alt="" aria-hidden="true"/><div className="service-person-shade"/><div className="service-intro-copy"><span>{config.title}</span><h1>Transaksi lebih praktis dan aman</h1><p>Masukkan data tujuan, pilih penyedia, lalu tentukan produk yang kamu inginkan.</p></div></section>
   <section className="modern-purchase-body">
    <section className="number-panel"><div className="number-title"><i>{phoneServices.includes(type)?<Smartphone/>:<Hash/>}</i><div><strong>{config.input}</strong><small>Pastikan data tujuan sudah benar</small></div></div><label><span>{phoneServices.includes(type)?'+62':'ID'}</span><input value={target} onChange={event=>changeTarget(event.target.value)} placeholder={config.placeholder} inputMode={type==='game'||type==='voucher'?'text':'numeric'}/>{provider&&automatic.includes(type)&&<CheckCircle2/>}</label>{automatic.includes(type)&&<p>{provider?<>Nomor terdeteksi sebagai <b>{provider}</b></>:'Operator terpilih otomatis berdasarkan nomor.'}</p>}</section>
    <section className="provider-panel"><header><div><strong>Pilih Penyedia</strong><small>Pilih layanan yang sesuai</small></div>{provider&&<span>Terpilih</span>}</header><div className="modern-provider-grid">{config.providers.map((name,index)=><button className={`${provider===name?'active':''} tone-${index%5}`} onClick={()=>{setProvider(name);setCatalog(false);setSelected(null)}} key={name}><i>{name.slice(0,2).toUpperCase()}</i><span>{name}</span>{provider===name&&<CheckCircle2/>}</button>)}</div><button className="show-products" onClick={()=>setCatalog(true)} disabled={target.length<4||!provider}>Lihat Produk & Nominal <ChevronRight/></button></section>
