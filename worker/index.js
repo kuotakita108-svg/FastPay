@@ -31,12 +31,46 @@ Object.entries(extraCatalog).forEach(([category,providers])=>Object.entries(prov
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json;charset=UTF-8','cache-control':'no-store'}})
 const body=async request=>{try{return await request.json()}catch{return{}}}
 const passwordHash=async value=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)))).map(byte=>byte.toString(16).padStart(2,'0')).join('')
-const tokenUser=request=>{const token=(request.headers.get('authorization')||'').replace('Bearer ','');try{return JSON.parse(atob(token.split('.')[0])).id}catch{return''}}
-const authResult=user=>{const payload=btoa(JSON.stringify({id:user.id,role:user.role,exp:Date.now()+86400000}));return{token:`${payload}.fastpay`,user}}
+const encode64=value=>btoa(unescape(encodeURIComponent(value)))
+const decode64=value=>decodeURIComponent(escape(atob(value)))
+const tokenUser=request=>{const token=(request.headers.get('authorization')||'').replace('Bearer ','');try{return JSON.parse(decode64(token.split('.')[0])).id}catch{return''}}
+const authResult=user=>{const payload=encode64(JSON.stringify({id:user.id,role:user.role,exp:Date.now()+86400000}));return{token:`${payload}.fastpay`,user}}
+const cookieValue=(request,name)=>(request.headers.get('cookie')||'').split(';').map(value=>value.trim()).find(value=>value.startsWith(`${name}=`))?.slice(name.length+1)||''
+const oauthError=(url,message)=>Response.redirect(`${url.origin}/login?oauth_error=${encodeURIComponent(message)}`,302)
+async function googleAuth(request,env,url){
+  if(!env.GOOGLE_CLIENT_ID||!env.GOOGLE_CLIENT_SECRET)return oauthError(url,'Login Google belum diaktifkan oleh pengelola FastPay.')
+  if(!env.DB)return oauthError(url,'Database akun Google belum terhubung.')
+  const redirectURI=`${url.origin}/api/v1/auth/google/callback`
+  if(url.pathname.endsWith('/callback')){
+    const state=url.searchParams.get('state')||'',saved=decodeURIComponent(cookieValue(request,'fastpay_oauth_state'))
+    if(!state||state!==saved)return oauthError(url,'Sesi Google tidak valid atau sudah kedaluwarsa.')
+    if(url.searchParams.get('error'))return oauthError(url,'Proses masuk Google dibatalkan.')
+    const code=url.searchParams.get('code');if(!code)return oauthError(url,'Kode masuk Google tidak ditemukan.')
+    const tokenResponse=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams({code,client_id:env.GOOGLE_CLIENT_ID,client_secret:env.GOOGLE_CLIENT_SECRET,redirect_uri:redirectURI,grant_type:'authorization_code'})})
+    if(!tokenResponse.ok)return oauthError(url,'Google tidak dapat memverifikasi akun. Silakan coba lagi.')
+    const tokens=await tokenResponse.json()
+    const profileResponse=await fetch('https://openidconnect.googleapis.com/v1/userinfo',{headers:{authorization:`Bearer ${tokens.access_token}`}})
+    if(!profileResponse.ok)return oauthError(url,'Profil Google tidak dapat dibaca.')
+    const profile=await profileResponse.json();if(!profile.email||profile.email_verified===false)return oauthError(url,'Email Google belum terverifikasi.')
+    let user=await env.DB.prepare('SELECT id,username,name,role,balance,phone,email FROM accounts WHERE email=?').bind(profile.email.toLowerCase()).first()
+    if(!user){
+      const base=(profile.email.split('@')[0]||'google').toLowerCase().replace(/[^a-z0-9_]/g,'').slice(0,18)||'google'
+      let username=base,suffix=0;while(await env.DB.prepare('SELECT id FROM accounts WHERE username=?').bind(username).first()){suffix+=1;username=`${base}${suffix}`}
+      user={id:`USR-${crypto.randomUUID()}`,username,name:String(profile.name||base).trim(),role:'user',balance:0,phone:'',email:profile.email.toLowerCase()}
+      await env.DB.prepare('INSERT INTO accounts(id,username,password_hash,name,phone,email,role,balance) VALUES(?,?,?,?,?,?,?,?)').bind(user.id,user.username,`google:${profile.sub}`,user.name,user.phone,user.email,user.role,user.balance).run()
+    }
+    const session=JSON.stringify(authResult(user)).replace(/</g,'\\u003c')
+    return new Response(`<!doctype html><meta charset="utf-8"><title>Masuk ke FastPay</title><script>localStorage.setItem('fastpay_session',${JSON.stringify(session)});location.replace('/app')</script><p>Menyiapkan akun FastPay...</p>`,{headers:{'content-type':'text/html;charset=UTF-8','set-cookie':'fastpay_oauth_state=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0'}})
+  }
+  const state=crypto.randomUUID(),authorize=new URL('https://accounts.google.com/o/oauth2/v2/auth')
+  authorize.search=new URLSearchParams({client_id:env.GOOGLE_CLIENT_ID,redirect_uri:redirectURI,response_type:'code',scope:'openid email profile',state,prompt:'select_account'}).toString()
+  return new Response(null,{status:302,headers:{location:authorize.toString(),'set-cookie':`fastpay_oauth_state=${encodeURIComponent(state)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600`}})
+}
 function login(input){if((input.username||'').toLowerCase()!=='octa')return null;const users={octa11:{id:'USR-001',username:'octa',name:'Octa User',role:'user',balance:275000,phone:'081234567890',email:'octa@gmail.com'},octa22:{id:'MST-001',username:'octa',name:'Octa Master',role:'master',balance:25000000,phone:'081234567890',email:'master@fastpay.id'},octa33:{id:'ADM-001',username:'octa',name:'Octa Admin',role:'admin',balance:8500000,phone:'081234567890',email:'admin@fastpay.id'}};return users[input.password]||null}
 function detect(phone){const groups={Telkomsel:['0811','0812','0813','0821','0822','0852','0853'],Indosat:['0814','0815','0816','0855','0856','0857','0858'],XL:['0817','0818','0819','0859','0877','0878'],Tri:['0895','0896','0897','0898','0899'],AXIS:['0831','0832','0833','0838']};return Object.entries(groups).find(([,prefixes])=>prefixes.some(prefix=>phone.startsWith(prefix)))?.[0]||''}
 export default{async fetch(request,env){const url=new URL(request.url),path=url.pathname,method=request.method;if(!path.startsWith('/api/'))return env.ASSETS.fetch(request)
   if(path==='/api/v1/health')return json({status:'ok',service:'FastPay Cloudflare'})
+  if((path==='/api/v1/auth/google'||path==='/api/v1/auth/google/callback')&&method==='GET')return googleAuth(request,env,url)
   if(path==='/api/v1/auth/login'&&method==='POST'){const input=await body(request);let user=login(input);if(!user&&env.DB){const row=await env.DB.prepare('SELECT id,username,name,role,balance,phone,email FROM accounts WHERE username=? AND password_hash=?').bind((input.username||'').toLowerCase().trim(),await passwordHash(input.password||'')).first();if(row)user=row}return user?json(authResult(user)):json({error:'username atau password salah'},401)}
   if(path==='/api/v1/auth/register'&&method==='POST'){const input=await body(request);input.username=(input.username||'').toLowerCase().trim();if(!input.name||!input.phone||!input.email?.includes('@')||!input.username||input.password?.length<6)return json({error:'lengkapi data dengan benar; password minimal 6 karakter'},422);if(!env.DB)return json({error:'database akun belum terhubung'},503);if(await env.DB.prepare('SELECT id FROM accounts WHERE username=?').bind(input.username).first())return json({error:'username sudah digunakan, pilih username lain'},409);const user={id:`USR-${crypto.randomUUID()}`,username:input.username,name:input.name.trim(),role:'user',balance:0,phone:input.phone.trim(),email:input.email.toLowerCase().trim()};await env.DB.prepare('INSERT INTO accounts(id,username,password_hash,name,phone,email,role,balance) VALUES(?,?,?,?,?,?,?,?)').bind(user.id,user.username,await passwordHash(input.password),user.name,user.phone,user.email,user.role,user.balance).run();return json(authResult(user),201)}
   if(path==='/api/v1/products')return json(products)

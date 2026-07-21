@@ -39,4 +39,9 @@ export async function register(profile){
   }
 }
 
-export const googleLogin=()=>request('/auth/google')
+export const googleLogin=()=>{
+  const apiURL=import.meta.env.VITE_API_URL||'/api/v1'
+  const target=new URL(`${apiURL}/auth/google`,window.location.origin)
+  target.searchParams.set('return_to','/app')
+  window.location.assign(target.toString())
+}

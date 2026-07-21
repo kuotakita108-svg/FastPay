@@ -32,4 +32,5 @@
 @import './promo-people.css';
 @import './dashboard-real-data.css';
 @import './service-person-heroes.css';
+@import './auth-premium.css';
 *{box-sizing:border-box}html{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}body{margin:0;font-size:14px}button,input,select,textarea{font:inherit}button,a{cursor:pointer}button:disabled{opacity:.65;cursor:wait}h1,h2,h3,p{margin-top:0}a{text-decoration:none;color:inherit}.primary-button,.secondary-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;border-radius:9px;padding:11px 16px;font-weight:700}.primary-button{background:linear-gradient(135deg,#8a7cf5,var(--primary));color:#fff;box-shadow:0 7px 17px rgba(103,89,232,.2)}.secondary-button{background:var(--primary-soft);color:var(--primary)}.full{width:100%}
