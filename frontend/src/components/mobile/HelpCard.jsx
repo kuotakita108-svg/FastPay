@@ -1,1 +1,7 @@
-import {MessageCircleQuestion,ChevronRight} from 'lucide-react';export default function HelpCard(){return <section className="mobile-help"><i><MessageCircleQuestion/></i><div><strong>Ada kendala transaksi?</strong><p>Baca pusat bantuan atau hubungi tim FastPay.</p></div><button><ChevronRight/></button></section>}
+import { ChevronRight, MessageCircleQuestion } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+
+export default function HelpCard() {
+  const navigate = useNavigate()
+  return <button type="button" className="mobile-help" onClick={() => navigate('/app/profile')}><i><MessageCircleQuestion /></i><div><strong>Ada kendala transaksi?</strong><p>Buka pusat bantuan dan informasi akun FastPay.</p></div><span><ChevronRight /></span></button>
+}
