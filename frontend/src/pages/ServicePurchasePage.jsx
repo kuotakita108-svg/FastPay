@@ -17,16 +17,26 @@ import educationHero from '../assets/service-heroes/education.png'
 import vehicleHero from '../assets/service-heroes/vehicle.png'
 import propertyHero from '../assets/service-heroes/property.png'
 import travelHero from '../assets/service-heroes/travel.png'
+import dataHero from '../assets/service-heroes/data.png'
+import pascabayarHero from '../assets/service-heroes/pascabayar.png'
+import bankHero from '../assets/service-heroes/bank.png'
+import insuranceHero from '../assets/service-heroes/insurance.png'
+import pdamHero from '../assets/service-heroes/pdam.png'
+import gasHero from '../assets/service-heroes/gas.png'
+import internetHero from '../assets/service-heroes/internet.png'
+import telkomHero from '../assets/service-heroes/telkom.png'
+import tvHero from '../assets/service-heroes/tv.png'
+import voucherHero from '../assets/service-heroes/voucher.png'
 
 const automatic=['pulsa','data']
 const custom=['pulsa','ewallet']
 const phoneServices=['pulsa','data','ewallet','pascabayar']
 const serviceHeroes={
- pulsa:communicationHero,data:communicationHero,pascabayar:communicationHero,
- ewallet:financeHero,bank:financeHero,insurance:financeHero,
+ pulsa:communicationHero,data:dataHero,pascabayar:pascabayarHero,
+ ewallet:financeHero,bank:bankHero,insurance:insuranceHero,
  bpjs:healthHero,
- pln:utilitiesHero,pdam:utilitiesHero,gas:utilitiesHero,internet:utilitiesHero,telkom:utilitiesHero,tv:utilitiesHero,
- game:entertainmentHero,voucher:entertainmentHero,
+ pln:utilitiesHero,pdam:pdamHero,gas:gasHero,internet:internetHero,telkom:telkomHero,tv:tvHero,
+ game:entertainmentHero,voucher:voucherHero,
  school:educationHero,vehicle:vehicleHero,property:propertyHero,travel:travelHero,
 }
 
