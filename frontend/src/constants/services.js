@@ -2,7 +2,7 @@ const config=(title,category,input,placeholder,providers)=>({title,category,inpu
 export const serviceConfig={
   pulsa:config('Isi Pulsa','Pulsa','Nomor Handphone','Contoh: 081234567890',['Telkomsel','Indosat','XL','Tri','AXIS']),
   data:config('Paket Data','Paket Data','Nomor Handphone','Contoh: 081234567890',['Telkomsel','Indosat','XL','Tri','AXIS']),
-  ewallet:config('Top Up E-Wallet','E-Wallet','Nomor E-Wallet','Masukkan nomor akun e-wallet',['DANA','GoPay','OVO','ShopeePay','LinkAja']),
+  ewallet:config('Top Up E-Wallet','E-Wallet','Nomor E-Wallet','Masukkan nomor akun e-wallet',['DANA','GoPay','OVO','ShopeePay','LinkAja','AstraPay','i.saku']),
   pln:config('Token Listrik PLN','Token PLN','Nomor Meter / ID Pelanggan','Masukkan nomor meter PLN',['PLN']),
   game:config('Voucher & Top Up Game','Voucher Game','User ID Game','Masukkan User ID',['Mobile Legends','Free Fire','PUBG Mobile','Valorant','Genshin Impact']),
   pdam:config('Tagihan PDAM','PDAM','Nomor Pelanggan PDAM','Masukkan nomor pelanggan',['PDAM Jakarta','PDAM Bandung','PDAM Surabaya']),
@@ -12,7 +12,7 @@ export const serviceConfig={
   pascabayar:config('HP Pascabayar','Pascabayar','Nomor Handphone','Masukkan nomor pascabayar',['Telkomsel Halo','Indosat Postpaid','XL Prioritas']),
   gas:config('Tagihan Gas PGN','Tagihan Gas','Nomor Pelanggan','Masukkan nomor pelanggan PGN',['PGN']),
   internet:config('Internet & WiFi','Internet & TV','Nomor Pelanggan','Masukkan nomor pelanggan',['MyRepublic','Biznet','CBN','IndiHome']),
-  bank:config('Transfer Bank','Transfer Bank','Nomor Rekening','Masukkan nomor rekening',['BCA','BRI','BNI','Mandiri','Bank Syariah Indonesia']),
+  bank:config('Transfer Bank','Transfer Bank','Nomor Rekening','Masukkan nomor rekening',['BCA','BRI','BNI','Mandiri','Bank Syariah Indonesia','Danamon','PermataBank','SeaBank','Bank Jago']),
   voucher:config('Voucher Digital','Voucher Digital','Nomor Handphone / Email','Masukkan data penerima',['Google Play','Apple Gift Card','Spotify','Vidio']),
   school:config('Pembayaran Pendidikan','Pendidikan','Nomor Siswa / Mahasiswa','Masukkan nomor pelajar',['Sekolah','Universitas','Bimbel']),
   insurance:config('Pembayaran Asuransi','Asuransi','Nomor Polis','Masukkan nomor polis',['Prudential','Allianz','Manulife']),
