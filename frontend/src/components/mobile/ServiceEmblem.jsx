@@ -17,15 +17,23 @@ import insurance from '../../assets/service-emblems-hd/insurance.png'
 import vehicle from '../../assets/service-emblems-hd/vehicle.png'
 import property from '../../assets/service-emblems-hd/property.png'
 import travel from '../../assets/service-emblems-hd/travel.png'
-import { CircleParking, Clapperboard, CreditCard, HandCoins, HeartHandshake, HeartPulse, Landmark, QrCode, Radio, ReceiptText, SmartphoneNfc, Truck } from 'lucide-react'
+import qris from '../../assets/service-emblems-hd-v2/qris.png'
+import emoney from '../../assets/service-emblems-hd-v2/emoney.png'
+import toll from '../../assets/service-emblems-hd-v2/toll.png'
+import streaming from '../../assets/service-emblems-hd-v2/streaming.png'
+import esim from '../../assets/service-emblems-hd-v2/esim.png'
+import health from '../../assets/service-emblems-hd-v2/health.png'
+import creditcard from '../../assets/service-emblems-hd-v2/creditcard.png'
+import multifinance from '../../assets/service-emblems-hd-v2/multifinance.png'
+import tax from '../../assets/service-emblems-hd-v2/tax.png'
+import zakat from '../../assets/service-emblems-hd-v2/zakat.png'
+import parking from '../../assets/service-emblems-hd-v2/parking.png'
+import delivery from '../../assets/service-emblems-hd-v2/delivery.png'
 
 const emblems={
-  pulsa,data,ewallet,pln,game,pdam,bpjs,services,pascabayar,bank,gas,internet,tv,voucher,school,insurance,vehicle,property,travel,
+  pulsa,data,ewallet,pln,game,pdam,bpjs,services,pascabayar,bank,gas,internet,tv,voucher,school,insurance,vehicle,property,travel,qris,emoney,toll,streaming,esim,health,creditcard,multifinance,tax,zakat,parking,delivery,
 }
-const uniqueEmblems={qris:QrCode,emoney:SmartphoneNfc,toll:Radio,streaming:Clapperboard,esim:CreditCard,health:HeartPulse,creditcard:Landmark,multifinance:HandCoins,tax:ReceiptText,zakat:HeartHandshake,parking:CircleParking,delivery:Truck}
 
 export default function ServiceEmblem({type,label}){
-  const Icon=uniqueEmblems[type]
-  if(Icon)return <span className={`service-unique-emblem unique-${type}`} role="img" aria-label={label||type}><Icon/></span>
   return <img className="service-emblem-image" src={emblems[type]||services} alt={label?`Logo ${label}`:''}/>
 }
