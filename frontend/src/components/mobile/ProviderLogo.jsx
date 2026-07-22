@@ -47,6 +47,18 @@ import isaku from '../../assets/providers/official/isaku.svg'
 import { BadgeCheck, Banknote, BookOpenCheck, Building2, Bus, Car, CircleParking, Clapperboard, CreditCard, Cross, Droplets, Earth, Flame, Gamepad2, GraduationCap, HandHeart, HeartPulse, Landmark, MapPin, MonitorPlay, Plane, QrCode, Radio, ReceiptText, ShieldCheck, Smartphone, Store, TrainFront, Truck, Wallet, Wifi, Zap } from 'lucide-react'
 
 const imageLogos={BCA:bca,BRI:bri,BNI:bni,Mandiri:mandiri,'CIMB Niaga':cimb,'Bank Syariah Indonesia':bsi,BSI:bsi,Danamon:danamon,'PermataBank':permatabank,'SeaBank':seabank,'Bank Jago':jago,AstraPay:astrapay,'i.saku':isaku,'FIF Group':fif,Spotify:spotify,Vidio:vidio,Telkomsel:telkomsel,Indosat:indosat,XL:xl,Tri:tri,AXIS:axis,DANA:dana,GoPay:gopay,OVO:ovo,ShopeePay:shopeepay,LinkAja:linkaja,'Mobile Legends':mobilelegends,'Free Fire':freefire,'PUBG Mobile':pubg,Valorant:valorant,'Genshin Impact':genshin,'BPJS Kesehatan':bpjs,Biznet:biznet,Prudential:prudential,Allianz:allianz,Manulife:manulife,MyRepublic:myrepublic,CBN:cbn,IndiHome:indihome,'MNC Vision':mncvision,Transvision:transvision,'Google Play':googleplay,'Apple Gift Card':apple,Pesawat:garuda,'Bus & Travel':redbus,Sekolah:kemendikbud,Universitas:kemendikbud,Bimbel:kemendikbud,'PBB Kota/Kabupaten':pajak}
+const brandMarks={
+  Netflix:{text:'N',tone:'netflix'},'YouTube Premium':{text:'▶',tone:'youtube'},'Disney+ Hotstar':{text:'D+',tone:'disney'},'K-Vision':{text:'K',tone:'kvision'},
+  PLN:{text:'⚡',tone:'pln'},PGN:{text:'PGN',tone:'pgn'},PDAM:{text:'AIR',tone:'pdam'},Telkom:{text:'T',tone:'telkom'},
+  'QRIS Nasional':{text:'QR',tone:'qris'},'QRIS UMKM':{text:'UM',tone:'qris'},'QRIS Dinamis':{text:'QD',tone:'qris'},
+  'Mandiri e-Money':{text:'eM',tone:'emoney'},'BCA Flazz':{text:'FL',tone:'flazz'},'BNI TapCash':{text:'TC',tone:'tapcash'},BRIZZI:{text:'BR',tone:'brizzi'},'Mandiri e-Toll':{text:'eT',tone:'etoll'},
+  Halodoc:{text:'H+',tone:'health'},'Klinik Digital':{text:'KD',tone:'health'},Laboratorium:{text:'LAB',tone:'health'},Apotek:{text:'Rx',tone:'health'},
+  'Home Credit':{text:'HC',tone:'credit'},Kredivo:{text:'K',tone:'kredivo'},Akulaku:{text:'AK',tone:'akulaku'},'Mega Finance':{text:'MF',tone:'finance'},'Adira Finance':{text:'AF',tone:'finance'},'WOM Finance':{text:'W',tone:'finance'},
+  'DJP Online':{text:'DJP',tone:'tax'},'Pajak Daerah':{text:'PD',tone:'tax'},'Samsat Digital':{text:'SD',tone:'tax'},'Penerimaan Negara':{text:'PN',tone:'tax'},
+  BAZNAS:{text:'BZ',tone:'donation'},'Dompet Dhuafa':{text:'DD',tone:'donation'},'Rumah Zakat':{text:'RZ',tone:'donation'},Kitabisa:{text:'K',tone:'donation'},
+  Parkee:{text:'P',tone:'parking'},CentrePark:{text:'CP',tone:'parking'},'Sky Parking':{text:'SP',tone:'parking'},'Secure Parking':{text:'SEC',tone:'parking'},
+  JNE:{text:'JNE',tone:'delivery'},'J&T Express':{text:'J&T',tone:'delivery'},SiCepat:{text:'Si',tone:'delivery'},'Pos Indonesia':{text:'POS',tone:'pos'},AnterAja:{text:'A',tone:'anteraja'},'Kereta Api':{text:'KAI',tone:'train'},
+}
 
 const normalize=name=>String(name||'').replace(/ Card$/,'')
 function ProviderSymbol({name}){
@@ -85,9 +97,18 @@ function ProviderSymbol({name}){
   return <Store/>
 }
 
+function findLogoMatch(name,source){
+  return Object.entries(source).find(([key])=>name.startsWith(key))
+}
+
+function BrandMark({mark,name}){
+  return <span className={`provider-brand-mark provider-brand-${mark.tone}`}><i>{mark.text}</i><ProviderSymbol name={name}/></span>
+}
+
 export default function ProviderLogo({name,className=''}){
   const clean=normalize(name)
-  const image=Object.entries(imageLogos).find(([key])=>clean.startsWith(key))?.[1]
+  const image=findLogoMatch(clean,imageLogos)?.[1]
   if(image)return <i className={`${className} provider-logo-rendered`}><img src={image} alt={`Logo ${name}`}/></i>
-  return <i className={`${className} provider-logo-rendered provider-wordmark`} data-brand={clean.toLowerCase().replace(/[^a-z0-9]+/g,'-')} role="img" aria-label={`Logo ${name}`}><ProviderSymbol name={clean}/></i>
+  const mark=findLogoMatch(clean,brandMarks)?.[1]
+  return <i className={`${className} provider-logo-rendered provider-wordmark`} data-brand={clean.toLowerCase().replace(/[^a-z0-9]+/g,'-')} role="img" aria-label={`Logo ${name}`}>{mark?<BrandMark mark={mark} name={clean}/>:<ProviderSymbol name={clean}/>}</i>
 }
