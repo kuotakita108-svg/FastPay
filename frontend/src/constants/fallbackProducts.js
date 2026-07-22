@@ -1,16 +1,18 @@
 const money = [10000, 15000, 20000, 25000, 50000, 75000, 100000, 150000, 200000]
 const data = [['Paket Hemat 2 GB · 7 Hari', 12000], ['Paket Harian 3 GB · 7 Hari', 18000], ['Paket Bulanan 6 GB · 30 Hari', 32000], ['Paket Bulanan 12 GB · 30 Hari', 52000], ['Paket Combo 25 GB · 30 Hari', 85000], ['Paket Jumbo 50 GB · 30 Hari', 135000]]
 const game = [['Paket Starter', 15000], ['Paket Bronze', 30000], ['Paket Silver', 50000], ['Paket Gold', 100000], ['Paket Platinum', 200000], ['Paket Ultimate', 500000]]
+const pack = (unit, values, rate, prefix = '') => values.map(value => [`${prefix}${value.toLocaleString('id-ID')} ${unit}`, Math.round(value * rate)])
+
 const gameProducts = {
-  'Free Fire': [['70 Diamonds', 10000], ['140 Diamonds', 20000], ['355 Diamonds', 50000], ['720 Diamonds', 100000], ['Membership Mingguan', 30000], ['Membership Bulanan', 85000]],
-  'PUBG Mobile': [['60 UC', 15000], ['325 UC', 75000], ['660 UC', 150000], ['1800 UC', 400000], ['Royale Pass', 160000], ['Elite Pass Plus', 420000]],
-  'Mobile Legends': [['86 Diamonds', 25000], ['172 Diamonds', 50000], ['257 Diamonds', 75000], ['344 Diamonds', 100000], ['Weekly Diamond Pass', 30000], ['Twilight Pass', 150000]],
-  Roblox: [['80 Robux', 15000], ['400 Robux', 75000], ['800 Robux', 150000], ['1700 Robux', 300000], ['Premium 450', 85000], ['Premium 1000', 170000]],
-  'Point Blank': [['1.200 PB Cash', 12000], ['2.400 PB Cash', 24000], ['6.000 PB Cash', 60000], ['12.000 PB Cash', 120000], ['Battle Pass', 75000], ['Premium Pack', 150000]],
-  'Genshin Impact Genesis Crystals': [['60 Genesis Crystals', 15000], ['300 + 30 Genesis Crystals', 79000], ['980 + 110 Genesis Crystals', 249000], ['1980 + 260 Genesis Crystals', 479000], ['Blessing Welkin Moon', 79000], ['Battle Pass Gnostic Hymn', 159000]],
-  'Valorant Points': [['475 VP', 55000], ['1000 VP', 110000], ['2050 VP', 220000], ['3650 VP', 385000], ['5350 VP', 550000], ['11000 VP', 1100000]],
-  'Steam Wallet ID': [['Steam Wallet Rp12.000', 12000], ['Steam Wallet Rp45.000', 45000], ['Steam Wallet Rp60.000', 60000], ['Steam Wallet Rp90.000', 90000], ['Steam Wallet Rp120.000', 120000], ['Steam Wallet Rp250.000', 250000]],
-  'Arena of Valor Voucher': [['40 Vouchers', 10000], ['90 Vouchers', 20000], ['230 Vouchers', 50000], ['470 Vouchers', 100000], ['950 Vouchers', 200000], ['Weekly Card', 35000]],
+  'Free Fire': [...pack('Diamonds', [5, 12, 50, 70, 100, 140, 210, 355, 500, 720, 1000, 1450, 2180, 3640, 5000], 145), ['Membership Mingguan', 30000], ['Membership Bulanan', 85000], ['Level Up Pass', 18000], ['BP Card', 45000]],
+  'PUBG Mobile': [...pack('UC', [30, 60, 120, 180, 325, 385, 660, 985, 1320, 1800, 2125, 3850, 5650, 8100], 225), ['Royale Pass', 160000], ['Elite Pass Plus', 420000], ['Prime Plus', 150000]],
+  'Mobile Legends': [...pack('Diamonds', [5, 12, 19, 28, 36, 44, 59, 74, 86, 110, 148, 172, 222, 257, 284, 344, 408, 568, 706, 875, 1050, 1412, 2010, 2400, 3000, 4000, 5000], 285), ['Weekly Diamond Pass', 30000], ['2x Weekly Diamond Pass', 60000], ['Twilight Pass', 150000]],
+  Roblox: [...pack('Robux', [80, 160, 240, 400, 800, 1200, 1700, 2250, 4500, 10000], 185), ['Premium 450', 85000], ['Premium 1000', 170000], ['Premium 2200', 360000]],
+  'Point Blank': [...pack('PB Cash', [1200, 2400, 3600, 6000, 12000, 24000, 36000, 60000, 120000], 10), ['Battle Pass', 75000], ['Premium Pack', 150000], ['Weapon Pack', 99000]],
+  'Genshin Impact Genesis Crystals': [['60 Genesis Crystals', 15000], ['300 + 30 Genesis Crystals', 79000], ['980 + 110 Genesis Crystals', 249000], ['1980 + 260 Genesis Crystals', 479000], ['3280 + 600 Genesis Crystals', 799000], ['6480 + 1600 Genesis Crystals', 1599000], ['Blessing Welkin Moon', 79000], ['Battle Pass Gnostic Hymn', 159000], ['Battle Pass Gnostic Chorus', 329000]],
+  'Valorant Points': [['125 VP', 15000], ['420 VP', 49000], ['475 VP', 55000], ['700 VP', 77000], ['1000 VP', 110000], ['1375 VP', 149000], ['2050 VP', 220000], ['2400 VP', 259000], ['3650 VP', 385000], ['5350 VP', 550000], ['8150 VP', 825000], ['11000 VP', 1100000]],
+  'Steam Wallet ID': [12000, 45000, 60000, 90000, 120000, 250000, 400000, 600000, 1000000, 1500000, 2000000].map(value => [`Steam Wallet Rp${value.toLocaleString('id-ID')}`, value]),
+  'Arena of Valor Voucher': [...pack('Vouchers', [40, 90, 230, 470, 950, 1430, 2390, 4800, 5000], 220), ['Weekly Card', 35000], ['Monthly Card', 99000], ['Battle Pass', 149000]],
 }
 const bills = [['Cek Tagihan', 2500], ['Pembayaran Rp50.000', 50000], ['Pembayaran Rp100.000', 100000], ['Pembayaran Rp250.000', 250000], ['Pembayaran Rp500.000', 500000], ['Pembayaran Rp1.000.000', 1000000]]
 
