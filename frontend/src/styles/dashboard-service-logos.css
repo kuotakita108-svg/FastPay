@@ -2,6 +2,6 @@
 .modern-services .service-grid .branded-service-icon:before{display:none!important}
 .modern-services .service-grid i.violet{color:#6b50df!important}.modern-services .service-grid i.blue{color:#2183d5!important}.modern-services .service-grid i.mint{color:#0ba477!important}.modern-services .service-grid i.amber{color:#e49a16!important}.modern-services .service-grid i.rose{color:#db477b!important}.modern-services .service-grid i.cyan{color:#149bb4!important}.modern-services .service-grid i.orange{color:#21995b!important}.modern-services .service-grid i.slate{color:#5d6c85!important}
 .service-category-mark{display:grid;place-items:center;width:100%;height:100%;font-style:normal}
-.service-category-mark svg{width:34px!important;height:34px!important;stroke-width:2.15;shape-rendering:geometricPrecision}
+.service-category-mark svg{width:36px!important;height:36px!important;shape-rendering:geometricPrecision}
 .modern-services .service-grid button:active .branded-service-icon{transform:scale(.92);box-shadow:none!important}
 @media(max-width:350px){.modern-services .service-grid .branded-service-icon{width:48px;height:48px}.service-category-mark svg{width:31px!important;height:31px!important}}
