@@ -18,7 +18,11 @@ import vehicle from '../../assets/service-emblems-hd/vehicle.png'
 import property from '../../assets/service-emblems-hd/property.png'
 import travel from '../../assets/service-emblems-hd/travel.png'
 
-const emblems={pulsa,data,ewallet,pln,game,pdam,bpjs,services,pascabayar,bank,gas,internet,tv,voucher,school,insurance,vehicle,property,travel}
+const emblems={
+  pulsa,data,ewallet,pln,game,pdam,bpjs,services,pascabayar,bank,gas,internet,tv,voucher,school,insurance,vehicle,property,travel,
+  qris:ewallet,emoney:voucher,toll:vehicle,streaming:tv,esim:data,health:bpjs,creditcard:bank,
+  multifinance:property,tax:school,zakat:insurance,parking:vehicle,delivery:travel,
+}
 
 export default function ServiceEmblem({type,label}){
   return <img className="service-emblem-image" src={emblems[type]||services} alt={label?`Logo ${label}`:''}/>

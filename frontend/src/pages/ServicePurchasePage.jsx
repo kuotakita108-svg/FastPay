@@ -32,6 +32,7 @@ import voucherHero from '../assets/service-heroes/voucher.png'
 const automatic=['pulsa','data']
 const custom=['pulsa','ewallet']
 const phoneServices=['pulsa','data','ewallet','pascabayar']
+const textInputServices=['game','voucher','streaming','esim','parking','qris']
 const serviceHeroes={
  pulsa:communicationHero,data:dataHero,pascabayar:pascabayarHero,
  ewallet:financeHero,bank:bankHero,insurance:insuranceHero,
@@ -39,6 +40,9 @@ const serviceHeroes={
  pln:utilitiesHero,pdam:pdamHero,gas:gasHero,internet:internetHero,telkom:telkomHero,tv:tvHero,
  game:entertainmentHero,voucher:voucherHero,
  school:educationHero,vehicle:vehicleHero,property:propertyHero,travel:travelHero,
+ qris:financeHero,emoney:financeHero,toll:travelHero,streaming:entertainmentHero,
+ esim:dataHero,health:healthHero,creditcard:bankHero,multifinance:financeHero,
+ tax:propertyHero,zakat:healthHero,parking:vehicleHero,delivery:travelHero,
 }
 
 export default function ServicePurchasePage(){
@@ -64,7 +68,7 @@ export default function ServicePurchasePage(){
   <header className="purchase-head modern"><button onClick={()=>navigate(-1)}><ArrowLeft/></button><div><strong>{config.title}</strong><small>Layanan resmi FastPay</small></div><i><ShieldCheck/></i></header>
   <section className="service-intro service-person-hero"><img src={serviceHeroes[type]||communicationHero} alt="" aria-hidden="true"/><div className="service-person-shade"/><div className="service-intro-copy"><span>{config.title}</span><h1>Transaksi lebih praktis dan aman</h1><p>Masukkan data tujuan, pilih penyedia, lalu tentukan produk yang kamu inginkan.</p></div></section>
   <section className="modern-purchase-body">
-   <section className="number-panel"><div className="number-title"><i className="service-input-emblem"><ServiceEmblem type={type} label={config.title}/></i><div><strong>{config.input}</strong><small>Pastikan data tujuan sudah benar</small></div><span className="verified-service"><ShieldCheck/> Resmi</span></div><label><span>{phoneServices.includes(type)?'+62':'ID'}</span><input value={target} onChange={event=>changeTarget(event.target.value)} placeholder={config.placeholder} inputMode={type==='game'||type==='voucher'?'text':'numeric'}/>{provider&&automatic.includes(type)&&<CheckCircle2/>}</label>{automatic.includes(type)&&<p>{provider?<>Nomor terdeteksi sebagai <b>{provider}</b></>:'Operator terpilih otomatis berdasarkan nomor.'}</p>}</section>
+   <section className="number-panel"><div className="number-title"><i className="service-input-emblem"><ServiceEmblem type={type} label={config.title}/></i><div><strong>{config.input}</strong><small>Pastikan data tujuan sudah benar</small></div><span className="verified-service"><ShieldCheck/> Resmi</span></div><label><span>{phoneServices.includes(type)?'+62':'ID'}</span><input value={target} onChange={event=>changeTarget(event.target.value)} placeholder={config.placeholder} inputMode={textInputServices.includes(type)?'text':'numeric'}/>{provider&&automatic.includes(type)&&<CheckCircle2/>}</label>{automatic.includes(type)&&<p>{provider?<>Nomor terdeteksi sebagai <b>{provider}</b></>:'Operator terpilih otomatis berdasarkan nomor.'}</p>}</section>
    <section className="service-confidence"><div><Zap/><span><b>Proses instan</b><small>Diproses otomatis</small></span></div><div><LockKeyhole/><span><b>Data aman</b><small>Terenkripsi</small></span></div><div><Clock3/><span><b>Aktif 24 jam</b><small>Setiap hari</small></span></div></section>
    <section className="provider-panel"><header><div><strong>Pilih Penyedia</strong><small>Pilih layanan yang sesuai</small></div>{provider&&<span>Terpilih</span>}</header><div className="modern-provider-grid">{config.providers.map((name,index)=><button className={`${provider===name?'active':''} tone-${index%5}`} onClick={()=>{setProvider(name);setCatalog(false);setSelected(null)}} key={name}><i>{name.slice(0,2).toUpperCase()}</i><span>{name}</span>{provider===name&&<CheckCircle2/>}</button>)}</div><button className="show-products" onClick={()=>{setCatalog(true);window.scrollTo({top:0,behavior:'smooth'})}} disabled={target.length<4||!provider}>Lihat Produk & Nominal <ChevronRight/></button></section>
    <p className="modern-secure"><ShieldCheck/>Transaksi dilindungi sistem keamanan FastPay</p>
