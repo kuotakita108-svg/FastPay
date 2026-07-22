@@ -1,6 +1,5 @@
 import {Smartphone,Wifi,WalletCards,Zap,Gamepad2,Droplets,ShieldPlus,LayoutGrid,ChevronRight} from 'lucide-react'
 import {useNavigate} from 'react-router-dom'
-import bpjs from '../../assets/providers/bpjs.png'
 
 const services=[
   {label:'Pulsa',type:'pulsa',icon:Smartphone,mark:'SIM',tone:'violet',hint:'Semua operator'},
@@ -9,13 +8,12 @@ const services=[
   {label:'Token PLN',type:'pln',icon:Zap,mark:'PLN',tone:'amber',hint:'Token & tagihan'},
   {label:'Voucher Game',type:'game',icon:Gamepad2,mark:'TOP',tone:'rose',hint:'ML, FF, PUBG',badge:'HOT'},
   {label:'PDAM',type:'pdam',icon:Droplets,mark:'AIR',tone:'cyan',hint:'Tagihan air'},
-  {label:'BPJS',type:'bpjs',logo:bpjs,tone:'orange',hint:'Kesehatan'},
+  {label:'BPJS',type:'bpjs',icon:ShieldPlus,mark:'SEHAT',tone:'orange',hint:'Kesehatan'},
   {label:'Lainnya',type:'services',icon:LayoutGrid,mark:'18+',tone:'slate',hint:'Semua layanan'}
 ]
 
 function ServiceLogo({service}){
   const Icon=service.icon
-  if(service.logo)return <img className="service-real-logo" src={service.logo} alt={`Logo ${service.label}`}/>
   return Icon?<span className="service-category-mark"><Icon/><em>{service.mark}</em></span>:null
 }
 
