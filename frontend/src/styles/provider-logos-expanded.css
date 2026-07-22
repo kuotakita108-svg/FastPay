@@ -10,6 +10,8 @@
 .service-game .modern-provider-grid button i.provider-logo-rendered[data-brand*="point-blank"] img{width:94%!important;height:82%!important}
 .service-game .modern-provider-grid button i.provider-logo-vector{background:#f4f8ff!important}
 .service-game .modern-provider-grid button i.provider-logo-vector .provider-svg-logo{width:72%!important;height:72%!important}
+.service-game .modern-provider-grid button i.provider-logo-game-premium{background:#050814!important;border:0!important;box-shadow:inset 0 0 0 1px #ffffff10!important}
+.service-game .modern-provider-grid button i.provider-logo-game-premium .provider-svg-game-banner{width:96%!important;height:92%!important;filter:drop-shadow(0 8px 14px #02061726)}
 .service-game .modern-provider-grid button>span{font-size:8.5px!important;line-height:1.2!important;min-height:22px;display:flex;align-items:center;text-align:center;text-transform:uppercase;color:#253047}
 .service-game .modern-provider-grid button>svg{right:7px!important;top:7px!important;background:#fff;border-radius:999px}
 .provider-logo-rendered img{display:block;width:76%;height:76%;max-width:34px;max-height:34px;object-fit:contain;filter:none!important;image-rendering:auto;transform:translateZ(0)}
