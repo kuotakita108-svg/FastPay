@@ -2,6 +2,14 @@
 .modern-provider-grid .provider-logo-rendered,.catalog-provider-logo.provider-logo-rendered{background-image:none!important;background-color:#fff!important;background-repeat:no-repeat!important}
 .service-game .modern-provider-grid button:nth-child(n) i.provider-logo-rendered{background-image:none!important;background-color:#fff!important;background-size:auto!important}
 .service-game[class*="catalog-provider-"] .catalog-provider-logo.provider-logo-rendered{background-image:none!important;background-color:#fff!important}
+.service-game .modern-provider-grid{grid-template-columns:repeat(2,1fr)!important;gap:12px 10px!important}
+.service-game .modern-provider-grid button{min-height:118px!important;align-content:start!important;gap:8px!important;padding:10px 8px 9px!important;border-radius:9px!important;background:linear-gradient(180deg,#fff,#f8fbff)!important}
+.service-game .modern-provider-grid button i.provider-logo-rendered{width:100%!important;height:66px!important;max-width:none!important;border:0!important;border-radius:7px!important;background:#f4f8ff!important;box-shadow:none!important}
+.service-game .modern-provider-grid button i.provider-logo-rendered img{width:96%!important;height:96%!important;max-width:none!important;max-height:none!important;object-fit:contain!important}
+.service-game .modern-provider-grid button i.provider-logo-vector{background:#f4f8ff!important}
+.service-game .modern-provider-grid button i.provider-logo-vector .provider-svg-logo{width:72%!important;height:72%!important}
+.service-game .modern-provider-grid button>span{font-size:8.5px!important;line-height:1.2!important;min-height:22px;display:flex;align-items:center;text-align:center;text-transform:uppercase;color:#253047}
+.service-game .modern-provider-grid button>svg{right:7px!important;top:7px!important;background:#fff;border-radius:999px}
 .provider-logo-rendered img{display:block;width:76%;height:76%;max-width:34px;max-height:34px;object-fit:contain;filter:none!important;image-rendering:auto;transform:translateZ(0)}
 .provider-logo-vector{background:#fff!important;border-color:#edf0f6!important}
 .provider-svg-logo{display:block;width:88%;height:88%;object-fit:contain;shape-rendering:geometricPrecision;text-rendering:geometricPrecision}
