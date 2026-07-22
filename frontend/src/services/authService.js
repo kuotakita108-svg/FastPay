@@ -19,7 +19,7 @@ export async function login(credentials){
   catch(error){
     if(!connectionError(error))throw error
     const username=credentials.username.toLowerCase().trim(),passwordHash=await hash(credentials.password)
-    const local=readAccounts().find(account=>account.username===username&&account.passwordHash===passwordHash)
+    const local=readAccounts().find(account=>(account.username===username||account.phone===username||account.email===username)&&account.passwordHash===passwordHash)
     if(local){const{passwordHash:_,...user}=local;void _;return result(user)}
     if(username==='octa'&&demo[credentials.password])return result(demo[credentials.password])
     throw new Error('Akun belum tersimpan di perangkat ini. Daftar akun terlebih dahulu.',{cause:error})
@@ -32,7 +32,7 @@ export async function register(profile){
     if(!connectionError(error))throw error
     const accounts=readAccounts(),username=profile.username.toLowerCase().trim()
     if(accounts.some(account=>account.username===username))throw new Error('Username sudah digunakan di perangkat ini.',{cause:error})
-    const user={id:`LOCAL-${crypto.randomUUID()}`,username,name:profile.name.trim(),phone:profile.phone.trim(),email:profile.email.toLowerCase().trim(),role:'user',balance:0}
+    const user={id:`LOCAL-${crypto.randomUUID()}`,username,name:profile.name.trim(),phone:profile.phone.trim(),email:(profile.email||'').toLowerCase().trim(),role:'user',balance:0}
     accounts.push({...user,passwordHash:await hash(profile.password)})
     localStorage.setItem(ACCOUNTS_KEY,JSON.stringify(accounts))
     return result(user)
