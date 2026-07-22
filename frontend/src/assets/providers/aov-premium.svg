@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#e8f7ff"/>
+      <stop offset=".48" stop-color="#fff"/>
+      <stop offset="1" stop-color="#daeaff"/>
+    </linearGradient>
+    <linearGradient id="gold" x1=".2" x2=".8" y1="0" y2="1">
+      <stop stop-color="#fff1a8"/>
+      <stop offset=".5" stop-color="#d69b24"/>
+      <stop offset="1" stop-color="#7c3f10"/>
+    </linearGradient>
+  </defs>
+  <rect width="360" height="210" rx="22" fill="url(#bg)"/>
+  <path d="M30 141C88 35 241 22 330 112c-55-6-93 19-125 44-56 44-122 35-175-15z" fill="#93c5fd" opacity=".32"/>
+  <path d="M124 34c34-23 82-22 114 2l-16 89c-20 19-64 21-86 1z" fill="url(#gold)" stroke="#5b3414" stroke-width="4"/>
+  <path d="M180 50l38 81h-25l-13-28-13 28h-25z" fill="#fff" stroke="#1e293b" stroke-width="3"/>
+  <text x="180" y="170" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="34" font-weight="900" fill="#273451" letter-spacing="2">ARENA OF VALOR</text>
+</svg>

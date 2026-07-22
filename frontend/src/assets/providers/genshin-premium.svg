@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#fffaf0"/>
+      <stop offset=".45" stop-color="#eaf7ff"/>
+      <stop offset="1" stop-color="#b7d9ff"/>
+    </linearGradient>
+    <linearGradient id="blue" x1=".2" x2=".8">
+      <stop stop-color="#1d4ed8"/>
+      <stop offset=".5" stop-color="#60a5fa"/>
+      <stop offset="1" stop-color="#14347b"/>
+    </linearGradient>
+  </defs>
+  <rect width="360" height="210" rx="22" fill="url(#sky)"/>
+  <circle cx="180" cy="72" r="43" fill="#fff" opacity=".72"/>
+  <path d="M180 22l13 31 33 3-25 21 8 32-29-17-29 17 8-32-25-21 33-3z" fill="#f6d58e" stroke="#fff" stroke-width="5"/>
+  <path d="M78 122c31-19 173-19 204 0-32 23-172 23-204 0z" fill="#fff" opacity=".76"/>
+  <text x="180" y="148" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="42" font-weight="900" fill="url(#blue)" stroke="#fff" stroke-width="3">GENSHIN</text>
+  <text x="180" y="178" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="24" font-weight="900" fill="#1e3a8a" letter-spacing="8">IMPACT</text>
+</svg>

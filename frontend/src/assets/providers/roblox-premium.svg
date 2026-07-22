@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210">
+  <defs>
+    <radialGradient id="glow" cx=".5" cy=".45" r=".65">
+      <stop stop-color="#ffffff" stop-opacity=".32"/>
+      <stop offset=".45" stop-color="#dbeafe" stop-opacity=".13"/>
+      <stop offset="1" stop-color="#020617" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="360" height="210" rx="22" fill="#050505"/>
+  <rect width="360" height="210" rx="22" fill="url(#glow)"/>
+  <g transform="translate(180 82) rotate(13)">
+    <rect x="-43" y="-43" width="86" height="86" rx="10" fill="#f8fafc" filter="drop-shadow(0 0 14px #ffffffaa)"/>
+    <rect x="-13" y="-13" width="26" height="26" rx="4" fill="#111827"/>
+  </g>
+  <text x="180" y="166" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="44" font-weight="900" fill="#fff" filter="drop-shadow(0 0 10px #ffffffaa)" letter-spacing="4">ROBLOX</text>
+</svg>

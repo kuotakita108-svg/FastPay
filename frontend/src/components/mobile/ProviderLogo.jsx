@@ -22,12 +22,15 @@ import gopay from '../../assets/providers/gopay.png'
 import ovo from '../../assets/providers/ovo.svg'
 import shopeepay from '../../assets/providers/shopeepay.png'
 import linkaja from '../../assets/providers/linkaja.svg'
-import mobilelegends from '../../assets/providers/mobilelegends.png'
+import mobilelegendsPremium from '../../assets/providers/mobilelegends-premium.svg'
 import freefirePremium from '../../assets/providers/freefire-premium.png'
 import pubgPremium from '../../assets/providers/pubg-premium.png'
-import valorant from '../../assets/providers/valorant.png'
-import genshin from '../../assets/providers/genshin.png'
+import valorantPremium from '../../assets/providers/valorant-premium.svg'
+import genshinPremium from '../../assets/providers/genshin-premium.svg'
 import pointblank from '../../assets/providers/pointblank.png'
+import robloxPremium from '../../assets/providers/roblox-premium.svg'
+import steamPremium from '../../assets/providers/steam-premium.svg'
+import aovPremium from '../../assets/providers/aov-premium.svg'
 import bpjs from '../../assets/providers/bpjs.png'
 import biznet from '../../assets/providers/biznet.png'
 import prudential from '../../assets/providers/official/prudential.png'
@@ -47,7 +50,7 @@ import astrapay from '../../assets/providers/official/astrapay.svg'
 import isaku from '../../assets/providers/official/isaku.svg'
 import { BadgeCheck, Banknote, BookOpenCheck, Building2, Bus, Car, CircleParking, Clapperboard, CreditCard, Cross, Droplets, Earth, Flame, Gamepad2, GraduationCap, HandHeart, HeartPulse, Landmark, MapPin, MonitorPlay, Plane, QrCode, Radio, ReceiptText, ShieldCheck, Smartphone, Store, TrainFront, Truck, Wallet, Wifi, Zap } from 'lucide-react'
 
-const imageLogos={BCA:bca,BRI:bri,BNI:bni,Mandiri:mandiri,'CIMB Niaga':cimb,'Bank Syariah Indonesia':bsi,BSI:bsi,Danamon:danamon,PermataBank:permatabank,SeaBank:seabank,'Bank Jago':jago,AstraPay:astrapay,'i.saku':isaku,'FIF Group':fif,Spotify:spotify,Vidio:vidio,Telkomsel:telkomsel,Indosat:indosat,XL:xl,Tri:tri,AXIS:axis,DANA:dana,GoPay:gopay,OVO:ovo,ShopeePay:shopeepay,LinkAja:linkaja,'Mobile Legends':mobilelegends,'Free Fire':freefirePremium,'PUBG Mobile':pubgPremium,Valorant:valorant,'Valorant Points':valorant,'Genshin Impact':genshin,'Genshin Impact Genesis Crystals':genshin,'Point Blank':pointblank,'BPJS Kesehatan':bpjs,Biznet:biznet,Prudential:prudential,Allianz:allianz,Manulife:manulife,MyRepublic:myrepublic,CBN:cbn,IndiHome:indihome,'MNC Vision':mncvision,Transvision:transvision,'Google Play':googleplay,'Apple Gift Card':apple,Pesawat:garuda,'Bus & Travel':redbus,Sekolah:kemendikbud,Universitas:kemendikbud,Bimbel:kemendikbud,'PBB Kota/Kabupaten':pajak}
+const imageLogos={BCA:bca,BRI:bri,BNI:bni,Mandiri:mandiri,'CIMB Niaga':cimb,'Bank Syariah Indonesia':bsi,BSI:bsi,Danamon:danamon,PermataBank:permatabank,SeaBank:seabank,'Bank Jago':jago,AstraPay:astrapay,'i.saku':isaku,'FIF Group':fif,Spotify:spotify,Vidio:vidio,Telkomsel:telkomsel,Indosat:indosat,XL:xl,Tri:tri,AXIS:axis,DANA:dana,GoPay:gopay,OVO:ovo,ShopeePay:shopeepay,LinkAja:linkaja,'Mobile Legends':mobilelegendsPremium,'Free Fire':freefirePremium,'PUBG Mobile':pubgPremium,Roblox:robloxPremium,Valorant:valorantPremium,'Valorant Points':valorantPremium,'Genshin Impact':genshinPremium,'Genshin Impact Genesis Crystals':genshinPremium,'Steam Wallet ID':steamPremium,'Arena of Valor Voucher':aovPremium,'Point Blank':pointblank,'BPJS Kesehatan':bpjs,Biznet:biznet,Prudential:prudential,Allianz:allianz,Manulife:manulife,MyRepublic:myrepublic,CBN:cbn,IndiHome:indihome,'MNC Vision':mncvision,Transvision:transvision,'Google Play':googleplay,'Apple Gift Card':apple,Pesawat:garuda,'Bus & Travel':redbus,Sekolah:kemendikbud,Universitas:kemendikbud,Bimbel:kemendikbud,'PBB Kota/Kabupaten':pajak}
 
 const svgLogos={
   'Mobile Legends':{type:'mlbb'},Roblox:{type:'roblox'},'Genshin Impact':{type:'genshin'},'Genshin Impact Genesis Crystals':{type:'genshin'},Valorant:{type:'valorant'},'Valorant Points':{type:'valorant'},'Steam Wallet ID':{type:'steam'},'Arena of Valor Voucher':{type:'aov'},
@@ -138,9 +141,6 @@ function ProviderSvgLogo({spec}){
 
 export default function ProviderLogo({name,className=''}){
   const clean=normalize(name)
-  const prioritySpec=findLogoMatch(clean,svgLogos)?.[1]
-  const premiumGameTypes=['freefire','pubg','mlbb','roblox','genshin','valorant','steam','aov']
-  if(prioritySpec&&premiumGameTypes.includes(prioritySpec.type))return <i className={`${className} provider-logo-rendered provider-logo-vector provider-logo-game-premium`} data-brand={slug(clean)} role="img" aria-label={`Logo ${name}`}><ProviderSvgLogo spec={prioritySpec}/></i>
   const image=findLogoMatch(clean,imageLogos)?.[1]
   if(image)return <i className={`${className} provider-logo-rendered`} data-brand={slug(clean)}><img src={image} alt={`Logo ${name}`}/></i>
   const spec=findLogoMatch(clean,svgLogos)?.[1]
