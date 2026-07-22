@@ -1,32 +1,22 @@
-import {Droplets,ChevronRight} from 'lucide-react'
+import {Smartphone,Wifi,WalletCards,Zap,Gamepad2,Droplets,ShieldPlus,LayoutGrid,ChevronRight} from 'lucide-react'
 import {useNavigate} from 'react-router-dom'
-import telkomsel from '../../assets/providers/telkomsel.png'
-import xl from '../../assets/providers/xl.png'
-import dana from '../../assets/providers/dana.png'
-import mobileLegends from '../../assets/providers/mobilelegends.png'
 import bpjs from '../../assets/providers/bpjs.png'
-import indihome from '../../assets/providers/official/indihome.png'
-import spotify from '../../assets/providers/official/spotify.png'
-import fif from '../../assets/providers/official/fif.png'
-import garuda from '../../assets/providers/official/garuda.png'
 
 const services=[
-  {label:'Pulsa',type:'pulsa',logo:telkomsel,tone:'violet',hint:'Semua operator'},
-  {label:'Paket Data',type:'data',logo:xl,tone:'blue',hint:'Internet hemat'},
-  {label:'E-Wallet',type:'ewallet',logo:dana,tone:'mint',hint:'DANA, OVO, GoPay'},
-  {label:'Token PLN',type:'pln',brand:'PLN',tone:'amber',hint:'Token & tagihan'},
-  {label:'Voucher Game',type:'game',logo:mobileLegends,tone:'rose',hint:'ML, FF, PUBG',badge:'HOT'},
-  {label:'PDAM',type:'pdam',icon:Droplets,tone:'cyan',hint:'Tagihan air'},
+  {label:'Pulsa',type:'pulsa',icon:Smartphone,mark:'SIM',tone:'violet',hint:'Semua operator'},
+  {label:'Paket Data',type:'data',icon:Wifi,mark:'5G',tone:'blue',hint:'Internet hemat'},
+  {label:'E-Wallet',type:'ewallet',icon:WalletCards,mark:'Rp',tone:'mint',hint:'DANA, OVO, GoPay'},
+  {label:'Token PLN',type:'pln',icon:Zap,mark:'PLN',tone:'amber',hint:'Token & tagihan'},
+  {label:'Voucher Game',type:'game',icon:Gamepad2,mark:'TOP',tone:'rose',hint:'ML, FF, PUBG',badge:'HOT'},
+  {label:'PDAM',type:'pdam',icon:Droplets,mark:'AIR',tone:'cyan',hint:'Tagihan air'},
   {label:'BPJS',type:'bpjs',logo:bpjs,tone:'orange',hint:'Kesehatan'},
-  {label:'Lainnya',type:'services',logos:[indihome,spotify,fif,garuda],tone:'slate',hint:'18+ layanan'}
+  {label:'Lainnya',type:'services',icon:LayoutGrid,mark:'18+',tone:'slate',hint:'Semua layanan'}
 ]
 
 function ServiceLogo({service}){
   const Icon=service.icon
-  if(service.logos)return <span className="service-logo-collage">{service.logos.map((logo,index)=><img src={logo} alt="" key={logo} className={`mini-logo mini-${index+1}`}/>)}</span>
-  if(service.brand)return <span className="pln-brand" aria-label="PLN"><b>⚡</b><strong>PLN</strong></span>
   if(service.logo)return <img className="service-real-logo" src={service.logo} alt={`Logo ${service.label}`}/>
-  return Icon?<Icon/>:null
+  return Icon?<span className="service-category-mark"><Icon/><em>{service.mark}</em></span>:null
 }
 
 export default function ServiceGrid(){

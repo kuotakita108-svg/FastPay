@@ -1,14 +1,9 @@
-.modern-services .service-grid .branded-service-icon{overflow:visible;background:#fff;border:1px solid #edf0f5;box-shadow:0 8px 20px #25304a18,0 0 0 5px #f8f9fc;isolation:isolate}
-.modern-services .service-grid .branded-service-icon:after{content:"";position:absolute;z-index:-1;inset:4px;border-radius:12px;background:linear-gradient(145deg,#fff,#f5f6fa)}
-.service-real-logo{display:block;width:34px;height:34px;object-fit:contain;filter:drop-shadow(0 3px 4px #1720331c)}
-.modern-services .service-grid i.rose .service-real-logo{width:36px;height:36px}
-.modern-services .service-grid i.orange .service-real-logo{width:39px;height:30px}
-.pln-brand{display:grid;grid-template-columns:17px auto;align-items:center;padding:4px 5px;border-radius:9px;background:#ffd928;color:#087a9d;box-shadow:0 3px 8px #d69f2038;font-style:normal;line-height:1}
-.pln-brand>b{position:static!important;padding:0!important;border:0!important;background:none!important;color:#e63d2f!important;box-shadow:none!important;font-size:14px!important}
-.pln-brand>strong{font-size:8px!important;color:#087a9d!important;letter-spacing:-.2px}
-.service-logo-collage{position:relative;display:block;width:39px;height:39px}
-.service-logo-collage .mini-logo{position:absolute;width:20px;height:20px;object-fit:contain;padding:2px;border-radius:6px;background:#fff;border:1px solid #edf0f4;box-shadow:0 2px 5px #17203320}
-.service-logo-collage .mini-1{left:0;top:0}.service-logo-collage .mini-2{right:0;top:0}.service-logo-collage .mini-3{left:0;bottom:0}.service-logo-collage .mini-4{right:0;bottom:0}
-.modern-services .service-grid .branded-service-icon>svg{width:27px;height:27px;stroke-width:2.1}
-.modern-services .service-grid button:active .branded-service-icon{transform:scale(.92);box-shadow:0 4px 10px #25304a15,0 0 0 3px #f4f5f8}
-@media(max-width:350px){.service-real-logo{width:30px;height:30px}.modern-services .service-grid .branded-service-icon{box-shadow:0 6px 15px #25304a14,0 0 0 3px #f8f9fc}}
+.modern-services .service-grid .branded-service-icon{overflow:visible;border:1px solid #ffffffcc;box-shadow:0 8px 18px #25304a17,inset 0 0 0 1px #ffffff70;isolation:isolate}
+.modern-services .service-grid .branded-service-icon:before{content:"";position:absolute;z-index:-1;inset:5px;border-radius:12px;background:#ffffff55}
+.service-category-mark{position:relative;display:grid;place-items:center;width:100%;height:100%;font-style:normal}
+.service-category-mark svg{width:25px!important;height:25px!important;stroke-width:2.15}
+.service-category-mark em{position:absolute;right:2px;bottom:2px;min-width:16px;height:12px;display:grid;place-items:center;padding:0 3px;border:2px solid #fff;border-radius:5px;background:currentColor;color:#fff;font-size:5px;font-weight:900;font-style:normal;line-height:1;box-shadow:0 2px 5px #17203320}
+.violet .service-category-mark em{background:#6a50df}.blue .service-category-mark em{background:#3383dc}.mint .service-category-mark em{background:#16a574}.amber .service-category-mark em{background:#dc941e}.rose .service-category-mark em{background:#df506d}.cyan .service-category-mark em{background:#1ba0b3}.slate .service-category-mark em{background:#687286}
+.service-real-logo{display:block;width:39px;height:30px;object-fit:contain;filter:drop-shadow(0 3px 4px #17203318)}
+.modern-services .service-grid button:active .branded-service-icon{transform:scale(.92);box-shadow:0 4px 10px #25304a14,inset 0 0 0 1px #ffffff70}
+@media(max-width:350px){.modern-services .service-grid .branded-service-icon{width:48px;height:48px}.service-category-mark svg{width:23px!important;height:23px!important}.service-real-logo{width:36px}}
