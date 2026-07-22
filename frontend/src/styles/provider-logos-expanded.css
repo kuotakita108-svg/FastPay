@@ -3,9 +3,10 @@
 .service-game .modern-provider-grid button:nth-child(n) i.provider-logo-rendered{background-image:none!important;background-color:#fff!important;background-size:auto!important}
 .service-game[class*="catalog-provider-"] .catalog-provider-logo.provider-logo-rendered{background-image:none!important;background-color:#fff!important}
 .service-game .modern-provider-grid{grid-template-columns:repeat(2,1fr)!important;gap:12px 10px!important}
-.service-game .modern-provider-grid button{min-height:118px!important;align-content:start!important;gap:8px!important;padding:10px 8px 9px!important;border-radius:9px!important;background:linear-gradient(180deg,#fff,#f8fbff)!important}
-.service-game .modern-provider-grid button i.provider-logo-rendered{width:100%!important;height:66px!important;max-width:none!important;border:0!important;border-radius:7px!important;background:#f4f8ff!important;box-shadow:none!important}
-.service-game .modern-provider-grid button i.provider-logo-rendered img{width:96%!important;height:96%!important;max-width:none!important;max-height:none!important;object-fit:contain!important}
+.service-game .provider-panel{margin-bottom:150px!important}
+.service-game .modern-provider-grid button{min-height:136px!important;align-content:start!important;gap:9px!important;padding:12px 9px 13px!important;border-radius:12px!important;background:linear-gradient(180deg,#fff,#f8fbff)!important;overflow:visible!important}
+.service-game .modern-provider-grid button i.provider-logo-rendered{width:100%!important;height:84px!important;max-width:none!important;border:0!important;border-radius:9px!important;background:#fbfdff!important;box-shadow:none!important;overflow:visible!important}
+.service-game .modern-provider-grid button i.provider-logo-rendered img{width:76%!important;height:76%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;object-position:center!important}
 .service-game .modern-provider-grid button i.provider-logo-vector{background:#f4f8ff!important}
 .service-game .modern-provider-grid button i.provider-logo-vector .provider-svg-logo{width:72%!important;height:72%!important}
 .service-game .modern-provider-grid button>span{font-size:8.5px!important;line-height:1.2!important;min-height:22px;display:flex;align-items:center;text-align:center;text-transform:uppercase;color:#253047}
