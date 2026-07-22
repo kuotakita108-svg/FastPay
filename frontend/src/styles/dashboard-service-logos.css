@@ -1,9 +1,9 @@
-.modern-services .service-grid .branded-service-icon{overflow:visible;border:1px solid #ffffffcc;box-shadow:0 8px 18px #25304a17,inset 0 0 0 1px #ffffff70;isolation:isolate}
-.modern-services .service-grid .branded-service-icon:before{content:"";position:absolute;z-index:-1;inset:5px;border-radius:12px;background:#ffffff55}
+.modern-services .service-grid .branded-service-icon{overflow:visible;border:1px solid #dfe3eb;box-shadow:0 2px 5px #25304a12!important;isolation:isolate}
+.modern-services .service-grid .branded-service-icon:before{content:"";position:absolute;z-index:-1;inset:3px;border:1px solid #ffffff;border-radius:12px;background:#ffffff2e}
 .service-category-mark{position:relative;display:grid;place-items:center;width:100%;height:100%;font-style:normal}
 .service-category-mark svg{width:25px!important;height:25px!important;stroke-width:2.15}
 .service-category-mark em{position:absolute;right:2px;bottom:2px;min-width:16px;height:12px;display:grid;place-items:center;padding:0 3px;border:2px solid #fff;border-radius:5px;background:currentColor;color:#fff;font-size:5px;font-weight:900;font-style:normal;line-height:1;box-shadow:0 2px 5px #17203320}
 .violet .service-category-mark em{background:#6a50df}.blue .service-category-mark em{background:#3383dc}.mint .service-category-mark em{background:#16a574}.amber .service-category-mark em{background:#dc941e}.rose .service-category-mark em{background:#df506d}.cyan .service-category-mark em{background:#1ba0b3}.slate .service-category-mark em{background:#687286}
 .service-real-logo{display:block;width:39px;height:30px;object-fit:contain;filter:drop-shadow(0 3px 4px #17203318)}
-.modern-services .service-grid button:active .branded-service-icon{transform:scale(.92);box-shadow:0 4px 10px #25304a14,inset 0 0 0 1px #ffffff70}
+.modern-services .service-grid button:active .branded-service-icon{transform:scale(.96);box-shadow:0 1px 3px #25304a12!important}
 @media(max-width:350px){.modern-services .service-grid .branded-service-icon{width:48px;height:48px}.service-category-mark svg{width:23px!important;height:23px!important}.service-real-logo{width:36px}}

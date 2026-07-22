@@ -7,6 +7,11 @@ html,body,.mobile-app,.mobile-auth-page{text-rendering:optimizeLegibility;-webki
 .auth-orb.two,.reference-header .dashboard-brand:after{filter:none!important}
 .auth-welcome-copy{text-shadow:0 1px 2px #08032d70!important}
 .service-real-logo{filter:none!important}
+.modern-services .service-grid i{filter:none!important;text-shadow:none!important}
+.modern-services .service-grid i.violet,.modern-services .service-grid i.blue,.modern-services .service-grid i.mint,.modern-services .service-grid i.amber,.modern-services .service-grid i.rose,.modern-services .service-grid i.cyan,.modern-services .service-grid i.orange,.modern-services .service-grid i.slate{box-shadow:0 2px 5px #25304a12!important}
+.modern-services .service-grid i b,.service-category-mark em{box-shadow:none!important;text-shadow:none!important}
+.reference-banner{image-rendering:auto;background-repeat:no-repeat;background-color:#28177f}
+.reference-banner:after{background:linear-gradient(90deg,#201372ed 0%,#30208fc7 34%,#25167c3d 58%,transparent 72%)!important}
 .modern-services .service-grid strong{font-size:10.5px!important;font-weight:800;letter-spacing:0}
 .modern-services .service-grid small{font-size:8px!important;color:#778194!important}
 .mobile-section-title h2{font-size:16px!important;letter-spacing:-.2px}
