@@ -1,6 +1,7 @@
-import { ChevronRight, ReceiptText, Smartphone, WalletCards, Wifi } from 'lucide-react'
+import { ChevronRight, Smartphone, WalletCards, Wifi } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { rupiah } from '../../utils/currency'
+import ServiceEmblem from './ServiceEmblem'
 
 const iconMap = { QRIS: Smartphone, 'Virtual Account': Wifi, 'E-Wallet': WalletCards }
 
@@ -18,7 +19,7 @@ export default function RecentActivity({ items = [] }) {
         </div>
       ) : (
         <div className="dashboard-empty-card">
-          <i><ReceiptText /></i>
+          <i className="dashboard-hd-emblem"><ServiceEmblem type="pascabayar" label="Aktivitas transaksi"/></i>
           <div><strong>Belum ada aktivitas</strong><p>Transaksi pertamamu akan tercatat otomatis di sini.</p></div>
           <button type="button" onClick={() => navigate('/app/services')}>Pilih Layanan</button>
         </div>

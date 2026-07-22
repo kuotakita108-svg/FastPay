@@ -6,6 +6,7 @@ import BillReminder from '../components/mobile/BillReminder'
 import RecentActivity from '../components/mobile/RecentActivity'
 import HelpCard from '../components/mobile/HelpCard'
 import MobileNav from '../components/mobile/MobileNav'
+import DashboardDiscover from '../components/mobile/DashboardDiscover'
 import { useAsync } from '../hooks/useAsync'
 import { getTransactions } from '../services/transactionService'
 
@@ -18,6 +19,7 @@ export default function UserHomePage() {
       <MobileHeader />
       <ServiceGrid />
       <PromoSlider />
+      <DashboardDiscover />
       <RecentActivity items={transactions} />
       <FavoriteServices items={transactions} />
       <BillReminder items={transactions} />

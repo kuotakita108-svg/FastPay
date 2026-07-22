@@ -1,5 +1,6 @@
-import { ChevronRight, Heart, Smartphone } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import ServiceEmblem from './ServiceEmblem'
 
 const serviceType = method => {
   const value = String(method || '').toLowerCase()
@@ -26,7 +27,7 @@ export default function FavoriteServices({ items = [] }) {
         <div className="favorite-grid">
           {favorites.map(([type, item]) => (
             <button type="button" onClick={() => navigate(`/app/buy/${type}`)} key={type}>
-              <i><Smartphone /></i>
+              <i className="dashboard-hd-emblem small"><ServiceEmblem type={type} label={item.method}/></i>
               <div><strong>{item.method}</strong><small>{item.customer}</small></div>
               <ChevronRight />
             </button>
@@ -34,7 +35,7 @@ export default function FavoriteServices({ items = [] }) {
         </div>
       ) : (
         <div className="dashboard-empty-card">
-          <i><Heart /></i>
+          <i className="dashboard-hd-emblem"><ServiceEmblem type="services" label="Layanan favorit"/></i>
           <div><strong>Belum ada transaksi favorit</strong><p>Layanan yang sering kamu gunakan akan muncul otomatis.</p></div>
           <button type="button" onClick={() => navigate('/app/services')}>Mulai Transaksi</button>
         </div>
