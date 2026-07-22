@@ -3,6 +3,7 @@ import {useNavigate} from 'react-router-dom'
 import {ArrowLeft,Search,Sparkles,ShieldCheck,X} from 'lucide-react'
 import {allServices,serviceConfig} from '../constants/services'
 import MobileNav from '../components/mobile/MobileNav'
+import ServiceEmblem from '../components/mobile/ServiceEmblem'
 
 export default function AllServicesPage(){
   const navigate=useNavigate()
@@ -22,7 +23,7 @@ export default function AllServicesPage(){
       <label className="service-search"><Search/><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Cari pulsa, tagihan, voucher..."/>{query&&<button type="button" onClick={()=>setQuery('')}><X/></button>}</label>
       <div className="service-categories">{groups.map(group=><button type="button" className={category===group?'active':''} onClick={()=>setCategory(group)} key={group}>{group}</button>)}</div>
       <div className="service-highlight"><Sparkles/><div><strong>Transaksi makin praktis</strong><p>Pilih layanan, masukkan data, lalu selesaikan pembayaran.</p></div></div>
-      {visibleGroups.map(group=><section className="service-group service-icon-group" key={group}><header><div><span>{group}</span><small>{filtered.filter(item=>item[3]===group).length} layanan</small></div></header><div className="service-group-grid">{filtered.filter(item=>item[3]===group).map(([label,type,Icon])=><button type="button" key={label} onClick={()=>open(type)} aria-label={`Buka ${label}`}><i className={`service-mark mark-${type}`}><Icon weight="duotone"/></i><strong>{label}</strong></button>)}</div></section>)}
+      {visibleGroups.map(group=><section className="service-group service-icon-group" key={group}><header><div><span>{group}</span><small>{filtered.filter(item=>item[3]===group).length} layanan</small></div></header><div className="service-group-grid">{filtered.filter(item=>item[3]===group).map(([label,type])=><button type="button" key={label} onClick={()=>open(type)} aria-label={`Buka ${label}`}><i className={`service-mark mark-${type}`}><ServiceEmblem type={type}/></i><strong>{label}</strong></button>)}</div></section>)}
       {!filtered.length&&<div className="services-empty"><Search/><strong>Layanan tidak ditemukan</strong><p>Coba kata kunci atau kategori yang berbeda.</p><button type="button" onClick={()=>{setQuery('');setCategory('Semua')}}>Tampilkan Semua</button></div>}
     </section>
     <MobileNav/>

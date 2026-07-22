@@ -1,21 +1,20 @@
-import {DeviceMobile,WifiHigh,Wallet,Lightning,GameController,Drop,ShieldPlus,SquaresFour} from '@phosphor-icons/react'
 import {ChevronRight} from 'lucide-react'
 import {useNavigate} from 'react-router-dom'
+import ServiceEmblem from './ServiceEmblem'
 
 const services=[
-  {label:'Pulsa',type:'pulsa',icon:DeviceMobile,tone:'violet',hint:'Semua operator'},
-  {label:'Paket Data',type:'data',icon:WifiHigh,tone:'blue',hint:'Internet hemat'},
-  {label:'E-Wallet',type:'ewallet',icon:Wallet,tone:'mint',hint:'DANA, OVO, GoPay'},
-  {label:'Token PLN',type:'pln',icon:Lightning,tone:'amber',hint:'Token & tagihan'},
-  {label:'Voucher Game',type:'game',icon:GameController,tone:'rose',hint:'ML, FF, PUBG'},
-  {label:'PDAM',type:'pdam',icon:Drop,tone:'cyan',hint:'Tagihan air'},
-  {label:'BPJS',type:'bpjs',icon:ShieldPlus,tone:'orange',hint:'Kesehatan'},
-  {label:'Lainnya',type:'services',icon:SquaresFour,tone:'slate',hint:'Semua layanan'}
+  {label:'Pulsa',type:'pulsa',tone:'violet',hint:'Semua operator'},
+  {label:'Paket Data',type:'data',tone:'blue',hint:'Internet hemat'},
+  {label:'E-Wallet',type:'ewallet',tone:'mint',hint:'DANA, OVO, GoPay'},
+  {label:'Token PLN',type:'pln',tone:'amber',hint:'Token & tagihan'},
+  {label:'Voucher Game',type:'game',tone:'rose',hint:'ML, FF, PUBG'},
+  {label:'PDAM',type:'pdam',tone:'cyan',hint:'Tagihan air'},
+  {label:'BPJS',type:'bpjs',tone:'orange',hint:'Kesehatan'},
+  {label:'Lainnya',type:'services',tone:'slate',hint:'Semua layanan'}
 ]
 
 function ServiceLogo({service}){
-  const Icon=service.icon
-  return Icon?<span className="service-category-mark"><Icon weight="duotone"/></span>:null
+  return <span className="service-category-mark"><ServiceEmblem type={service.type}/></span>
 }
 
 export default function ServiceGrid(){
