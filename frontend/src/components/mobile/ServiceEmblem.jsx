@@ -17,13 +17,15 @@ import insurance from '../../assets/service-emblems-hd/insurance.png'
 import vehicle from '../../assets/service-emblems-hd/vehicle.png'
 import property from '../../assets/service-emblems-hd/property.png'
 import travel from '../../assets/service-emblems-hd/travel.png'
+import { CircleParking, Clapperboard, CreditCard, HandCoins, HeartHandshake, HeartPulse, Landmark, QrCode, Radio, ReceiptText, SmartphoneNfc, Truck } from 'lucide-react'
 
 const emblems={
   pulsa,data,ewallet,pln,game,pdam,bpjs,services,pascabayar,bank,gas,internet,tv,voucher,school,insurance,vehicle,property,travel,
-  qris:ewallet,emoney:voucher,toll:vehicle,streaming:tv,esim:data,health:bpjs,creditcard:bank,
-  multifinance:property,tax:school,zakat:insurance,parking:vehicle,delivery:travel,
 }
+const uniqueEmblems={qris:QrCode,emoney:SmartphoneNfc,toll:Radio,streaming:Clapperboard,esim:CreditCard,health:HeartPulse,creditcard:Landmark,multifinance:HandCoins,tax:ReceiptText,zakat:HeartHandshake,parking:CircleParking,delivery:Truck}
 
 export default function ServiceEmblem({type,label}){
+  const Icon=uniqueEmblems[type]
+  if(Icon)return <span className={`service-unique-emblem unique-${type}`} role="img" aria-label={label||type}><Icon/></span>
   return <img className="service-emblem-image" src={emblems[type]||services} alt={label?`Logo ${label}`:''}/>
 }
