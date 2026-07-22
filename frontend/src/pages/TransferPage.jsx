@@ -33,7 +33,7 @@ import gopayLogo from "../assets/providers/gopay.png";
 import ovoLogo from "../assets/providers/ovo.svg";
 import shopeepayLogo from "../assets/providers/shopeepay.png";
 import linkajaLogo from "../assets/providers/linkaja.svg";
-import fastpayLogo from "../assets/images/fastpay-logo-header.png";
+import pulsaprimeLogo from "../assets/images/pulsaprime-logo-header.png";
 import cimbLogo from "../assets/providers/official/cimb-niaga.svg";
 import permataLogo from "../assets/providers/official/permatabank.svg";
 import jagoLogo from "../assets/providers/official/jago.svg";
@@ -56,8 +56,8 @@ const channels = [
     icon: WalletCards,
   },
   {
-    id: "fastpay",
-    title: "Sesama FastPay",
+    id: "pulsaprime",
+    title: "Sesama PulsaPrime",
     desc: "Kirim instan tanpa biaya",
     icon: UsersRound,
   },
@@ -90,7 +90,7 @@ const providers = {
     "i.saku",
     "AstraPay",
   ],
-  fastpay: ["FastPay ID"],
+  pulsaprime: ["PulsaPrime ID"],
   virtual: [
     "BCA Virtual Account",
     "BRI BRIVA",
@@ -109,7 +109,7 @@ const logoMap = {
   OVO: ovoLogo,
   ShopeePay: shopeepayLogo,
   LinkAja: linkajaLogo,
-  "FastPay ID": fastpayLogo,
+  "PulsaPrime ID": pulsaprimeLogo,
   "CIMB Niaga": cimbLogo,
   PermataBank: permataLogo,
   "Bank Jago": jagoLogo,
@@ -183,7 +183,7 @@ export default function TransferPage() {
   const review = () => {
     setError("");
     if (value < 10000) return setError("Minimal pengiriman Rp10.000");
-    if (total > available) return setError("Saldo FastPay tidak mencukupi");
+    if (total > available) return setError("Saldo PulsaPrime tidak mencukupi");
     setStep("confirm");
   };
   const send = async () => {
@@ -198,7 +198,7 @@ export default function TransferPage() {
             ? "Transfer Bank"
             : channel === "wallet"
               ? "Transfer E-Wallet"
-              : "Transfer FastPay",
+              : "Transfer PulsaPrime",
         target: `${recipient.name} · ${recipient.number}`,
         provider: recipient.provider,
         product: withdraw ? "Penarikan Saldo" : `Kirim ke ${recipient.name}`,
@@ -210,7 +210,7 @@ export default function TransferPage() {
         deductBalance(total);
         const transaction = await createTransaction({
           customer: payload.target,
-          email: user.email || `${user.id}@fastpay.local`,
+          email: user.email || `${user.id}@pulsaprime.local`,
           method: `${payload.provider} · ${payload.title}`,
           amount: total,
         });
@@ -358,8 +358,8 @@ export default function TransferPage() {
                 <span>
                   {channel === "wallet"
                     ? "Nomor handphone"
-                    : channel === "fastpay"
-                      ? "FastPay ID"
+                    : channel === "pulsaprime"
+                      ? "PulsaPrime ID"
                       : "Nomor rekening / akun"}
                 </span>
                 <div>
@@ -489,7 +489,7 @@ export default function TransferPage() {
           </section>
           <p className="transfer-secure">
             <ShieldCheck /> Data dan transaksi dilindungi sistem keamanan
-            FastPay.
+            PulsaPrime.
           </p>
           {error && (
             <div className="transfer-error">

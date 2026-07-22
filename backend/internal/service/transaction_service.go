@@ -2,8 +2,8 @@ package service
 
 import (
 	"errors"
-	"fastpay/backend/internal/domain"
-	"fastpay/backend/internal/repository"
+	"pulsaprime/backend/internal/domain"
+	"pulsaprime/backend/internal/repository"
 	"strings"
 )
 

@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"fastpay/backend/internal/http/response"
-	"fastpay/backend/internal/service"
+	"pulsaprime/backend/internal/http/response"
+	"pulsaprime/backend/internal/service"
 	"net/http"
 )
 

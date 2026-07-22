@@ -1,7 +1,7 @@
 package router
 
 import (
-	"fastpay/backend/internal/http/handler"
+	"pulsaprime/backend/internal/http/handler"
 	"net/http"
 )
 

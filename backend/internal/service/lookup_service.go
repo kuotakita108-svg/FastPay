@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"fastpay/backend/internal/domain"
+	"pulsaprime/backend/internal/domain"
 	"fmt"
 	"strings"
 	"unicode"

@@ -1,7 +1,7 @@
 const bytes=value=>Array.from(new Uint8Array(value))
 const encode=value=>btoa(String.fromCharCode(...new Uint8Array(value)))
 const decode=value=>Uint8Array.from(atob(value),character=>character.charCodeAt(0))
-const key=userId=>`fastpay_security_${userId}`
+const key=userId=>`pulsaprime_security_${userId}`
 
 export const getSecurity=userId=>{try{return JSON.parse(localStorage.getItem(key(userId)))||{}}catch{return{}}}
 const save=(userId,value)=>{localStorage.setItem(key(userId),JSON.stringify(value));return value}
@@ -13,7 +13,7 @@ export const biometricAvailable=()=>Boolean(window.PublicKeyCredential&&navigato
 export async function enableBiometric(userId,userName){
  if(!biometricAvailable())throw new Error('Sidik jari tidak didukung pada perangkat atau browser ini.')
  const challenge=crypto.getRandomValues(new Uint8Array(32)),userHandle=crypto.getRandomValues(new Uint8Array(16))
- const credential=await navigator.credentials.create({publicKey:{challenge,rp:{name:'FastPay'},user:{id:userHandle,name:userName,displayName:userName},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required',residentKey:'preferred'},timeout:60000,attestation:'none'}})
+ const credential=await navigator.credentials.create({publicKey:{challenge,rp:{name:'PulsaPrime'},user:{id:userHandle,name:userName,displayName:userName},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required',residentKey:'preferred'},timeout:60000,attestation:'none'}})
  if(!credential)throw new Error('Pendaftaran sidik jari dibatalkan.')
  return save(userId,{...getSecurity(userId),biometricId:encode(credential.rawId),biometricEnabled:true,updatedAt:new Date().toISOString()})
 }

@@ -2,7 +2,7 @@ import {env} from '../config/env'
 
 export async function request(path,options={}){
   let token=''
-  try{token=JSON.parse(localStorage.getItem('fastpay_session'))?.token||''}catch{/* belum login */}
+  try{token=JSON.parse(localStorage.getItem('pulsaprime_session'))?.token||''}catch{/* belum login */}
   const url=new URL(`${env.apiURL}${path}`,window.location.origin).toString()
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000)
   try{
@@ -12,7 +12,7 @@ export async function request(path,options={}){
     return data
   }catch(error){
     if(error.name==='AbortError')throw new Error('Koneksi ke server terlalu lama. Periksa internet lalu coba lagi.',{cause:error})
-    if(error instanceof TypeError)throw new Error('Koneksi FastPay gagal. Muat ulang halaman lalu coba kembali.',{cause:error})
+    if(error instanceof TypeError)throw new Error('Koneksi PulsaPrime gagal. Muat ulang halaman lalu coba kembali.',{cause:error})
     throw error
   }finally{clearTimeout(timer)}
 }

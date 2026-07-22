@@ -1,12 +1,12 @@
 package app
 
 import (
-	"fastpay/backend/internal/config"
-	"fastpay/backend/internal/http/handler"
-	"fastpay/backend/internal/http/middleware"
-	"fastpay/backend/internal/http/router"
-	"fastpay/backend/internal/repository/memory"
-	"fastpay/backend/internal/service"
+	"pulsaprime/backend/internal/config"
+	"pulsaprime/backend/internal/http/handler"
+	"pulsaprime/backend/internal/http/middleware"
+	"pulsaprime/backend/internal/http/router"
+	"pulsaprime/backend/internal/repository/memory"
+	"pulsaprime/backend/internal/service"
 	"net/http"
 	"os"
 	"path/filepath"

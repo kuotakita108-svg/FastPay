@@ -1,7 +1,7 @@
 package memory
 
 import (
-	"fastpay/backend/internal/domain"
+	"pulsaprime/backend/internal/domain"
 	"fmt"
 	"sync"
 	"time"

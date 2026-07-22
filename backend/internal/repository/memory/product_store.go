@@ -1,6 +1,6 @@
 package memory
 
-import "fastpay/backend/internal/domain"
+import "pulsaprime/backend/internal/domain"
 
 func (s *Store) FindProducts() []domain.Product {
 	return []domain.Product{

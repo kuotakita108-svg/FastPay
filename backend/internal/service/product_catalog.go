@@ -1,6 +1,6 @@
 package service
 
-import "fastpay/backend/internal/domain"
+import "pulsaprime/backend/internal/domain"
 
 func extendedProducts() []domain.Product {
 	return []domain.Product{

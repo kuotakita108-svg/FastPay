@@ -10,14 +10,14 @@ WORKDIR /src/backend
 COPY backend/go.mod ./
 RUN go mod download
 COPY backend/ ./
-RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /fastpay ./cmd/api
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /pulsaprime ./cmd/api
 
 FROM alpine:3.22
-RUN apk add --no-cache ca-certificates && adduser -D -H fastpay
+RUN apk add --no-cache ca-certificates && adduser -D -H pulsaprime
 WORKDIR /app
-COPY --from=backend /fastpay ./fastpay
+COPY --from=backend /pulsaprime ./pulsaprime
 COPY --from=frontend /src/frontend/dist ./public
 ENV APP_ENV=production STATIC_DIR=/app/public APP_PORT=8080
 EXPOSE 8080
-USER fastpay
-CMD ["./fastpay"]
+USER pulsaprime
+CMD ["./pulsaprime"]

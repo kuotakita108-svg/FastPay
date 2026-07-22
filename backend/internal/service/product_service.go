@@ -1,6 +1,6 @@
 package service
 
-import "fastpay/backend/internal/domain"
+import "pulsaprime/backend/internal/domain"
 
 type productReader interface{ FindProducts() []domain.Product }
 type ProductService struct{ repo productReader }

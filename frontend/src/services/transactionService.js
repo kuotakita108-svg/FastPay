@@ -1,6 +1,6 @@
 import {request} from './http'
-const session=()=>{try{return JSON.parse(localStorage.getItem('fastpay_session'))}catch{return null}}
-const key=()=>`fastpay_transactions_${session()?.user?.id||'guest'}`
+const session=()=>{try{return JSON.parse(localStorage.getItem('pulsaprime_session'))}catch{return null}}
+const key=()=>`pulsaprime_transactions_${session()?.user?.id||'guest'}`
 const localList=()=>{try{return JSON.parse(localStorage.getItem(key()))||[]}catch{return[]}}
 const isUser=()=>session()?.user?.role==='user'
 const path=()=>isUser()?'/me/transactions':'/transactions'

@@ -18,7 +18,7 @@ export default function AllServicesPage(){
 
   return <main className="mobile-app services-page">
     <header className="services-head"><button type="button" onClick={()=>navigate(-1)}><ArrowLeft/></button><div><strong>Semua Layanan</strong><small>Pilih kebutuhan transaksimu</small></div><i><ShieldCheck/></i></header>
-    <section className="services-hero"><span><Sparkles/> FASTPAY SERVICES</span><h1>Semua kebutuhan,<br/>cukup satu aplikasi.</h1><p>Transaksi cepat, aman, dan tersedia 24 jam setiap hari.</p><b>{allServices.length}+ layanan tersedia</b></section>
+    <section className="services-hero"><span><Sparkles/> PULSAPRIME SERVICES</span><h1>Semua kebutuhan,<br/>cukup satu aplikasi.</h1><p>Transaksi cepat, aman, dan tersedia 24 jam setiap hari.</p><b>{allServices.length}+ layanan tersedia</b></section>
     <section className="all-services modern-all-services">
       <label className="service-search"><Search/><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Cari pulsa, tagihan, voucher..."/>{query&&<button type="button" onClick={()=>setQuery('')}><X/></button>}</label>
       <div className="service-categories">{groups.map(group=><button type="button" className={category===group?'active':''} onClick={()=>setCategory(group)} key={group}>{group}</button>)}</div>

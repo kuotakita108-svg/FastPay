@@ -2,9 +2,9 @@ package handler
 
 import (
 	"encoding/json"
-	"fastpay/backend/internal/domain"
-	"fastpay/backend/internal/http/response"
-	"fastpay/backend/internal/service"
+	"pulsaprime/backend/internal/domain"
+	"pulsaprime/backend/internal/http/response"
+	"pulsaprime/backend/internal/service"
 	"net/http"
 )
 

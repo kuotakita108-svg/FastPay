@@ -1,9 +1,9 @@
 {
-  "appId": "id.fastpay.app",
-  "appName": "FastPay",
+  "appId": "id.pulsaprime.app",
+  "appName": "PulsaPrime",
   "webDir": "dist",
   "server": {
     "androidScheme": "https",
-    "allowNavigation": ["fastpay-app.pages.dev"]
+    "allowNavigation": ["pulsaprime-app.pages.dev"]
   }
 }

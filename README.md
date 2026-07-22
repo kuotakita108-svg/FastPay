@@ -1,6 +1,6 @@
-# FastPay
+# PulsaPrime
 
-FastPay kini terdiri dari dua aplikasi terpisah:
+PulsaPrime kini terdiri dari dua aplikasi terpisah:
 
 - `frontend/` — React + Vite, dijalankan pada port `5173`
 - `backend/` — REST API Go, dijalankan pada port `8080`

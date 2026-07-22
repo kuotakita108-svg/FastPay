@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"fastpay/backend/internal/app"
-	"fastpay/backend/internal/config"
+	"pulsaprime/backend/internal/app"
+	"pulsaprime/backend/internal/config"
 )
 
 func main() {

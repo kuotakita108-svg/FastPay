@@ -1,3 +1,3 @@
-module fastpay/backend
+module pulsaprime/backend
 
 go 1.26

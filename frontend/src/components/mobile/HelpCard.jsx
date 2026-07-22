@@ -4,5 +4,5 @@ import ServiceEmblem from './ServiceEmblem'
 
 export default function HelpCard() {
   const navigate = useNavigate()
-  return <button type="button" className="mobile-help" onClick={() => navigate('/app/profile/help')}><i className="dashboard-hd-emblem"><ServiceEmblem type="insurance" label="Pusat bantuan"/></i><div><strong>Ada kendala transaksi?</strong><p>Buka pusat bantuan dan hubungi tim FastPay.</p></div><span><ChevronRight /></span></button>
+  return <button type="button" className="mobile-help" onClick={() => navigate('/app/profile/help')}><i className="dashboard-hd-emblem"><ServiceEmblem type="insurance" label="Pusat bantuan"/></i><div><strong>Ada kendala transaksi?</strong><p>Buka pusat bantuan dan hubungi tim PulsaPrime.</p></div><span><ChevronRight /></span></button>
 }

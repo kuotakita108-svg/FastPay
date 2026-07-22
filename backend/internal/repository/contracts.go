@@ -1,6 +1,6 @@
 package repository
 
-import "fastpay/backend/internal/domain"
+import "pulsaprime/backend/internal/domain"
 
 type TransactionRepository interface {
 	FindAll() []domain.Transaction

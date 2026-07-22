@@ -1,4 +1,4 @@
-package id.fastpay.app;
+package id.pulsaprime.app;
 
 import com.getcapacitor.BridgeActivity;
 

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">FastPay</string>
-    <string name="title_activity_main">FastPay</string>
-    <string name="package_name">id.fastpay.app</string>
-    <string name="custom_url_scheme">id.fastpay.app</string>
+    <string name="app_name">PulsaPrime</string>
+    <string name="title_activity_main">PulsaPrime</string>
+    <string name="package_name">id.pulsaprime.app</string>
+    <string name="custom_url_scheme">id.pulsaprime.app</string>
 </resources>

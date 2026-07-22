@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "fastpay-app",
+  "name": "pulsaprime-app",
   "compatibility_date": "2026-07-20",
   "pages_build_output_dir": "./frontend/dist",
-  "d1_databases": [{"binding":"DB","database_name":"fastpay-db","database_id":"74929be0-f0b5-4dac-85b3-ca175c579165"}]
+  "d1_databases": [{"binding":"DB","database_name":"pulsaprime-db","database_id":"74929be0-f0b5-4dac-85b3-ca175c579165"}]
 }

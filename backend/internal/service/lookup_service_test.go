@@ -1,7 +1,7 @@
 package service
 
 import (
-	"fastpay/backend/internal/domain"
+	"pulsaprime/backend/internal/domain"
 	"testing"
 )
 
