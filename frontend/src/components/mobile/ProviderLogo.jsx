@@ -27,6 +27,7 @@ import freefire from '../../assets/providers/freefire.png'
 import pubg from '../../assets/providers/pubg.png'
 import valorant from '../../assets/providers/valorant.png'
 import genshin from '../../assets/providers/genshin.png'
+import pointblank from '../../assets/providers/pointblank.png'
 import bpjs from '../../assets/providers/bpjs.png'
 import biznet from '../../assets/providers/biznet.png'
 import prudential from '../../assets/providers/official/prudential.png'
@@ -47,10 +48,10 @@ import isaku from '../../assets/providers/official/isaku.svg'
 import { BadgeCheck, Banknote, BookOpenCheck, Building2, Bus, Car, CircleParking, Clapperboard, CreditCard, Cross, Droplets, Earth, Flame, Gamepad2, GraduationCap, HandHeart, HeartPulse, Landmark, MapPin, MonitorPlay, Plane, QrCode, Radio, ReceiptText, ShieldCheck, Smartphone, Store, TrainFront, Truck, Wallet, Wifi, Zap } from 'lucide-react'
 import {siRoblox,siSteam} from 'simple-icons/icons'
 
-const imageLogos={BCA:bca,BRI:bri,BNI:bni,Mandiri:mandiri,'CIMB Niaga':cimb,'Bank Syariah Indonesia':bsi,BSI:bsi,Danamon:danamon,PermataBank:permatabank,SeaBank:seabank,'Bank Jago':jago,AstraPay:astrapay,'i.saku':isaku,'FIF Group':fif,Spotify:spotify,Vidio:vidio,Telkomsel:telkomsel,Indosat:indosat,XL:xl,Tri:tri,AXIS:axis,DANA:dana,GoPay:gopay,OVO:ovo,ShopeePay:shopeepay,LinkAja:linkaja,'Mobile Legends':mobilelegends,'Free Fire':freefire,'PUBG Mobile':pubg,Valorant:valorant,'Valorant Points':valorant,'Genshin Impact':genshin,'Genshin Impact Genesis Crystals':genshin,'BPJS Kesehatan':bpjs,Biznet:biznet,Prudential:prudential,Allianz:allianz,Manulife:manulife,MyRepublic:myrepublic,CBN:cbn,IndiHome:indihome,'MNC Vision':mncvision,Transvision:transvision,'Google Play':googleplay,'Apple Gift Card':apple,Pesawat:garuda,'Bus & Travel':redbus,Sekolah:kemendikbud,Universitas:kemendikbud,Bimbel:kemendikbud,'PBB Kota/Kabupaten':pajak}
+const imageLogos={BCA:bca,BRI:bri,BNI:bni,Mandiri:mandiri,'CIMB Niaga':cimb,'Bank Syariah Indonesia':bsi,BSI:bsi,Danamon:danamon,PermataBank:permatabank,SeaBank:seabank,'Bank Jago':jago,AstraPay:astrapay,'i.saku':isaku,'FIF Group':fif,Spotify:spotify,Vidio:vidio,Telkomsel:telkomsel,Indosat:indosat,XL:xl,Tri:tri,AXIS:axis,DANA:dana,GoPay:gopay,OVO:ovo,ShopeePay:shopeepay,LinkAja:linkaja,'Mobile Legends':mobilelegends,'Free Fire':freefire,'PUBG Mobile':pubg,Valorant:valorant,'Valorant Points':valorant,'Genshin Impact':genshin,'Genshin Impact Genesis Crystals':genshin,'Point Blank':pointblank,'BPJS Kesehatan':bpjs,Biznet:biznet,Prudential:prudential,Allianz:allianz,Manulife:manulife,MyRepublic:myrepublic,CBN:cbn,IndiHome:indihome,'MNC Vision':mncvision,Transvision:transvision,'Google Play':googleplay,'Apple Gift Card':apple,Pesawat:garuda,'Bus & Travel':redbus,Sekolah:kemendikbud,Universitas:kemendikbud,Bimbel:kemendikbud,'PBB Kota/Kabupaten':pajak}
 
 const svgLogos={
-  Roblox:{type:'simple',icon:siRoblox,color:'#111827'},'Steam Wallet ID':{type:'simple',icon:siSteam,color:'#111827'},'Point Blank':{type:'pointblank'},'Arena of Valor Voucher':{type:'aov'},
+  Roblox:{type:'simple',icon:siRoblox,color:'#111827'},'Steam Wallet ID':{type:'simple',icon:siSteam,color:'#111827'},'Arena of Valor Voucher':{type:'aov'},
   Netflix:{type:'netflix'},'YouTube Premium':{type:'youtube'},'Disney+ Hotstar':{type:'disney'},'K-Vision':{type:'tv'},
   PLN:{type:'pln'},PGN:{type:'gas'},PDAM:{type:'water'},Telkom:{type:'telkom'},
   'QRIS Nasional':{type:'qris'},'QRIS UMKM':{type:'qris'},'QRIS Dinamis':{type:'qris'},
@@ -132,7 +133,7 @@ function ProviderSvgLogo({spec}){
 export default function ProviderLogo({name,className=''}){
   const clean=normalize(name)
   const image=findLogoMatch(clean,imageLogos)?.[1]
-  if(image)return <i className={`${className} provider-logo-rendered`}><img src={image} alt={`Logo ${name}`}/></i>
+  if(image)return <i className={`${className} provider-logo-rendered`} data-brand={slug(clean)}><img src={image} alt={`Logo ${name}`}/></i>
   const spec=findLogoMatch(clean,svgLogos)?.[1]
   if(spec)return <i className={`${className} provider-logo-rendered provider-logo-vector`} data-brand={slug(clean)} role="img" aria-label={`Logo ${name}`}><ProviderSvgLogo spec={spec}/></i>
   return <i className={`${className} provider-logo-rendered provider-wordmark`} data-brand={slug(clean)} role="img" aria-label={`Logo ${name}`}><ProviderSymbol name={clean}/></i>
