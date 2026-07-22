@@ -1,0 +1,12 @@
+.number-title .service-input-emblem{display:grid;place-items:center;width:46px;height:46px;flex:none;border:0;border-radius:0;background:transparent;box-shadow:none}
+.number-title .service-input-emblem .service-emblem-image{display:block;width:46px;height:46px;object-fit:contain;filter:none!important}
+.number-title>div{min-width:0;flex:1}.number-title .verified-service{display:flex;align-items:center;gap:3px;padding:4px 6px;border-radius:999px;background:#e7f8f1;color:#13825e;font-size:6.5px;font-weight:900;white-space:nowrap}.number-title .verified-service svg{width:11px;height:11px}
+.service-confidence{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:0 0 12px}
+.service-confidence>div{display:flex;align-items:center;gap:6px;min-width:0;padding:9px 7px;border:1px solid #e5e8ef;border-radius:12px;background:#fff;box-shadow:0 3px 10px #25304a08}
+.service-confidence>div>svg{width:17px;height:17px;flex:none;color:#6250d8}.service-confidence>div:nth-child(2)>svg{color:#12a276}.service-confidence>div:nth-child(3)>svg{color:#e29a20}
+.service-confidence span{min-width:0}.service-confidence b,.service-confidence small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.service-confidence b{font-size:7.5px;color:#30394b}.service-confidence small{margin-top:2px;font-size:6px!important;color:#9099a8}
+.purchase-flow{display:flex;align-items:center;justify-content:center;margin:0 3px 12px;padding:10px 8px;border:1px solid #e7e5f0;border-radius:12px;background:linear-gradient(135deg,#fff,#f8f7ff)}
+.purchase-flow>span{display:flex;align-items:center;gap:4px;color:#8d96a6;font-size:7px;font-weight:800;white-space:nowrap}.purchase-flow>span b{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#e7e9ef;color:#7b8494;font-size:7px}.purchase-flow>span.active{color:#5947cd}.purchase-flow>span.active b{background:#6552da;color:#fff}.purchase-flow>i{width:18px;height:1px;margin:0 4px;background:#d9dce5}
+.provider-panel{padding:16px}.modern-provider-grid{gap:9px}.modern-provider-grid button{min-height:74px;border-radius:13px}.modern-provider-grid i{width:34px;height:34px}.show-products{min-height:42px}
+.modern-product-grid>button{min-height:88px;padding:12px}.modern-product-grid span{font-size:9.5px}.modern-product-grid strong{font-size:12px}
+@media(max-width:350px){.service-confidence{grid-template-columns:1fr}.service-confidence>div{padding:8px 10px}.service-confidence b{font-size:8px}.purchase-flow>span{font-size:6.5px}.purchase-flow>i{width:10px;margin-inline:2px}}
