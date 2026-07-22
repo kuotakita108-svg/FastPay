@@ -1,0 +1,19 @@
+/* Keep mobile UI crisp on Android browsers and high-density displays. */
+html,body,.mobile-app,.mobile-auth-page{text-rendering:optimizeLegibility;-webkit-font-smoothing:auto;-moz-osx-font-smoothing:auto;font-synthesis:none}
+.mobile-app *,.mobile-auth-page *{-webkit-tap-highlight-color:transparent}
+.mobile-app img,.mobile-auth-page img{filter:none!important;image-rendering:auto;backface-visibility:visible;transform:none}
+.mobile-app svg,.mobile-auth-page svg{shape-rendering:geometricPrecision;vector-effect:non-scaling-stroke}
+.clean-actions button,.auth-trust b,.topup-footer,.security-backdrop,.premium-promos .promo-content>span,.premium-promos .promo-service-mark,.premium-promos .carousel-arrow{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.auth-orb.two,.reference-header .dashboard-brand:after{filter:none!important}
+.auth-welcome-copy{text-shadow:0 1px 2px #08032d70!important}
+.service-real-logo{filter:none!important}
+.modern-services .service-grid strong{font-size:10.5px!important;font-weight:800;letter-spacing:0}
+.modern-services .service-grid small{font-size:8px!important;color:#778194!important}
+.mobile-section-title h2{font-size:16px!important;letter-spacing:-.2px}
+.mobile-section-title small{font-size:9px!important;color:#737d8e!important}
+.advanced-nav a,.advanced-nav span{font-size:10px!important}
+.account-feature-page small,.profile-page small,.balance-page small,.checkout-page small,.wallet-topup-page small,.transfer-page small{font-size:9px!important;line-height:1.45}
+.account-feature-page p,.profile-page p,.balance-page p,.checkout-page p,.wallet-topup-page p,.transfer-page p{font-size:10px;line-height:1.5}
+.account-feature-page button,.profile-page button,.balance-page button,.checkout-page button,.wallet-topup-page button,.transfer-page button{font-size:10px}
+.provider-logo img,.provider-logo-image,.transfer-provider-logo img{filter:none!important;image-rendering:auto!important;opacity:1}
+@media(max-width:350px){.modern-services .service-grid strong{font-size:10px!important}.modern-services .service-grid small{font-size:7.5px!important}}
