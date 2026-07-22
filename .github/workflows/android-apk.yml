@@ -1,4 +1,4 @@
-name: Build FastPay APK
+name: Build PulsaPrime APK
 
 on:
   workflow_dispatch:
@@ -27,7 +27,7 @@ jobs:
       - name: Install and build web app
         working-directory: frontend
         env:
-          VITE_API_URL: https://fastpay-app.pages.dev/api/v1
+          VITE_API_URL: https://pulsaprime-app.pages.dev/api/v1
         run: npm ci && npm run build
       - name: Sync Android project
         working-directory: frontend
@@ -35,9 +35,9 @@ jobs:
       - name: Build debug APK
         working-directory: frontend/android
         run: chmod +x gradlew && ./gradlew assembleDebug
-      - name: Upload FastPay APK
+      - name: Upload PulsaPrime APK
         uses: actions/upload-artifact@v4
         with:
-          name: FastPay-Android
+          name: PulsaPrime-Android
           path: frontend/android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
