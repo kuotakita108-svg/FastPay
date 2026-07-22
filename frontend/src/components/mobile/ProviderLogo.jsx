@@ -46,21 +46,25 @@ import astrapay from '../../assets/providers/official/astrapay.svg'
 import isaku from '../../assets/providers/official/isaku.svg'
 import { BadgeCheck, Banknote, BookOpenCheck, Building2, Bus, Car, CircleParking, Clapperboard, CreditCard, Cross, Droplets, Earth, Flame, Gamepad2, GraduationCap, HandHeart, HeartPulse, Landmark, MapPin, MonitorPlay, Plane, QrCode, Radio, ReceiptText, ShieldCheck, Smartphone, Store, TrainFront, Truck, Wallet, Wifi, Zap } from 'lucide-react'
 
-const imageLogos={BCA:bca,BRI:bri,BNI:bni,Mandiri:mandiri,'CIMB Niaga':cimb,'Bank Syariah Indonesia':bsi,BSI:bsi,Danamon:danamon,'PermataBank':permatabank,'SeaBank':seabank,'Bank Jago':jago,AstraPay:astrapay,'i.saku':isaku,'FIF Group':fif,Spotify:spotify,Vidio:vidio,Telkomsel:telkomsel,Indosat:indosat,XL:xl,Tri:tri,AXIS:axis,DANA:dana,GoPay:gopay,OVO:ovo,ShopeePay:shopeepay,LinkAja:linkaja,'Mobile Legends':mobilelegends,'Free Fire':freefire,'PUBG Mobile':pubg,Valorant:valorant,'Genshin Impact':genshin,'BPJS Kesehatan':bpjs,Biznet:biznet,Prudential:prudential,Allianz:allianz,Manulife:manulife,MyRepublic:myrepublic,CBN:cbn,IndiHome:indihome,'MNC Vision':mncvision,Transvision:transvision,'Google Play':googleplay,'Apple Gift Card':apple,Pesawat:garuda,'Bus & Travel':redbus,Sekolah:kemendikbud,Universitas:kemendikbud,Bimbel:kemendikbud,'PBB Kota/Kabupaten':pajak}
-const brandMarks={
-  Netflix:{text:'N',tone:'netflix'},'YouTube Premium':{text:'▶',tone:'youtube'},'Disney+ Hotstar':{text:'D+',tone:'disney'},'K-Vision':{text:'K',tone:'kvision'},
-  PLN:{text:'⚡',tone:'pln'},PGN:{text:'PGN',tone:'pgn'},PDAM:{text:'AIR',tone:'pdam'},Telkom:{text:'T',tone:'telkom'},
-  'QRIS Nasional':{text:'QR',tone:'qris'},'QRIS UMKM':{text:'UM',tone:'qris'},'QRIS Dinamis':{text:'QD',tone:'qris'},
-  'Mandiri e-Money':{text:'eM',tone:'emoney'},'BCA Flazz':{text:'FL',tone:'flazz'},'BNI TapCash':{text:'TC',tone:'tapcash'},BRIZZI:{text:'BR',tone:'brizzi'},'Mandiri e-Toll':{text:'eT',tone:'etoll'},
-  Halodoc:{text:'H+',tone:'health'},'Klinik Digital':{text:'KD',tone:'health'},Laboratorium:{text:'LAB',tone:'health'},Apotek:{text:'Rx',tone:'health'},
-  'Home Credit':{text:'HC',tone:'credit'},Kredivo:{text:'K',tone:'kredivo'},Akulaku:{text:'AK',tone:'akulaku'},'Mega Finance':{text:'MF',tone:'finance'},'Adira Finance':{text:'AF',tone:'finance'},'WOM Finance':{text:'W',tone:'finance'},
-  'DJP Online':{text:'DJP',tone:'tax'},'Pajak Daerah':{text:'PD',tone:'tax'},'Samsat Digital':{text:'SD',tone:'tax'},'Penerimaan Negara':{text:'PN',tone:'tax'},
-  BAZNAS:{text:'BZ',tone:'donation'},'Dompet Dhuafa':{text:'DD',tone:'donation'},'Rumah Zakat':{text:'RZ',tone:'donation'},Kitabisa:{text:'K',tone:'donation'},
-  Parkee:{text:'P',tone:'parking'},CentrePark:{text:'CP',tone:'parking'},'Sky Parking':{text:'SP',tone:'parking'},'Secure Parking':{text:'SEC',tone:'parking'},
-  JNE:{text:'JNE',tone:'delivery'},'J&T Express':{text:'J&T',tone:'delivery'},SiCepat:{text:'Si',tone:'delivery'},'Pos Indonesia':{text:'POS',tone:'pos'},AnterAja:{text:'A',tone:'anteraja'},'Kereta Api':{text:'KAI',tone:'train'},
+const imageLogos={BCA:bca,BRI:bri,BNI:bni,Mandiri:mandiri,'CIMB Niaga':cimb,'Bank Syariah Indonesia':bsi,BSI:bsi,Danamon:danamon,PermataBank:permatabank,SeaBank:seabank,'Bank Jago':jago,AstraPay:astrapay,'i.saku':isaku,'FIF Group':fif,Spotify:spotify,Vidio:vidio,Telkomsel:telkomsel,Indosat:indosat,XL:xl,Tri:tri,AXIS:axis,DANA:dana,GoPay:gopay,OVO:ovo,ShopeePay:shopeepay,LinkAja:linkaja,'Mobile Legends':mobilelegends,'Free Fire':freefire,'PUBG Mobile':pubg,Valorant:valorant,'Genshin Impact':genshin,'BPJS Kesehatan':bpjs,Biznet:biznet,Prudential:prudential,Allianz:allianz,Manulife:manulife,MyRepublic:myrepublic,CBN:cbn,IndiHome:indihome,'MNC Vision':mncvision,Transvision:transvision,'Google Play':googleplay,'Apple Gift Card':apple,Pesawat:garuda,'Bus & Travel':redbus,Sekolah:kemendikbud,Universitas:kemendikbud,Bimbel:kemendikbud,'PBB Kota/Kabupaten':pajak}
+
+const svgLogos={
+  Netflix:{type:'netflix'},'YouTube Premium':{type:'youtube'},'Disney+ Hotstar':{type:'disney'},'K-Vision':{text:'K-VISION',fg:'#0a8ddf'},
+  PLN:{type:'pln'},PGN:{text:'PGN',fg:'#0f9f5f'},PDAM:{text:'PDAM',fg:'#0ea5e9'},Telkom:{text:'telkom',fg:'#e11d48'},
+  'QRIS Nasional':{text:'QRIS',fg:'#111827'},'QRIS UMKM':{text:'QRIS',sub:'UMKM',fg:'#111827'},'QRIS Dinamis':{text:'QRIS',sub:'DINAMIS',fg:'#111827'},
+  'Mandiri e-Money':{text:'e-money',fg:'#0b4ea2'},'BCA Flazz':{text:'Flazz',fg:'#0f4caa'},'BNI TapCash':{text:'TapCash',fg:'#f97316'},BRIZZI:{text:'BRIZZI',fg:'#00529b'},'Mandiri e-Toll':{text:'e-Toll',fg:'#0b4ea2'},
+  Halodoc:{text:'halodoc',fg:'#ef4056'},'Klinik Digital':{text:'Klinik',sub:'Digital',fg:'#16a34a'},Laboratorium:{text:'Lab',sub:'Medika',fg:'#2563eb'},Apotek:{text:'Apotek',fg:'#dc2626'},
+  'Home Credit':{text:'Home',sub:'Credit',fg:'#f58220'},Kredivo:{text:'kredivo',fg:'#ff6b00'},Akulaku:{text:'Akulaku',fg:'#10a8e6'},'Mega Finance':{text:'Mega',sub:'Finance',fg:'#1d4ed8'},'Adira Finance':{text:'Adira',sub:'Finance',fg:'#f59e0b'},'WOM Finance':{text:'WOM',sub:'Finance',fg:'#0ea5e9'},
+  'DJP Online':{text:'DJP',sub:'Online',fg:'#f59e0b'},'Pajak Daerah':{text:'Pajak',sub:'Daerah',fg:'#f97316'},'Samsat Digital':{text:'SAMSAT',sub:'Digital',fg:'#1d4ed8'},'Penerimaan Negara':{text:'MPN',sub:'Negara',fg:'#0f766e'},
+  BAZNAS:{text:'BAZNAS',fg:'#16a34a'},'Dompet Dhuafa':{text:'DD',sub:'Dhuafa',fg:'#16a34a'},'Rumah Zakat':{text:'RZ',sub:'Zakat',fg:'#0ea5e9'},Kitabisa:{text:'Kitabisa',fg:'#00aeef'},
+  Parkee:{text:'Parkee',fg:'#2563eb'},CentrePark:{text:'Centre',sub:'Park',fg:'#1d4ed8'},'Sky Parking':{text:'Sky',sub:'Parking',fg:'#0284c7'},'Secure Parking':{text:'Secure',sub:'Parking',fg:'#475569'},
+  JNE:{text:'JNE',fg:'#1646a0',accent:'#ef4444'},'J&T Express':{text:'J&T',sub:'Express',fg:'#dc2626'},SiCepat:{text:'SiCepat',fg:'#ef4444'},'Pos Indonesia':{text:'POS',sub:'Indonesia',fg:'#f97316'},AnterAja:{text:'AnterAja',fg:'#7c3aed'},'Kereta Api':{text:'KAI',fg:'#0f4caa',accent:'#f97316'},
 }
 
 const normalize=name=>String(name||'').replace(/ Card$/,'')
+const slug=name=>String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-')
+const findLogoMatch=(name,source)=>Object.entries(source).find(([key])=>name.startsWith(key))
+
 function ProviderSymbol({name}){
   const value=name.toLowerCase()
   if(value.includes('pulsa')||value.includes('halo')||value.includes('postpaid')||value.includes('prioritas'))return <Smartphone/>
@@ -97,18 +101,21 @@ function ProviderSymbol({name}){
   return <Store/>
 }
 
-function findLogoMatch(name,source){
-  return Object.entries(source).find(([key])=>name.startsWith(key))
-}
-
-function BrandMark({mark,name}){
-  return <span className={`provider-brand-mark provider-brand-${mark.tone}`}><i>{mark.text}</i><ProviderSymbol name={name}/></span>
+function ProviderSvgLogo({spec}){
+  if(spec.type==='netflix')return <svg className="provider-svg-logo provider-svg-netflix" viewBox="0 0 80 80" aria-hidden="true"><rect width="80" height="80" rx="18" fill="#191414"/><path d="M25 16h11v48H25z" fill="#e50914"/><path d="M44 16h11v48H44z" fill="#b20710"/><path d="M25 16h11l19 48H44z" fill="#f40612"/></svg>
+  if(spec.type==='youtube')return <svg className="provider-svg-logo provider-svg-youtube" viewBox="0 0 80 80" aria-hidden="true"><rect x="10" y="20" width="60" height="40" rx="12" fill="#ff0000"/><path d="M35 30v20l18-10z" fill="#fff"/></svg>
+  if(spec.type==='disney')return <svg className="provider-svg-logo provider-svg-disney" viewBox="0 0 100 80" aria-hidden="true"><path d="M18 29c16-18 48-20 66-4" fill="none" stroke="#1d4ed8" strokeWidth="4" strokeLinecap="round"/><text x="50" y="48" textAnchor="middle" fill="#123c8c" fontSize="22" fontWeight="900" fontFamily="Arial, sans-serif">Disney+</text><text x="50" y="63" textAnchor="middle" fill="#ef4444" fontSize="11" fontWeight="800" fontFamily="Arial, sans-serif">Hotstar</text></svg>
+  if(spec.type==='pln')return <svg className="provider-svg-logo provider-svg-pln" viewBox="0 0 80 80" aria-hidden="true"><rect x="14" y="12" width="52" height="56" rx="10" fill="#facc15"/><path d="M28 44h14l-7 17 20-25H41l7-17z" fill="#2563eb"/><path d="M24 25h32" stroke="#ef4444" strokeWidth="4" strokeLinecap="round"/></svg>
+  const sub=spec.sub||''
+  const accent=spec.accent||spec.fg
+  return <svg className="provider-svg-logo provider-svg-wordmark" viewBox="0 0 100 80" aria-hidden="true"><rect x="10" y="14" width="80" height="52" rx="13" fill="#fff"/><path d="M22 24h56" stroke={accent} strokeWidth="4" strokeLinecap="round" opacity=".18"/><text x="50" y={sub?42:48} textAnchor="middle" fill={spec.fg} fontSize={spec.text.length>8?14:20} fontWeight="900" fontFamily="Arial, sans-serif">{spec.text}</text>{sub&&<text x="50" y="57" textAnchor="middle" fill="#64748b" fontSize="10" fontWeight="800" fontFamily="Arial, sans-serif">{sub}</text>}</svg>
 }
 
 export default function ProviderLogo({name,className=''}){
   const clean=normalize(name)
   const image=findLogoMatch(clean,imageLogos)?.[1]
   if(image)return <i className={`${className} provider-logo-rendered`}><img src={image} alt={`Logo ${name}`}/></i>
-  const mark=findLogoMatch(clean,brandMarks)?.[1]
-  return <i className={`${className} provider-logo-rendered provider-wordmark`} data-brand={clean.toLowerCase().replace(/[^a-z0-9]+/g,'-')} role="img" aria-label={`Logo ${name}`}>{mark?<BrandMark mark={mark} name={clean}/>:<ProviderSymbol name={clean}/>}</i>
+  const spec=findLogoMatch(clean,svgLogos)?.[1]
+  if(spec)return <i className={`${className} provider-logo-rendered provider-logo-vector`} data-brand={slug(clean)} role="img" aria-label={`Logo ${name}`}><ProviderSvgLogo spec={spec}/></i>
+  return <i className={`${className} provider-logo-rendered provider-wordmark`} data-brand={slug(clean)} role="img" aria-label={`Logo ${name}`}><ProviderSymbol name={clean}/></i>
 }
