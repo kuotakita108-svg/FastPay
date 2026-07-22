@@ -23,7 +23,7 @@ export const serviceConfig={
   emoney:config('Top Up Uang Elektronik','Uang Elektronik','Nomor Kartu','Masukkan nomor kartu uang elektronik',['Mandiri e-Money','BCA Flazz','BNI TapCash','BRIZZI']),
   toll:config('Saldo Kartu Tol','Kartu Tol','Nomor Kartu','Masukkan nomor kartu tol',['Mandiri e-Toll','BCA Flazz','BNI TapCash','BRIZZI']),
   streaming:config('Streaming & Musik','Hiburan Digital','Email / Nomor Handphone','Masukkan akun pelanggan',['Netflix','Spotify','YouTube Premium','Disney+ Hotstar','Vidio']),
-  esim:config('eSIM & Roaming','Paket eSIM','Nomor Handphone / Email','Masukkan data penerima',['eSIM Indonesia','eSIM Asia','eSIM Global','Paket Roaming']),
+  esim:config('eSIM Indonesia','Paket eSIM','Nomor Handphone / Email','Masukkan data penerima',['Telkomsel eSIM','Indosat eSIM','XL eSIM']),
   health:config('Klinik & Kesehatan','Kesehatan','Nomor Pasien','Masukkan nomor pasien',['Halodoc','Klinik Digital','Laboratorium','Apotek']),
   creditcard:config('Tagihan Kartu Kredit','Kartu Kredit','Nomor Kartu / Pelanggan','Masukkan nomor kartu',['BCA Card','Mandiri Card','BNI Card','BRI Card','CIMB Niaga']),
   multifinance:config('Cicilan Multifinance','Multifinance','Nomor Kontrak','Masukkan nomor kontrak',['Home Credit','Kredivo','Akulaku','Mega Finance']),

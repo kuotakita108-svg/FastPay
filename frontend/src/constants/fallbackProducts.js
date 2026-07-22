@@ -8,7 +8,7 @@ const specialized = {
   'Uang Elektronik': money.map(value => [`Top Up ${value.toLocaleString('id-ID')}`, value]),
   'Kartu Tol': money.map(value => [`Isi Saldo Tol ${value.toLocaleString('id-ID')}`, value]),
   'Hiburan Digital': [['Paket 7 Hari', 25000], ['Paket Mobile 30 Hari', 54000], ['Paket Individual 30 Hari', 79000], ['Paket Premium 30 Hari', 159000], ['Paket Keluarga 30 Hari', 199000]],
-  'Paket eSIM': [['Indonesia 3 GB · 7 Hari', 55000], ['Indonesia 10 GB · 30 Hari', 125000], ['Asia 6 GB · 15 Hari', 185000], ['Global 10 GB · 30 Hari', 325000]],
+  'Paket eSIM': [['Starter 3 GB · 7 Hari', 35000], ['Hemat 10 GB · 30 Hari', 85000], ['Combo 25 GB · 30 Hari', 135000], ['Premium 50 GB · 30 Hari', 225000]],
   Kesehatan: [['Konsultasi Dokter', 35000], ['Voucher Apotek Rp50.000', 50000], ['Pemeriksaan Dasar', 99000], ['Paket Laboratorium', 249000]],
   'Kartu Kredit': bills,
   Multifinance: bills,
