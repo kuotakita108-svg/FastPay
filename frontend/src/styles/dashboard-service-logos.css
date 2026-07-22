@@ -1,17 +1,7 @@
-.modern-services .service-grid .branded-service-icon{overflow:visible;border:0!important;box-shadow:0 3px 7px #25304a18!important;isolation:isolate}
-.modern-services .service-grid .branded-service-icon:before{content:"";position:absolute;inset:3px;border:1px solid #ffffff48;border-radius:12px;pointer-events:none}
-.modern-services .service-grid i.violet{background:linear-gradient(145deg,#8067ed,#5d43d1)!important;color:#fff!important}
-.modern-services .service-grid i.blue{background:linear-gradient(145deg,#43a5ee,#2378cf)!important;color:#fff!important}
-.modern-services .service-grid i.mint{background:linear-gradient(145deg,#2bc99b,#0b9a73)!important;color:#fff!important}
-.modern-services .service-grid i.amber{background:linear-gradient(145deg,#f7c642,#e6971d)!important;color:#fff!important}
-.modern-services .service-grid i.rose{background:linear-gradient(145deg,#f16c9d,#d83c75)!important;color:#fff!important}
-.modern-services .service-grid i.cyan{background:linear-gradient(145deg,#35c7dc,#138ca8)!important;color:#fff!important}
-.modern-services .service-grid i.orange{background:linear-gradient(145deg,#57c985,#239b5b)!important;color:#fff!important}
-.modern-services .service-grid i.slate{background:linear-gradient(145deg,#7787a3,#52617b)!important;color:#fff!important}
-.service-category-mark{position:relative;display:grid;place-items:center;width:100%;height:100%;font-style:normal}
-.service-category-mark svg{width:25px!important;height:25px!important;stroke-width:2.25;shape-rendering:geometricPrecision}
-.service-category-mark em{position:absolute;right:-4px;bottom:-4px;min-width:18px;height:13px;display:grid;place-items:center;padding:0 3px;border:2px solid #fff;border-radius:5px;background:#263248!important;color:#fff;font-size:5px;font-weight:900;font-style:normal;line-height:1;box-shadow:none!important}
-.modern-services .service-grid i.amber .service-category-mark em{background:#a76508!important}.modern-services .service-grid i.mint .service-category-mark em{background:#087456!important}.modern-services .service-grid i.cyan .service-category-mark em{background:#086d83!important}.modern-services .service-grid i.orange .service-category-mark em{background:#167441!important}
-.modern-services .service-grid .branded-service-icon>b{right:-7px;top:-6px;box-shadow:none!important}
-.modern-services .service-grid button:active .branded-service-icon{transform:scale(.95);box-shadow:0 1px 3px #25304a12!important}
-@media(max-width:350px){.modern-services .service-grid .branded-service-icon{width:48px;height:48px}.service-category-mark svg{width:23px!important;height:23px!important}}
+.modern-services .service-grid .branded-service-icon{overflow:visible;border:0!important;background:transparent!important;box-shadow:none!important}
+.modern-services .service-grid .branded-service-icon:before{display:none!important}
+.modern-services .service-grid i.violet{color:#6b50df!important}.modern-services .service-grid i.blue{color:#2183d5!important}.modern-services .service-grid i.mint{color:#0ba477!important}.modern-services .service-grid i.amber{color:#e49a16!important}.modern-services .service-grid i.rose{color:#db477b!important}.modern-services .service-grid i.cyan{color:#149bb4!important}.modern-services .service-grid i.orange{color:#21995b!important}.modern-services .service-grid i.slate{color:#5d6c85!important}
+.service-category-mark{display:grid;place-items:center;width:100%;height:100%;font-style:normal}
+.service-category-mark svg{width:34px!important;height:34px!important;stroke-width:2.15;shape-rendering:geometricPrecision}
+.modern-services .service-grid button:active .branded-service-icon{transform:scale(.92);box-shadow:none!important}
+@media(max-width:350px){.modern-services .service-grid .branded-service-icon{width:48px;height:48px}.service-category-mark svg{width:31px!important;height:31px!important}}
