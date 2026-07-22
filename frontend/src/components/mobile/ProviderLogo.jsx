@@ -37,6 +37,7 @@ import apple from '../../assets/providers/official/apple.png'
 import garuda from '../../assets/providers/official/garuda.png'
 import redbus from '../../assets/providers/official/redbus.png'
 import kemendikbud from '../../assets/providers/official/kemendikbud.png'
+import { Building2, CircleParking, Clapperboard, CreditCard, Cross, Earth, GraduationCap, HandHeart, Landmark, MapPin, Plane, QrCode, Radio, ReceiptText, ShieldCheck, Store, TrainFront, Truck } from 'lucide-react'
 
 const imageLogos={BCA:bca,BRI:bri,BNI:bni,Mandiri:mandiri,'CIMB Niaga':cimb,'FIF Group':fif,Spotify:spotify,Vidio:vidio,Telkomsel:telkomsel,Indosat:indosat,XL:xl,Tri:tri,AXIS:axis,DANA:dana,GoPay:gopay,OVO:ovo,ShopeePay:shopeepay,LinkAja:linkaja,'Mobile Legends':mobilelegends,'Free Fire':freefire,'PUBG Mobile':pubg,Valorant:valorant,'Genshin Impact':genshin,'BPJS Kesehatan':bpjs,Biznet:biznet,Prudential:prudential,Allianz:allianz,Manulife:manulife,MyRepublic:myrepublic,CBN:cbn,IndiHome:indihome,'MNC Vision':mncvision,Transvision:transvision,'Google Play':googleplay,'Apple Gift Card':apple,Pesawat:garuda,'Bus & Travel':redbus,Sekolah:kemendikbud,Universitas:kemendikbud,Bimbel:kemendikbud,'PBB Kota/Kabupaten':pajak}
 const brandCodes={
@@ -44,11 +45,32 @@ const brandCodes={
 }
 
 const normalize=name=>String(name||'').replace(/ Card$/,'')
+function ProviderSymbol({name}){
+  const value=name.toLowerCase()
+  if(value.includes('esim')||value.includes('global')||value.includes('asia'))return <Earth/>
+  if(value.includes('roaming')||value.includes('pesawat'))return <Plane/>
+  if(value.includes('qris'))return <QrCode/>
+  if(value.includes('money')||value.includes('flazz')||value.includes('tapcash')||value.includes('brizzi')||value.includes('toll'))return <Radio/>
+  if(value.includes('netflix')||value.includes('youtube')||value.includes('disney')||value.includes('vision')||value.includes('vidio'))return <Clapperboard/>
+  if(value.includes('klinik')||value.includes('halodoc')||value.includes('laboratorium')||value.includes('apotek'))return <Cross/>
+  if(value.includes('credit')||value.includes('card')||value.includes('kredivo')||value.includes('akulaku'))return <CreditCard/>
+  if(value.includes('finance')||value.includes('home credit'))return <Landmark/>
+  if(value.includes('pajak')||value.includes('djp')||value.includes('samsat')||value.includes('penerimaan'))return <ReceiptText/>
+  if(value.includes('zakat')||value.includes('donasi')||value.includes('dhuafa')||value.includes('kitabisa')||value.includes('baznas'))return <HandHeart/>
+  if(value.includes('park'))return <CircleParking/>
+  if(value.includes('jne')||value.includes('j&t')||value.includes('sicepat')||value.includes('pos ')||value.includes('anteraja'))return <Truck/>
+  if(value.includes('kereta'))return <TrainFront/>
+  if(value.includes('sekolah')||value.includes('universitas')||value.includes('bimbel'))return <GraduationCap/>
+  if(value.includes('bank')||value.includes('bca')||value.includes('bri')||value.includes('bni')||value.includes('mandiri'))return <Building2/>
+  if(value.includes('pdam')||value.includes('pgn')||value.includes('pln'))return <ShieldCheck/>
+  if(value.includes('indonesia'))return <MapPin/>
+  return <Store/>
+}
 
 export default function ProviderLogo({name,className=''}){
   const clean=normalize(name)
   const image=Object.entries(imageLogos).find(([key])=>clean.startsWith(key))?.[1]
   if(image)return <i className={`${className} provider-logo-rendered`}><img src={image} alt={`Logo ${name}`}/></i>
   const code=brandCodes[name]||clean.slice(0,3).toUpperCase()
-  return <i className={`${className} provider-logo-rendered provider-wordmark`} data-brand={clean.toLowerCase().replace(/[^a-z0-9]+/g,'-')} role="img" aria-label={`Logo ${name}`}><b>{code}</b></i>
+  return <i className={`${className} provider-logo-rendered provider-wordmark`} data-brand={clean.toLowerCase().replace(/[^a-z0-9]+/g,'-')} role="img" aria-label={`Logo ${name}`}><ProviderSymbol name={clean}/><b>{code}</b></i>
 }
