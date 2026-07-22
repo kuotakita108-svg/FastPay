@@ -4,7 +4,7 @@ export const serviceConfig={
   data:config('Paket Data','Paket Data','Nomor Handphone','Contoh: 081234567890',['Telkomsel','Indosat','XL','Tri','AXIS']),
   ewallet:config('Top Up E-Wallet','E-Wallet','Nomor E-Wallet','Masukkan nomor akun e-wallet',['DANA','GoPay','OVO','ShopeePay','LinkAja','AstraPay','i.saku']),
   pln:config('Token Listrik PLN','Token PLN','Nomor Meter / ID Pelanggan','Masukkan nomor meter PLN',['PLN']),
-  game:config('Voucher & Top Up Game','Voucher Game','User ID Game','Masukkan User ID',['Mobile Legends','Free Fire','PUBG Mobile','Valorant','Genshin Impact']),
+  game:config('Voucher & Top Up Game','Voucher Game','User ID Game','Masukkan User ID',['Free Fire','PUBG Mobile','Mobile Legends','Roblox','Point Blank','Genshin Impact Genesis Crystals','Valorant Points','Steam Wallet ID','Arena of Valor Voucher']),
   pdam:config('Tagihan PDAM','PDAM','Nomor Pelanggan PDAM','Masukkan nomor pelanggan',['PDAM Jakarta','PDAM Bandung','PDAM Surabaya']),
   bpjs:config('BPJS Kesehatan','BPJS','Nomor Peserta BPJS','Masukkan nomor peserta',['BPJS Kesehatan']),
   telkom:config('Telkom & IndiHome','Internet & TV','Nomor Pelanggan','Masukkan nomor pelanggan',['IndiHome','Telkom']),
