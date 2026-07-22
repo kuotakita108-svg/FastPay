@@ -1,6 +1,6 @@
 import {ChevronRight} from 'lucide-react'
 import {useNavigate} from 'react-router-dom'
-import premiumEmblems from '../../assets/images/fastpay-service-emblems-hd.png'
+import ServiceEmblem from './ServiceEmblem'
 
 const services=[
   {label:'Pulsa',type:'pulsa',tone:'violet',hint:'Semua operator'},
@@ -14,7 +14,7 @@ const services=[
 ]
 
 function ServiceLogo({service}){
-  return <span className={`premium-service-emblem emblem-${service.type}`} style={{'--emblem-sheet':`url(${premiumEmblems})`}} role="img" aria-label={`Logo ${service.label}`}/>
+  return <span className="premium-service-emblem"><ServiceEmblem type={service.type} label={service.label}/></span>
 }
 
 export default function ServiceGrid(){
