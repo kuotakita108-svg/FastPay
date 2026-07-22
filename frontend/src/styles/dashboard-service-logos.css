@@ -1,7 +1,7 @@
 .modern-services .service-grid .branded-service-icon{overflow:visible;border:0!important;background:transparent!important;box-shadow:none!important}
 .modern-services .service-grid .branded-service-icon:before{display:none!important}
 .modern-services .service-grid i.violet{color:#6b50df!important}.modern-services .service-grid i.blue{color:#2183d5!important}.modern-services .service-grid i.mint{color:#0ba477!important}.modern-services .service-grid i.amber{color:#e49a16!important}.modern-services .service-grid i.rose{color:#db477b!important}.modern-services .service-grid i.cyan{color:#149bb4!important}.modern-services .service-grid i.orange{color:#21995b!important}.modern-services .service-grid i.slate{color:#5d6c85!important}
-.service-category-mark{display:grid;place-items:center;width:100%;height:100%;font-style:normal}
-.service-category-mark svg{width:36px!important;height:36px!important;shape-rendering:geometricPrecision}
+.premium-service-emblem{display:block;width:51px;height:51px;background-image:var(--emblem-sheet);background-repeat:no-repeat;background-size:400% 200%;background-color:#fff}
+.emblem-pulsa{background-position:0 0}.emblem-data{background-position:33.333% 0}.emblem-ewallet{background-position:66.666% 0}.emblem-pln{background-position:100% 0}.emblem-game{background-position:0 100%}.emblem-pdam{background-position:33.333% 100%}.emblem-bpjs{background-position:66.666% 100%}.emblem-services{background-position:100% 100%}
 .modern-services .service-grid button:active .branded-service-icon{transform:scale(.92);box-shadow:none!important}
-@media(max-width:350px){.modern-services .service-grid .branded-service-icon{width:48px;height:48px}.service-category-mark svg{width:31px!important;height:31px!important}}
+@media(max-width:350px){.modern-services .service-grid .branded-service-icon,.premium-service-emblem{width:48px;height:48px}}

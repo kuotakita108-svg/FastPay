@@ -10,6 +10,7 @@ html,body,.mobile-app,.mobile-auth-page{text-rendering:optimizeLegibility;-webki
 .modern-services .service-grid i{filter:none!important;text-shadow:none!important}
 .modern-services .service-grid i.violet,.modern-services .service-grid i.blue,.modern-services .service-grid i.mint,.modern-services .service-grid i.amber,.modern-services .service-grid i.rose,.modern-services .service-grid i.cyan,.modern-services .service-grid i.orange,.modern-services .service-grid i.slate{box-shadow:none!important}
 .modern-services .service-grid i b,.service-category-mark em{box-shadow:none!important;text-shadow:none!important}
+.premium-service-emblem{image-rendering:auto;filter:none!important}
 .reference-banner{image-rendering:auto;background-repeat:no-repeat;background-color:#28177f}
 .reference-banner:after{background:linear-gradient(90deg,#201372ed 0%,#30208fc7 34%,#25167c3d 58%,transparent 72%)!important}
 .modern-services .service-grid strong{font-size:10.5px!important;font-weight:800;letter-spacing:0}
