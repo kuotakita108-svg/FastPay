@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"pulsaprime/backend/internal/app"
-	"pulsaprime/backend/internal/config"
+	"kuotakita/backend/internal/app"
+	"kuotakita/backend/internal/config"
 )
 
 func main() {

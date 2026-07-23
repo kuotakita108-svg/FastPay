@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: pulsaprime-app
+    name: kuotakita-app
     runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile

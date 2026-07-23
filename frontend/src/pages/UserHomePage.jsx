@@ -24,7 +24,7 @@ export default function UserHomePage() {
       <FavoriteServices items={transactions} />
       <BillReminder items={transactions} />
       <HelpCard />
-      <footer className="clean-footer"><strong>PulsaPrime</strong><span>·</span><small>Aman, cepat, dan terpercaya</small></footer>
+      <footer className="clean-footer"><strong>KuotaKita</strong><span>Â·</span><small>Aman, cepat, dan terpercaya</small></footer>
       <MobileNav />
     </main>
   )

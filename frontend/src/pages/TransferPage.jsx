@@ -33,7 +33,7 @@ import gopayLogo from "../assets/providers/gopay.png";
 import ovoLogo from "../assets/providers/ovo.svg";
 import shopeepayLogo from "../assets/providers/shopeepay.png";
 import linkajaLogo from "../assets/providers/linkaja.svg";
-import pulsaprimeLogo from "../assets/images/pulsaprime-logo-header.svg";
+import kuotakitaLogo from "../assets/images/kuotakita-logo-header.svg";
 import cimbLogo from "../assets/providers/official/cimb-niaga.svg";
 import permataLogo from "../assets/providers/official/permatabank.svg";
 import jagoLogo from "../assets/providers/official/jago.svg";
@@ -56,8 +56,8 @@ const channels = [
     icon: WalletCards,
   },
   {
-    id: "pulsaprime",
-    title: "Sesama PulsaPrime",
+    id: "kuotakita",
+    title: "Sesama KuotaKita",
     desc: "Kirim instan tanpa biaya",
     icon: UsersRound,
   },
@@ -90,7 +90,7 @@ const providers = {
     "i.saku",
     "AstraPay",
   ],
-  pulsaprime: ["PulsaPrime ID"],
+  kuotakita: ["KuotaKita ID"],
   virtual: [
     "BCA Virtual Account",
     "BRI BRIVA",
@@ -109,7 +109,7 @@ const logoMap = {
   OVO: ovoLogo,
   ShopeePay: shopeepayLogo,
   LinkAja: linkajaLogo,
-  "PulsaPrime ID": pulsaprimeLogo,
+  "KuotaKita ID": kuotakitaLogo,
   "CIMB Niaga": cimbLogo,
   PermataBank: permataLogo,
   "Bank Jago": jagoLogo,
@@ -183,7 +183,7 @@ export default function TransferPage() {
   const review = () => {
     setError("");
     if (value < 10000) return setError("Minimal pengiriman Rp10.000");
-    if (total > available) return setError("Saldo PulsaPrime tidak mencukupi");
+    if (total > available) return setError("Saldo KuotaKita tidak mencukupi");
     setStep("confirm");
   };
   const send = async () => {
@@ -198,8 +198,8 @@ export default function TransferPage() {
             ? "Transfer Bank"
             : channel === "wallet"
               ? "Transfer E-Wallet"
-              : "Transfer PulsaPrime",
-        target: `${recipient.name} · ${recipient.number}`,
+              : "Transfer KuotaKita",
+        target: `${recipient.name} Â· ${recipient.number}`,
         provider: recipient.provider,
         product: withdraw ? "Penarikan Saldo" : `Kirim ke ${recipient.name}`,
         amount: total,
@@ -210,8 +210,8 @@ export default function TransferPage() {
         deductBalance(total);
         const transaction = await createTransaction({
           customer: payload.target,
-          email: user.email || `${user.id}@pulsaprime.id`,
-          method: `${payload.provider} · ${payload.title}`,
+          email: user.email || `${user.id}@kuotakita.id`,
+          method: `${payload.provider} Â· ${payload.title}`,
           amount: total,
         });
         response = { transaction, balance: available - total };
@@ -358,8 +358,8 @@ export default function TransferPage() {
                 <span>
                   {channel === "wallet"
                     ? "Nomor handphone"
-                    : channel === "pulsaprime"
-                      ? "PulsaPrime ID"
+                    : channel === "kuotakita"
+                      ? "KuotaKita ID"
                       : "Nomor rekening / akun"}
                 </span>
                 <div>
@@ -392,7 +392,7 @@ export default function TransferPage() {
               <small>Penerima terverifikasi</small>
               <strong>{recipient.name}</strong>
               <p>
-                {recipient.provider} · {recipient.number}
+                {recipient.provider} Â· {recipient.number}
               </p>
             </div>
             <i>
@@ -489,7 +489,7 @@ export default function TransferPage() {
           </section>
           <p className="transfer-secure">
             <ShieldCheck /> Data dan transaksi dilindungi sistem keamanan
-            PulsaPrime.
+            KuotaKita.
           </p>
           {error && (
             <div className="transfer-error">

@@ -1,3 +1,3 @@
-module pulsaprime/backend
+module kuotakita/backend
 
 go 1.26

@@ -1,12 +1,12 @@
 package app
 
 import (
-	"pulsaprime/backend/internal/config"
-	"pulsaprime/backend/internal/http/handler"
-	"pulsaprime/backend/internal/http/middleware"
-	"pulsaprime/backend/internal/http/router"
-	"pulsaprime/backend/internal/repository/memory"
-	"pulsaprime/backend/internal/service"
+	"kuotakita/backend/internal/config"
+	"kuotakita/backend/internal/http/handler"
+	"kuotakita/backend/internal/http/middleware"
+	"kuotakita/backend/internal/http/router"
+	"kuotakita/backend/internal/repository/memory"
+	"kuotakita/backend/internal/service"
 	"net/http"
 	"os"
 	"path/filepath"

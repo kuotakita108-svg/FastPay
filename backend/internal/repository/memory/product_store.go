@@ -1,6 +1,6 @@
 package memory
 
-import "pulsaprime/backend/internal/domain"
+import "kuotakita/backend/internal/domain"
 
 func (s *Store) FindProducts() []domain.Product {
 	return []domain.Product{

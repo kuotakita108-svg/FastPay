@@ -28,7 +28,7 @@ export default function DashboardDiscover() {
       </div>
       <button type="button" className="dashboard-trust" onClick={() => navigate('/app/profile/security')}>
         <i><ShieldCheck /></i>
-        <span><b>Keamanan akun PulsaPrime</b><small>Aktifkan PIN atau sidik jari untuk melindungi pembayaran.</small></span>
+        <span><b>Keamanan akun KuotaKita</b><small>Aktifkan PIN atau sidik jari untuk melindungi pembayaran.</small></span>
         <em><Sparkles /> Atur</em>
       </button>
     </section>

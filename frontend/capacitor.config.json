@@ -1,9 +1,9 @@
 {
-  "appId": "id.pulsaprime.app",
-  "appName": "PulsaPrime",
+  "appId": "id.kuotakita.app",
+  "appName": "KuotaKita",
   "webDir": "dist",
   "server": {
     "androidScheme": "https",
-    "allowNavigation": ["pulsaprime-app.pages.dev"]
+    "allowNavigation": ["kuotakita-app.pages.dev"]
   }
 }

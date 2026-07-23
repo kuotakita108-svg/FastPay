@@ -1,6 +1,6 @@
 package service
 
-import "pulsaprime/backend/internal/domain"
+import "kuotakita/backend/internal/domain"
 
 func extendedProducts() []domain.Product {
 	return []domain.Product{

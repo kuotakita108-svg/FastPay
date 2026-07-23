@@ -2,9 +2,9 @@ package handler
 
 import (
 	"encoding/json"
-	"pulsaprime/backend/internal/domain"
-	"pulsaprime/backend/internal/http/response"
-	"pulsaprime/backend/internal/service"
+	"kuotakita/backend/internal/domain"
+	"kuotakita/backend/internal/http/response"
+	"kuotakita/backend/internal/service"
 	"fmt"
 	"net/http"
 	"sync"

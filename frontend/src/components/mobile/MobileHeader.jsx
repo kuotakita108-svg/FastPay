@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { Bell, Eye, EyeOff, MessageCircle, Plus } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { rupiah } from '../../utils/currency'
-import PulsaPrimeLogo from '../common/PulsaPrimeLogo'
-import heroImage from '../../assets/images/pulsaprime-ppob-hero-v4.png'
+import KuotaKitaLogo from '../common/KuotaKitaLogo'
+import heroImage from '../../assets/images/kuotakita-ppob-hero-v4.png'
 
 export default function MobileHeader() {
   const { user } = useAuth()
@@ -14,7 +14,7 @@ export default function MobileHeader() {
   return (
     <section className="reference-top">
       <header className="reference-header">
-        <PulsaPrimeLogo className="dashboard-brand" compact />
+        <KuotaKitaLogo className="dashboard-brand" compact />
         <nav>
           <button type="button" onClick={() => navigate('/app/history')} aria-label="Riwayat transaksi">
             <Bell />
@@ -26,7 +26,7 @@ export default function MobileHeader() {
       </header>
       <section className="reference-banner" style={{ backgroundImage: `url(${heroImage})` }}>
         <div className="banner-copy">
-          <span>PULSAPRIME PPOB</span>
+          <span>KUOTAKITA PPOB</span>
           <h1>Semua transaksi<br />jadi lebih mudah.</h1>
           <p>Pulsa, paket data, dan pembayaran digital dalam satu aplikasi.</p>
           <button type="button" onClick={() => navigate('/app/services')}>Mulai Transaksi</button>
@@ -40,7 +40,7 @@ export default function MobileHeader() {
               {visible ? <EyeOff /> : <Eye />}
             </button>
           </span>
-          <strong>{visible ? rupiah(user.balance) : 'Rp •••••••'}</strong>
+          <strong>{visible ? rupiah(user.balance) : 'Rp â€¢â€¢â€¢â€¢â€¢â€¢â€¢'}</strong>
         </div>
         <button className="topup-button" type="button" onClick={() => navigate('/app/balance/topup')}>
           <Plus /> Isi Saldo

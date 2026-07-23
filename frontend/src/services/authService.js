@@ -1,15 +1,15 @@
 import {request} from './http'
 
-const ACCOUNTS_KEY='pulsaprime_local_accounts'
-const connectionError=error=>/Koneksi PulsaPrime gagal|terlalu lama|Failed to fetch/i.test(error?.message||'')
+const ACCOUNTS_KEY='kuotakita_local_accounts'
+const connectionError=error=>/Koneksi KuotaKita gagal|terlalu lama|Failed to fetch/i.test(error?.message||'')
 const readAccounts=()=>{try{return JSON.parse(localStorage.getItem(ACCOUNTS_KEY))||[]}catch{return[]}}
 const hash=async value=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)))).map(byte=>byte.toString(16).padStart(2,'0')).join('')
 const result=user=>({token:`offline.${btoa(user.id)}`,offline:true,user})
 
 const demo={
-  octa11:{id:'USR-001',username:'octa',name:'Octa User',role:'user',balance:275000,phone:'081234567890',email:'user@pulsaprime.id'},
-  octa22:{id:'MST-001',username:'octa',name:'Octa Master',role:'master',balance:25000000,phone:'081234567890',email:'master@pulsaprime.id'},
-  octa33:{id:'ADM-001',username:'octa',name:'Octa Admin',role:'admin',balance:8500000,phone:'081234567890',email:'admin@pulsaprime.id'}
+  octa11:{id:'USR-001',username:'octa',name:'Octa User',role:'user',balance:275000,phone:'081234567890',email:'user@kuotakita.id'},
+  octa22:{id:'MST-001',username:'octa',name:'Octa Master',role:'master',balance:25000000,phone:'081234567890',email:'master@kuotakita.id'},
+  octa33:{id:'ADM-001',username:'octa',name:'Octa Admin',role:'admin',balance:8500000,phone:'081234567890',email:'admin@kuotakita.id'}
 }
 
 export async function login(credentials){

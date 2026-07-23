@@ -1,37 +1,37 @@
-# PulsaPrime
+# KuotaKita
 
-PulsaPrime kini terdiri dari dua aplikasi terpisah:
+KuotaKita kini terdiri dari dua aplikasi terpisah:
 
-- `frontend/` — React + Vite, dijalankan pada port `5173`
-- `backend/` — REST API Go, dijalankan pada port `8080`
+- `frontend/` â€” React + Vite, dijalankan pada port `5173`
+- `backend/` â€” REST API Go, dijalankan pada port `8080`
 
 ## Struktur frontend
 
 ```text
 frontend/
-├── src/components/       # Layout, komponen umum, dashboard, transaksi
-├── src/pages/            # Halaman aplikasi
-├── src/services/         # Komunikasi REST API
-├── src/context/          # Theme dan toast state
-├── src/hooks/            # Reusable React hooks
-├── src/utils/            # Currency, tanggal, nama
-├── src/constants/        # Navigasi aplikasi
-├── src/config/           # Environment frontend
-└── src/styles/           # CSS modular
+â”œâ”€â”€ src/components/       # Layout, komponen umum, dashboard, transaksi
+â”œâ”€â”€ src/pages/            # Halaman aplikasi
+â”œâ”€â”€ src/services/         # Komunikasi REST API
+â”œâ”€â”€ src/context/          # Theme dan toast state
+â”œâ”€â”€ src/hooks/            # Reusable React hooks
+â”œâ”€â”€ src/utils/            # Currency, tanggal, nama
+â”œâ”€â”€ src/constants/        # Navigasi aplikasi
+â”œâ”€â”€ src/config/           # Environment frontend
+â””â”€â”€ src/styles/           # CSS modular
 ```
 
 ## Struktur backend
 
 ```text
 backend/
-├── cmd/api/              # Entrypoint server
-└── internal/
-    ├── app/              # Bootstrap aplikasi
-    ├── config/           # Environment/configuration
-    ├── domain/           # Model bisnis
-    ├── repository/       # Kontrak dan penyimpanan data
-    ├── service/          # Logika bisnis
-    └── http/             # Handler, router, middleware, response
+â”œâ”€â”€ cmd/api/              # Entrypoint server
+â””â”€â”€ internal/
+    â”œâ”€â”€ app/              # Bootstrap aplikasi
+    â”œâ”€â”€ config/           # Environment/configuration
+    â”œâ”€â”€ domain/           # Model bisnis
+    â”œâ”€â”€ repository/       # Kontrak dan penyimpanan data
+    â”œâ”€â”€ service/          # Logika bisnis
+    â””â”€â”€ http/             # Handler, router, middleware, response
 ```
 
 ## Menjalankan aplikasi
@@ -100,6 +100,6 @@ Data backend masih memakai repository in-memory. Kontrak repository sudah dipisa
 
 ## Integrasi ke aplikasi besar
 
-PulsaPrime sudah disiapkan agar bisa berjalan sebagai aplikasi mandiri atau sebagai modul anak pada aplikasi besar melalui `VITE_APP_BASE_PATH`.
+KuotaKita sudah disiapkan agar bisa berjalan sebagai aplikasi mandiri atau sebagai modul anak pada aplikasi besar melalui `VITE_APP_BASE_PATH`.
 
 Panduan lengkap ada di [INTEGRATION.md](./INTEGRATION.md).

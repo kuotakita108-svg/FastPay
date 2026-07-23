@@ -29,7 +29,7 @@ const docs = [
 ]
 
 const terms = [
-  'Pengajuan hanya untuk agent terdaftar PulsaPrime dan akan diverifikasi oleh tim analis.',
+  'Pengajuan hanya untuk agent terdaftar KuotaKita dan akan diverifikasi oleh tim analis.',
   'Limit kredit saldo maksimal Rp500.000 dan dapat berubah sesuai hasil penilaian.',
   'Pelunasan wajib dilakukan sesuai jatuh tempo agar akses kredit tetap aktif.',
   'Data KTP, toko, selfie, dan tanda tangan dipakai untuk validasi permohonan.',
@@ -44,7 +44,7 @@ function DocUpload({item, value, onOpenCamera}) {
     <span>
       <b>{item.title}</b>
       <small>{state === 'checking' ? 'Mengecek kualitas foto...' : value?.error || value?.name || item.hint}</small>
-      {value?.width && <em>{value.width}×{value.height}px · {value.focusScore ? `fokus ${value.focusScore}` : ''} · {state === 'ok' ? 'jelas' : 'perlu ulang'}</em>}
+      {value?.width && <em>{value.width}Ã—{value.height}px Â· {value.focusScore ? `fokus ${value.focusScore}` : ''} Â· {state === 'ok' ? 'jelas' : 'perlu ulang'}</em>}
     </span>
   </button>
 }
@@ -153,7 +153,7 @@ export default function AgentCreditPage() {
   }, [])
 
   useEffect(() => {
-    const key = `pulsaprime_agent_credit_${user?.id || 'guest'}`
+    const key = `kuotakita_agent_credit_${user?.id || 'guest'}`
     const history = JSON.parse(localStorage.getItem(key) || '[]')
     const latest = history[0]
     if (latest?.verifyUntil) setApplication(latest)
@@ -161,7 +161,7 @@ export default function AgentCreditPage() {
 
   useEffect(() => {
     if (!application) return
-    const key = `pulsaprime_agent_credit_${user?.id || 'guest'}`
+    const key = `kuotakita_agent_credit_${user?.id || 'guest'}`
     const history = JSON.parse(localStorage.getItem(key) || '[]')
     const latest = history.find(item => item.id === application.id)
     if (latest && latest.status !== application.status) setApplication(latest)
@@ -253,10 +253,10 @@ export default function AgentCreditPage() {
       form: {...form, amount},
       documents: Object.fromEntries(Object.entries(files).map(([key, file]) => [key, file.file.name])),
     }
-    const key = `pulsaprime_agent_credit_${user?.id || 'guest'}`
+    const key = `kuotakita_agent_credit_${user?.id || 'guest'}`
     const history = JSON.parse(localStorage.getItem(key) || '[]')
     localStorage.setItem(key, JSON.stringify([application, ...history].slice(0, 10)))
-    const allKey = 'pulsaprime_agent_credit_all'
+    const allKey = 'kuotakita_agent_credit_all'
     const allHistory = JSON.parse(localStorage.getItem(allKey) || '[]')
     localStorage.setItem(allKey, JSON.stringify([{...application, userId: user?.id || 'guest', userName: user?.name || form.agentName}, ...allHistory].slice(0, 50)))
     setMessage('')
@@ -332,7 +332,7 @@ export default function AgentCreditPage() {
       <section className="agent-card">
         <header><i><FileText/></i><div><h2>Ketentuan Umum</h2><p>Baca dan setujui sebelum mengajukan.</p></div></header>
         <ol className="agent-terms">{terms.map(term => <li key={term}>{term}</li>)}</ol>
-        <label className="agent-check"><input type="checkbox" checked={accepted} onChange={event => setAccepted(event.target.checked)}/><span>Saya menyatakan data benar dan bersedia mengikuti ketentuan kredit saldo PulsaPrime.</span></label>
+        <label className="agent-check"><input type="checkbox" checked={accepted} onChange={event => setAccepted(event.target.checked)}/><span>Saya menyatakan data benar dan bersedia mengikuti ketentuan kredit saldo KuotaKita.</span></label>
       </section>
       <section className="agent-card">
         <header><i><PenLine/></i><div><h2>Tanda Tangan & Persetujuan</h2><p>Lengkapi tanda tangan agent. Marketing dan analis akan diisi pihak atas setelah pengajuan dikirim.</p></div></header>
@@ -348,7 +348,7 @@ export default function AgentCreditPage() {
           <div className="signature-party locked">
             <strong>MARKETING</strong>
             <div><Stamp/><span>Menunggu verifikasi</span></div>
-            <small>Diisi oleh pihak PulsaPrime</small>
+            <small>Diisi oleh pihak KuotaKita</small>
           </div>
           <div className="signature-party locked">
             <strong>ANALIS</strong>
@@ -361,7 +361,7 @@ export default function AgentCreditPage() {
       {message && <div className="agent-message">{message}</div>}
       <button className="agent-submit">Ajukan Kredit Saldo <ArrowRight/></button>
     </form>
-    <section className="agent-safe-note"><ShieldCheck/><span>Dokumen hanya digunakan untuk verifikasi pengajuan agent PulsaPrime.</span></section>
+    <section className="agent-safe-note"><ShieldCheck/><span>Dokumen hanya digunakan untuk verifikasi pengajuan agent KuotaKita.</span></section>
     </>}
     {cameraDoc && <section className="agent-camera-backdrop" aria-label={`Ambil ${cameraDoc.title}`}>
       <div className="agent-camera-shell">

@@ -1,6 +1,6 @@
 package service
 
-import "pulsaprime/backend/internal/domain"
+import "kuotakita/backend/internal/domain"
 
 type customerReader interface{ FindCustomers() []domain.Customer }
 type CustomerService struct{ repo customerReader }

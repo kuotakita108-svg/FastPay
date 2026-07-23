@@ -1,7 +1,7 @@
 package service
 
 import (
-	"pulsaprime/backend/internal/domain"
+	"kuotakita/backend/internal/domain"
 	"testing"
 )
 

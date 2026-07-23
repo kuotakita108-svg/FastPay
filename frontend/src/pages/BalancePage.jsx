@@ -24,12 +24,12 @@ export default function BalancePage(){
   const navigate = useNavigate()
   const [visible,setVisible] = useState(true)
   const balance = Number(user?.balance ?? 0)
-  const walletId = user?.id || user?.username || 'PULSAPRIME'
+  const walletId = user?.id || user?.username || 'KUOTAKITA'
   const topUp = () => navigate('/app/balance/topup')
 
   return (
     <main className="mobile-app balance-page">
-      <SubPageHeader title="Saldo PulsaPrime" description="Kelola uang dan aktivitas dompetmu"/>
+      <SubPageHeader title="Saldo KuotaKita" description="Kelola uang dan aktivitas dompetmu"/>
 
       <section className="wallet-hero wallet-hero-rich">
         <div className="wallet-title">
@@ -38,10 +38,10 @@ export default function BalancePage(){
             {visible ? <EyeOff/> : <Eye/>}
           </button>
         </div>
-        <strong>{visible ? rupiah(balance) : 'Rp •••••••'}</strong>
-        <small>Siap dipakai untuk semua transaksi PulsaPrime</small>
+        <strong>{visible ? rupiah(balance) : 'Rp â€¢â€¢â€¢â€¢â€¢â€¢â€¢'}</strong>
+        <small>Siap dipakai untuk semua transaksi KuotaKita</small>
         <div className="wallet-number">
-          <span>PULSAPRIME WALLET</span>
+          <span>KUOTAKITA WALLET</span>
           <b>{walletId}</b>
         </div>
       </section>

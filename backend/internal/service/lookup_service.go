@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"pulsaprime/backend/internal/domain"
+	"kuotakita/backend/internal/domain"
 	"fmt"
 	"strings"
 	"unicode"

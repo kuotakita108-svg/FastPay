@@ -1,4 +1,4 @@
-package id.pulsaprime.app;
+package id.kuotakita.app;
 
 import com.getcapacitor.BridgeActivity;
 

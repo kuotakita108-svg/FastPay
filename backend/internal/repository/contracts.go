@@ -1,6 +1,6 @@
 package repository
 
-import "pulsaprime/backend/internal/domain"
+import "kuotakita/backend/internal/domain"
 
 type TransactionRepository interface {
 	FindAll() []domain.Transaction

@@ -3,8 +3,8 @@ import {CheckCircle2, Clock3, ShieldCheck, XCircle} from 'lucide-react'
 import PageHeader from '../components/common/PageHeader'
 import {rupiah} from '../utils/currency'
 
-const allKey = 'pulsaprime_agent_credit_all'
-const userKey = userId => `pulsaprime_agent_credit_${userId || 'guest'}`
+const allKey = 'kuotakita_agent_credit_all'
+const userKey = userId => `kuotakita_agent_credit_${userId || 'guest'}`
 
 const readAll = () => {
   try { return JSON.parse(localStorage.getItem(allKey)) || [] } catch { return [] }
@@ -34,7 +34,7 @@ export default function CreditApplicationsPage() {
       {items.length === 0 ? <div className="credit-review-empty"><ShieldCheck/><strong>Belum ada pengajuan</strong><span>Pengajuan kredit saldo dari aplikasi user akan tampil di sini.</span></div> : <div className="credit-review-list">
         {items.map(item => <article className={`credit-review-card status-${item.status.toLowerCase().replaceAll(' ', '-')}`} key={item.id}>
           <header>
-            <div><span>{item.id}</span><h3>{item.form.agentName || item.userName}</h3><p>{item.form.storeName} · {item.form.whatsapp}</p></div>
+            <div><span>{item.id}</span><h3>{item.form.agentName || item.userName}</h3><p>{item.form.storeName} Â· {item.form.whatsapp}</p></div>
             <b>{rupiah(item.form.amount)}</b>
           </header>
           <div className="credit-review-grid">

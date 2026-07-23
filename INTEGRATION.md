@@ -1,6 +1,6 @@
-# PulsaPrime sebagai modul anak aplikasi
+# KuotaKita sebagai modul anak aplikasi
 
-Dokumen ini dipakai saat PulsaPrime mau digabung/head ke aplikasi besar sebagai modul PPOB.
+Dokumen ini dipakai saat KuotaKita mau digabung/head ke aplikasi besar sebagai modul PPOB.
 
 ## Mode standalone
 
@@ -14,21 +14,21 @@ VITE_API_URL=/api/v1
 URL aplikasi berjalan dari root domain, contoh:
 
 ```text
-https://pulsaprime-app.pages.dev/
+https://kuotakita-app.pages.dev/
 ```
 
 ## Mode anak/sub-app
 
-Kalau nanti aplikasi besar memasang PulsaPrime di path khusus, misalnya:
+Kalau nanti aplikasi besar memasang KuotaKita di path khusus, misalnya:
 
 ```text
-https://domain-apk-besar.com/pulsaprime
+https://domain-apk-besar.com/kuotakita
 ```
 
 atur environment frontend:
 
 ```env
-VITE_APP_BASE_PATH=/pulsaprime
+VITE_APP_BASE_PATH=/kuotakita
 VITE_API_URL=https://domain-api-besar.com/api/v1
 ```
 
@@ -39,7 +39,7 @@ cd frontend
 npm run build
 ```
 
-Hasil `frontend/dist` bisa ditempel di server/aplikasi besar pada path `/pulsaprime`.
+Hasil `frontend/dist` bisa ditempel di server/aplikasi besar pada path `/kuotakita`.
 
 ## Hal yang harus disambungkan dari aplikasi besar
 
@@ -50,16 +50,16 @@ Hasil `frontend/dist` bisa ditempel di server/aplikasi besar pada path `/pulsapr
 
 ## Kontrak integrasi utama
 
-PulsaPrime membaca konfigurasi dari:
+KuotaKita membaca konfigurasi dari:
 
 - `VITE_APP_NAME`
 - `VITE_API_URL`
 - `VITE_APP_BASE_PATH`
 
-PulsaPrime menyimpan sesi pengguna di:
+KuotaKita menyimpan sesi pengguna di:
 
 ```text
-localStorage.pulsaprime_session
+localStorage.kuotakita_session
 ```
 
 Format umum:
@@ -79,7 +79,7 @@ Format umum:
 }
 ```
 
-Kalau aplikasi besar sudah punya login sendiri, parent app bisa mengisi session ini sebelum membuka `/pulsaprime/app`.
+Kalau aplikasi besar sudah punya login sendiri, parent app bisa mengisi session ini sebelum membuka `/kuotakita/app`.
 
 ## Catatan penting
 

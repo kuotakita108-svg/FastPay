@@ -15,11 +15,11 @@ export default function TransactionReceipt({transaction, order = {}, user = {}, 
   const [message, setMessage] = useState('')
   const [printerOpen, setPrinterOpen] = useState(printMode)
   if (!transaction) return null
-  const provider = transaction.provider || order.provider || (transaction.method || '').split('·')[0]?.trim()
-  const service = transaction.title || order.title || (transaction.method || '').split('·')[1]?.trim() || 'PulsaPrime'
+  const provider = transaction.provider || order.provider || (transaction.method || '').split('Â·')[0]?.trim()
+  const service = transaction.title || order.title || (transaction.method || '').split('Â·')[1]?.trim() || 'KuotaKita'
   const product = transaction.product || order.product || service
   const target = transaction.target || order.target || transaction.customer
-  const customerName = transaction.customer_name || order.customer_name || transaction.customerName || 'Pelanggan PulsaPrime'
+  const customerName = transaction.customer_name || order.customer_name || transaction.customerName || 'Pelanggan KuotaKita'
   const orderNumber = transaction.order_number || transaction.orderNumber || transaction.id
   const serial = transaction.sn || transaction.serial || `SN-${String(transaction.id || '0000000000').replace(/\D/g, '').slice(-10)}`
   const print = () => window.print()
@@ -58,7 +58,7 @@ export default function TransactionReceipt({transaction, order = {}, user = {}, 
     <article className="thermal-receipt">
       <header>
         <i><ReceiptText/></i>
-        <h2>PulsaPrime</h2>
+        <h2>KuotaKita</h2>
         <p>Struk Transaksi Resmi Agen</p>
       </header>
       <section className="receipt-status">
@@ -74,8 +74,8 @@ export default function TransactionReceipt({transaction, order = {}, user = {}, 
         {line('Produk', product)}
         {line('Nama Tujuan', customerName)}
         {line('Nomor Tujuan', target)}
-        {line('Metode', transaction.payment_method || 'Saldo PulsaPrime')}
-        {line('Agen', user.name || user.username || 'Agen PulsaPrime')}
+        {line('Metode', transaction.payment_method || 'Saldo KuotaKita')}
+        {line('Agen', user.name || user.username || 'Agen KuotaKita')}
       </section>
       <section className="receipt-total">
         <span>Total Bayar</span>

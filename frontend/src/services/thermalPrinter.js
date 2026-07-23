@@ -46,11 +46,11 @@ const pad = (label, value, width = WIDTH) => {
 }
 
 export function buildThermalReceipt({transaction, order = {}, user = {}}) {
-  const provider = transaction.provider || order.provider || (transaction.method || '').split('·')[0]?.trim()
-  const service = transaction.title || order.title || (transaction.method || '').split('·')[1]?.trim() || 'PulsaPrime'
+  const provider = transaction.provider || order.provider || (transaction.method || '').split('Â·')[0]?.trim()
+  const service = transaction.title || order.title || (transaction.method || '').split('Â·')[1]?.trim() || 'KuotaKita'
   const product = transaction.product || order.product || service
   const target = transaction.target || order.target || transaction.customer
-  const customerName = transaction.customer_name || order.customer_name || transaction.customerName || 'Pelanggan PulsaPrime'
+  const customerName = transaction.customer_name || order.customer_name || transaction.customerName || 'Pelanggan KuotaKita'
   const orderNumber = transaction.order_number || transaction.orderNumber || transaction.id
   const serial = transaction.sn || transaction.serial || `SN-${String(transaction.id || '0000000000').replace(/\D/g, '').slice(-10)}`
 
@@ -58,7 +58,7 @@ export function buildThermalReceipt({transaction, order = {}, user = {}}) {
     INIT,
     CENTER,
     BOLD_ON,
-    'PULSAPRIME\n',
+    'KUOTAKITA\n',
     BOLD_OFF,
     centerText('Struk Transaksi Resmi Agen'),
     centerText('Pulsa Cepat - Transaksi Hebat'),
@@ -75,8 +75,8 @@ export function buildThermalReceipt({transaction, order = {}, user = {}}) {
     pad('Produk', product),
     pad('Nama', customerName),
     pad('Tujuan', target),
-    pad('Metode', transaction.payment_method || 'Saldo PulsaPrime'),
-    pad('Agen', user.name || user.username || 'Agen PulsaPrime'),
+    pad('Metode', transaction.payment_method || 'Saldo KuotaKita'),
+    pad('Agen', user.name || user.username || 'Agen KuotaKita'),
     LINE,
     BOLD_ON,
     pad('TOTAL', money(transaction.amount || order.amount || 0)),

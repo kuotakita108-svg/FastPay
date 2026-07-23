@@ -27,12 +27,12 @@ export default function CheckoutPage() {
     id: transaction.id,
     customer: transaction.customer || state.target,
     target: state.target,
-    customer_name: state.customer_name || transaction.customer_name || 'Pelanggan PulsaPrime',
+    customer_name: state.customer_name || transaction.customer_name || 'Pelanggan KuotaKita',
     provider: state.provider,
     title: state.title,
     product: state.product,
     amount: state.amount,
-    payment_method: 'Saldo PulsaPrime',
+    payment_method: 'Saldo KuotaKita',
     order_number: transaction.order_number || makeReceiptNumber('ORD'),
     sn: transaction.sn || makeReceiptNumber('SN'),
   })
@@ -47,14 +47,14 @@ export default function CheckoutPage() {
         const transaction = await createTransaction({
           customer: state.target,
           target: state.target,
-          customer_name: state.customer_name || 'Pelanggan PulsaPrime',
-          email: user.email || `${user.id}@pulsaprime.id`,
-          method: `${state.provider} · ${state.title}`,
+          customer_name: state.customer_name || 'Pelanggan KuotaKita',
+          email: user.email || `${user.id}@kuotakita.id`,
+          method: `${state.provider} Â· ${state.title}`,
           provider: state.provider,
           title: state.title,
           product: state.product,
           amount: state.amount,
-          payment_method: 'Saldo PulsaPrime',
+          payment_method: 'Saldo KuotaKita',
         })
         response = {transaction, balance: Number(user.balance) - Number(state.amount)}
       } else {
@@ -104,7 +104,7 @@ export default function CheckoutPage() {
     </section>
     <section className="checkout-card">
       <h2>Metode Pembayaran</h2>
-      <button className="payment-method selected"><i><WalletCards/></i><div><strong>Saldo PulsaPrime</strong><small>Saldo tersedia {rupiah(user.balance)}</small></div><Check/></button>
+      <button className="payment-method selected"><i><WalletCards/></i><div><strong>Saldo KuotaKita</strong><small>Saldo tersedia {rupiah(user.balance)}</small></div><Check/></button>
       <button className="payment-method disabled" disabled><i><ShieldCheck/></i><div><strong>QRIS & Virtual Account</strong><small>Aktif setelah gateway pembayaran terhubung</small></div><ChevronRight/></button>
     </section>
     <section className="checkout-card summary">

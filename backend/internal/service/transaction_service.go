@@ -2,8 +2,8 @@ package service
 
 import (
 	"errors"
-	"pulsaprime/backend/internal/domain"
-	"pulsaprime/backend/internal/repository"
+	"kuotakita/backend/internal/domain"
+	"kuotakita/backend/internal/repository"
 	"strings"
 )
 

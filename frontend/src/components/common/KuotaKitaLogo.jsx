@@ -1,6 +1,6 @@
-export default function PulsaPrimeLogo({ className = '', compact = false }) {
+export default function KuotaKitaLogo({ className = '', compact = false }) {
   return (
-    <div className={`pp-title-logo ${compact ? 'compact' : ''} ${className}`} aria-label="PulsaPrime - Pulsa Cepat, Transaksi Hebat">
+    <div className={`pp-title-logo ${compact ? 'compact' : ''} ${className}`} aria-label="KuotaKita - Pulsa Cepat, Transaksi Hebat">
       <span className="pp-title-mark">P</span>
       <span className="pp-title-main">
         <span className="pp-title-word">
@@ -8,7 +8,7 @@ export default function PulsaPrimeLogo({ className = '', compact = false }) {
         </span>
         <small>PULSA CEPAT - TRANSAKSI HEBAT</small>
       </span>
-      <span className="pp-title-bolt" aria-hidden="true">⚡</span>
+      <span className="pp-title-bolt" aria-hidden="true">âš¡</span>
     </div>
   )
 }

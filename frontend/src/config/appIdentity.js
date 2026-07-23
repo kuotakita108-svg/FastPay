@@ -1,14 +1,14 @@
 export const appIdentity = {
-  name: 'PulsaPrime',
-  legalName: 'PulsaPrime Indonesia',
-  domain: 'pulsaprime.id',
+  name: 'KuotaKita',
+  legalName: 'KuotaKita Indonesia',
+  domain: 'kuotakita.id',
   emails: {
-    app: 'app@pulsaprime.id',
-    support: 'support@pulsaprime.id',
-    business: 'hello@pulsaprime.id',
-    billing: 'billing@pulsaprime.id',
-    privacy: 'privacy@pulsaprime.id',
-    noReply: 'noreply@pulsaprime.id'
+    app: 'app@kuotakita.id',
+    support: 'support@kuotakita.id',
+    business: 'hello@kuotakita.id',
+    billing: 'billing@kuotakita.id',
+    privacy: 'privacy@kuotakita.id',
+    noReply: 'noreply@kuotakita.id'
   },
   whatsapp: '6283153214390'
 }

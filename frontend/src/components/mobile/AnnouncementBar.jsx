@@ -1,1 +1,1 @@
-import {Megaphone,ChevronRight} from 'lucide-react';export default function AnnouncementBar(){return <button className="announcement"><span><Megaphone/>Info PulsaPrime</span><p>Transaksi semua operator normal dan tersedia 24 jam.</p><ChevronRight/></button>}
+import {Megaphone,ChevronRight} from 'lucide-react';export default function AnnouncementBar(){return <button className="announcement"><span><Megaphone/>Info KuotaKita</span><p>Transaksi semua operator normal dan tersedia 24 jam.</p><ChevronRight/></button>}

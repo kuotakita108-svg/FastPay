@@ -3,8 +3,8 @@ import {useNavigate, useSearchParams} from 'react-router-dom'
 import {ArrowRight, CheckCircle2, Eye, EyeOff, LockKeyhole, Mail, Phone, ShieldCheck, Sparkles, UserRound} from 'lucide-react'
 import {useAuth} from '../context/AuthContext'
 import {googleLogin, resetPassword as resetPasswordRequest} from '../services/authService'
-import PulsaPrimeLogo from '../components/common/PulsaPrimeLogo'
-import loginHero from '../assets/images/pulsaprime-ppob-hero-v4.png'
+import KuotaKitaLogo from '../components/common/KuotaKitaLogo'
+import loginHero from '../assets/images/kuotakita-ppob-hero-v4.png'
 
 const loginInitial = {username: '', password: ''}
 const registerInitial = {name: '', username: '', phone: '', email: '', password: ''}
@@ -64,7 +64,7 @@ export default function LoginPage() {
   }
 
   const props = {form, onChange: change}
-  const title = mode === 'login' ? 'Selamat datang kembali' : mode === 'register' ? 'Mulai bersama PulsaPrime' : 'Reset kata sandi akun'
+  const title = mode === 'login' ? 'Selamat datang kembali' : mode === 'register' ? 'Mulai bersama KuotaKita' : 'Reset kata sandi akun'
   const subtitle = mode === 'reset'
     ? 'Masukkan akun dan kata sandi baru agar kamu bisa masuk lagi.'
     : mode === 'login'
@@ -78,9 +78,9 @@ export default function LoginPage() {
         <div className="auth-hero-shade"/>
         <div className="auth-light-trail trail-one"/>
         <div className="auth-light-trail trail-two"/>
-        <PulsaPrimeLogo className="auth-title-logo" />
+        <KuotaKitaLogo className="auth-title-logo" />
         <div className="auth-welcome-copy">
-          <span>AMAN · CEPAT · TERPERCAYA</span>
+          <span>AMAN Â· CEPAT Â· TERPERCAYA</span>
           <h1>{title}</h1>
           <p>{subtitle}</p>
           <div className="auth-trust"><b><ShieldCheck/>Akun terlindungi</b><b><Sparkles/>Aktif 24 jam</b></div>
@@ -92,7 +92,7 @@ export default function LoginPage() {
           <button type="button" className={mode === 'register' ? 'active' : ''} onClick={() => switchMode('register')}>Daftar</button>
         </div>
         {mode !== 'reset' && <button type="button" className="auth-google" onClick={googleLogin}><GoogleMark/><span>{mode === 'login' ? 'Masuk dengan Google' : 'Daftar dengan Google'}</span><ArrowRight/></button>}
-        <div className="auth-divider"><span/>{mode === 'reset' ? 'buat kata sandi baru' : `atau gunakan ${mode === 'login' ? 'akun PulsaPrime' : 'data diri tanpa Google'}`}<span/></div>
+        <div className="auth-divider"><span/>{mode === 'reset' ? 'buat kata sandi baru' : `atau gunakan ${mode === 'login' ? 'akun KuotaKita' : 'data diri tanpa Google'}`}<span/></div>
         <form onSubmit={submit}>
           {mode === 'register' && <>
             <Field {...props} name="name" label="Nama lengkap" icon={UserRound} placeholder="Nama sesuai identitas"/>
@@ -115,11 +115,11 @@ export default function LoginPage() {
           {mode === 'login' && <button type="button" className="forgot-button" onClick={() => switchMode('reset')}>Lupa kata sandi?</button>}
           {error && <div className="auth-error">{error}</div>}
           {notice && <div className="auth-success">{notice}</div>}
-          <button className="auth-submit" disabled={loading}>{loading ? 'Mohon tunggu...' : mode === 'login' ? 'Masuk ke PulsaPrime' : mode === 'register' ? 'Buat Akun PulsaPrime' : 'Reset Kata Sandi'}<ArrowRight/></button>
+          <button className="auth-submit" disabled={loading}>{loading ? 'Mohon tunggu...' : mode === 'login' ? 'Masuk ke KuotaKita' : mode === 'register' ? 'Buat Akun KuotaKita' : 'Reset Kata Sandi'}<ArrowRight/></button>
         </form>
         {mode === 'register' && <div className="register-benefits"><span><CheckCircle2/>Tanpa Gmail</span><span><CheckCircle2/>Saldo awal Rp0</span><span><CheckCircle2/>Langsung aktif</span></div>}
         <p className="auth-switch">{mode === 'login' ? 'Belum punya akun?' : mode === 'register' ? 'Sudah punya akun?' : 'Ingat kata sandi?'} <button type="button" onClick={() => switchMode(mode === 'login' ? 'register' : 'login')}>{mode === 'login' ? 'Daftar sekarang' : 'Masuk di sini'}</button></p>
-        <small className="auth-terms">Dengan melanjutkan, kamu menyetujui Syarat Layanan dan Kebijakan Privasi PulsaPrime.</small>
+        <small className="auth-terms">Dengan melanjutkan, kamu menyetujui Syarat Layanan dan Kebijakan Privasi KuotaKita.</small>
       </section>
     </section>
   </main>

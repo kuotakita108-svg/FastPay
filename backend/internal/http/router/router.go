@@ -1,7 +1,7 @@
 package router
 
 import (
-	"pulsaprime/backend/internal/http/handler"
+	"kuotakita/backend/internal/http/handler"
 	"net/http"
 )
 

@@ -56,7 +56,7 @@ export default function HistoryPage() {
   }
 
   return <main className="mobile-app history-page">
-    <SubPageHeader title="Riwayat Transaksi" description="Pantau semua transaksi PulsaPrime"/>
+    <SubPageHeader title="Riwayat Transaksi" description="Pantau semua transaksi KuotaKita"/>
     <section className="history-tools">
       <div className="history-search"><Search/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Cari nomor atau ID transaksi"/></div>
       <div className="period-filters">{[['all', 'Semua'], ['today', 'Hari ini'], ['yesterday', 'Kemarin'], ['week', '7 Hari']].map(([key, label]) => <button className={filter === key ? 'active' : ''} onClick={() => setFilter(key)} key={key}>{label}</button>)}</div>
@@ -65,7 +65,7 @@ export default function HistoryPage() {
     {loading ? <LoadingState cards={3}/> : <section className="history-list clean-history-list">
       {items.map(item => <button type="button" className="history-item-card" key={item.id} onClick={() => openDetail(item)}>
         <i><ReceiptText/></i>
-        <div><strong>{safe(item.customer)}</strong><small>{safe(item.method)}</small><span>{formatDate(item.created_at)} · {safe(item.id)}</span></div>
+        <div><strong>{safe(item.customer)}</strong><small>{safe(item.method)}</small><span>{formatDate(item.created_at)} Â· {safe(item.id)}</span></div>
         <aside><b>{rupiah(item.amount)}</b><StatusBadge status={item.status}/></aside>
         <ChevronRight/>
       </button>)}

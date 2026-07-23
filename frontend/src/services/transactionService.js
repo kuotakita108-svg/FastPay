@@ -1,7 +1,7 @@
 import {request} from './http'
-const session=()=>{try{return JSON.parse(localStorage.getItem('pulsaprime_session'))}catch{return null}}
-const key=()=>`pulsaprime_transactions_${session()?.user?.id||'guest'}`
-const receiptKey=()=>`pulsaprime_receipts_${session()?.user?.id||'guest'}`
+const session=()=>{try{return JSON.parse(localStorage.getItem('kuotakita_session'))}catch{return null}}
+const key=()=>`kuotakita_transactions_${session()?.user?.id||'guest'}`
+const receiptKey=()=>`kuotakita_receipts_${session()?.user?.id||'guest'}`
 const localList=()=>{try{return JSON.parse(localStorage.getItem(key()))||[]}catch{return[]}}
 const receiptList=()=>{try{return JSON.parse(localStorage.getItem(receiptKey()))||{}}catch{return{}}}
 const saveLocalItem=item=>localStorage.setItem(key(),JSON.stringify([item,...localList().filter(transaction=>transaction.id!==item.id)]))

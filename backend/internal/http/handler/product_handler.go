@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"pulsaprime/backend/internal/http/response"
-	"pulsaprime/backend/internal/service"
+	"kuotakita/backend/internal/http/response"
+	"kuotakita/backend/internal/service"
 	"net/http"
 )
 
