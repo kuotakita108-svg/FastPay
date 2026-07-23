@@ -1,5 +1,5 @@
 import {useRef, useState} from 'react'
-import {ArrowRight, Camera, CheckCircle2, FileText, PenLine, ShieldCheck, Store, Upload, UserRound, WalletCards, X} from 'lucide-react'
+import {ArrowRight, Camera, CheckCircle2, FileImage, FileText, PenLine, RotateCcw, ShieldCheck, Store, Upload, UserRound, WalletCards, X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
@@ -37,15 +37,47 @@ const terms = [
 
 function DocUpload({item, value, onChange}) {
   const state = value?.status || ''
-  return <label className={`agent-doc-upload ${state === 'ok' ? 'filled' : ''} ${state === 'error' ? 'error' : ''} ${state === 'checking' ? 'checking' : ''}`}>
-    <input type="file" accept="image/*" onChange={event => onChange(item.key, event.target.files?.[0] || null)}/>
+  const pick = source => event => onChange(item.key, event.target.files?.[0] || null, source)
+  return <div className={`agent-doc-upload ${state === 'ok' ? 'filled' : ''} ${state === 'error' ? 'error' : ''} ${state === 'checking' ? 'checking' : ''}`}>
     {value?.preview ? <img src={value.preview} alt="" aria-hidden="true"/> : <i>{state === 'ok' ? <CheckCircle2/> : <Upload/>}</i>}
     <span>
       <b>{item.title}</b>
       <small>{state === 'checking' ? 'Mengecek kualitas foto...' : value?.error || value?.name || item.hint}</small>
-      {value?.width && <em>{value.width}×{value.height}px · {state === 'ok' ? 'jelas' : 'perlu ulang'}</em>}
+      {value?.width && <em>{value.width}×{value.height}px · {value.focusScore ? `fokus ${value.focusScore}` : ''} · {state === 'ok' ? 'jelas' : 'perlu ulang'}</em>}
+      <div className="agent-doc-actions">
+        <label><Camera/>Kamera belakang<input type="file" accept="image/*" capture="environment" onChange={pick('camera-back')}/></label>
+        <label><RotateCcw/>Kamera depan<input type="file" accept="image/*" capture="user" onChange={pick('camera-front')}/></label>
+        <label><FileImage/>Galeri<input type="file" accept="image/*" onChange={pick('gallery')}/></label>
+      </div>
     </span>
-  </label>
+  </div>
+}
+
+function imageSharpnessScore(image) {
+  const size = 140
+  const canvas = document.createElement('canvas')
+  canvas.width = size
+  canvas.height = size
+  const ctx = canvas.getContext('2d', {willReadFrequently: true})
+  ctx.drawImage(image, 0, 0, size, size)
+  const data = ctx.getImageData(0, 0, size, size).data
+  let totalBrightness = 0
+  let totalDiff = 0
+  let count = 0
+  for (let y = 0; y < size - 1; y += 1) {
+    for (let x = 0; x < size - 1; x += 1) {
+      const index = (y * size + x) * 4
+      const right = (y * size + x + 1) * 4
+      const down = ((y + 1) * size + x) * 4
+      const gray = data[index] * 0.299 + data[index + 1] * 0.587 + data[index + 2] * 0.114
+      const grayRight = data[right] * 0.299 + data[right + 1] * 0.587 + data[right + 2] * 0.114
+      const grayDown = data[down] * 0.299 + data[down + 1] * 0.587 + data[down + 2] * 0.114
+      totalBrightness += gray
+      totalDiff += Math.abs(gray - grayRight) + Math.abs(gray - grayDown)
+      count += 1
+    }
+  }
+  return {brightness: Math.round(totalBrightness / count), focusScore: Number((totalDiff / (count * 2)).toFixed(1))}
 }
 
 function checkImageQuality(file, key) {
@@ -61,9 +93,13 @@ function checkImageQuality(file, key) {
     image.onload = () => {
       const width = image.naturalWidth
       const height = image.naturalHeight
+      const quality = imageSharpnessScore(image)
       if (file.size < minimumSize) return resolve({file, name: file.name, preview, status: 'error', error: 'Foto terlalu kecil/terkompres. Ulangi dengan kamera lebih jelas.', width, height})
       if (width < minimumWidth || height < minimumHeight) return resolve({file, name: file.name, preview, status: 'error', error: 'Resolusi foto rendah. Ulangi agar KTP/wajah terbaca jelas.', width, height})
-      resolve({file, name: file.name, preview, status: 'ok', width, height})
+      if (quality.brightness < 35) return resolve({file, name: file.name, preview, status: 'error', error: 'Foto terlalu gelap. Ulangi di tempat yang lebih terang.', width, height, ...quality})
+      if (quality.brightness > 242) return resolve({file, name: file.name, preview, status: 'error', error: 'Foto terlalu terang/silau. Ulangi tanpa pantulan cahaya.', width, height, ...quality})
+      if (quality.focusScore < 4.2) return resolve({file, name: file.name, preview, status: 'error', error: 'Foto terdeteksi blur. Ulangi dan tahan kamera lebih stabil.', width, height, ...quality})
+      resolve({file, name: file.name, preview, status: 'ok', width, height, ...quality})
     }
     image.onerror = () => fail('Gambar rusak atau tidak bisa dibaca. Upload ulang foto yang jelas.')
     image.src = preview
@@ -81,12 +117,12 @@ export default function AgentCreditPage() {
   const [message, setMessage] = useState('')
 
   const update = event => setForm({...form, [event.target.name]: event.target.value})
-  const updateFile = async (key, file) => {
+  const updateFile = async (key, file, source = 'gallery') => {
     if (!file) return setFiles(current => ({...current, [key]: null}))
     const preview = URL.createObjectURL(file)
-    setFiles(current => ({...current, [key]: {file, name: file.name, preview, status: 'checking'}}))
+    setFiles(current => ({...current, [key]: {file, name: file.name, preview, status: 'checking', source}}))
     const checked = await checkImageQuality(file, key)
-    setFiles(current => ({...current, [key]: checked}))
+    setFiles(current => ({...current, [key]: {...checked, source}}))
   }
   const position = event => {
     const rect = canvasRef.current.getBoundingClientRect()
