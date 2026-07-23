@@ -14,7 +14,10 @@ export default function AllServicesPage(){
     (category==='Semua'||group===category)&&label.toLowerCase().includes(query.trim().toLowerCase())
   ),[query,category])
   const visibleGroups=groups.slice(1).filter(group=>filtered.some(item=>item[3]===group))
-  const open=type=>navigate(serviceConfig[type]?`/app/buy/${type}`:'/app/buy/pulsa')
+  const open=type=>{
+    if(type==='agentcredit')return navigate('/app/balance/credit')
+    return navigate(serviceConfig[type]?`/app/buy/${type}`:'/app/buy/pulsa')
+  }
 
   return <main className="mobile-app services-page">
     <header className="services-head"><button type="button" onClick={()=>navigate(-1)}><ArrowLeft/></button><div><strong>Semua Layanan</strong><small>Pilih kebutuhan transaksimu</small></div><i><ShieldCheck/></i></header>

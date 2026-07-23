@@ -31,7 +31,7 @@ import parking from '../../assets/service-emblems-hd-v2/parking.png'
 import delivery from '../../assets/service-emblems-hd-v2/delivery.png'
 
 const emblems={
-  pulsa,data,ewallet,pln,game,pdam,bpjs,services,pascabayar,bank,gas,internet,tv,voucher,school,insurance,vehicle,property,travel,qris,emoney,toll,streaming,esim,health,creditcard,multifinance,tax,zakat,parking,delivery,
+  pulsa,data,ewallet,pln,game,pdam,bpjs,services,pascabayar,bank,gas,internet,tv,voucher,school,insurance,vehicle,property,travel,qris,emoney,toll,streaming,esim,health,creditcard,multifinance,tax,zakat,parking,delivery,agentcredit:multifinance,
 }
 
 export default function ServiceEmblem({type,label}){

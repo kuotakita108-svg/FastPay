@@ -271,7 +271,6 @@ export default function AgentCreditPage() {
   const approved = application?.status === 'Disetujui'
   const rejected = application?.status === 'Ditolak'
   const waitingDecision = application && !approved && !rejected && remainingMs === 0
-
   return <main className="mobile-app agent-credit-page">
     <SubPageHeader title="Kredit Saldo Agent" description="Ajukan tanam saldo langsung dari aplikasi" back/>
     <section className="agent-credit-hero">
@@ -336,10 +335,26 @@ export default function AgentCreditPage() {
         <label className="agent-check"><input type="checkbox" checked={accepted} onChange={event => setAccepted(event.target.checked)}/><span>Saya menyatakan data benar dan bersedia mengikuti ketentuan kredit saldo PulsaPrime.</span></label>
       </section>
       <section className="agent-card">
-        <header><i><PenLine/></i><div><h2>Tanda Tangan Online</h2><p>Gores tanda tangan langsung di kotak ini.</p></div></header>
-        <div className="signature-box">
-          <canvas ref={canvasRef} width="640" height="220" onPointerDown={startDraw} onPointerMove={moveDraw} onPointerUp={stopDraw} onPointerCancel={stopDraw} onPointerLeave={stopDraw}/>
-          {!signed && <span>Tanda tangan di sini</span>}
+        <header><i><PenLine/></i><div><h2>Tanda Tangan & Persetujuan</h2><p>Lengkapi tanda tangan agent. Marketing dan analis akan diisi pihak atas setelah pengajuan dikirim.</p></div></header>
+        <div className="signature-approval-grid">
+          <div className="signature-party active">
+            <strong>AGENT</strong>
+            <div className="signature-box">
+              <canvas ref={canvasRef} width="640" height="220" onPointerDown={startDraw} onPointerMove={moveDraw} onPointerUp={stopDraw} onPointerCancel={stopDraw} onPointerLeave={stopDraw}/>
+              {!signed && <span>Tanda tangan agent</span>}
+            </div>
+            <small>{form.agentName || user?.name || 'Nama & tanda tangan'}</small>
+          </div>
+          <div className="signature-party locked">
+            <strong>MARKETING</strong>
+            <div><Stamp/><span>Menunggu verifikasi</span></div>
+            <small>Diisi oleh pihak PulsaPrime</small>
+          </div>
+          <div className="signature-party locked">
+            <strong>ANALIS</strong>
+            <div><ShieldCheck/><span>Menunggu keputusan</span></div>
+            <small>ACC / Tolak pihak atas</small>
+          </div>
         </div>
         <button type="button" className="clear-signature" onClick={clearSignature}><X/>Hapus tanda tangan</button>
       </section>

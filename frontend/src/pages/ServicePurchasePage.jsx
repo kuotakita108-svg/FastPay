@@ -49,7 +49,7 @@ const serviceHeroes={
 export default function ServicePurchasePage(){
  const {type}=useParams(),navigate=useNavigate(),config=serviceConfig[type]||serviceConfig.pulsa,{data=[]}=useAsync(getProducts)
  const [target,setTarget]=useState(''),[provider,setProvider]=useState(''),[catalog,setCatalog]=useState(false),[mode,setMode]=useState('product'),[selected,setSelected]=useState(null),[freeAmount,setFreeAmount]=useState('')
- const products=useMemo(()=>{const normalize=value=>String(value||'').trim().toLocaleLowerCase('id-ID'),remote=Array.isArray(data)?data.filter(product=>normalize(product.category)===normalize(config.category)&&normalize(product.operator)===normalize(provider)):[];return remote.length?remote:fallbackProducts(config.category,provider)},[data,config.category,provider])
+ const products=useMemo(()=>{const normalize=value=>String(value||'').trim().toLocaleLowerCase('id-ID'),remote=Array.isArray(data)?data.filter(product=>normalize(product.category)===normalize(config.category)&&normalize(product.operator)===normalize(provider)):[],local=fallbackProducts(config.category,provider),seen=new Set();return [...remote,...local].filter(product=>{const key=[normalize(product.category),normalize(product.operator),normalize(product.name),Number(product.nominal||product.price||0)].join('|');if(seen.has(key))return false;seen.add(key);return true})},[data,config.category,provider])
  const amount=mode==='custom'?Number(freeAmount):selected?.price||0
  const providerIndex=Math.max(0,config.providers.indexOf(provider))
  const changeTarget=value=>{setTarget(value);setCatalog(false);setSelected(null);if(automatic.includes(type))setProvider(detectOperator(value)?.name||'')}
