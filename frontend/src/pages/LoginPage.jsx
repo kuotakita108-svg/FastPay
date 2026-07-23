@@ -3,6 +3,7 @@ import {useNavigate, useSearchParams} from 'react-router-dom'
 import {ArrowRight, CheckCircle2, Eye, EyeOff, LockKeyhole, Mail, Phone, ShieldCheck, Sparkles, UserRound} from 'lucide-react'
 import {useAuth} from '../context/AuthContext'
 import {googleLogin, resetPassword as resetPasswordRequest} from '../services/authService'
+import PulsaPrimeLogo from '../components/common/PulsaPrimeLogo'
 import loginHero from '../assets/images/pulsaprime-ppob-hero-v4.png'
 
 const loginInitial = {username: '', password: ''}
@@ -77,7 +78,7 @@ export default function LoginPage() {
         <div className="auth-hero-shade"/>
         <div className="auth-light-trail trail-one"/>
         <div className="auth-light-trail trail-two"/>
-        <div className="auth-logo" aria-label="PulsaPrime"><span><i>P</i><b>Pulsa</b><strong>Prime</strong></span></div>
+        <PulsaPrimeLogo className="auth-title-logo" />
         <div className="auth-welcome-copy">
           <span>AMAN · CEPAT · TERPERCAYA</span>
           <h1>{title}</h1>

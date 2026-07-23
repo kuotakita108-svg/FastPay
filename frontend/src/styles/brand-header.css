@@ -7,3 +7,24 @@
 @keyframes brand-shine{0%,55%{left:-45%;opacity:0}62%{opacity:.9}82%{left:110%;opacity:.65}100%{left:110%;opacity:0}}
 @media(max-width:350px){.reference-header{padding-inline:13px}.reference-header .dashboard-brand{width:146px}.reference-header .brand-word{font-size:21px}.reference-header .brand-mark{width:23px;height:23px;margin-right:6px;font-size:14px}.reference-header .dashboard-brand>small{margin-left:29px;font-size:4.5px;letter-spacing:.62px}.reference-header nav{gap:3px}.reference-header nav button{width:32px;height:32px}}
 @media(prefers-reduced-motion:reduce){.dashboard-brand:after{animation:none}}
+
+.pp-title-logo{position:relative;isolation:isolate;display:inline-flex;align-items:center;gap:8px;width:auto;min-height:0;padding:0;background:transparent!important;border:0!important;color:#fff;box-shadow:none!important;overflow:visible;transform:none}
+.pp-title-logo:before{display:none}
+.pp-title-logo:after{content:"";position:absolute;top:-18%;left:-24%;width:20px;height:140%;background:linear-gradient(90deg,transparent,#ffffffd9,transparent);filter:drop-shadow(0 0 5px #5fe9ff);transform:skewX(-20deg);animation:brand-shine 3.8s ease-in-out infinite;pointer-events:none}
+.pp-title-mark{display:grid;place-items:center;flex:0 0 auto;width:34px;height:34px;border-radius:10px;background:linear-gradient(145deg,#23d7ff 0%,#1680f6 48%,#0d38c8 100%);color:#fff;font-size:23px;font-weight:1000;font-style:italic;line-height:1;text-shadow:0 2px 0 #0a268f,0 5px 9px #00164f;box-shadow:inset 0 3px 6px #ffffff7a,inset 0 -7px 9px #001c75aa,0 7px 15px #05082f45}
+.pp-title-main{display:flex;flex-direction:column;min-width:0}
+.pp-title-word{display:flex;align-items:baseline;line-height:.9;font-family:Inter,Arial,sans-serif;font-style:italic;font-weight:1000;letter-spacing:-1.7px;text-shadow:0 2px 0 #001735,0 7px 13px #0008;white-space:nowrap}
+.pp-title-word b{font-size:30px;color:#fff;background:linear-gradient(180deg,#fff 0%,#f2f5fb 50%,#c7ceda 100%);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.pp-title-word strong{font-size:31px;background:linear-gradient(180deg,#46edff 0%,#0ba9ff 48%,#0862d7 100%);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.pp-title-main small{display:block;margin-top:5px;color:#e8f8ff;font-size:7px;font-weight:1000;letter-spacing:1.25px;line-height:1;text-shadow:0 2px 5px #001c55;white-space:nowrap}
+.pp-title-bolt{display:grid;place-items:center;width:20px;height:20px;margin-left:1px;border-radius:7px;background:linear-gradient(145deg,#fff6b6,#ffc400);color:#0a3b91;font-size:13px;text-shadow:none;box-shadow:0 4px 9px #00194a55}
+.pp-title-logo.compact{gap:6px}
+.pp-title-logo.compact .pp-title-mark{width:30px;height:30px;border-radius:9px;font-size:20px}
+.pp-title-logo.compact .pp-title-word{letter-spacing:-1.25px}
+.pp-title-logo.compact .pp-title-word b,.pp-title-logo.compact .pp-title-word strong{font-size:24px}
+.pp-title-logo.compact .pp-title-main small{margin-top:4px;font-size:5.8px;letter-spacing:.78px;color:#5c6372;text-shadow:none}
+.pp-title-logo.compact .pp-title-bolt{width:17px;height:17px;font-size:11px}
+.auth-premium .auth-title-logo.pp-title-logo{z-index:4;margin:0 0 18px}
+.reference-header .dashboard-brand.pp-title-logo{display:inline-flex;flex-direction:row;align-items:center;justify-content:flex-start;width:auto;height:auto;min-height:0;overflow:visible}
+@media(max-width:380px){.pp-title-word b,.pp-title-word strong{font-size:27px}.pp-title-main small{font-size:6.5px}.auth-premium .auth-title-logo .pp-title-word b,.auth-premium .auth-title-logo .pp-title-word strong{font-size:25px}.reference-header .dashboard-brand.pp-title-logo{max-width:210px}.pp-title-logo.compact .pp-title-word b,.pp-title-logo.compact .pp-title-word strong{font-size:22px}.pp-title-logo.compact .pp-title-main small{font-size:5.3px}}
+@media(prefers-reduced-motion:reduce){.pp-title-logo:after{animation:none;display:none}}
