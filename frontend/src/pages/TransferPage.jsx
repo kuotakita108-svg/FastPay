@@ -210,7 +210,7 @@ export default function TransferPage() {
         deductBalance(total);
         const transaction = await createTransaction({
           customer: payload.target,
-          email: user.email || `${user.id}@pulsaprime.local`,
+          email: user.email || `${user.id}@pulsaprime.id`,
           method: `${payload.provider} · ${payload.title}`,
           amount: total,
         });

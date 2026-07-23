@@ -1,9 +1,9 @@
 const userTransactions=new Map()
 const adminTransactions=[
-  {id:'PP-1048',customer:'Nadia Putri',email:'nadia@example.com',method:'QRIS',amount:1250000,status:'Berhasil',created_at:new Date(Date.now()-1080000).toISOString()},
-  {id:'PP-1047',customer:'Rizky Pratama',email:'rizky@example.com',method:'Virtual Account',amount:875000,status:'Berhasil',created_at:new Date(Date.now()-2580000).toISOString()}
+  {id:'PP-1048',customer:'Nadia Putri',email:'nadia.putri@pulsaprime.id',method:'QRIS',amount:1250000,status:'Berhasil',created_at:new Date(Date.now()-1080000).toISOString()},
+  {id:'PP-1047',customer:'Rizky Pratama',email:'rizky.pratama@pulsaprime.id',method:'Virtual Account',amount:875000,status:'Berhasil',created_at:new Date(Date.now()-2580000).toISOString()}
 ]
-const customers=[{id:'CUS-1001',name:'Nadia Putri',email:'nadia@example.com',transactions:18,total_spent:12850000},{id:'CUS-1002',name:'Rizky Pratama',email:'rizky@example.com',transactions:12,total_spent:8300000}]
+const customers=[{id:'CUS-1001',name:'Nadia Putri',email:'nadia.putri@pulsaprime.id',transactions:18,total_spent:12850000},{id:'CUS-1002',name:'Rizky Pratama',email:'rizky.pratama@pulsaprime.id',transactions:12,total_spent:8300000}]
 const productGroups={
   Pulsa:{Telkomsel:[5,10,25,50,100],Indosat:[10,25,50,100],XL:[10,25,50,100],Tri:[10,25,50],AXIS:[10,25,50]},
   'Paket Data':{Telkomsel:[5,10,15,25],Indosat:[7,15,25],XL:[8,15,25],Tri:[6,12,25],AXIS:[3,8,15]},
@@ -66,7 +66,7 @@ async function googleAuth(request,env,url){
   authorize.search=new URLSearchParams({client_id:env.GOOGLE_CLIENT_ID,redirect_uri:redirectURI,response_type:'code',scope:'openid email profile',state,prompt:'select_account'}).toString()
   return new Response(null,{status:302,headers:{location:authorize.toString(),'set-cookie':`pulsaprime_oauth_state=${encodeURIComponent(state)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600`}})
 }
-function login(input){if((input.username||'').toLowerCase()!=='octa')return null;const users={octa11:{id:'USR-001',username:'octa',name:'Octa User',role:'user',balance:275000,phone:'081234567890',email:'octa@gmail.com'},octa22:{id:'MST-001',username:'octa',name:'Octa Master',role:'master',balance:25000000,phone:'081234567890',email:'master@pulsaprime.id'},octa33:{id:'ADM-001',username:'octa',name:'Octa Admin',role:'admin',balance:8500000,phone:'081234567890',email:'admin@pulsaprime.id'}};return users[input.password]||null}
+function login(input){if((input.username||'').toLowerCase()!=='octa')return null;const users={octa11:{id:'USR-001',username:'octa',name:'Octa User',role:'user',balance:275000,phone:'081234567890',email:'user@pulsaprime.id'},octa22:{id:'MST-001',username:'octa',name:'Octa Master',role:'master',balance:25000000,phone:'081234567890',email:'master@pulsaprime.id'},octa33:{id:'ADM-001',username:'octa',name:'Octa Admin',role:'admin',balance:8500000,phone:'081234567890',email:'admin@pulsaprime.id'}};return users[input.password]||null}
 function detect(phone){const groups={Telkomsel:['0811','0812','0813','0821','0822','0852','0853'],Indosat:['0814','0815','0816','0855','0856','0857','0858'],XL:['0817','0818','0819','0859','0877','0878'],Tri:['0895','0896','0897','0898','0899'],AXIS:['0831','0832','0833','0838']};return Object.entries(groups).find(([,prefixes])=>prefixes.some(prefix=>phone.startsWith(prefix)))?.[0]||''}
 export default{async fetch(request,env){const url=new URL(request.url),path=url.pathname,method=request.method;if(!path.startsWith('/api/'))return env.ASSETS.fetch(request)
   if(path==='/api/v1/health')return json({status:'ok',service:'PulsaPrime Cloudflare'})

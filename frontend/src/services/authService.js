@@ -7,7 +7,7 @@ const hash=async value=>Array.from(new Uint8Array(await crypto.subtle.digest('SH
 const result=user=>({token:`offline.${btoa(user.id)}`,offline:true,user})
 
 const demo={
-  octa11:{id:'USR-001',username:'octa',name:'Octa User',role:'user',balance:275000,phone:'081234567890',email:'octa@gmail.com'},
+  octa11:{id:'USR-001',username:'octa',name:'Octa User',role:'user',balance:275000,phone:'081234567890',email:'user@pulsaprime.id'},
   octa22:{id:'MST-001',username:'octa',name:'Octa Master',role:'master',balance:25000000,phone:'081234567890',email:'master@pulsaprime.id'},
   octa33:{id:'ADM-001',username:'octa',name:'Octa Admin',role:'admin',balance:8500000,phone:'081234567890',email:'admin@pulsaprime.id'}
 }

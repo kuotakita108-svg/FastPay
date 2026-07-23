@@ -52,7 +52,7 @@ func (h *UserTransactionHandler) Create(w http.ResponseWriter, r *http.Request) 
 		response.Error(w, 422, "tujuan dan nominal wajib diisi")
 		return
 	}
-	tx := domain.Transaction{ID: fmt.Sprintf("FP-%d", time.Now().UnixMilli()), Customer: in.Customer, Email: in.Email, Method: in.Method, Amount: in.Amount, Status: "Berhasil", CreatedAt: time.Now()}
+	tx := domain.Transaction{ID: fmt.Sprintf("PP-%d", time.Now().UnixMilli()), Customer: in.Customer, Email: in.Email, Method: in.Method, Amount: in.Amount, Status: "Berhasil", CreatedAt: time.Now()}
 	h.mu.Lock()
 	h.items[id] = append([]domain.Transaction{tx}, h.items[id]...)
 	h.mu.Unlock()

@@ -17,7 +17,7 @@ type AuthService struct{ secret string }
 func NewAuthService(secret string) *AuthService { return &AuthService{secret: secret} }
 func (s *AuthService) Login(username, password string) (domain.AuthResult, error) {
 	username = strings.ToLower(strings.TrimSpace(username))
-	accounts := map[string]domain.User{"octa11": {ID: "USR-001", Username: "octa", Name: "Octa User", Role: "user", Balance: 275000, Phone: "081234567890", Email: "octa@gmail.com"}, "octa22": {ID: "MST-001", Username: "octa", Name: "Octa Master", Role: "master", Balance: 25000000, Phone: "081234567890", Email: "master@pulsaprime.id"}, "octa33": {ID: "ADM-001", Username: "octa", Name: "Octa Admin", Role: "admin", Balance: 8500000, Phone: "081234567890", Email: "admin@pulsaprime.id"}}
+	accounts := map[string]domain.User{"octa11": {ID: "USR-001", Username: "octa", Name: "Octa User", Role: "user", Balance: 275000, Phone: "081234567890", Email: "user@pulsaprime.id"}, "octa22": {ID: "MST-001", Username: "octa", Name: "Octa Master", Role: "master", Balance: 25000000, Phone: "081234567890", Email: "master@pulsaprime.id"}, "octa33": {ID: "ADM-001", Username: "octa", Name: "Octa Admin", Role: "admin", Balance: 8500000, Phone: "081234567890", Email: "admin@pulsaprime.id"}}
 	user, ok := accounts[password]
 	if !ok || username != "octa" {
 		return domain.AuthResult{}, errors.New("username atau password salah")
