@@ -4,6 +4,7 @@ import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
 import {rupiah} from '../utils/currency'
+import financeHero from '../assets/service-heroes/finance.png'
 
 const initialForm = {
   agentName: '',
@@ -35,11 +36,38 @@ const terms = [
 ]
 
 function DocUpload({item, value, onChange}) {
-  return <label className={`agent-doc-upload ${value ? 'filled' : ''}`}>
+  const state = value?.status || ''
+  return <label className={`agent-doc-upload ${state === 'ok' ? 'filled' : ''} ${state === 'error' ? 'error' : ''} ${state === 'checking' ? 'checking' : ''}`}>
     <input type="file" accept="image/*" onChange={event => onChange(item.key, event.target.files?.[0] || null)}/>
-    <i>{value ? <CheckCircle2/> : <Upload/>}</i>
-    <span><b>{item.title}</b><small>{value ? value.name : item.hint}</small></span>
+    {value?.preview ? <img src={value.preview} alt="" aria-hidden="true"/> : <i>{state === 'ok' ? <CheckCircle2/> : <Upload/>}</i>}
+    <span>
+      <b>{item.title}</b>
+      <small>{state === 'checking' ? 'Mengecek kualitas foto...' : value?.error || value?.name || item.hint}</small>
+      {value?.width && <em>{value.width}×{value.height}px · {state === 'ok' ? 'jelas' : 'perlu ulang'}</em>}
+    </span>
   </label>
+}
+
+function checkImageQuality(file, key) {
+  return new Promise(resolve => {
+    if (!file) return resolve(null)
+    const preview = URL.createObjectURL(file)
+    const fail = error => resolve({file, name: file.name, preview, status: 'error', error})
+    if (!file.type.startsWith('image/')) return fail('File harus foto/gambar, bukan dokumen lain.')
+    const minimumSize = key === 'selfie' ? 90000 : 65000
+    const minimumWidth = key === 'selfie' ? 700 : 640
+    const minimumHeight = key === 'selfie' ? 700 : 420
+    const image = new Image()
+    image.onload = () => {
+      const width = image.naturalWidth
+      const height = image.naturalHeight
+      if (file.size < minimumSize) return resolve({file, name: file.name, preview, status: 'error', error: 'Foto terlalu kecil/terkompres. Ulangi dengan kamera lebih jelas.', width, height})
+      if (width < minimumWidth || height < minimumHeight) return resolve({file, name: file.name, preview, status: 'error', error: 'Resolusi foto rendah. Ulangi agar KTP/wajah terbaca jelas.', width, height})
+      resolve({file, name: file.name, preview, status: 'ok', width, height})
+    }
+    image.onerror = () => fail('Gambar rusak atau tidak bisa dibaca. Upload ulang foto yang jelas.')
+    image.src = preview
+  })
 }
 
 export default function AgentCreditPage() {
@@ -53,7 +81,13 @@ export default function AgentCreditPage() {
   const [message, setMessage] = useState('')
 
   const update = event => setForm({...form, [event.target.name]: event.target.value})
-  const updateFile = (key, file) => setFiles(current => ({...current, [key]: file}))
+  const updateFile = async (key, file) => {
+    if (!file) return setFiles(current => ({...current, [key]: null}))
+    const preview = URL.createObjectURL(file)
+    setFiles(current => ({...current, [key]: {file, name: file.name, preview, status: 'checking'}}))
+    const checked = await checkImageQuality(file, key)
+    setFiles(current => ({...current, [key]: checked}))
+  }
   const position = event => {
     const rect = canvasRef.current.getBoundingClientRect()
     const point = event.touches?.[0] || event
@@ -89,7 +123,10 @@ export default function AgentCreditPage() {
   const submit = event => {
     event.preventDefault()
     const amount = Math.min(500000, Math.max(50000, Number(form.amount || 0)))
-    if (Object.values(files).some(file => !file)) return setMessage('Lengkapi Foto KTP, Foto toko, dan Foto selfie pegang KTP dulu bro.')
+    const documentValues = Object.values(files)
+    if (documentValues.some(file => !file?.file)) return setMessage('Lengkapi Foto KTP, Foto toko, dan Foto selfie pegang KTP dulu bro.')
+    const badDocument = documentValues.find(file => file.status !== 'ok')
+    if (badDocument) return setMessage(`${badDocument.name}: ${badDocument.error || 'Foto belum lolos pengecekan kualitas. Upload ulang dulu.'}`)
     if (!accepted) return setMessage('Centang persetujuan ketentuan pengajuan dulu.')
     if (!signed) return setMessage('Tanda tangan online wajib diisi.')
     const application = {
@@ -97,7 +134,7 @@ export default function AgentCreditPage() {
       status: 'Menunggu verifikasi analis',
       createdAt: new Date().toISOString(),
       form: {...form, amount},
-      documents: Object.fromEntries(Object.entries(files).map(([key, file]) => [key, file.name])),
+      documents: Object.fromEntries(Object.entries(files).map(([key, file]) => [key, file.file.name])),
     }
     const key = `pulsaprime_agent_credit_${user?.id || 'guest'}`
     const history = JSON.parse(localStorage.getItem(key) || '[]')
@@ -108,13 +145,16 @@ export default function AgentCreditPage() {
   return <main className="mobile-app agent-credit-page">
     <SubPageHeader title="Kredit Saldo Agent" description="Ajukan tanam saldo langsung dari aplikasi" back/>
     <section className="agent-credit-hero">
+      <img className="agent-credit-person" src={financeHero} alt="" aria-hidden="true"/>
+      <div className="agent-credit-hero-shade"/>
       <i><WalletCards/></i>
-      <div><span>FORMULIR DIGITAL</span><h1>Tanam Saldo Agent</h1><p>Lengkapi data, upload dokumen, dan tanda tangan online tanpa kertas.</p></div>
+      <div><span>MODAL AGENT RESMI</span><h1>Ajukan Kredit Saldo Lebih Cepat</h1><p>Upload dokumen jelas, isi formulir agent, lalu tanda tangan online. Tim analis tinggal verifikasi dari data yang kamu kirim.</p></div>
       <b>{rupiah(Math.min(500000, Math.max(0, Number(form.amount || 0))))}</b>
+      <ul className="agent-credit-badges"><li><ShieldCheck/>Data aman</li><li><CheckCircle2/>Foto dicek</li><li><PenLine/>TTD online</li></ul>
     </section>
     <form className="agent-credit-form" onSubmit={submit}>
       <section className="agent-card">
-        <header><i><UserRound/></i><div><h2>Data Agent</h2><p>Isi sesuai identitas dan toko.</p></div></header>
+        <header><i><UserRound/></i><div><h2>Data Agent</h2><p>Isi sesuai identitas asli agar pengajuan mudah diverifikasi.</p></div></header>
         <div className="agent-fields">
           <label>Nama Agent<input name="agentName" value={form.agentName} onChange={update} required placeholder="Nama lengkap"/></label>
           <label>Nama Toko<input name="storeName" value={form.storeName} onChange={update} required placeholder="Nama toko/usaha"/></label>
@@ -137,8 +177,9 @@ export default function AgentCreditPage() {
         </div>
       </section>
       <section className="agent-card">
-        <header><i><Camera/></i><div><h2>Upload Dokumen</h2><p>Foto harus jelas dan tidak blur.</p></div></header>
+        <header><i><Camera/></i><div><h2>Upload Dokumen</h2><p>Sistem mengecek kualitas foto. Jika buram, kecil, atau rusak wajib upload ulang.</p></div></header>
         <div className="agent-doc-grid">{docs.map(item => <DocUpload key={item.key} item={item} value={files[item.key]} onChange={updateFile}/>)}</div>
+        <div className="agent-doc-tips"><b>Tips foto lolos cepat</b><span>KTP tidak kepotong, cahaya cukup, wajah terlihat, dan foto selfie harus benar-benar sambil memegang KTP.</span></div>
       </section>
       <section className="agent-card">
         <header><i><FileText/></i><div><h2>Ketentuan Umum</h2><p>Baca dan setujui sebelum mengajukan.</p></div></header>
