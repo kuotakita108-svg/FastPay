@@ -156,16 +156,15 @@ export default function AgentCreditPage() {
     const key = `pulsaprime_agent_credit_${user?.id || 'guest'}`
     const history = JSON.parse(localStorage.getItem(key) || '[]')
     const latest = history[0]
-    if (latest?.verifyUntil && latest.status !== 'Disetujui') setApplication(latest)
+    if (latest?.verifyUntil) setApplication(latest)
   }, [user?.id])
 
   useEffect(() => {
-    if (!application || application.status === 'Disetujui' || now < application.verifyUntil) return
-    const approved = {...application, status: 'Disetujui', approvedAt: new Date().toISOString()}
+    if (!application) return
     const key = `pulsaprime_agent_credit_${user?.id || 'guest'}`
     const history = JSON.parse(localStorage.getItem(key) || '[]')
-    localStorage.setItem(key, JSON.stringify([approved, ...history.filter(item => item.id !== approved.id)].slice(0, 10)))
-    setApplication(approved)
+    const latest = history.find(item => item.id === application.id)
+    if (latest && latest.status !== application.status) setApplication(latest)
   }, [application, now, user?.id])
 
   const update = event => setForm({...form, [event.target.name]: event.target.value})
@@ -257,6 +256,9 @@ export default function AgentCreditPage() {
     const key = `pulsaprime_agent_credit_${user?.id || 'guest'}`
     const history = JSON.parse(localStorage.getItem(key) || '[]')
     localStorage.setItem(key, JSON.stringify([application, ...history].slice(0, 10)))
+    const allKey = 'pulsaprime_agent_credit_all'
+    const allHistory = JSON.parse(localStorage.getItem(allKey) || '[]')
+    localStorage.setItem(allKey, JSON.stringify([{...application, userId: user?.id || 'guest', userName: user?.name || form.agentName}, ...allHistory].slice(0, 50)))
     setMessage('')
     setApplication(application)
   }
@@ -267,6 +269,8 @@ export default function AgentCreditPage() {
   const minutes = String(Math.floor(remainingSeconds / 60)).padStart(2, '0')
   const seconds = String(remainingSeconds % 60).padStart(2, '0')
   const approved = application?.status === 'Disetujui'
+  const rejected = application?.status === 'Ditolak'
+  const waitingDecision = application && !approved && !rejected && remainingMs === 0
 
   return <main className="mobile-app agent-credit-page">
     <SubPageHeader title="Kredit Saldo Agent" description="Ajukan tanam saldo langsung dari aplikasi" back/>
@@ -277,24 +281,24 @@ export default function AgentCreditPage() {
       <div><span>MODAL AGENT RESMI</span><h1>Ajukan Kredit Saldo Lebih Cepat</h1><p>Upload dokumen jelas, isi formulir agent, lalu tanda tangan online. Tim analis tinggal verifikasi dari data yang kamu kirim.</p></div>
       <b>{rupiah(Math.min(500000, Math.max(0, Number(form.amount || 0))))}</b>
     </section>
-    {application && <section className={`agent-verification ${approved ? 'approved' : ''}`}>
-      <i>{approved ? <Stamp/> : <Loader2/>}</i>
-      <span>{approved ? 'PENGAJUAN DISETUJUI' : 'MOHON MENUNGGU'}</span>
-      <h2>{approved ? 'Kredit saldo sudah ACC' : 'Data sedang diverifikasi pihak atas'}</h2>
-      <p>{approved ? 'Pengajuan agent kamu sudah disetujui. Limit kredit saldo siap diproses sesuai nominal yang diajukan.' : 'Sistem sedang mengecek formulir, dokumen, kualitas foto, dan tanda tangan online. Jangan tutup halaman sampai proses selesai.'}</p>
+    {application && <section className={`agent-verification ${approved ? 'approved' : ''} ${rejected ? 'rejected' : ''}`}>
+      <i>{approved ? <Stamp/> : rejected ? <X/> : <Loader2/>}</i>
+      <span>{approved ? 'PENGAJUAN DISETUJUI' : rejected ? 'PENGAJUAN DITOLAK' : waitingDecision ? 'MENUNGGU KEPUTUSAN' : 'MOHON MENUNGGU'}</span>
+      <h2>{approved ? 'Kredit saldo sudah ACC' : rejected ? 'Pengajuan belum disetujui' : waitingDecision ? 'Menunggu ACC pihak atas' : 'Data sedang diverifikasi pihak atas'}</h2>
+      <p>{approved ? 'Pengajuan agent kamu sudah disetujui. Limit kredit saldo siap diproses sesuai nominal yang diajukan.' : rejected ? 'Pihak atas menolak pengajuan ini. Periksa kembali data dan dokumen sebelum membuat pengajuan baru.' : waitingDecision ? 'Pemeriksaan awal sudah selesai. Status akan berubah sukses hanya jika pihak atas menekan ACC.' : 'Sistem sedang mengecek formulir, dokumen, kualitas foto, dan tanda tangan online. Status sukses hanya muncul setelah pihak atas ACC.'}</p>
       <div className="verification-meta">
         <b>{application.id}</b>
         <strong>{rupiah(application.form.amount)}</strong>
       </div>
-      <div className="verification-timer"><Clock3/><strong>{approved ? 'ACC' : `${minutes}:${seconds}`}</strong><small>{approved ? 'Disetujui pihak atas' : 'Estimasi maksimal 5 menit'}</small></div>
+      <div className="verification-timer"><Clock3/><strong>{approved ? 'ACC' : rejected ? 'TOLAK' : waitingDecision ? 'REVIEW' : `${minutes}:${seconds}`}</strong><small>{approved ? 'Disetujui pihak atas' : rejected ? 'Ditolak pihak atas' : waitingDecision ? 'Menunggu keputusan admin' : 'Estimasi pemeriksaan 5 menit'}</small></div>
       <div className="verification-progress"><span style={{width: `${approved ? 100 : progress}%`}}/></div>
       <ul className="verification-steps">
         <li className="done"><CheckCircle2/>Formulir agent diterima</li>
         <li className={progress >= 25 || approved ? 'done' : 'active'}>{progress >= 25 || approved ? <CheckCircle2/> : <Loader2/>}Validasi foto KTP, toko, dan selfie</li>
         <li className={progress >= 55 || approved ? 'done' : ''}>{progress >= 55 || approved ? <CheckCircle2/> : <Clock3/>}Pengecekan tanda tangan online</li>
-        <li className={approved ? 'done' : ''}>{approved ? <CheckCircle2/> : <Clock3/>}Persetujuan analis pihak atas</li>
+        <li className={approved ? 'done' : rejected ? 'rejected' : ''}>{approved ? <CheckCircle2/> : rejected ? <X/> : <Clock3/>}Keputusan analis pihak atas</li>
       </ul>
-      {approved && <button type="button" onClick={() => setApplication(null)}>Buat Pengajuan Baru <ArrowRight/></button>}
+      {(approved || rejected) && <button type="button" onClick={() => setApplication(null)}>Buat Pengajuan Baru <ArrowRight/></button>}
     </section>}
     {!application && <>
     <form className="agent-credit-form" onSubmit={submit}>
