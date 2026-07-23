@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Bell, Eye, EyeOff, MessageCircle, Plus } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { rupiah } from '../../utils/currency'
-import heroImage from '../../assets/images/pulsaprime-ppob-hero-v3.svg'
+import heroImage from '../../assets/images/pulsaprime-ppob-hero-v4.png'
 
 export default function MobileHeader() {
   const { user } = useAuth()

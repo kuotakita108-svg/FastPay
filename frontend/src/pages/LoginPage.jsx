@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowRight, CheckCircle2, Eye, EyeOff, LockKeyhole, Mail, Phone, ShieldCheck, Sparkles, UserRound } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { googleLogin } from '../services/authService'
-import loginHero from '../assets/images/pulsaprime-login-hero-v2.svg'
+import loginHero from '../assets/images/pulsaprime-login-hero-v3.png'
 
 const loginInitial = { username: '', password: '' }
 const registerInitial = { name: '', username: '', phone: '', email: '', password: '' }
