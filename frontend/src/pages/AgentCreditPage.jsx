@@ -91,9 +91,14 @@ export default function AgentCreditPage() {
   const position = event => {
     const rect = canvasRef.current.getBoundingClientRect()
     const point = event.touches?.[0] || event
-    return {x: point.clientX - rect.left, y: point.clientY - rect.top}
+    return {
+      x: (point.clientX - rect.left) * (canvasRef.current.width / rect.width),
+      y: (point.clientY - rect.top) * (canvasRef.current.height / rect.height),
+    }
   }
   const startDraw = event => {
+    event.preventDefault()
+    event.currentTarget.setPointerCapture?.(event.pointerId)
     drawing.current = true
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
@@ -114,7 +119,10 @@ export default function AgentCreditPage() {
     ctx.stroke()
     setSigned(true)
   }
-  const stopDraw = () => { drawing.current = false }
+  const stopDraw = event => {
+    event?.currentTarget?.releasePointerCapture?.(event.pointerId)
+    drawing.current = false
+  }
   const clearSignature = () => {
     const canvas = canvasRef.current
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
@@ -150,7 +158,6 @@ export default function AgentCreditPage() {
       <i><WalletCards/></i>
       <div><span>MODAL AGENT RESMI</span><h1>Ajukan Kredit Saldo Lebih Cepat</h1><p>Upload dokumen jelas, isi formulir agent, lalu tanda tangan online. Tim analis tinggal verifikasi dari data yang kamu kirim.</p></div>
       <b>{rupiah(Math.min(500000, Math.max(0, Number(form.amount || 0))))}</b>
-      <ul className="agent-credit-badges"><li><ShieldCheck/>Data aman</li><li><CheckCircle2/>Foto dicek</li><li><PenLine/>TTD online</li></ul>
     </section>
     <form className="agent-credit-form" onSubmit={submit}>
       <section className="agent-card">
@@ -189,7 +196,7 @@ export default function AgentCreditPage() {
       <section className="agent-card">
         <header><i><PenLine/></i><div><h2>Tanda Tangan Online</h2><p>Gores tanda tangan langsung di kotak ini.</p></div></header>
         <div className="signature-box">
-          <canvas ref={canvasRef} width="640" height="220" onPointerDown={startDraw} onPointerMove={moveDraw} onPointerUp={stopDraw} onPointerLeave={stopDraw}/>
+          <canvas ref={canvasRef} width="640" height="220" onPointerDown={startDraw} onPointerMove={moveDraw} onPointerUp={stopDraw} onPointerCancel={stopDraw} onPointerLeave={stopDraw}/>
           {!signed && <span>Tanda tangan di sini</span>}
         </div>
         <button type="button" className="clear-signature" onClick={clearSignature}><X/>Hapus tanda tangan</button>
