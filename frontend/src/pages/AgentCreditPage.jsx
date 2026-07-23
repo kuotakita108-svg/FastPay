@@ -1,5 +1,5 @@
-import {useRef, useState} from 'react'
-import {ArrowRight, Camera, CheckCircle2, FileText, PenLine, ShieldCheck, Store, Upload, UserRound, WalletCards, X} from 'lucide-react'
+import {useEffect, useRef, useState} from 'react'
+import {ArrowRight, Camera, CheckCircle2, FileText, Images, PenLine, ShieldCheck, Store, Upload, UserRound, WalletCards, X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
@@ -35,17 +35,16 @@ const terms = [
   'Data KTP, toko, selfie, dan tanda tangan dipakai untuk validasi permohonan.',
 ]
 
-function DocUpload({item, value, onChange}) {
+function DocUpload({item, value, onOpenCamera}) {
   const state = value?.status || ''
-  return <label className={`agent-doc-upload ${state === 'ok' ? 'filled' : ''} ${state === 'error' ? 'error' : ''} ${state === 'checking' ? 'checking' : ''}`}>
-    <input type="file" accept="image/*" capture={item.camera} onChange={event => onChange(item.key, event.target.files?.[0] || null)}/>
+  return <button type="button" className={`agent-doc-upload ${state === 'ok' ? 'filled' : ''} ${state === 'error' ? 'error' : ''} ${state === 'checking' ? 'checking' : ''}`} onClick={() => onOpenCamera(item)}>
     {value?.preview ? <img src={value.preview} alt="" aria-hidden="true"/> : <i>{state === 'ok' ? <CheckCircle2/> : <Upload/>}</i>}
     <span>
       <b>{item.title}</b>
       <small>{state === 'checking' ? 'Mengecek kualitas foto...' : value?.error || value?.name || item.hint}</small>
       {value?.width && <em>{value.width}×{value.height}px · {value.focusScore ? `fokus ${value.focusScore}` : ''} · {state === 'ok' ? 'jelas' : 'perlu ulang'}</em>}
     </span>
-  </label>
+  </button>
 }
 
 function imageSharpnessScore(image) {
@@ -104,12 +103,45 @@ function checkImageQuality(file, key) {
 export default function AgentCreditPage() {
   const {user} = useAuth()
   const canvasRef = useRef(null)
+  const videoRef = useRef(null)
+  const galleryRef = useRef(null)
   const drawing = useRef(false)
   const [form, setForm] = useState({...initialForm, agentName: user?.name || '', whatsapp: user?.phone || '', email: user?.email || ''})
   const [files, setFiles] = useState({ktp: null, store: null, selfie: null})
   const [signed, setSigned] = useState(false)
   const [accepted, setAccepted] = useState(false)
   const [message, setMessage] = useState('')
+  const [cameraDoc, setCameraDoc] = useState(null)
+  const [cameraReady, setCameraReady] = useState(false)
+  const [cameraError, setCameraError] = useState('')
+
+  useEffect(() => {
+    if (!cameraDoc) return undefined
+    let stream
+    let cancelled = false
+    setCameraReady(false)
+    setCameraError('')
+    const start = async () => {
+      try {
+        if (!navigator.mediaDevices?.getUserMedia) throw new Error('Kamera tidak didukung browser ini.')
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: {facingMode: {ideal: cameraDoc.camera}, width: {ideal: 1280}, height: {ideal: 1280}},
+        })
+        if (cancelled) return
+        videoRef.current.srcObject = stream
+        await videoRef.current.play()
+        setCameraReady(true)
+      } catch (error) {
+        setCameraError(error.message || 'Kamera belum bisa dibuka. Coba izinkan kamera atau pilih dari galeri.')
+      }
+    }
+    start()
+    return () => {
+      cancelled = true
+      stream?.getTracks().forEach(track => track.stop())
+    }
+  }, [cameraDoc])
 
   const update = event => setForm({...form, [event.target.name]: event.target.value})
   const updateFile = async (key, file) => {
@@ -118,6 +150,27 @@ export default function AgentCreditPage() {
     setFiles(current => ({...current, [key]: {file, name: file.name, preview, status: 'checking'}}))
     const checked = await checkImageQuality(file, key)
     setFiles(current => ({...current, [key]: checked}))
+  }
+  const closeCamera = () => setCameraDoc(null)
+  const capturePhoto = () => {
+    const video = videoRef.current
+    if (!video?.videoWidth || !cameraDoc) return setCameraError('Kamera belum siap. Tunggu sebentar lalu coba lagi.')
+    const canvas = document.createElement('canvas')
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height)
+    canvas.toBlob(blob => {
+      if (!blob) return setCameraError('Foto gagal diproses. Coba ulangi.')
+      updateFile(cameraDoc.key, new File([blob], `${cameraDoc.key}-${Date.now()}.jpg`, {type: 'image/jpeg'}))
+      closeCamera()
+    }, 'image/jpeg', 0.92)
+    return undefined
+  }
+  const pickFromGallery = event => {
+    const file = event.target.files?.[0]
+    if (file && cameraDoc) updateFile(cameraDoc.key, file)
+    event.target.value = ''
+    closeCamera()
   }
   const position = event => {
     const rect = canvasRef.current.getBoundingClientRect()
@@ -216,7 +269,7 @@ export default function AgentCreditPage() {
       </section>
       <section className="agent-card">
         <header><i><Camera/></i><div><h2>Upload Dokumen</h2><p>Sistem mengecek kualitas foto. Jika buram, kecil, atau rusak wajib upload ulang.</p></div></header>
-        <div className="agent-doc-grid">{docs.map(item => <DocUpload key={item.key} item={item} value={files[item.key]} onChange={updateFile}/>)}</div>
+        <div className="agent-doc-grid">{docs.map(item => <DocUpload key={item.key} item={item} value={files[item.key]} onOpenCamera={setCameraDoc}/>)}</div>
         <div className="agent-doc-tips"><b>Tips foto lolos cepat</b><span>KTP tidak kepotong, cahaya cukup, wajah terlihat, dan foto selfie harus benar-benar sambil memegang KTP.</span></div>
       </section>
       <section className="agent-card">
@@ -236,6 +289,22 @@ export default function AgentCreditPage() {
       <button className="agent-submit">Ajukan Kredit Saldo <ArrowRight/></button>
     </form>
     <section className="agent-safe-note"><ShieldCheck/><span>Dokumen hanya digunakan untuk verifikasi pengajuan agent PulsaPrime.</span></section>
+    {cameraDoc && <section className="agent-camera-backdrop" aria-label={`Ambil ${cameraDoc.title}`}>
+      <div className="agent-camera-shell">
+        <header><button type="button" onClick={closeCamera}><X/></button><span>{cameraDoc.title}</span><i>{cameraDoc.camera === 'user' ? 'Depan' : 'Belakang'}</i></header>
+        <div className="agent-camera-preview">
+          <video ref={videoRef} playsInline muted/>
+          {!cameraReady && !cameraError && <p>Membuka kamera...</p>}
+          {cameraError && <p>{cameraError}</p>}
+        </div>
+        <footer>
+          <button type="button" className="camera-gallery" onClick={() => galleryRef.current?.click()} aria-label="Pilih dari galeri"><Images/></button>
+          <button type="button" className="camera-shot" disabled={!cameraReady} onClick={capturePhoto} aria-label="Ambil foto"/>
+          <button type="button" className="camera-close" onClick={closeCamera} aria-label="Tutup kamera"><X/></button>
+        </footer>
+        <input ref={galleryRef} className="agent-camera-gallery-input" type="file" accept="image/*" onChange={pickFromGallery}/>
+      </div>
+    </section>}
     <MobileNav/>
   </main>
 }
