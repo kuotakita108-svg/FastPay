@@ -1,5 +1,5 @@
 import {useRef, useState} from 'react'
-import {ArrowRight, Camera, CheckCircle2, FileImage, FileText, PenLine, RotateCcw, ShieldCheck, Store, Upload, UserRound, WalletCards, X} from 'lucide-react'
+import {ArrowRight, Camera, CheckCircle2, FileText, PenLine, ShieldCheck, Store, Upload, UserRound, WalletCards, X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
@@ -37,20 +37,16 @@ const terms = [
 
 function DocUpload({item, value, onChange}) {
   const state = value?.status || ''
-  const pick = source => event => onChange(item.key, event.target.files?.[0] || null, source)
-  return <div className={`agent-doc-upload ${state === 'ok' ? 'filled' : ''} ${state === 'error' ? 'error' : ''} ${state === 'checking' ? 'checking' : ''}`}>
+  return <label className={`agent-doc-upload ${state === 'ok' ? 'filled' : ''} ${state === 'error' ? 'error' : ''} ${state === 'checking' ? 'checking' : ''}`}>
+    <input type="file" accept="image/*" onChange={event => onChange(item.key, event.target.files?.[0] || null)}/>
     {value?.preview ? <img src={value.preview} alt="" aria-hidden="true"/> : <i>{state === 'ok' ? <CheckCircle2/> : <Upload/>}</i>}
     <span>
       <b>{item.title}</b>
       <small>{state === 'checking' ? 'Mengecek kualitas foto...' : value?.error || value?.name || item.hint}</small>
       {value?.width && <em>{value.width}×{value.height}px · {value.focusScore ? `fokus ${value.focusScore}` : ''} · {state === 'ok' ? 'jelas' : 'perlu ulang'}</em>}
-      <div className="agent-doc-actions">
-        <label><Camera/>Kamera belakang<input type="file" accept="image/*" capture="environment" onChange={pick('camera-back')}/></label>
-        <label><RotateCcw/>Kamera depan<input type="file" accept="image/*" capture="user" onChange={pick('camera-front')}/></label>
-        <label><FileImage/>Galeri<input type="file" accept="image/*" onChange={pick('gallery')}/></label>
-      </div>
+      <strong>Ketuk untuk foto langsung atau pilih dari galeri</strong>
     </span>
-  </div>
+  </label>
 }
 
 function imageSharpnessScore(image) {
@@ -117,12 +113,12 @@ export default function AgentCreditPage() {
   const [message, setMessage] = useState('')
 
   const update = event => setForm({...form, [event.target.name]: event.target.value})
-  const updateFile = async (key, file, source = 'gallery') => {
+  const updateFile = async (key, file) => {
     if (!file) return setFiles(current => ({...current, [key]: null}))
     const preview = URL.createObjectURL(file)
-    setFiles(current => ({...current, [key]: {file, name: file.name, preview, status: 'checking', source}}))
+    setFiles(current => ({...current, [key]: {file, name: file.name, preview, status: 'checking'}}))
     const checked = await checkImageQuality(file, key)
-    setFiles(current => ({...current, [key]: {...checked, source}}))
+    setFiles(current => ({...current, [key]: checked}))
   }
   const position = event => {
     const rect = canvasRef.current.getBoundingClientRect()
