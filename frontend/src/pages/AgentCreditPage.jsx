@@ -37,19 +37,15 @@ const terms = [
 
 function DocUpload({item, value, onChange}) {
   const state = value?.status || ''
-  const pick = event => onChange(item.key, event.target.files?.[0] || null)
-  return <div className={`agent-doc-upload ${state === 'ok' ? 'filled' : ''} ${state === 'error' ? 'error' : ''} ${state === 'checking' ? 'checking' : ''}`}>
+  return <label className={`agent-doc-upload ${state === 'ok' ? 'filled' : ''} ${state === 'error' ? 'error' : ''} ${state === 'checking' ? 'checking' : ''}`}>
+    <input type="file" accept="image/*" capture={item.camera} onChange={event => onChange(item.key, event.target.files?.[0] || null)}/>
     {value?.preview ? <img src={value.preview} alt="" aria-hidden="true"/> : <i>{state === 'ok' ? <CheckCircle2/> : <Upload/>}</i>}
     <span>
       <b>{item.title}</b>
       <small>{state === 'checking' ? 'Mengecek kualitas foto...' : value?.error || value?.name || item.hint}</small>
       {value?.width && <em>{value.width}×{value.height}px · {value.focusScore ? `fokus ${value.focusScore}` : ''} · {state === 'ok' ? 'jelas' : 'perlu ulang'}</em>}
-      <div className="agent-doc-quick-actions">
-        <label className="take-photo"><Camera/>Foto langsung<input type="file" accept="image/*" capture={item.camera} onChange={pick}/></label>
-        <label className="pick-gallery">Pilih dari galeri<input type="file" accept="image/*" onChange={pick}/></label>
-      </div>
     </span>
-  </div>
+  </label>
 }
 
 function imageSharpnessScore(image) {
