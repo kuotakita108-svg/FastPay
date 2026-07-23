@@ -23,9 +23,9 @@ const initialForm = {
 }
 
 const docs = [
-  {key: 'ktp', title: 'Foto KTP', hint: 'KTP asli, jelas, tidak buram'},
-  {key: 'store', title: 'Foto Toko', hint: 'Tampak depan toko/usaha'},
-  {key: 'selfie', title: 'Selfie Pegang KTP', hint: 'Wajah dan KTP terlihat jelas'},
+  {key: 'ktp', title: 'Foto KTP', hint: 'KTP asli, jelas, tidak buram', camera: 'environment'},
+  {key: 'store', title: 'Foto Toko', hint: 'Tampak depan toko/usaha', camera: 'environment'},
+  {key: 'selfie', title: 'Selfie Pegang KTP', hint: 'Wajah dan KTP terlihat jelas', camera: 'user'},
 ]
 
 const terms = [
@@ -37,16 +37,19 @@ const terms = [
 
 function DocUpload({item, value, onChange}) {
   const state = value?.status || ''
-  return <label className={`agent-doc-upload ${state === 'ok' ? 'filled' : ''} ${state === 'error' ? 'error' : ''} ${state === 'checking' ? 'checking' : ''}`}>
-    <input type="file" accept="image/*" onChange={event => onChange(item.key, event.target.files?.[0] || null)}/>
+  const pick = event => onChange(item.key, event.target.files?.[0] || null)
+  return <div className={`agent-doc-upload ${state === 'ok' ? 'filled' : ''} ${state === 'error' ? 'error' : ''} ${state === 'checking' ? 'checking' : ''}`}>
     {value?.preview ? <img src={value.preview} alt="" aria-hidden="true"/> : <i>{state === 'ok' ? <CheckCircle2/> : <Upload/>}</i>}
     <span>
       <b>{item.title}</b>
       <small>{state === 'checking' ? 'Mengecek kualitas foto...' : value?.error || value?.name || item.hint}</small>
       {value?.width && <em>{value.width}×{value.height}px · {value.focusScore ? `fokus ${value.focusScore}` : ''} · {state === 'ok' ? 'jelas' : 'perlu ulang'}</em>}
-      <strong>Ketuk untuk foto langsung atau pilih dari galeri</strong>
+      <div className="agent-doc-quick-actions">
+        <label className="take-photo"><Camera/>Foto langsung<input type="file" accept="image/*" capture={item.camera} onChange={pick}/></label>
+        <label className="pick-gallery">Pilih dari galeri<input type="file" accept="image/*" onChange={pick}/></label>
+      </div>
     </span>
-  </label>
+  </div>
 }
 
 function imageSharpnessScore(image) {
