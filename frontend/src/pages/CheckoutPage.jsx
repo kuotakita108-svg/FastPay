@@ -1,18 +1,120 @@
 import {useState} from 'react'
-import {Navigate,useLocation,useNavigate} from 'react-router-dom'
-import {ArrowLeft,Check,ChevronRight,Clock3,ReceiptText,ShieldCheck,WalletCards,XCircle} from 'lucide-react'
+import {Navigate, useLocation, useNavigate} from 'react-router-dom'
+import {ArrowLeft, Check, ChevronRight, Clock3, ReceiptText, ShieldCheck, WalletCards, XCircle} from 'lucide-react'
 import {useAuth} from '../context/AuthContext'
-import {createTransaction,payWithBalance} from '../services/transactionService'
+import {createTransaction, makeReceiptNumber, payWithBalance, saveReceipt} from '../services/transactionService'
 import {getSecurity} from '../services/securityService'
 import PaymentSecurityModal from '../components/mobile/PaymentSecurityModal'
+import TransactionReceipt from '../components/mobile/TransactionReceipt'
 import {rupiah} from '../utils/currency'
 
-export default function CheckoutPage(){
- const{state}=useLocation(),navigate=useNavigate(),{session,user,setBalance,deductBalance}=useAuth(),[processing,setProcessing]=useState(false),[result,setResult]=useState(null),[error,setError]=useState(''),[verifyOpen,setVerifyOpen]=useState(false)
- if(!state?.amount)return <Navigate to="/app/services" replace/>
- const security=getSecurity(user.id),protectedPayment=Boolean(security.pinHash||security.biometricEnabled)
- const pay=async()=>{setVerifyOpen(false);setProcessing(true);setError('');try{let response;if(session?.offline){deductBalance(state.amount);const transaction=await createTransaction({customer:state.target,email:user.email||`${user.id}@pulsaprime.id`,method:`${state.provider} · ${state.title}`,amount:state.amount});response={transaction,balance:Number(user.balance)-Number(state.amount)}}else{response=await payWithBalance({...state,email:user.email});setBalance(response.balance)}setResult(response)}catch(current){setError(current.message)}finally{setProcessing(false)}}
- const requestPay=()=>protectedPayment?setVerifyOpen(true):pay()
- if(result)return <main className="mobile-app checkout-page"><section className="payment-result"><i><Check/></i><span>PEMBAYARAN BERHASIL</span><h1>{rupiah(state.amount)}</h1><p>{state.product} untuk {state.target} berhasil diproses.</p><div><small>ID Transaksi</small><strong>{result.transaction.id}</strong></div><button onClick={()=>navigate('/app/history')}>Lihat Riwayat</button><button className="ghost" onClick={()=>navigate('/app')}>Kembali ke Beranda</button></section></main>
- return <main className="mobile-app checkout-page"><header className="checkout-head"><button onClick={()=>navigate(-1)}><ArrowLeft/></button><div><strong>Konfirmasi Pembayaran</strong><small>Periksa kembali sebelum membayar</small></div><i><ShieldCheck/></i></header><section className="checkout-status"><Clock3/>Pesananmu siap dibayar</section>{protectedPayment&&<section className="checkout-security-active"><ShieldCheck/><div><strong>Verifikasi pembayaran aktif</strong><small>PIN atau sidik jari akan diminta saat membayar.</small></div></section>}<section className="checkout-card order"><header><ReceiptText/><div><small>Produk</small><strong>{state.product}</strong></div></header><dl><div><dt>Layanan</dt><dd>{state.title}</dd></div><div><dt>Penyedia</dt><dd>{state.provider}</dd></div><div><dt>Tujuan</dt><dd>{state.target}</dd></div></dl></section><section className="checkout-card"><h2>Metode Pembayaran</h2><button className="payment-method selected"><i><WalletCards/></i><div><strong>Saldo PulsaPrime</strong><small>Saldo tersedia {rupiah(user.balance)}</small></div><Check/></button><button className="payment-method disabled" disabled><i><ShieldCheck/></i><div><strong>QRIS & Virtual Account</strong><small>Aktif setelah gateway pembayaran terhubung</small></div><ChevronRight/></button></section><section className="checkout-card summary"><h2>Rincian Pembayaran</h2><div><span>Harga produk</span><b>{rupiah(state.amount)}</b></div><div><span>Biaya layanan</span><b>Gratis</b></div><div className="total"><span>Total pembayaran</span><strong>{rupiah(state.amount)}</strong></div></section>{error&&<div className="checkout-error"><XCircle/><span>{error}</span>{/saldo/i.test(error)&&<button onClick={()=>navigate('/app/balance/topup')}>Isi Saldo</button>}</div>}<footer className="checkout-footer"><div><span>Total</span><strong>{rupiah(state.amount)}</strong></div><button disabled={processing} onClick={requestPay}>{processing?'Memproses...':protectedPayment?'Verifikasi & Bayar':'Bayar Sekarang'}</button></footer><PaymentSecurityModal open={verifyOpen} user={user} settings={security} onClose={()=>setVerifyOpen(false)} onVerified={pay}/></main>
+export default function CheckoutPage() {
+  const {state} = useLocation()
+  const navigate = useNavigate()
+  const {session, user, setBalance, deductBalance} = useAuth()
+  const [processing, setProcessing] = useState(false)
+  const [result, setResult] = useState(null)
+  const [error, setError] = useState('')
+  const [verifyOpen, setVerifyOpen] = useState(false)
+  const [receiptOpen, setReceiptOpen] = useState(false)
+
+  if (!state?.amount) return <Navigate to="/app/services" replace/>
+
+  const security = getSecurity(user.id)
+  const protectedPayment = Boolean(security.pinHash || security.biometricEnabled)
+  const enrichTransaction = transaction => ({
+    ...transaction,
+    id: transaction.id,
+    customer: transaction.customer || state.target,
+    target: state.target,
+    customer_name: state.customer_name || transaction.customer_name || 'Pelanggan PulsaPrime',
+    provider: state.provider,
+    title: state.title,
+    product: state.product,
+    amount: state.amount,
+    payment_method: 'Saldo PulsaPrime',
+    order_number: transaction.order_number || makeReceiptNumber('ORD'),
+    sn: transaction.sn || makeReceiptNumber('SN'),
+  })
+  const pay = async () => {
+    setVerifyOpen(false)
+    setProcessing(true)
+    setError('')
+    try {
+      let response
+      if (session?.offline) {
+        deductBalance(state.amount)
+        const transaction = await createTransaction({
+          customer: state.target,
+          target: state.target,
+          customer_name: state.customer_name || 'Pelanggan PulsaPrime',
+          email: user.email || `${user.id}@pulsaprime.id`,
+          method: `${state.provider} · ${state.title}`,
+          provider: state.provider,
+          title: state.title,
+          product: state.product,
+          amount: state.amount,
+          payment_method: 'Saldo PulsaPrime',
+        })
+        response = {transaction, balance: Number(user.balance) - Number(state.amount)}
+      } else {
+        response = await payWithBalance({...state, email: user.email})
+        setBalance(response.balance)
+      }
+      const transaction = enrichTransaction(response.transaction)
+      saveReceipt(transaction)
+      setResult({...response, transaction})
+    } catch (current) {
+      setError(current.message)
+    } finally {
+      setProcessing(false)
+    }
+  }
+  const requestPay = () => protectedPayment ? setVerifyOpen(true) : pay()
+
+  if (result) return <main className="mobile-app checkout-page">
+    <section className="payment-result">
+      <i><Check/></i>
+      <span>PEMBAYARAN BERHASIL</span>
+      <h1>{rupiah(state.amount)}</h1>
+      <p>{state.product} untuk {state.target} berhasil diproses.</p>
+      <div><small>ID Transaksi</small><strong>{result.transaction.id}</strong></div>
+      <button onClick={() => setReceiptOpen(true)}>Cetak / Lihat Struk</button>
+      <button className="ghost" onClick={() => navigate('/app/history')}>Lihat Riwayat</button>
+      <button className="ghost" onClick={() => navigate('/app')}>Kembali ke Beranda</button>
+    </section>
+    {receiptOpen && <TransactionReceipt transaction={result.transaction} order={state} user={user} onClose={() => setReceiptOpen(false)}/>}
+  </main>
+
+  return <main className="mobile-app checkout-page">
+    <header className="checkout-head">
+      <button onClick={() => navigate(-1)}><ArrowLeft/></button>
+      <div><strong>Konfirmasi Pembayaran</strong><small>Periksa kembali sebelum membayar</small></div>
+      <i><ShieldCheck/></i>
+    </header>
+    <section className="checkout-status"><Clock3/>Pesananmu siap dibayar</section>
+    {protectedPayment && <section className="checkout-security-active"><ShieldCheck/><div><strong>Verifikasi pembayaran aktif</strong><small>PIN atau sidik jari akan diminta saat membayar.</small></div></section>}
+    <section className="checkout-card order">
+      <header><ReceiptText/><div><small>Produk</small><strong>{state.product}</strong></div></header>
+      <dl>
+        <div><dt>Layanan</dt><dd>{state.title}</dd></div>
+        <div><dt>Penyedia</dt><dd>{state.provider}</dd></div>
+        <div><dt>Tujuan</dt><dd>{state.target}</dd></div>
+      </dl>
+    </section>
+    <section className="checkout-card">
+      <h2>Metode Pembayaran</h2>
+      <button className="payment-method selected"><i><WalletCards/></i><div><strong>Saldo PulsaPrime</strong><small>Saldo tersedia {rupiah(user.balance)}</small></div><Check/></button>
+      <button className="payment-method disabled" disabled><i><ShieldCheck/></i><div><strong>QRIS & Virtual Account</strong><small>Aktif setelah gateway pembayaran terhubung</small></div><ChevronRight/></button>
+    </section>
+    <section className="checkout-card summary">
+      <h2>Rincian Pembayaran</h2>
+      <div><span>Harga produk</span><b>{rupiah(state.amount)}</b></div>
+      <div><span>Biaya layanan</span><b>Gratis</b></div>
+      <div className="total"><span>Total pembayaran</span><strong>{rupiah(state.amount)}</strong></div>
+    </section>
+    {error && <div className="checkout-error"><XCircle/><span>{error}</span>{/saldo/i.test(error) && <button onClick={() => navigate('/app/balance/topup')}>Isi Saldo</button>}</div>}
+    <footer className="checkout-footer"><div><span>Total</span><strong>{rupiah(state.amount)}</strong></div><button disabled={processing} onClick={requestPay}>{processing ? 'Memproses...' : protectedPayment ? 'Verifikasi & Bayar' : 'Bayar Sekarang'}</button></footer>
+    <PaymentSecurityModal open={verifyOpen} user={user} settings={security} onClose={() => setVerifyOpen(false)} onVerified={pay}/>
+  </main>
 }
