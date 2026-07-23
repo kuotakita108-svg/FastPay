@@ -8,6 +8,7 @@ import {
   Eye,
   EyeOff,
   Gift,
+  HandCoins,
   Plus,
   ReceiptText,
   ShieldCheck,
@@ -50,6 +51,7 @@ export default function BalancePage(){
         <button type="button" onClick={()=>navigate('/app/balance/send')}><i><ArrowUpRight/></i><strong>Kirim</strong><small>Ke pengguna</small></button>
         <button type="button" onClick={()=>navigate('/app/balance/withdraw')}><i><ArrowDownToLine/></i><strong>Tarik</strong><small>Ke rekening</small></button>
         <button type="button"><i><ReceiptText/></i><strong>Tagihan</strong><small>Bayar cepat</small></button>
+        <button type="button" onClick={()=>navigate('/app/balance/credit')}><i><HandCoins/></i><strong>Kredit</strong><small>Agent</small></button>
       </section>
 
       <div className="wallet-security">
@@ -66,8 +68,8 @@ export default function BalancePage(){
 
       <section className="wallet-promo">
         <i><Gift/></i>
-        <div><b>Bonus FastPoint hingga 2x</b><span>Isi saldo minimal Rp100.000 melalui Virtual Account.</span></div>
-        <button type="button" onClick={topUp}>Ambil</button>
+        <div><b>Kredit saldo khusus agent</b><span>Ajukan tanam saldo dari aplikasi dengan KTP, foto toko, selfie, dan tanda tangan online.</span></div>
+        <button type="button" onClick={()=>navigate('/app/balance/credit')}>Ajukan</button>
       </section>
 
       <section className="payment-source">

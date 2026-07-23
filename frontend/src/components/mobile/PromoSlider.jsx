@@ -9,7 +9,7 @@ import promoGame from '../../assets/promos/promo-game.png'
 
 const promos = [
   { tag: 'PENGGUNA BARU', title: 'Cashback hingga 10%', text: 'Transaksi pulsa pertamamu jadi lebih hemat.', action: 'Ambil Promo', icon: Gift, tone: 'midnight', image: promoPulsa, position: '76%', to: '/app/buy/pulsa' },
-  { tag: 'ISI SALDO', title: 'Bonus FastPoint 2×', text: 'Top up saldo minimal Rp100.000 hari ini.', action: 'Isi Saldo', icon: WalletCards, tone: 'emerald', image: promoWallet, position: '78%', to: '/app/balance/topup' },
+  { tag: 'ISI SALDO', title: 'Bonus PrimePoint 2×', text: 'Top up saldo minimal Rp100.000 hari ini.', action: 'Isi Saldo', icon: WalletCards, tone: 'emerald', image: promoWallet, position: '78%', to: '/app/balance/topup' },
   { tag: 'PAKET DATA', title: 'Hemat sampai Rp15.000', text: 'Internet semua operator tanpa kode promo.', action: 'Beli Paket', icon: Wifi, tone: 'ocean', image: promoData, position: '78%', to: '/app/buy/data' },
   { tag: 'BAYAR TAGIHAN', title: 'Bebas biaya admin', text: 'Bayar listrik, air, dan tagihan pilihanmu.', action: 'Bayar Sekarang', icon: Zap, tone: 'sunset', image: promoBills, position: '79%', to: '/app/services' },
   { tag: 'VOUCHER GAME', title: 'Main lebih untung', text: 'Cashback 5% Mobile Legends dan Free Fire.', action: 'Top Up Game', icon: Gamepad2, tone: 'violet', image: promoGame, position: '79%', to: '/app/buy/game' },

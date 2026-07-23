@@ -39,6 +39,21 @@ export async function register(profile){
   }
 }
 
+export async function resetPassword(profile){
+  const identity=(profile.identity||profile.username||'').toLowerCase().trim()
+  if(!identity||profile.password?.length<6)throw new Error('Isi akun dan kata sandi baru minimal 6 karakter.')
+  try{return await request('/auth/reset-password',{method:'POST',body:JSON.stringify({identity,password:profile.password})})}
+  catch(error){
+    if(!connectionError(error))throw error
+    const accounts=readAccounts()
+    const index=accounts.findIndex(account=>account.username===identity||account.phone===identity||account.email===identity)
+    if(index<0)throw new Error('Akun belum ditemukan di perangkat ini. Pastikan username, nomor HP, atau email benar.',{cause:error})
+    accounts[index]={...accounts[index],passwordHash:await hash(profile.password)}
+    localStorage.setItem(ACCOUNTS_KEY,JSON.stringify(accounts))
+    return {message:'Kata sandi berhasil diperbarui. Silakan masuk kembali.'}
+  }
+}
+
 export const googleLogin=()=>{
   const apiURL=import.meta.env.VITE_API_URL||'/api/v1'
   const target=new URL(`${apiURL}/auth/google`,window.location.origin)

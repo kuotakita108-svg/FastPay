@@ -37,6 +37,7 @@
 @import './services-icon-v3.css';
 @import './purchase-international.css';
 @import './product-catalog-page.css';
+@import './agent-credit.css';
 @import './dashboard-discover.css';
 @import './provider-logos-expanded.css';
 .mobile-nav.no-scan-nav,.advanced-nav.no-scan-nav{grid-template-columns:repeat(4,1fr)!important}.no-scan-nav .nav-scan{display:none!important}.no-scan-nav a.active{color:#6557e5;font-weight:800}
