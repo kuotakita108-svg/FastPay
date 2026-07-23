@@ -28,6 +28,23 @@ const extraCatalog={
  Perjalanan:{'Kereta Api':[[50000,'Deposit Tiket Kereta 50.000'],[100000,'Deposit Tiket Kereta 100.000'],[250000,'Deposit Tiket Kereta 250.000']],Pesawat:[[100000,'Deposit Tiket Pesawat 100.000'],[500000,'Deposit Tiket Pesawat 500.000'],[1000000,'Deposit Tiket Pesawat 1.000.000']], 'Bus & Travel':[[50000,'Tiket Bus & Travel 50.000'],[100000,'Tiket Bus & Travel 100.000'],[250000,'Tiket Bus & Travel 250.000']]}
 }
 Object.entries(extraCatalog).forEach(([category,providers])=>Object.entries(providers).forEach(([operator,items])=>items.forEach(([price,name],index)=>products.push({id:`EXTRA-${category}-${operator}-${index}`.replaceAll(' ','-').toUpperCase(),operator,name,category,nominal:price,price:price+(price>2500?750:0),stock:999}))))
+
+const gameTopUps={
+  'Free Fire':{unit:'Diamonds',rate:145,values:[5,12,20,50,70,100,140,210,280,355,425,500,635,720,860,1000,1075,1200,1450,2000,2180,2720,3640,4000,5000,6000,7290,8000,10000],extras:[[7000,'Membership Harian'],[30000,'Membership Mingguan'],[85000,'Membership Bulanan'],[18000,'Level Up Pass'],[45000,'BP Card'],[125000,'Special Bundle']]},
+  'PUBG Mobile':{unit:'UC',rate:225,values:[30,60,90,120,180,240,325,385,445,565,660,985,1320,1800,2125,2460,3000,3850,4500,5650,6500,8100,10000,12000,16000],extras:[[160000,'Royale Pass'],[420000,'Elite Pass Plus'],[150000,'Prime Plus'],[650000,'Mythic Pack']]},
+  'Mobile Legends':{unit:'Diamonds',rate:285,values:[5,12,19,28,36,44,59,74,86,110,148,172,222,257,284,344,408,429,514,568,706,875,963,1050,1412,2010,2400,3000,4000,5000,6000,7500,10000],extras:[[30000,'Weekly Diamond Pass'],[60000,'2x Weekly Diamond Pass'],[90000,'3x Weekly Diamond Pass'],[150000,'Twilight Pass'],[165000,'Starlight Member']]},
+  Roblox:{unit:'Robux',rate:185,values:[80,160,240,320,400,560,800,1000,1200,1700,2250,3000,4500,6000,8000,10000,15000,20000,25000],extras:[[85000,'Premium 450'],[170000,'Premium 1000'],[360000,'Premium 2200'],[720000,'Premium 4500']]},
+  'Point Blank':{unit:'PB Cash',rate:90,values:[1200,2400,6000,12000,24000,36000,60000,96000,120000,180000,240000,300000,480000,600000,800000,1000000],extras:[[25000,'Starter Pack'],[75000,'Weapon Pack'],[150000,'Elite Trooper Pack'],[300000,'Legend Pack']]},
+  'Genshin Impact Genesis Crystals':{unit:'Genesis Crystals',rate:245,values:[60,120,300,330,600,980,1090,1960,2240,3280,5000,6480,8080,10000,12960],extras:[[79000,'Blessing Welkin Moon'],[158000,'2x Blessing Welkin Moon'],[159000,'Battle Pass Gnostic Hymn'],[329000,'Battle Pass Gnostic Chorus']]},
+  'Valorant Points':{unit:'VP',rate:100,values:[125,250,420,475,700,1000,1375,1650,2050,2400,3050,3650,4400,5350,6500,8150,10000,11000,15000,20000],extras:[[149000,'Battle Pass'],[299000,'Premium Skin Pack'],[599000,'Ultra Skin Pack']]},
+  'Steam Wallet ID':{unit:'',rate:1,values:[12000,25000,45000,60000,90000,120000,150000,200000,250000,300000,400000,500000,600000,750000,1000000,1250000,1500000,2000000,2500000,3000000],currency:true,extras:[]},
+  'Arena of Valor Voucher':{unit:'Vouchers',rate:220,values:[40,90,150,230,350,470,650,950,1200,1430,1800,2390,3000,4000,4800,5000,6500,8000,10000],extras:[[35000,'Weekly Card'],[99000,'Monthly Card'],[149000,'Battle Pass'],[299000,'Legend Bundle']]}
+}
+Object.entries(gameTopUps).forEach(([operator,config])=>{
+  config.values.forEach((value,index)=>products.push({id:`GAME-${operator}-${value}`.replaceAll(' ','-').toUpperCase(),operator,name:config.currency?`Steam Wallet Rp${value.toLocaleString('id-ID')}`:`${value.toLocaleString('id-ID')} ${config.unit}`,category:'Voucher Game',nominal:value,price:config.currency?value:Math.round(value*config.rate+750),stock:999-index}))
+  config.extras.forEach(([price,name],index)=>products.push({id:`GAME-EXTRA-${operator}-${index}`.replaceAll(' ','-').toUpperCase(),operator,name,category:'Voucher Game',nominal:price,price:price+750,stock:999-index}))
+})
+
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json;charset=UTF-8','cache-control':'no-store'}})
 const body=async request=>{try{return await request.json()}catch{return{}}}
 const passwordHash=async value=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)))).map(byte=>byte.toString(16).padStart(2,'0')).join('')
