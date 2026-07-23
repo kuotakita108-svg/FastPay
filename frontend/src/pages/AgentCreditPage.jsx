@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from 'react'
-import {ArrowRight, Camera, CheckCircle2, FileText, Images, PenLine, ShieldCheck, Store, Upload, UserRound, WalletCards, X} from 'lucide-react'
+import {ArrowRight, Camera, CheckCircle2, Clock3, FileText, Images, Loader2, PenLine, ShieldCheck, Stamp, Store, Upload, UserRound, WalletCards, X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
@@ -34,6 +34,8 @@ const terms = [
   'Pelunasan wajib dilakukan sesuai jatuh tempo agar akses kredit tetap aktif.',
   'Data KTP, toko, selfie, dan tanda tangan dipakai untuk validasi permohonan.',
 ]
+
+const verificationDuration = 5 * 60 * 1000
 
 function DocUpload({item, value, onOpenCamera}) {
   const state = value?.status || ''
@@ -114,6 +116,8 @@ export default function AgentCreditPage() {
   const [cameraDoc, setCameraDoc] = useState(null)
   const [cameraReady, setCameraReady] = useState(false)
   const [cameraError, setCameraError] = useState('')
+  const [application, setApplication] = useState(null)
+  const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => {
     if (!cameraDoc) return undefined
@@ -142,6 +146,27 @@ export default function AgentCreditPage() {
       stream?.getTracks().forEach(track => track.stop())
     }
   }, [cameraDoc])
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    const key = `pulsaprime_agent_credit_${user?.id || 'guest'}`
+    const history = JSON.parse(localStorage.getItem(key) || '[]')
+    const latest = history[0]
+    if (latest?.verifyUntil && latest.status !== 'Disetujui') setApplication(latest)
+  }, [user?.id])
+
+  useEffect(() => {
+    if (!application || application.status === 'Disetujui' || now < application.verifyUntil) return
+    const approved = {...application, status: 'Disetujui', approvedAt: new Date().toISOString()}
+    const key = `pulsaprime_agent_credit_${user?.id || 'guest'}`
+    const history = JSON.parse(localStorage.getItem(key) || '[]')
+    localStorage.setItem(key, JSON.stringify([approved, ...history.filter(item => item.id !== approved.id)].slice(0, 10)))
+    setApplication(approved)
+  }, [application, now, user?.id])
 
   const update = event => setForm({...form, [event.target.name]: event.target.value})
   const updateFile = async (key, file) => {
@@ -223,16 +248,25 @@ export default function AgentCreditPage() {
     if (!signed) return setMessage('Tanda tangan online wajib diisi.')
     const application = {
       id: `KSA-${Date.now().toString().slice(-8)}`,
-      status: 'Menunggu verifikasi analis',
+      status: 'Sedang diverifikasi pihak atas',
       createdAt: new Date().toISOString(),
+      verifyUntil: Date.now() + verificationDuration,
       form: {...form, amount},
       documents: Object.fromEntries(Object.entries(files).map(([key, file]) => [key, file.file.name])),
     }
     const key = `pulsaprime_agent_credit_${user?.id || 'guest'}`
     const history = JSON.parse(localStorage.getItem(key) || '[]')
     localStorage.setItem(key, JSON.stringify([application, ...history].slice(0, 10)))
-    setMessage(`Pengajuan ${application.id} berhasil dibuat. Tim PulsaPrime akan mengecek dokumen agent.`)
+    setMessage('')
+    setApplication(application)
   }
+
+  const remainingMs = application?.status === 'Disetujui' ? 0 : Math.max(0, (application?.verifyUntil || 0) - now)
+  const remainingSeconds = Math.ceil(remainingMs / 1000)
+  const progress = application ? Math.min(100, Math.round(((verificationDuration - remainingMs) / verificationDuration) * 100)) : 0
+  const minutes = String(Math.floor(remainingSeconds / 60)).padStart(2, '0')
+  const seconds = String(remainingSeconds % 60).padStart(2, '0')
+  const approved = application?.status === 'Disetujui'
 
   return <main className="mobile-app agent-credit-page">
     <SubPageHeader title="Kredit Saldo Agent" description="Ajukan tanam saldo langsung dari aplikasi" back/>
@@ -243,6 +277,26 @@ export default function AgentCreditPage() {
       <div><span>MODAL AGENT RESMI</span><h1>Ajukan Kredit Saldo Lebih Cepat</h1><p>Upload dokumen jelas, isi formulir agent, lalu tanda tangan online. Tim analis tinggal verifikasi dari data yang kamu kirim.</p></div>
       <b>{rupiah(Math.min(500000, Math.max(0, Number(form.amount || 0))))}</b>
     </section>
+    {application && <section className={`agent-verification ${approved ? 'approved' : ''}`}>
+      <i>{approved ? <Stamp/> : <Loader2/>}</i>
+      <span>{approved ? 'PENGAJUAN DISETUJUI' : 'MOHON MENUNGGU'}</span>
+      <h2>{approved ? 'Kredit saldo sudah ACC' : 'Data sedang diverifikasi pihak atas'}</h2>
+      <p>{approved ? 'Pengajuan agent kamu sudah disetujui. Limit kredit saldo siap diproses sesuai nominal yang diajukan.' : 'Sistem sedang mengecek formulir, dokumen, kualitas foto, dan tanda tangan online. Jangan tutup halaman sampai proses selesai.'}</p>
+      <div className="verification-meta">
+        <b>{application.id}</b>
+        <strong>{rupiah(application.form.amount)}</strong>
+      </div>
+      <div className="verification-timer"><Clock3/><strong>{approved ? 'ACC' : `${minutes}:${seconds}`}</strong><small>{approved ? 'Disetujui pihak atas' : 'Estimasi maksimal 5 menit'}</small></div>
+      <div className="verification-progress"><span style={{width: `${approved ? 100 : progress}%`}}/></div>
+      <ul className="verification-steps">
+        <li className="done"><CheckCircle2/>Formulir agent diterima</li>
+        <li className={progress >= 25 || approved ? 'done' : 'active'}>{progress >= 25 || approved ? <CheckCircle2/> : <Loader2/>}Validasi foto KTP, toko, dan selfie</li>
+        <li className={progress >= 55 || approved ? 'done' : ''}>{progress >= 55 || approved ? <CheckCircle2/> : <Clock3/>}Pengecekan tanda tangan online</li>
+        <li className={approved ? 'done' : ''}>{approved ? <CheckCircle2/> : <Clock3/>}Persetujuan analis pihak atas</li>
+      </ul>
+      {approved && <button type="button" onClick={() => setApplication(null)}>Buat Pengajuan Baru <ArrowRight/></button>}
+    </section>}
+    {!application && <>
     <form className="agent-credit-form" onSubmit={submit}>
       <section className="agent-card">
         <header><i><UserRound/></i><div><h2>Data Agent</h2><p>Isi sesuai identitas asli agar pengajuan mudah diverifikasi.</p></div></header>
@@ -289,6 +343,7 @@ export default function AgentCreditPage() {
       <button className="agent-submit">Ajukan Kredit Saldo <ArrowRight/></button>
     </form>
     <section className="agent-safe-note"><ShieldCheck/><span>Dokumen hanya digunakan untuk verifikasi pengajuan agent PulsaPrime.</span></section>
+    </>}
     {cameraDoc && <section className="agent-camera-backdrop" aria-label={`Ambil ${cameraDoc.title}`}>
       <div className="agent-camera-shell">
         <header><button type="button" onClick={closeCamera}><X/></button><span>{cameraDoc.title}</span><i>{cameraDoc.camera === 'user' ? 'Depan' : 'Belakang'}</i></header>
