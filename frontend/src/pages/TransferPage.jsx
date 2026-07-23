@@ -33,7 +33,7 @@ import gopayLogo from "../assets/providers/gopay.png";
 import ovoLogo from "../assets/providers/ovo.svg";
 import shopeepayLogo from "../assets/providers/shopeepay.png";
 import linkajaLogo from "../assets/providers/linkaja.svg";
-import pulsaprimeLogo from "../assets/images/pulsaprime-logo-header.png";
+import pulsaprimeLogo from "../assets/images/pulsaprime-logo-header.svg";
 import cimbLogo from "../assets/providers/official/cimb-niaga.svg";
 import permataLogo from "../assets/providers/official/permatabank.svg";
 import jagoLogo from "../assets/providers/official/jago.svg";
