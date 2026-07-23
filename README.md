@@ -97,3 +97,9 @@ Google OAuth memerlukan `GOOGLE_CLIENT_ID` dan `GOOGLE_CLIENT_SECRET` asli pada 
 - Pelanggan, laporan profit, saldo, dan tagihan PPOB
 
 Data backend masih memakai repository in-memory. Kontrak repository sudah dipisah agar berikutnya mudah diganti dengan PostgreSQL atau MySQL.
+
+## Integrasi ke aplikasi besar
+
+PulsaPrime sudah disiapkan agar bisa berjalan sebagai aplikasi mandiri atau sebagai modul anak pada aplikasi besar melalui `VITE_APP_BASE_PATH`.
+
+Panduan lengkap ada di [INTEGRATION.md](./INTEGRATION.md).
