@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from 'react'
-import {ArrowRight, Camera, CheckCircle2, Clock3, FileText, Images, Loader2, PenLine, ShieldCheck, Stamp, Store, Upload, UserRound, WalletCards, X} from 'lucide-react'
+import {ArrowRight, Award, CalendarDays, Camera, CheckCircle2, Clock3, CreditCard, FileText, Images, Loader2, PenLine, ShieldCheck, Stamp, Store, TrendingUp, Upload, UserRound, WalletCards, X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
@@ -36,6 +36,18 @@ const terms = [
 ]
 
 const verificationDuration = 5 * 60 * 1000
+const rankLevels = [
+  {name: 'Agent Pemula', minPaid: 0, limit: 500000, badge: 'BRONZE'},
+  {name: 'Agent Lancar', minPaid: 3, limit: 1000000, badge: 'SILVER'},
+  {name: 'Agent Prioritas', minPaid: 6, limit: 2000000, badge: 'GOLD'},
+  {name: 'Agent Platinum', minPaid: 10, limit: 5000000, badge: 'PLATINUM'},
+]
+const paymentSteps = [
+  {label: 'Cicilan 1', day: 7, portion: 0.25},
+  {label: 'Cicilan 2', day: 14, portion: 0.25},
+  {label: 'Cicilan 3', day: 21, portion: 0.25},
+  {label: 'Pelunasan', day: 30, portion: 0.25},
+]
 
 function DocUpload({item, value, onOpenCamera}) {
   const state = value?.status || ''
@@ -117,6 +129,7 @@ export default function AgentCreditPage() {
   const [cameraReady, setCameraReady] = useState(false)
   const [cameraError, setCameraError] = useState('')
   const [application, setApplication] = useState(null)
+  const [repayments, setRepayments] = useState([])
   const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => {
@@ -157,6 +170,11 @@ export default function AgentCreditPage() {
     const history = JSON.parse(localStorage.getItem(key) || '[]')
     const latest = history[0]
     if (latest?.verifyUntil) setApplication(latest)
+  }, [user?.id])
+
+  useEffect(() => {
+    const key = `kuotakita_agent_repayments_${user?.id || 'guest'}`
+    setRepayments(JSON.parse(localStorage.getItem(key) || '[]'))
   }, [user?.id])
 
   useEffect(() => {
@@ -236,9 +254,30 @@ export default function AgentCreditPage() {
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
     setSigned(false)
   }
+  const paidCount = repayments.filter(item => item.status === 'Lunas').length
+  const currentRank = rankLevels.reduce((rank, item) => (paidCount >= item.minPaid ? item : rank), rankLevels[0])
+  const nextRank = rankLevels.find(item => item.minPaid > paidCount)
+  const rankProgress = nextRank ? Math.min(100, Math.round((paidCount / nextRank.minPaid) * 100)) : 100
+  const maxCredit = currentRank.limit
+  const payKey = (appId, index) => `${appId}-${index}`
+  const isPaid = (appId, index) => repayments.some(item => item.key === payKey(appId, index) && item.status === 'Lunas')
+  const paymentPlan = application ? paymentSteps.map((step, index) => ({
+    ...step,
+    index,
+    key: payKey(application.id, index),
+    amount: Math.ceil(Number(application.form.amount || 0) * step.portion),
+    due: new Date(new Date(application.createdAt).getTime() + step.day * 86400000),
+    paid: isPaid(application.id, index),
+  })) : []
+  const payInstallment = item => {
+    const key = `kuotakita_agent_repayments_${user?.id || 'guest'}`
+    const next = [{key: item.key, applicationId: application.id, label: item.label, amount: item.amount, status: 'Lunas', paidAt: new Date().toISOString()}, ...repayments.filter(row => row.key !== item.key)]
+    setRepayments(next)
+    localStorage.setItem(key, JSON.stringify(next))
+  }
   const submit = event => {
     event.preventDefault()
-    const amount = Math.min(500000, Math.max(50000, Number(form.amount || 0)))
+    const amount = Math.min(maxCredit, Math.max(50000, Number(form.amount || 0)))
     const documentValues = Object.values(files)
     if (documentValues.some(file => !file?.file)) return setMessage('Lengkapi Foto KTP, Foto toko, dan Foto selfie pegang KTP dulu bro.')
     const badDocument = documentValues.find(file => file.status !== 'ok')
@@ -278,7 +317,21 @@ export default function AgentCreditPage() {
       <div className="agent-credit-hero-shade"/>
       <i><WalletCards/></i>
       <div><span>MODAL AGENT RESMI</span><h1>Ajukan Kredit Saldo Lebih Cepat</h1><p>Upload dokumen jelas, isi formulir agent, lalu tanda tangan online. Tim analis tinggal verifikasi dari data yang kamu kirim.</p></div>
-      <b>{rupiah(Math.min(500000, Math.max(0, Number(form.amount || 0))))}</b>
+      <b>{rupiah(Math.min(maxCredit, Math.max(0, Number(form.amount || 0))))}</b>
+    </section>
+    <section className="agent-rank-card">
+      <header>
+        <i><Award/></i>
+        <div><span>PANGKAT AGENT</span><h2>{currentRank.name}</h2><p>Limit pengajuan aktif {rupiah(currentRank.limit)}.</p></div>
+        <b>{currentRank.badge}</b>
+      </header>
+      <div className="rank-meter"><span style={{width: `${rankProgress}%`}}/></div>
+      <div className="rank-stats">
+        <div><strong>{paidCount}</strong><small>Pembayaran lancar</small></div>
+        <div><strong>{nextRank ? `${Math.max(0, nextRank.minPaid - paidCount)} lagi` : 'Max'}</strong><small>{nextRank ? `ke ${nextRank.name}` : 'Pangkat tertinggi'}</small></div>
+        <div><strong>{rupiah(nextRank?.limit || currentRank.limit)}</strong><small>Limit berikutnya</small></div>
+      </div>
+      <p><TrendingUp/> Bayar cicilan tepat waktu agar pangkat naik dan nominal pinjaman berikutnya makin besar.</p>
     </section>
     {application && <section className={`agent-verification ${approved ? 'approved' : ''} ${rejected ? 'rejected' : ''}`}>
       <i>{approved ? <Stamp/> : rejected ? <X/> : <Loader2/>}</i>
@@ -299,6 +352,18 @@ export default function AgentCreditPage() {
       </ul>
       {(approved || rejected) && <button type="button" onClick={() => setApplication(null)}>Buat Pengajuan Baru <ArrowRight/></button>}
     </section>}
+    {approved && <section className="agent-payment-lane">
+      <header><i><CreditCard/></i><div><h2>Jalur Pembayaran Kredit</h2><p>Bayar bertahap sesuai jadwal. Pembayaran lancar menaikkan pangkat agent.</p></div></header>
+      <div className="payment-lane-total"><span>Total pinjaman</span><strong>{rupiah(application.form.amount)}</strong></div>
+      <div className="payment-lane-list">
+        {paymentPlan.map(item => <article className={item.paid ? 'paid' : ''} key={item.key}>
+          <i>{item.paid ? <CheckCircle2/> : <CalendarDays/>}</i>
+          <div><strong>{item.label}</strong><small>Jatuh tempo {item.due.toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'})}</small></div>
+          <b>{rupiah(item.amount)}</b>
+          <button type="button" disabled={item.paid} onClick={() => payInstallment(item)}>{item.paid ? 'Lunas' : 'Bayar'}</button>
+        </article>)}
+      </div>
+    </section>}
     {!application && <>
     <form className="agent-credit-form" onSubmit={submit}>
       <section className="agent-card">
@@ -312,7 +377,7 @@ export default function AgentCreditPage() {
           <label>Transaksi/Bulan<input name="monthlyTransactions" value={form.monthlyTransactions} onChange={update} inputMode="numeric" required placeholder="Contoh: 150 transaksi"/></label>
           <label className="wide">Alamat Rumah<textarea name="homeAddress" value={form.homeAddress} onChange={update} required placeholder="Alamat lengkap rumah"/></label>
           <label className="wide">Alamat Toko<textarea name="storeAddress" value={form.storeAddress} onChange={update} required placeholder="Alamat lengkap toko"/></label>
-          <label className="wide">Nominal Kredit Saldo<input name="amount" value={form.amount} onChange={event => setForm({...form, amount: event.target.value.replace(/\D/g, '').slice(0, 6)})} inputMode="numeric" required/><small>Maksimal pengajuan Rp500.000</small></label>
+          <label className="wide">Nominal Kredit Saldo<input name="amount" value={form.amount} onChange={event => setForm({...form, amount: event.target.value.replace(/\D/g, '').slice(0, 7)})} inputMode="numeric" required/><small>Maksimal sesuai pangkat saat ini: {rupiah(maxCredit)}</small></label>
         </div>
       </section>
       <section className="agent-card">
