@@ -534,7 +534,7 @@ export default function AgentCreditPage() {
           <button type="button" className={paymentMethod === 'qris' ? 'active' : ''} onClick={() => setPaymentMethod('qris')}><i><QrCode/></i><span><b>QRIS / Barcode</b><small>Nominal otomatis sesuai cicilan</small></span>{paymentMethod === 'qris' && <Check/>}</button>
         </div>
         {paymentMethod === 'bank' && <div className="agent-bank-detail"><div><span>Nominal transfer</span><strong>{rupiah(paymentItem.amount)}</strong></div><div><span>Kode pembayaran</span><strong>{paymentItem.key.toUpperCase()}</strong></div><button type="button" onClick={() => copyPaymentReference(paymentItem.key.toUpperCase())}><Copy/> Salin kode</button></div>}
-        {paymentMethod === 'qris' && <div className="agent-qr-detail"><div className="agent-qr-art"><QRCodeSVG value={`KUOTAKITA|CICILAN|${paymentItem.key}|${paymentItem.amount}`} size={156} level="M" includeMargin/></div><strong>{rupiah(paymentItem.amount)}</strong><small>QR dinamis untuk {paymentItem.label}. Scan dari aplikasi bank atau e-wallet.</small></div>}
+        {paymentMethod === 'qris' && <div className="agent-qr-detail"><div className="agent-qr-art"><QRCodeSVG value={`https://kuotakita-app.pages.dev/pay?ref=${encodeURIComponent(paymentItem.key)}&amount=${paymentItem.amount}`} size={220} level="H" minVersion={5} includeMargin/></div><strong>{rupiah(paymentItem.amount)}</strong><small>QR dinamis untuk {paymentItem.label}. Scan dari kamera, bank, atau e-wallet.</small></div>}
         <button type="button" className="agent-payment-confirm" disabled={!paymentMethod} onClick={() => payInstallment(paymentItem)}>Konfirmasi Pembayaran <ArrowRight/></button>
       </div>
     </section>}
