@@ -1,4 +1,5 @@
 import {useEffect, useRef, useState} from 'react'
+import {useLocation,useNavigate} from 'react-router-dom'
 import {ArrowRight, Award, CalendarDays, Camera, CheckCircle2, Clock3, CreditCard, FileText, Images, Loader2, PenLine, Search, ShieldCheck, Stamp, Store, TrendingUp, Upload, UserRound, WalletCards, X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
@@ -122,6 +123,8 @@ function checkImageQuality(file, key) {
 
 export default function AgentCreditPage() {
   const {user} = useAuth()
+  const location = useLocation()
+  const navigate = useNavigate()
   const canvasRef = useRef(null)
   const videoRef = useRef(null)
   const galleryRef = useRef(null)
@@ -195,6 +198,16 @@ export default function AgentCreditPage() {
       setShowForm(false)
     }).catch(() => {})
   }, [user?.id])
+
+  useEffect(() => {
+    const view = location.state?.creditView
+    if (view === 'detail') setDetailOpen(true)
+    if (view === 'form') setShowForm(true)
+    if (!view && applications.length) {
+      setDetailOpen(false)
+      setShowForm(false)
+    }
+  }, [location.state, applications.length])
 
   useEffect(() => {
     const key = `kuotakita_agent_repayments_${user?.id || 'guest'}`
@@ -380,6 +393,7 @@ export default function AgentCreditPage() {
     resetAgentForm()
     setApplication(null)
     setDetailOpen(false)
+    if (applications.length && location.state?.creditView !== 'form') navigate(location.pathname, {state: {creditView: 'form'}})
     setShowForm(true)
     window.setTimeout(() => document.querySelector('.agent-credit-form')?.scrollIntoView({behavior: 'smooth', block: 'start'}), 80)
   }
@@ -387,10 +401,15 @@ export default function AgentCreditPage() {
     setApplication(item)
     setShowForm(false)
     setDetailOpen(true)
+    navigate(location.pathname, {state: {creditView: 'detail', applicationId: item.id}})
     setMessage('')
     window.setTimeout(() => document.querySelector('.agent-verification')?.scrollIntoView({behavior: 'smooth', block: 'start'}), 80)
   }
   const backToApplications = () => {
+    if (location.state?.creditView) {
+      navigate(-1)
+      return
+    }
     setDetailOpen(false)
     setShowForm(false)
     window.setTimeout(() => document.querySelector('.agent-registered-list')?.scrollIntoView({behavior: 'smooth', block: 'start'}), 60)
@@ -471,7 +490,6 @@ export default function AgentCreditPage() {
       </div> : <div className="agent-registered-empty"><FileText/><strong>{applications.length ? 'Pengajuan tidak ditemukan' : 'Belum ada yang didaftarkan'}</strong><small>{applications.length ? 'Coba ubah kata pencarian atau filter status.' : 'Isi formulir pertama, nanti status pengajuan muncul otomatis di sini.'}</small></div>}
     </section>}
     {detailOpen && application && <section className={`agent-verification ${approved ? 'approved' : ''} ${rejected ? 'rejected' : ''}`}>
-      <button type="button" className="agent-detail-back" onClick={backToApplications}><ArrowRight/> Kembali ke semua peminjam</button>
       <i>{approved ? <Stamp/> : rejected ? <X/> : <Loader2/>}</i>
       <span>{approved ? 'PENGAJUAN DISETUJUI' : rejected ? 'PENGAJUAN DITOLAK' : waitingDecision ? 'MENUNGGU KEPUTUSAN' : 'MOHON MENUNGGU'}</span>
       <h2>{approved ? 'Kredit saldo sudah ACC' : rejected ? 'Pengajuan belum disetujui' : waitingDecision ? 'Menunggu ACC pihak atas' : 'Data sedang diverifikasi pihak atas'}</h2>
@@ -502,10 +520,6 @@ export default function AgentCreditPage() {
       </div>
     </section>}
     {shouldShowForm && <>
-    {applications.length > 0 && <div className="agent-form-toolbar">
-      <button type="button" onClick={() => { setShowForm(false); setApplication(applications[0] || null); window.setTimeout(() => document.querySelector('.agent-registered-list')?.scrollIntoView({behavior: 'smooth', block: 'start'}), 60) }}><ArrowRight/> Kembali ke daftar</button>
-      <div><span>FORMULIR PENDAFTAR BARU</span><strong>Tambah orang yang ingin meminjam</strong></div>
-    </div>}
     <form className="agent-credit-form" onSubmit={submit}>
       <section className="agent-card">
         <header><i><UserRound/></i><div><h2>Data Agent</h2><p>Isi sesuai identitas asli agar pengajuan mudah diverifikasi.</p></div></header>

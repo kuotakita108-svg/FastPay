@@ -81,7 +81,6 @@ export default function CheckoutPage() {
       <div><small>ID Transaksi</small><strong>{result.transaction.id}</strong></div>
       <button onClick={() => setReceiptOpen(true)}>Cetak / Lihat Struk</button>
       <button className="ghost" onClick={() => navigate('/app/history')}>Lihat Riwayat</button>
-      <button className="ghost" onClick={() => navigate('/app')}>Kembali ke Beranda</button>
     </section>
     {receiptOpen && <TransactionReceipt transaction={result.transaction} order={state} user={user} onClose={() => setReceiptOpen(false)}/>}
   </main>

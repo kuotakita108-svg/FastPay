@@ -268,9 +268,6 @@ export default function TransferPage() {
           <button className="primary" onClick={() => navigate("/app/history")}>
             Lihat Riwayat
           </button>
-          <button onClick={() => navigate("/app/balance")}>
-            Kembali ke Saldo
-          </button>
         </section>
       </main>
     );
