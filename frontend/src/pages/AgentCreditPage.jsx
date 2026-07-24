@@ -310,6 +310,9 @@ export default function AgentCreditPage() {
   const nextRank = rankLevels.find(item => item.minPaid > paidCount)
   const rankProgress = nextRank ? Math.min(100, Math.round((paidCount / nextRank.minPaid) * 100)) : 100
   const maxCredit = currentRank.limit
+  const pendingApplications = applications.filter(item => !finalCreditStatus.includes(item.status)).length
+  const approvedApplications = applications.filter(item => item.status === 'Disetujui').length
+  const rejectedApplications = applications.filter(item => item.status === 'Ditolak').length
   const payKey = (appId, index) => `${appId}-${index}`
   const isPaid = (appId, index) => repayments.some(item => item.key === payKey(appId, index) && item.status === 'Lunas')
   const paymentPlan = application ? paymentSteps.map((step, index) => ({
@@ -409,15 +412,21 @@ export default function AgentCreditPage() {
       <div className="rank-meter"><span style={{width: `${rankProgress}%`}}/></div>
       <p><TrendingUp/> Pangkat naik otomatis saat riwayat pembayaran agent dinilai lancar oleh sistem.</p>
     </section>
-    <section className="agent-registered-list">
+    {(!showForm || applications.length === 0) && <section className="agent-registered-list">
       <header>
         <div>
           <span>DATA PENGAJUAN AGENT</span>
           <h2>Orang yang didaftarkan</h2>
-          <p>Semua pengajuan yang kamu kirim tersimpan di sini, jadi agent bisa daftar orang lain tanpa menunggu status sebelumnya selesai.</p>
+          <p>Semua pengajuan tersimpan rapi di sini. Pilih salah satu untuk melihat detail dan progres verifikasinya.</p>
         </div>
         <button type="button" onClick={startNewApplication}>+ Daftar Baru</button>
       </header>
+      <div className="agent-list-summary" aria-label="Ringkasan pengajuan">
+        <div><strong>{applications.length}</strong><span>Total</span></div>
+        <div><strong>{pendingApplications}</strong><span>Menunggu</span></div>
+        <div><strong>{approvedApplications}</strong><span>Disetujui</span></div>
+        <div><strong>{rejectedApplications}</strong><span>Ditolak</span></div>
+      </div>
       {applications.length ? <div className="agent-registered-grid">
         {applications.map(item => {
           const status = applicationStatus(item)
@@ -433,7 +442,7 @@ export default function AgentCreditPage() {
           </article>
         })}
       </div> : <div className="agent-registered-empty"><FileText/><strong>Belum ada yang didaftarkan</strong><small>Isi formulir pertama, nanti status pengajuan muncul otomatis di sini.</small></div>}
-    </section>
+    </section>}
     {application && <section className={`agent-verification ${approved ? 'approved' : ''} ${rejected ? 'rejected' : ''}`}>
       <i>{approved ? <Stamp/> : rejected ? <X/> : <Loader2/>}</i>
       <span>{approved ? 'PENGAJUAN DISETUJUI' : rejected ? 'PENGAJUAN DITOLAK' : waitingDecision ? 'MENUNGGU KEPUTUSAN' : 'MOHON MENUNGGU'}</span>
@@ -466,6 +475,10 @@ export default function AgentCreditPage() {
       </div>
     </section>}
     {shouldShowForm && <>
+    {applications.length > 0 && <div className="agent-form-toolbar">
+      <button type="button" onClick={() => { setShowForm(false); setApplication(applications[0] || null); window.setTimeout(() => document.querySelector('.agent-registered-list')?.scrollIntoView({behavior: 'smooth', block: 'start'}), 60) }}><ArrowRight/> Kembali ke daftar</button>
+      <div><span>FORMULIR PENDAFTAR BARU</span><strong>Tambah orang yang ingin meminjam</strong></div>
+    </div>}
     <form className="agent-credit-form" onSubmit={submit}>
       <section className="agent-card">
         <header><i><UserRound/></i><div><h2>Data Agent</h2><p>Isi sesuai identitas asli agar pengajuan mudah diverifikasi.</p></div></header>
