@@ -4,6 +4,7 @@ import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
 import {rupiah} from '../utils/currency'
+import {request} from '../services/http'
 import financeHero from '../assets/service-heroes/finance.png'
 
 const initialForm = {
@@ -179,6 +180,17 @@ export default function AgentCreditPage() {
     const latest = history[0]
     if (latest?.verifyUntil) setApplication(latest)
     if (!latest) setShowForm(true)
+    history.forEach(item => {
+      if (item?.id) request('/me/agent-credit', {method: 'POST', body: JSON.stringify(item)}).catch(() => {})
+    })
+    request('/me/agent-credit').then(remote => {
+      if (!Array.isArray(remote) || !remote.length) return
+      const merged = [...remote, ...history.filter(local => !remote.some(item => item.id === local.id))].slice(0, 10)
+      localStorage.setItem(key, JSON.stringify(merged))
+      setApplications(merged)
+      setApplication(merged[0])
+      setShowForm(false)
+    }).catch(() => {})
   }, [user?.id])
 
   useEffect(() => {
@@ -207,6 +219,7 @@ export default function AgentCreditPage() {
     localStorage.setItem(ownKey, JSON.stringify(ownNext))
     localStorage.setItem(allKey, JSON.stringify(allNext))
     window.dispatchEvent(new Event('kuotakita-credit-sync'))
+    request('/me/agent-credit', {method: 'POST', body: JSON.stringify({...nextApplication, userId, userName})}).catch(() => {})
     setApplications(ownNext)
     setApplication(nextApplication)
     return nextApplication

@@ -4,6 +4,7 @@ import {AlertCircle, Banknote, CalendarDays, CheckCircle2, CircleHelp, Clipboard
 import PageHeader from '../components/common/PageHeader'
 import {useAuth} from '../context/AuthContext'
 import {rupiah} from '../utils/currency'
+import {request} from '../services/http'
 
 const allKey = 'kuotakita_agent_credit_all'
 const userKey = userId => `kuotakita_agent_credit_${userId || 'guest'}`
@@ -57,6 +58,7 @@ function saveApplication(target, changes) {
   localStorage.setItem(allKey, JSON.stringify([next, ...all.filter(item => item.id !== target.id)].slice(0, 50)))
   const own = JSON.parse(localStorage.getItem(userKey(target.userId)) || '[]')
   localStorage.setItem(userKey(target.userId), JSON.stringify([next, ...own.filter(item => item.id !== target.id)].slice(0, 10)))
+  request(`/agent-credit/applications/${encodeURIComponent(target.id)}`, {method: 'PUT', body: JSON.stringify(next)}).catch(() => {})
   return next
 }
 
@@ -134,11 +136,24 @@ export default function CreditApplicationsPage() {
   const isAdmin = ['master', 'admin'].includes(user?.role)
   const view = params.get('view') || 'overview'
   const refresh = () => setItems(readAll())
+  const refreshRemote = () => request('/agent-credit/applications').then(remote => {
+    if (!Array.isArray(remote)) return
+    const local = readAll()
+    const merged = [...remote, ...local.filter(item => !remote.some(row => row.id === item.id))]
+    localStorage.setItem(allKey, JSON.stringify(merged.slice(0, 50)))
+    merged.forEach(item => {
+      if (!item.userId) return
+      const own = JSON.parse(localStorage.getItem(userKey(item.userId)) || '[]')
+      localStorage.setItem(userKey(item.userId), JSON.stringify([item, ...own.filter(row => row.id !== item.id)].slice(0, 10)))
+    })
+    setItems(readAll())
+  }).catch(() => refresh())
 
   useEffect(() => {
-    const sync = () => refresh()
+    const sync = () => refreshRemote()
     window.addEventListener('storage', sync)
     window.addEventListener('kuotakita-credit-sync', sync)
+    refreshRemote()
     const timer = window.setInterval(sync, 1500)
     return () => {
       window.removeEventListener('storage', sync)
@@ -240,6 +255,7 @@ export default function CreditApplicationsPage() {
     const all = readAll()
     localStorage.setItem(allKey, JSON.stringify([application, ...all].slice(0, 50)))
     localStorage.setItem(userKey(application.userId), JSON.stringify([application]))
+    request('/me/agent-credit', {method: 'POST', body: JSON.stringify(application)}).catch(() => {})
     setManualForm(manualInitial)
     setManualMessage('Peminjam berhasil ditambahkan. Marketing bisa verifikasi dan tanda tangan.')
     setShowCreate(false)
