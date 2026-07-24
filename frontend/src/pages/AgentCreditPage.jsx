@@ -326,12 +326,7 @@ export default function AgentCreditPage() {
         <b>{currentRank.badge}</b>
       </header>
       <div className="rank-meter"><span style={{width: `${rankProgress}%`}}/></div>
-      <div className="rank-stats">
-        <div><strong>{paidCount}</strong><small>Pembayaran lancar</small></div>
-        <div><strong>{nextRank ? `${Math.max(0, nextRank.minPaid - paidCount)} lagi` : 'Max'}</strong><small>{nextRank ? `ke ${nextRank.name}` : 'Pangkat tertinggi'}</small></div>
-        <div><strong>{rupiah(nextRank?.limit || currentRank.limit)}</strong><small>Limit berikutnya</small></div>
-      </div>
-      <p><TrendingUp/> Bayar cicilan tepat waktu agar pangkat naik dan nominal pinjaman berikutnya makin besar.</p>
+      <p><TrendingUp/> Pangkat naik otomatis saat riwayat pembayaran agent dinilai lancar oleh sistem.</p>
     </section>
     {application && <section className={`agent-verification ${approved ? 'approved' : ''} ${rejected ? 'rejected' : ''}`}>
       <i>{approved ? <Stamp/> : rejected ? <X/> : <Loader2/>}</i>
