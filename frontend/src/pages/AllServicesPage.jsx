@@ -4,15 +4,18 @@ import {ArrowLeft,Search,Sparkles,ShieldCheck,X} from 'lucide-react'
 import {allServices,serviceConfig} from '../constants/services'
 import MobileNav from '../components/mobile/MobileNav'
 import ServiceEmblem from '../components/mobile/ServiceEmblem'
+import {useAuth} from '../context/AuthContext'
 
 export default function AllServicesPage(){
   const navigate=useNavigate()
+  const {user}=useAuth()
   const [query,setQuery]=useState('')
   const [category,setCategory]=useState('Semua')
-  const groups=['Semua',...new Set(allServices.map(item=>item[3]))]
-  const filtered=useMemo(()=>allServices.filter(([label,, ,group])=>
+  const visibleServices=useMemo(()=>allServices.filter(([,type])=>type!=='agentcredit'||user?.role==='agent'),[user?.role])
+  const groups=['Semua',...new Set(visibleServices.map(item=>item[3]))]
+  const filtered=useMemo(()=>visibleServices.filter(([label,, ,group])=>
     (category==='Semua'||group===category)&&label.toLowerCase().includes(query.trim().toLowerCase())
-  ),[query,category])
+  ),[visibleServices,query,category])
   const visibleGroups=groups.slice(1).filter(group=>filtered.some(item=>item[3]===group))
   const open=type=>{
     if(type==='agentcredit')return navigate('/app/balance/credit')
@@ -21,7 +24,7 @@ export default function AllServicesPage(){
 
   return <main className="mobile-app services-page">
     <header className="services-head"><button type="button" onClick={()=>navigate(-1)}><ArrowLeft/></button><div><strong>Semua Layanan</strong><small>Pilih kebutuhan transaksimu</small></div><i><ShieldCheck/></i></header>
-    <section className="services-hero"><span><Sparkles/> KUOTAKITA SERVICES</span><h1>Semua kebutuhan,<br/>cukup satu aplikasi.</h1><p>Transaksi cepat, aman, dan tersedia 24 jam setiap hari.</p><b>{allServices.length}+ layanan tersedia</b></section>
+    <section className="services-hero"><span><Sparkles/> KUOTAKITA SERVICES</span><h1>Semua kebutuhan,<br/>cukup satu aplikasi.</h1><p>Transaksi cepat, aman, dan tersedia 24 jam setiap hari.</p><b>{visibleServices.length}+ layanan tersedia</b></section>
     <section className="all-services modern-all-services">
       <label className="service-search"><Search/><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Cari pulsa, tagihan, voucher..."/>{query&&<button type="button" onClick={()=>setQuery('')}><X/></button>}</label>
       <div className="service-categories">{groups.map(group=><button type="button" className={category===group?'active':''} onClick={()=>setCategory(group)} key={group}>{group}</button>)}</div>

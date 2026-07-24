@@ -25,6 +25,7 @@ export default function BalancePage(){
   const [visible,setVisible] = useState(true)
   const balance = Number(user?.balance ?? 0)
   const walletId = user?.id || user?.username || 'KUOTAKITA'
+  const isAgent = user?.role === 'agent'
   const topUp = () => navigate('/app/balance/topup')
 
   return (
@@ -51,7 +52,7 @@ export default function BalancePage(){
         <button type="button" onClick={()=>navigate('/app/balance/send')}><i><ArrowUpRight/></i><strong>Kirim</strong><small>Ke pengguna</small></button>
         <button type="button" onClick={()=>navigate('/app/balance/withdraw')}><i><ArrowDownToLine/></i><strong>Tarik</strong><small>Ke rekening</small></button>
         <button type="button"><i><ReceiptText/></i><strong>Tagihan</strong><small>Bayar cepat</small></button>
-        <button type="button" onClick={()=>navigate('/app/balance/credit')}><i><HandCoins/></i><strong>Kredit</strong><small>Agent</small></button>
+        {isAgent&&<button type="button" onClick={()=>navigate('/app/balance/credit')}><i><HandCoins/></i><strong>Kredit</strong><small>Agent</small></button>}
       </section>
 
       <div className="wallet-security">
@@ -66,11 +67,11 @@ export default function BalancePage(){
         <small>Belum ada pengeluaran bulan ini</small>
       </section>
 
-      <section className="wallet-promo">
+      {isAgent&&<section className="wallet-promo">
         <i><Gift/></i>
         <div><b>Kredit saldo khusus agent</b><span>Ajukan tanam saldo dari aplikasi dengan KTP, foto toko, selfie, dan tanda tangan online.</span></div>
         <button type="button" onClick={()=>navigate('/app/balance/credit')}>Ajukan</button>
-      </section>
+      </section>}
 
       <section className="payment-source">
         <header><h2>Cara Isi Saldo</h2><button type="button" onClick={topUp}>Lihat semua</button></header>
