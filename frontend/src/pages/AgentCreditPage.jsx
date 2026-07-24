@@ -443,7 +443,7 @@ export default function AgentCreditPage() {
         })}
       </div> : <div className="agent-registered-empty"><FileText/><strong>Belum ada yang didaftarkan</strong><small>Isi formulir pertama, nanti status pengajuan muncul otomatis di sini.</small></div>}
     </section>}
-    {application && <section className={`agent-verification ${approved ? 'approved' : ''} ${rejected ? 'rejected' : ''}`}>
+    {!showForm && application && <section className={`agent-verification ${approved ? 'approved' : ''} ${rejected ? 'rejected' : ''}`}>
       <i>{approved ? <Stamp/> : rejected ? <X/> : <Loader2/>}</i>
       <span>{approved ? 'PENGAJUAN DISETUJUI' : rejected ? 'PENGAJUAN DITOLAK' : waitingDecision ? 'MENUNGGU KEPUTUSAN' : 'MOHON MENUNGGU'}</span>
       <h2>{approved ? 'Kredit saldo sudah ACC' : rejected ? 'Pengajuan belum disetujui' : waitingDecision ? 'Menunggu ACC pihak atas' : 'Data sedang diverifikasi pihak atas'}</h2>
@@ -462,7 +462,7 @@ export default function AgentCreditPage() {
       </ul>
       <button type="button" onClick={startNewApplication}>Daftarkan Orang Lain <ArrowRight/></button>
     </section>}
-    {approved && <section className="agent-payment-lane">
+    {!showForm && approved && <section className="agent-payment-lane">
         <header><i><CreditCard/></i><div><h2>Jalur Pembayaran Kredit</h2><p>Pembayaran cicilan dicatat oleh marketing. Agent hanya dapat memantau status pembayaran.</p></div></header>
       <div className="payment-lane-total"><span>Total pinjaman</span><strong>{rupiah(application.form.amount)}</strong></div>
       <div className="payment-lane-list">
