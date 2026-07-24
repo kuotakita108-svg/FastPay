@@ -39,7 +39,7 @@ export default function BalancePage(){
             {visible ? <EyeOff/> : <Eye/>}
           </button>
         </div>
-        <strong>{visible ? rupiah(balance) : 'Rp ••••••'}</strong>
+        <strong>{visible ? rupiah(balance) : 'Rp ******'}</strong>
         <small>Siap dipakai untuk semua transaksi KuotaKita</small>
         <div className="wallet-number">
           <span>KUOTAKITA WALLET</span>
