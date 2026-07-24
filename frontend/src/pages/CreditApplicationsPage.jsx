@@ -1,5 +1,5 @@
 import {useRef, useState} from 'react'
-import {Banknote, CalendarDays, CheckCircle2, Clock3, CreditCard, Eye, Filter, PenLine, PlusCircle, Search, ShieldCheck, Stamp, Trash2, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
+import {AlertCircle, Banknote, CalendarDays, CheckCircle2, ClipboardCheck, Clock3, CreditCard, Eye, Filter, PenLine, PhoneCall, PlusCircle, Search, ShieldCheck, Stamp, Trash2, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
 import PageHeader from '../components/common/PageHeader'
 import {useAuth} from '../context/AuthContext'
 import {rupiah} from '../utils/currency'
@@ -66,6 +66,19 @@ const paymentSummary = item => {
   return {paid, total: rows.length, percent: rows.length ? Math.round((paid / rows.length) * 100) : 0, totalPaid}
 }
 const statusGroup = item => item.paymentStatus === 'Lunas' ? 'Lunas' : item.status === 'Disetujui' ? 'Disetujui' : item.status === 'Ditolak' ? 'Ditolak' : 'Review'
+const firstUnpaidRow = item => paymentRows(item).find(row => !row.paid)
+const dataScore = item => {
+  const checks = [
+    {label: 'Nama agent', ok: Boolean(item.form.agentName || item.userName)},
+    {label: 'Nomor WA', ok: Boolean(item.form.whatsapp)},
+    {label: 'NIK', ok: String(item.form.nik || '').length >= 12},
+    {label: 'Alamat toko', ok: Boolean(item.form.storeAddress || item.form.homeAddress)},
+    {label: 'Kontak keluarga', ok: Boolean(item.form.familyName && item.form.familyWhatsapp)},
+    {label: 'Dokumen/foto', ok: Object.values(item.documents || {}).length > 0 || item.source === 'marketing'},
+  ]
+  const done = checks.filter(check => check.ok).length
+  return {checks, done, total: checks.length, percent: Math.round((done / checks.length) * 100)}
+}
 
 function SignatureStep({title, note, signed, icon: Icon}) {
   return <div className={signed ? 'signed' : ''}>
@@ -215,6 +228,17 @@ export default function CreditApplicationsPage() {
     approved: items.filter(item => statusGroup(item) === 'Disetujui').length,
     paid: items.filter(item => statusGroup(item) === 'Lunas').length,
   }
+  const marketingQueue = sortedItems.filter(item => !finalStatus.includes(item.status) && !item.marketingSignature)
+  const approvedActive = sortedItems.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas')
+  const duePayments = approvedActive.filter(item => {
+    const next = firstUnpaidRow(item)
+    return next && next.due.getTime() <= Date.now() + 3 * 86400000
+  })
+  const marketingCards = [
+    {title: 'Perlu Verifikasi', value: marketingQueue.length, note: 'Belum TTD marketing', icon: ClipboardCheck},
+    {title: 'Tagihan Dekat', value: duePayments.length, note: 'Jatuh tempo <= 3 hari', icon: AlertCircle},
+    {title: 'Pinjaman Aktif', value: approvedActive.length, note: 'Sudah ACC belum lunas', icon: CreditCard},
+  ]
 
   return <>
     <PageHeader eyebrow="Pihak Atas" title="Review Kredit Saldo Agent" description="Marketing verifikasi dan tanda tangan dulu, lalu analis memberi keputusan akhir."/>
@@ -233,6 +257,34 @@ export default function CreditApplicationsPage() {
         <article><span>Sudah ACC</span><strong>{summary.approved}</strong><small>Aktif dipantau</small></article>
         <article><span>Lunas</span><strong>{summary.paid}</strong><small>Pembayaran selesai</small></article>
       </div>
+      {(isMarketing || isAdmin) && <section className="marketing-workspace">
+        <header>
+          <div><span>MEJA KERJA MARKETING</span><h2>Kontrol Verifikasi & Cicilan</h2><p>Marketing bisa input peminjam, cek kelengkapan data, tanda tangan verifikasi, dan mencatat cicilan yang masuk.</p></div>
+          <button type="button" onClick={() => setShowCreate(true)}><PlusCircle/>Input Peminjam</button>
+        </header>
+        <div className="marketing-task-grid">
+          {marketingCards.map(({title, value, note, icon: Icon}) => <article key={title}><i><Icon/></i><span>{title}</span><strong>{value}</strong><small>{note}</small></article>)}
+        </div>
+        <div className="marketing-focus-grid">
+          <div>
+            <h3>Antrean Verifikasi</h3>
+            {marketingQueue.slice(0, 4).length ? marketingQueue.slice(0, 4).map(item => <button type="button" key={item.id} onClick={() => {setExpandedId(item.id); setFilter('Review')}}>
+              <span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id}</small></span>
+              <strong>{rupiah(item.form.amount)}</strong>
+            </button>) : <p>Belum ada antrean verifikasi marketing.</p>}
+          </div>
+          <div>
+            <h3>Pembayaran Perlu Dicek</h3>
+            {duePayments.slice(0, 4).length ? duePayments.slice(0, 4).map(item => {
+              const due = firstUnpaidRow(item)
+              return <button type="button" key={item.id} onClick={() => {setExpandedId(item.id); setFilter('Disetujui')}}>
+                <span><b>{item.form.agentName || item.userName}</b><small>{due.label} · {due.due.toLocaleDateString('id-ID', {day: '2-digit', month: 'short'})}</small></span>
+                <strong>{rupiah(due.amount)}</strong>
+              </button>
+            }) : <p>Belum ada cicilan jatuh tempo dekat.</p>}
+          </div>
+        </div>
+      </section>}
       <div className="panel-header">
         <div><h2>Pengajuan Masuk</h2><p>{isMarketing ? 'Tugas marketing: cek data agent, tanda tangan, atau tolak jika data tidak layak.' : isAnalis ? 'Tugas analis: cek hasil marketing, tanda tangan, lalu ACC atau tolak.' : 'Pantau seluruh alur pengajuan kredit agent dari satu panel.'}</p></div>
         <span className="review-role-badge">{isMarketing ? 'MARKETING' : isAnalis ? 'ANALIS' : 'ADMIN'}</span>
@@ -266,6 +318,7 @@ export default function CreditApplicationsPage() {
           const marketingSigned = Boolean(item.marketingSignature)
           const analisSigned = Boolean(item.analisSignature)
           const pay = paymentSummary(item)
+          const score = dataScore(item)
           const expanded = expandedId === item.id
           const canMarketingSign = !done && !marketingSigned && (isMarketing || isAdmin)
           const canAnalisSign = !done && marketingSigned && !analisSigned && (isAnalis || isAdmin)
@@ -314,6 +367,14 @@ export default function CreditApplicationsPage() {
                   <span><dt>Alamat Toko</dt><dd>{item.form.storeAddress}</dd></span>
                   <span><dt>Keluarga</dt><dd>{item.form.familyName} · {item.form.familyRelation} · {item.form.familyWhatsapp}</dd></span>
                 </dl>
+              </div>
+              <div className="credit-detail-block marketing-checklist">
+                <h4>Checklist Marketing</h4>
+                <div className="data-score"><strong>{score.percent}%</strong><span><i style={{width: `${score.percent}%`}}/></span></div>
+                <ul>
+                  {score.checks.map(check => <li className={check.ok ? 'ok' : ''} key={check.label}>{check.ok ? <CheckCircle2/> : <AlertCircle/>}<span>{check.label}</span></li>)}
+                </ul>
+                <a href={`https://wa.me/${String(item.form.whatsapp || '').replace(/\D/g, '').replace(/^0/, '62')}`} target="_blank" rel="noreferrer"><PhoneCall/>Hubungi via WhatsApp</a>
               </div>
               <div className="credit-detail-block">
                 <h4>Jalur Pembayaran</h4>
