@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from 'react'
-import {ArrowRight, Award, CalendarDays, Camera, CheckCircle2, Clock3, CreditCard, FileText, Images, Loader2, PenLine, ShieldCheck, Stamp, Store, TrendingUp, Upload, UserRound, WalletCards, X} from 'lucide-react'
+import {ArrowRight, Award, CalendarDays, Camera, CheckCircle2, Clock3, CreditCard, FileText, Images, Loader2, PenLine, Search, ShieldCheck, Stamp, Store, TrendingUp, Upload, UserRound, WalletCards, X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
@@ -137,6 +137,8 @@ export default function AgentCreditPage() {
   const [application, setApplication] = useState(null)
   const [applications, setApplications] = useState([])
   const [showForm, setShowForm] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('Semua')
   const [repayments, setRepayments] = useState([])
   const [now, setNow] = useState(() => Date.now())
 
@@ -313,6 +315,12 @@ export default function AgentCreditPage() {
   const pendingApplications = applications.filter(item => !finalCreditStatus.includes(item.status)).length
   const approvedApplications = applications.filter(item => item.status === 'Disetujui').length
   const rejectedApplications = applications.filter(item => item.status === 'Ditolak').length
+  const filteredApplications = applications.filter(item => {
+    const query = searchTerm.trim().toLowerCase()
+    const matchesQuery = !query || [item.id, item.form?.agentName, item.form?.storeName, item.form?.whatsapp].some(value => String(value || '').toLowerCase().includes(query))
+    const matchesStatus = statusFilter === 'Semua' || (statusFilter === 'Menunggu' ? !finalCreditStatus.includes(item.status) : item.status === statusFilter)
+    return matchesQuery && matchesStatus
+  })
   const payKey = (appId, index) => `${appId}-${index}`
   const isPaid = (appId, index) => repayments.some(item => item.key === payKey(appId, index) && item.status === 'Lunas')
   const paymentPlan = application ? paymentSteps.map((step, index) => ({
@@ -427,8 +435,15 @@ export default function AgentCreditPage() {
         <div><strong>{approvedApplications}</strong><span>Disetujui</span></div>
         <div><strong>{rejectedApplications}</strong><span>Ditolak</span></div>
       </div>
-      {applications.length ? <div className="agent-registered-grid">
-        {applications.map(item => {
+      {applications.length > 0 && <div className="agent-list-tools">
+        <label><Search/><input value={searchTerm} onChange={event => setSearchTerm(event.target.value)} placeholder="Cari nama, toko, nomor, atau ID..."/></label>
+        <div className="agent-list-filters" role="tablist" aria-label="Filter status">
+          {['Semua', 'Menunggu', 'Disetujui', 'Ditolak'].map(filter => <button key={filter} type="button" className={statusFilter === filter ? 'active' : ''} onClick={() => setStatusFilter(filter)}>{filter}</button>)}
+        </div>
+        <small>Menampilkan {filteredApplications.length} dari {applications.length} pengajuan</small>
+      </div>}
+      {filteredApplications.length ? <div className="agent-registered-grid">
+        {filteredApplications.map(item => {
           const status = applicationStatus(item)
           return <article className={application?.id === item.id ? 'active' : ''} key={item.id}>
             <i><FileText/></i>
@@ -441,7 +456,7 @@ export default function AgentCreditPage() {
             <button type="button" onClick={() => selectApplication(item)}>Lihat Status</button>
           </article>
         })}
-      </div> : <div className="agent-registered-empty"><FileText/><strong>Belum ada yang didaftarkan</strong><small>Isi formulir pertama, nanti status pengajuan muncul otomatis di sini.</small></div>}
+      </div> : <div className="agent-registered-empty"><FileText/><strong>{applications.length ? 'Pengajuan tidak ditemukan' : 'Belum ada yang didaftarkan'}</strong><small>{applications.length ? 'Coba ubah kata pencarian atau filter status.' : 'Isi formulir pertama, nanti status pengajuan muncul otomatis di sini.'}</small></div>}
     </section>}
     {!showForm && application && <section className={`agent-verification ${approved ? 'approved' : ''} ${rejected ? 'rejected' : ''}`}>
       <i>{approved ? <Stamp/> : rejected ? <X/> : <Loader2/>}</i>
