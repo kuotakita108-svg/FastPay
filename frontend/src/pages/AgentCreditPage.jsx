@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react'
 import {useLocation,useNavigate} from 'react-router-dom'
-import {ArrowRight, Award, CalendarDays, Camera, CheckCircle2, Clock3, CreditCard, FileText, Images, Loader2, PenLine, Search, ShieldCheck, Stamp, Store, TrendingUp, Upload, UserRound, WalletCards, X} from 'lucide-react'
+import {ArrowRight, Award, CalendarDays, Camera, Check, CheckCircle2, Clock3, Copy, CreditCard, FileText, Images, Landmark, Loader2, PenLine, QrCode, Search, ShieldCheck, Stamp, Store, TrendingUp, Upload, UserRound, WalletCards, X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
@@ -144,6 +144,8 @@ export default function AgentCreditPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('Semua')
   const [repayments, setRepayments] = useState([])
+  const [paymentItem, setPaymentItem] = useState(null)
+  const [paymentMethod, setPaymentMethod] = useState('')
   const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => {
@@ -354,7 +356,10 @@ export default function AgentCreditPage() {
     const paymentStatus = appRepayments.length >= paymentSteps.length ? 'Lunas' : `Terbayar ${appRepayments.length}/${paymentSteps.length}`
     const updatedApplication = {...application, repayments: appRepayments, paymentStatus, updatedAt: new Date().toISOString()}
     persistApplication(updatedApplication)
+    setPaymentItem(null)
+    setPaymentMethod('')
   }
+  const copyPaymentReference = value => navigator.clipboard?.writeText(value)
   const submit = event => {
     event.preventDefault()
     const amount = Math.min(maxCredit, Math.max(50000, Number(form.amount || 0)))
@@ -515,8 +520,21 @@ export default function AgentCreditPage() {
           <i>{item.paid ? <CheckCircle2/> : <CalendarDays/>}</i>
           <div><strong>{item.label}</strong><small>Jatuh tempo {item.due.toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'})}</small></div>
           <b>{rupiah(item.amount)}</b>
-          <button type="button" disabled>{item.paid ? 'Lunas' : 'Menunggu Marketing'}</button>
+          <button type="button" disabled={item.paid} onClick={() => {setPaymentItem(item);setPaymentMethod('')}}>{item.paid ? 'Lunas' : 'Bayar Cicilan'}</button>
         </article>)}
+      </div>
+    </section>}
+    {paymentItem && <section className="agent-payment-backdrop" onClick={event => event.target === event.currentTarget && setPaymentItem(null)}>
+      <div className="agent-payment-sheet">
+        <header><div><span>PEMBAYARAN CICILAN</span><h2>{paymentItem.label}</h2></div><button type="button" onClick={() => setPaymentItem(null)}><X/></button></header>
+        <div className="agent-payment-amount"><small>Total yang harus dibayar</small><strong>{rupiah(paymentItem.amount)}</strong><span>Jatuh tempo {paymentItem.due.toLocaleDateString('id-ID', {day: '2-digit', month: 'long', year: 'numeric'})}</span></div>
+        <div className="agent-payment-methods">
+          <button type="button" className={paymentMethod === 'bank' ? 'active' : ''} onClick={() => setPaymentMethod('bank')}><i><Landmark/></i><span><b>Transfer Bank</b><small>BCA · 1234567890 · a.n. KuotaKita</small></span>{paymentMethod === 'bank' && <Check/>}</button>
+          <button type="button" className={paymentMethod === 'qris' ? 'active' : ''} onClick={() => setPaymentMethod('qris')}><i><QrCode/></i><span><b>QRIS / Barcode</b><small>Nominal otomatis sesuai cicilan</small></span>{paymentMethod === 'qris' && <Check/>}</button>
+        </div>
+        {paymentMethod === 'bank' && <div className="agent-bank-detail"><div><span>Nominal transfer</span><strong>{rupiah(paymentItem.amount)}</strong></div><div><span>Kode pembayaran</span><strong>{paymentItem.key.toUpperCase()}</strong></div><button type="button" onClick={() => copyPaymentReference(paymentItem.key.toUpperCase())}><Copy/> Salin kode</button></div>}
+        {paymentMethod === 'qris' && <div className="agent-qr-detail"><div className="agent-qr-art"><QrCode/></div><strong>{rupiah(paymentItem.amount)}</strong><small>Scan barcode ini dari aplikasi bank atau e-wallet.</small></div>}
+        <button type="button" className="agent-payment-confirm" disabled={!paymentMethod} onClick={() => payInstallment(paymentItem)}>Konfirmasi Pembayaran <ArrowRight/></button>
       </div>
     </section>}
     {shouldShowForm && <>
