@@ -1,5 +1,5 @@
-import {useState} from 'react'
-import {CheckCircle2, Clock3, PenLine, ShieldCheck, Stamp, UserCheck, XCircle} from 'lucide-react'
+import {useRef, useState} from 'react'
+import {CheckCircle2, Clock3, PenLine, ShieldCheck, Stamp, Trash2, UserCheck, X, XCircle} from 'lucide-react'
 import PageHeader from '../components/common/PageHeader'
 import {useAuth} from '../context/AuthContext'
 import {rupiah} from '../utils/currency'
@@ -22,36 +22,98 @@ function saveApplication(target, changes) {
 }
 
 const reviewerName = user => user?.name || (user?.role === 'analis' ? 'Analis KuotaKita' : 'Marketing KuotaKita')
-const stampPayload = user => ({name: reviewerName(user), role: user?.role || 'reviewer', at: new Date().toISOString()})
+const stampPayload = (user, image) => ({name: reviewerName(user), role: user?.role || 'reviewer', at: new Date().toISOString(), image})
 const dateTime = iso => iso ? new Date(iso).toLocaleString('id-ID', {day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'}) : 'Belum tanda tangan'
 
 function SignatureStep({title, note, signed, icon: Icon}) {
   return <div className={signed ? 'signed' : ''}>
-    <i>{signed ? <CheckCircle2/> : <Icon/>}</i>
+    {signed?.image ? <img src={signed.image} alt={`Tanda tangan ${title}`}/> : <i>{signed ? <CheckCircle2/> : <Icon/>}</i>}
     <span><b>{title}</b><small>{signed ? `${signed.name} · ${dateTime(signed.at)}` : note}</small></span>
   </div>
 }
 
 export default function CreditApplicationsPage() {
   const {user} = useAuth()
+  const canvasRef = useRef(null)
+  const drawing = useRef(false)
   const [items, setItems] = useState(readAll)
+  const [signaturePad, setSignaturePad] = useState(null)
+  const [signatureDrawn, setSignatureDrawn] = useState(false)
   const isMarketing = user?.role === 'marketing'
   const isAnalis = user?.role === 'analis'
   const isAdmin = ['master', 'admin'].includes(user?.role)
   const refresh = () => setItems(readAll())
-  const signMarketing = item => {
-    saveApplication(item, {marketingSignature: stampPayload({...user, role: 'marketing'}), status: 'Menunggu analis'})
+  const signMarketing = (item, image) => {
+    saveApplication(item, {marketingSignature: stampPayload({...user, role: 'marketing'}, image), status: 'Menunggu analis'})
     refresh()
   }
-  const signAnalis = item => {
-    saveApplication(item, {analisSignature: stampPayload({...user, role: 'analis'}), status: 'Menunggu ACC analis'})
+  const signAnalis = (item, image) => {
+    saveApplication(item, {analisSignature: stampPayload({...user, role: 'analis'}, image), status: 'Menunggu ACC analis'})
     refresh()
   }
   const decide = (item, status) => {
     const changes = {status, decidedAt: new Date().toISOString()}
-    if (status === 'Disetujui' && !item.analisSignature) changes.analisSignature = stampPayload({...user, role: 'analis'})
     saveApplication(item, changes)
     refresh()
+  }
+  const openSignature = (item, role) => {
+    setSignaturePad({item, role})
+    setSignatureDrawn(false)
+    setTimeout(clearSignaturePad, 20)
+  }
+  const closeSignature = () => {
+    setSignaturePad(null)
+    setSignatureDrawn(false)
+  }
+  const point = event => {
+    const canvas = canvasRef.current
+    const rect = canvas.getBoundingClientRect()
+    return {
+      x: (event.clientX - rect.left) * (canvas.width / rect.width),
+      y: (event.clientY - rect.top) * (canvas.height / rect.height),
+    }
+  }
+  const startSignature = event => {
+    event.preventDefault()
+    event.currentTarget.setPointerCapture?.(event.pointerId)
+    drawing.current = true
+    const ctx = canvasRef.current.getContext('2d')
+    const {x, y} = point(event)
+    ctx.beginPath()
+    ctx.moveTo(x, y)
+  }
+  const moveSignature = event => {
+    if (!drawing.current) return
+    event.preventDefault()
+    const ctx = canvasRef.current.getContext('2d')
+    const {x, y} = point(event)
+    ctx.lineWidth = 3
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+    ctx.strokeStyle = '#21156d'
+    ctx.lineTo(x, y)
+    ctx.stroke()
+    setSignatureDrawn(true)
+  }
+  const stopSignature = event => {
+    event?.currentTarget?.releasePointerCapture?.(event.pointerId)
+    drawing.current = false
+  }
+  const clearSignaturePad = () => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    setSignatureDrawn(false)
+  }
+  const saveSignature = () => {
+    if (!signaturePad || !signatureDrawn) return
+    const image = canvasRef.current.toDataURL('image/png')
+    if (signaturePad.role === 'marketing') signMarketing(signaturePad.item, image)
+    if (signaturePad.role === 'analis') signAnalis(signaturePad.item, image)
+    closeSignature()
   }
 
   return <>
@@ -68,7 +130,7 @@ export default function CreditApplicationsPage() {
           const analisSigned = Boolean(item.analisSignature)
           const canMarketingSign = !done && !marketingSigned && (isMarketing || isAdmin)
           const canAnalisSign = !done && marketingSigned && !analisSigned && (isAnalis || isAdmin)
-          const canApprove = !done && marketingSigned && (isAnalis || isAdmin)
+          const canApprove = !done && marketingSigned && analisSigned && (isAnalis || isAdmin)
           const canReject = !done && (isMarketing || isAnalis || isAdmin)
           return <article className={`credit-review-card status-${item.status.toLowerCase().replaceAll(' ', '-')}`} key={item.id}>
             <header>
@@ -90,8 +152,8 @@ export default function CreditApplicationsPage() {
             <footer>
               {item.status === 'Disetujui' ? <span className="approved"><CheckCircle2/>Sudah ACC analis</span> : item.status === 'Ditolak' ? <span className="rejected"><XCircle/>Ditolak pihak atas</span> : <>
                 <span><Clock3/>{marketingSigned ? 'Menunggu keputusan analis' : 'Menunggu verifikasi marketing'}</span>
-                {canMarketingSign && <button type="button" className="sign" onClick={() => signMarketing(item)}><PenLine/>TTD Marketing</button>}
-                {canAnalisSign && <button type="button" className="sign" onClick={() => signAnalis(item)}><PenLine/>TTD Analis</button>}
+                {canMarketingSign && <button type="button" className="sign" onClick={() => openSignature(item, 'marketing')}><PenLine/>TTD Marketing</button>}
+                {canAnalisSign && <button type="button" className="sign" onClick={() => openSignature(item, 'analis')}><PenLine/>TTD Analis</button>}
                 {canReject && <button type="button" className="reject" onClick={() => decide(item, 'Ditolak')}><XCircle/>Tolak</button>}
                 {canApprove && <button type="button" className="approve" onClick={() => decide(item, 'Disetujui')}><CheckCircle2/>ACC</button>}
               </>}
@@ -100,5 +162,23 @@ export default function CreditApplicationsPage() {
         })}
       </div>}
     </section>
+    {signaturePad && <section className="review-signature-backdrop" aria-label="Tanda tangan reviewer">
+      <div className="review-signature-sheet">
+        <header>
+          <button type="button" onClick={closeSignature} aria-label="Tutup"><X/></button>
+          <div><span>{signaturePad.role === 'marketing' ? 'Tanda Tangan Marketing' : 'Tanda Tangan Analis'}</span><strong>{signaturePad.item.form.agentName || signaturePad.item.userName}</strong></div>
+          <b>{signaturePad.role === 'marketing' ? 'MARKETING' : 'ANALIS'}</b>
+        </header>
+        <div className="review-signature-pad">
+          <canvas ref={canvasRef} width="760" height="330" onPointerDown={startSignature} onPointerMove={moveSignature} onPointerUp={stopSignature} onPointerCancel={stopSignature} onPointerLeave={stopSignature}/>
+          {!signatureDrawn && <span>Gunakan jari untuk tanda tangan di area ini</span>}
+        </div>
+        <p>Tanda tangan ini akan tersimpan di pengajuan kredit agent sebagai bukti verifikasi pihak atas.</p>
+        <footer>
+          <button type="button" className="clear" onClick={clearSignaturePad}><Trash2/>Hapus</button>
+          <button type="button" className="save" disabled={!signatureDrawn} onClick={saveSignature}><CheckCircle2/>Simpan TTD</button>
+        </footer>
+      </div>
+    </section>}
   </>
 }
