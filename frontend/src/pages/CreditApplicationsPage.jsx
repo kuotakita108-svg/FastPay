@@ -302,6 +302,23 @@ export default function CreditApplicationsPage() {
   const totalLoan = items.reduce((sum, item) => sum + Number(item.form.amount || 0), 0)
   const totalPaidAmount = items.reduce((sum, item) => sum + paymentSummary(item).totalPaid, 0)
   const remainingLoan = Math.max(0, totalLoan - totalPaidAmount)
+  const recentManual = sortedItems.filter(item => item.source === 'marketing').slice(0, 5)
+  const showCreateArea = (isMarketing || isAdmin) && ['overview', 'input'].includes(view)
+  const showMainList = !['input', 'laporan', 'panduan'].includes(view)
+  const exportReport = () => {
+    const header = ['ID', 'Agent', 'Toko', 'WA', 'Status', 'Nominal', 'Terbayar', 'Sisa']
+    const rows = sortedItems.map(item => {
+      const pay = paymentSummary(item)
+      return [item.id, item.form.agentName || item.userName || '', item.form.storeName || '', item.form.whatsapp || '', item.status, item.form.amount || 0, pay.totalPaid, Math.max(0, Number(item.form.amount || 0) - pay.totalPaid)]
+    })
+    const csv = [header, ...rows].map(row => row.map(value => `"${String(value).replaceAll('"', '""')}"`).join(',')).join('\n')
+    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `laporan-kredit-kuotakita-${new Date().toISOString().slice(0, 10)}.csv`
+    link.click()
+    URL.revokeObjectURL(link.href)
+  }
 
   return <>
     <PageHeader eyebrow="Pihak Atas" title="Review Kredit Saldo Agent" description="Marketing verifikasi dan tanda tangan dulu, lalu analis memberi keputusan akhir."/>
@@ -325,7 +342,7 @@ export default function CreditApplicationsPage() {
         <h2>{activeView.title}</h2>
         <p>{activeView.desc}</p>
       </section>
-      {(isMarketing || isAdmin) && <section className="marketing-workspace">
+      {(isMarketing || isAdmin) && view === 'overview' && <section className="marketing-workspace">
         <header>
           <div><span>MEJA KERJA MARKETING</span><h2>Kontrol Verifikasi & Cicilan</h2><p>Marketing bisa input peminjaman, cek kelengkapan data, tanda tangan verifikasi, dan mencatat cicilan yang masuk.</p></div>
         </header>
@@ -368,12 +385,27 @@ export default function CreditApplicationsPage() {
           {!approvedActive.length && <p>Belum ada pinjaman ACC yang perlu dicatat cicilannya.</p>}
         </div>
       </section>}
-      {(isMarketing || isAdmin) && view === 'laporan' && <section className="marketing-report-panel">
-        <article><span>Total Pinjaman</span><strong>{rupiah(totalLoan)}</strong><small>Akumulasi nominal pengajuan</small></article>
-        <article><span>Pembayaran Masuk</span><strong>{rupiah(totalPaidAmount)}</strong><small>Cicilan yang sudah dicatat</small></article>
-        <article><span>Sisa Tagihan</span><strong>{rupiah(remainingLoan)}</strong><small>Estimasi belum dibayar</small></article>
-        <article><span>Rasio Lunas</span><strong>{items.length ? Math.round((summary.paid / items.length) * 100) : 0}%</strong><small>Dari seluruh peminjam</small></article>
-      </section>}
+      {(isMarketing || isAdmin) && view === 'laporan' && <>
+        <section className="marketing-report-panel">
+          <article><span>Total Pinjaman</span><strong>{rupiah(totalLoan)}</strong><small>Akumulasi nominal pengajuan</small></article>
+          <article><span>Pembayaran Masuk</span><strong>{rupiah(totalPaidAmount)}</strong><small>Cicilan yang sudah dicatat</small></article>
+          <article><span>Sisa Tagihan</span><strong>{rupiah(remainingLoan)}</strong><small>Estimasi belum dibayar</small></article>
+          <article><span>Rasio Lunas</span><strong>{items.length ? Math.round((summary.paid / items.length) * 100) : 0}%</strong><small>Dari seluruh peminjam</small></article>
+        </section>
+        <section className="marketing-report-table">
+          <header><div><span>LAPORAN DETAIL</span><h2>Rekap peminjam & pembayaran</h2><p>Data ini berguna buat kontrol tagihan, lihat sisa pembayaran, dan arsip kerja marketing.</p></div><button type="button" onClick={exportReport}><Banknote/>Export CSV</button></header>
+          <div>{sortedItems.length ? sortedItems.map(item => {
+            const pay = paymentSummary(item)
+            return <article key={item.id}>
+              <span><b>{item.form.agentName || item.userName}</b><small>{item.id} · {item.form.storeName || 'Tanpa toko'}</small></span>
+              <strong>{rupiah(item.form.amount)}</strong>
+              <em>{item.status}</em>
+              <i><small>Terbayar</small>{rupiah(pay.totalPaid)}</i>
+              <i><small>Sisa</small>{rupiah(Math.max(0, Number(item.form.amount || 0) - pay.totalPaid))}</i>
+            </article>
+          }) : <p>Belum ada data laporan kredit.</p>}</div>
+        </section>
+      </>}
       {(isMarketing || isAdmin) && view === 'panduan' && <section className="marketing-guide-panel">
         <header><CircleHelp/><div><span>PANDUAN MARKETING</span><h2>Alur kerja yang benar</h2></div></header>
         <ol>
@@ -387,7 +419,7 @@ export default function CreditApplicationsPage() {
         <div><h2>Pengajuan Masuk</h2><p>{isMarketing ? 'Tugas marketing: cek data agent, tanda tangan, atau tolak jika data tidak layak.' : isAnalis ? 'Tugas analis: cek hasil marketing, tanda tangan, lalu ACC atau tolak.' : 'Pantau seluruh alur pengajuan kredit agent dari satu panel.'}</p></div>
         <span className="review-role-badge">{isMarketing ? 'MARKETING' : isAnalis ? 'ANALIS' : 'ADMIN'}</span>
       </div>
-      {(isMarketing || isAdmin) && <section className="credit-create-box">
+      {showCreateArea && <section className={`credit-create-box ${view === 'input' ? 'focus' : ''}`}>
         <button type="button" className="credit-create-toggle" onClick={() => setShowCreate(value => !value)}><PlusCircle/>{showCreate ? 'Tutup Form Peminjaman' : 'Input Peminjaman'}</button>
         {manualMessage && <p>{manualMessage}</p>}
         {showCreate && <form onSubmit={createManual}>
@@ -406,7 +438,14 @@ export default function CreditApplicationsPage() {
           <button type="submit"><PlusCircle/>Simpan Peminjam</button>
         </form>}
       </section>}
-      <div className="credit-review-tools">
+      {(isMarketing || isAdmin) && view === 'input' && <section className="marketing-input-history">
+        <header><ClipboardCheck/><div><span>RIWAYAT INPUT MARKETING</span><h2>Data yang baru ditambahkan</h2><p>Supaya marketing bisa cepat cek ulang data input peminjaman tanpa masuk daftar besar.</p></div></header>
+        <div>{recentManual.length ? recentManual.map(item => <button type="button" key={item.id} onClick={() => {setExpandedId(item.id); setFilter('Review')}}>
+          <span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id} · {dateTime(item.createdAt)}</small></span>
+          <strong>{rupiah(item.form.amount)}</strong>
+        </button>) : <p>Belum ada input peminjaman dari marketing.</p>}</div>
+      </section>}
+      {showMainList && <><div className="credit-review-tools">
         <label><Search/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Cari nama agent, toko, WA, NIK, atau ID pengajuan"/></label>
         <div><Filter/>{filters.map(name => <button type="button" className={filter === name ? 'active' : ''} onClick={() => setFilter(name)} key={name}>{name}</button>)}</div>
       </div>
@@ -488,7 +527,7 @@ export default function CreditApplicationsPage() {
             </section>}
           </article>
         })}
-      </div>}
+      </div>}</>}
     </section>
     {signaturePad && <section className="review-signature-backdrop" aria-label="Tanda tangan reviewer">
       <div className="review-signature-sheet">
