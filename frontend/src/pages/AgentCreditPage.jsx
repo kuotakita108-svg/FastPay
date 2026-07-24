@@ -274,6 +274,16 @@ export default function AgentCreditPage() {
     const next = [{key: item.key, applicationId: application.id, label: item.label, amount: item.amount, status: 'Lunas', paidAt: new Date().toISOString()}, ...repayments.filter(row => row.key !== item.key)]
     setRepayments(next)
     localStorage.setItem(key, JSON.stringify(next))
+    const appRepayments = next.filter(row => row.applicationId === application.id)
+    const paymentStatus = appRepayments.length >= paymentSteps.length ? 'Lunas' : `Terbayar ${appRepayments.length}/${paymentSteps.length}`
+    const updatedApplication = {...application, repayments: appRepayments, paymentStatus, updatedAt: new Date().toISOString()}
+    setApplication(updatedApplication)
+    const ownKey = `kuotakita_agent_credit_${user?.id || 'guest'}`
+    const ownHistory = JSON.parse(localStorage.getItem(ownKey) || '[]')
+    localStorage.setItem(ownKey, JSON.stringify([updatedApplication, ...ownHistory.filter(row => row.id !== application.id)].slice(0, 10)))
+    const allKey = 'kuotakita_agent_credit_all'
+    const allHistory = JSON.parse(localStorage.getItem(allKey) || '[]')
+    localStorage.setItem(allKey, JSON.stringify([{...updatedApplication, userId: user?.id || 'guest', userName: user?.name || updatedApplication.form.agentName}, ...allHistory.filter(row => row.id !== application.id)].slice(0, 50)))
   }
   const submit = event => {
     event.preventDefault()

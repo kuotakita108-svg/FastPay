@@ -1,5 +1,5 @@
 import {useRef, useState} from 'react'
-import {CheckCircle2, Clock3, PenLine, ShieldCheck, Stamp, Trash2, UserCheck, X, XCircle} from 'lucide-react'
+import {CalendarDays, CheckCircle2, Clock3, CreditCard, Eye, Filter, PenLine, Search, ShieldCheck, Stamp, Trash2, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
 import PageHeader from '../components/common/PageHeader'
 import {useAuth} from '../context/AuthContext'
 import {rupiah} from '../utils/currency'
@@ -7,6 +7,13 @@ import {rupiah} from '../utils/currency'
 const allKey = 'kuotakita_agent_credit_all'
 const userKey = userId => `kuotakita_agent_credit_${userId || 'guest'}`
 const finalStatus = ['Disetujui', 'Ditolak']
+const paymentSteps = [
+  {label: 'Cicilan 1', day: 7, portion: 0.25},
+  {label: 'Cicilan 2', day: 14, portion: 0.25},
+  {label: 'Cicilan 3', day: 21, portion: 0.25},
+  {label: 'Pelunasan', day: 30, portion: 0.25},
+]
+const filters = ['Semua', 'Review', 'Disetujui', 'Ditolak', 'Lunas']
 
 const readAll = () => {
   try { return JSON.parse(localStorage.getItem(allKey)) || [] } catch { return [] }
@@ -24,6 +31,27 @@ function saveApplication(target, changes) {
 const reviewerName = user => user?.name || (user?.role === 'analis' ? 'Analis KuotaKita' : 'Marketing KuotaKita')
 const stampPayload = (user, image) => ({name: reviewerName(user), role: user?.role || 'reviewer', at: new Date().toISOString(), image})
 const dateTime = iso => iso ? new Date(iso).toLocaleString('id-ID', {day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'}) : 'Belum tanda tangan'
+const paymentRows = item => {
+  const paidRows = item.repayments || []
+  return paymentSteps.map((step, index) => {
+    const key = `${item.id}-${index}`
+    const paid = paidRows.find(row => row.key === key)
+    return {
+      ...step,
+      key,
+      paid,
+      amount: Math.ceil(Number(item.form.amount || 0) * step.portion),
+      due: new Date(new Date(item.createdAt).getTime() + step.day * 86400000),
+    }
+  })
+}
+const paymentSummary = item => {
+  const rows = paymentRows(item)
+  const paid = rows.filter(row => row.paid).length
+  const totalPaid = rows.reduce((sum, row) => sum + (row.paid ? row.amount : 0), 0)
+  return {paid, total: rows.length, percent: rows.length ? Math.round((paid / rows.length) * 100) : 0, totalPaid}
+}
+const statusGroup = item => item.paymentStatus === 'Lunas' ? 'Lunas' : item.status === 'Disetujui' ? 'Disetujui' : item.status === 'Ditolak' ? 'Ditolak' : 'Review'
 
 function SignatureStep({title, note, signed, icon: Icon}) {
   return <div className={signed ? 'signed' : ''}>
@@ -39,6 +67,9 @@ export default function CreditApplicationsPage() {
   const [items, setItems] = useState(readAll)
   const [signaturePad, setSignaturePad] = useState(null)
   const [signatureDrawn, setSignatureDrawn] = useState(false)
+  const [query, setQuery] = useState('')
+  const [filter, setFilter] = useState('Semua')
+  const [expandedId, setExpandedId] = useState('')
   const isMarketing = user?.role === 'marketing'
   const isAnalis = user?.role === 'analis'
   const isAdmin = ['master', 'admin'].includes(user?.role)
@@ -115,19 +146,52 @@ export default function CreditApplicationsPage() {
     if (signaturePad.role === 'analis') signAnalis(signaturePad.item, image)
     closeSignature()
   }
+  const sortedItems = [...items].sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+  const visibleItems = sortedItems.filter(item => {
+    const text = `${item.id} ${item.form.agentName} ${item.userName} ${item.form.storeName} ${item.form.whatsapp} ${item.form.nik}`.toLowerCase()
+    const matchQuery = text.includes(query.toLowerCase().trim())
+    const matchFilter = filter === 'Semua' || statusGroup(item) === filter
+    return matchQuery && matchFilter
+  })
+  const summary = {
+    total: items.length,
+    review: items.filter(item => statusGroup(item) === 'Review').length,
+    approved: items.filter(item => statusGroup(item) === 'Disetujui').length,
+    paid: items.filter(item => statusGroup(item) === 'Lunas').length,
+  }
 
   return <>
     <PageHeader eyebrow="Pihak Atas" title="Review Kredit Saldo Agent" description="Marketing verifikasi dan tanda tangan dulu, lalu analis memberi keputusan akhir."/>
     <section className="panel credit-review-panel">
+      <div className="credit-review-hero">
+        <div>
+          <span>RUANG DATA PEMINJAM</span>
+          <h2>Monitoring Kredit Agent</h2>
+          <p>Semua pengajuan tersusun rapi dari yang terbaru. Marketing, analis, dan admin bisa cek data agent, tanda tangan, keputusan, sampai pembayaran.</p>
+        </div>
+        <i><WalletCards/></i>
+      </div>
+      <div className="credit-review-stats">
+        <article><span>Total Peminjam</span><strong>{summary.total}</strong><small>Seluruh pengajuan</small></article>
+        <article><span>Butuh Review</span><strong>{summary.review}</strong><small>Menunggu pihak atas</small></article>
+        <article><span>Sudah ACC</span><strong>{summary.approved}</strong><small>Aktif dipantau</small></article>
+        <article><span>Lunas</span><strong>{summary.paid}</strong><small>Pembayaran selesai</small></article>
+      </div>
       <div className="panel-header">
         <div><h2>Pengajuan Masuk</h2><p>{isMarketing ? 'Tugas marketing: cek data agent, tanda tangan, atau tolak jika data tidak layak.' : isAnalis ? 'Tugas analis: cek hasil marketing, tanda tangan, lalu ACC atau tolak.' : 'Pantau seluruh alur pengajuan kredit agent dari satu panel.'}</p></div>
         <span className="review-role-badge">{isMarketing ? 'MARKETING' : isAnalis ? 'ANALIS' : 'ADMIN'}</span>
       </div>
-      {items.length === 0 ? <div className="credit-review-empty"><ShieldCheck/><strong>Belum ada pengajuan</strong><span>Pengajuan kredit saldo dari aplikasi agent akan tampil di sini.</span></div> : <div className="credit-review-list">
-        {items.map(item => {
+      <div className="credit-review-tools">
+        <label><Search/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Cari nama agent, toko, WA, NIK, atau ID pengajuan"/></label>
+        <div><Filter/>{filters.map(name => <button type="button" className={filter === name ? 'active' : ''} onClick={() => setFilter(name)} key={name}>{name}</button>)}</div>
+      </div>
+      {items.length === 0 ? <div className="credit-review-empty"><ShieldCheck/><strong>Belum ada pengajuan</strong><span>Pengajuan kredit saldo dari aplikasi agent akan tampil di sini.</span></div> : visibleItems.length === 0 ? <div className="credit-review-empty"><Search/><strong>Data tidak ditemukan</strong><span>Coba ubah kata pencarian atau filter status.</span></div> : <div className="credit-review-list">
+        {visibleItems.map(item => {
           const done = finalStatus.includes(item.status)
           const marketingSigned = Boolean(item.marketingSignature)
           const analisSigned = Boolean(item.analisSignature)
+          const pay = paymentSummary(item)
+          const expanded = expandedId === item.id
           const canMarketingSign = !done && !marketingSigned && (isMarketing || isAdmin)
           const canAnalisSign = !done && marketingSigned && !analisSigned && (isAnalis || isAdmin)
           const canApprove = !done && marketingSigned && analisSigned && (isAnalis || isAdmin)
@@ -143,6 +207,11 @@ export default function CreditApplicationsPage() {
               <span><small>Status</small><strong>{item.status}</strong></span>
               <span><small>Dokumen</small><strong>{Object.values(item.documents || {}).length} foto</strong></span>
             </div>
+            <div className="credit-payment-summary">
+              <div><CreditCard/><span><b>{item.paymentStatus || `${pay.paid}/${pay.total} cicilan`}</b><small>{rupiah(pay.totalPaid)} sudah dibayar</small></span></div>
+              <strong>{pay.percent}%</strong>
+              <em><i style={{width: `${pay.percent}%`}}/></em>
+            </div>
             <p className="credit-review-address">{item.form.homeAddress}</p>
             <div className="credit-review-signatures">
               <SignatureStep title="Agent" note="Ditandatangani saat pengajuan dikirim" signed={{name: item.form.agentName || item.userName || 'Agent', at: item.createdAt}} icon={PenLine}/>
@@ -150,14 +219,38 @@ export default function CreditApplicationsPage() {
               <SignatureStep title="Analis" note="Menunggu tanda tangan analis" signed={item.analisSignature} icon={Stamp}/>
             </div>
             <footer>
-              {item.status === 'Disetujui' ? <span className="approved"><CheckCircle2/>Sudah ACC analis</span> : item.status === 'Ditolak' ? <span className="rejected"><XCircle/>Ditolak pihak atas</span> : <>
+              {item.status === 'Disetujui' ? <><span className="approved"><CheckCircle2/>Sudah ACC analis</span><button type="button" className="detail" onClick={() => setExpandedId(expanded ? '' : item.id)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : item.status === 'Ditolak' ? <><span className="rejected"><XCircle/>Ditolak pihak atas</span><button type="button" className="detail" onClick={() => setExpandedId(expanded ? '' : item.id)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : <>
                 <span><Clock3/>{marketingSigned ? 'Menunggu keputusan analis' : 'Menunggu verifikasi marketing'}</span>
                 {canMarketingSign && <button type="button" className="sign" onClick={() => openSignature(item, 'marketing')}><PenLine/>TTD Marketing</button>}
                 {canAnalisSign && <button type="button" className="sign" onClick={() => openSignature(item, 'analis')}><PenLine/>TTD Analis</button>}
                 {canReject && <button type="button" className="reject" onClick={() => decide(item, 'Ditolak')}><XCircle/>Tolak</button>}
                 {canApprove && <button type="button" className="approve" onClick={() => decide(item, 'Disetujui')}><CheckCircle2/>ACC</button>}
+                <button type="button" className="detail" onClick={() => setExpandedId(expanded ? '' : item.id)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button>
               </>}
             </footer>
+            {expanded && <section className="credit-borrower-detail">
+              <div className="credit-detail-block">
+                <h4>Data Peminjam</h4>
+                <dl>
+                  <span><dt>Nama Agent</dt><dd>{item.form.agentName || item.userName}</dd></span>
+                  <span><dt>Nama Toko</dt><dd>{item.form.storeName}</dd></span>
+                  <span><dt>Nomor WA</dt><dd>{item.form.whatsapp}</dd></span>
+                  <span><dt>Email</dt><dd>{item.form.email || '-'}</dd></span>
+                  <span><dt>Alamat Toko</dt><dd>{item.form.storeAddress}</dd></span>
+                  <span><dt>Keluarga</dt><dd>{item.form.familyName} · {item.form.familyRelation} · {item.form.familyWhatsapp}</dd></span>
+                </dl>
+              </div>
+              <div className="credit-detail-block">
+                <h4>Jalur Pembayaran</h4>
+                <div className="credit-payment-list">
+                  {paymentRows(item).map(row => <article className={row.paid ? 'paid' : ''} key={row.key}>
+                    <i>{row.paid ? <CheckCircle2/> : <CalendarDays/>}</i>
+                    <span><b>{row.label}</b><small>Jatuh tempo {row.due.toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'})}{row.paid ? ` · lunas ${dateTime(row.paid.paidAt)}` : ''}</small></span>
+                    <strong>{rupiah(row.amount)}</strong>
+                  </article>)}
+                </div>
+              </div>
+            </section>}
           </article>
         })}
       </div>}
