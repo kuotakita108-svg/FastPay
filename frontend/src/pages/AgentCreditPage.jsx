@@ -460,7 +460,6 @@ export default function AgentCreditPage() {
         <li className={progress >= 55 || approved ? 'done' : ''}>{progress >= 55 || approved ? <CheckCircle2/> : <Clock3/>}Pengecekan tanda tangan online</li>
         <li className={approved ? 'done' : rejected ? 'rejected' : ''}>{approved ? <CheckCircle2/> : rejected ? <X/> : <Clock3/>}Keputusan analis pihak atas</li>
       </ul>
-      <button type="button" onClick={startNewApplication}>Daftarkan Orang Lain <ArrowRight/></button>
     </section>}
     {!showForm && approved && <section className="agent-payment-lane">
         <header><i><CreditCard/></i><div><h2>Jalur Pembayaran Kredit</h2><p>Pembayaran cicilan dicatat oleh marketing. Agent hanya dapat memantau status pembayaran.</p></div></header>
