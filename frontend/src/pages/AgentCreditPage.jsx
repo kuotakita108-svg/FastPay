@@ -129,6 +129,8 @@ export default function AgentCreditPage() {
   const [cameraReady, setCameraReady] = useState(false)
   const [cameraError, setCameraError] = useState('')
   const [application, setApplication] = useState(null)
+  const [applications, setApplications] = useState([])
+  const [showForm, setShowForm] = useState(false)
   const [repayments, setRepayments] = useState([])
   const [now, setNow] = useState(() => Date.now())
 
@@ -168,8 +170,10 @@ export default function AgentCreditPage() {
   useEffect(() => {
     const key = `kuotakita_agent_credit_${user?.id || 'guest'}`
     const history = JSON.parse(localStorage.getItem(key) || '[]')
+    setApplications(history)
     const latest = history[0]
     if (latest?.verifyUntil) setApplication(latest)
+    if (!latest) setShowForm(true)
   }, [user?.id])
 
   useEffect(() => {
@@ -181,6 +185,7 @@ export default function AgentCreditPage() {
     if (!application) return
     const key = `kuotakita_agent_credit_${user?.id || 'guest'}`
     const history = JSON.parse(localStorage.getItem(key) || '[]')
+    setApplications(history)
     const latest = history.find(item => item.id === application.id)
     if (latest && latest.status !== application.status) setApplication(latest)
   }, [application, now, user?.id])
@@ -251,6 +256,10 @@ export default function AgentCreditPage() {
   }
   const clearSignature = () => {
     const canvas = canvasRef.current
+    if (!canvas) {
+      setSigned(false)
+      return
+    }
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
     setSigned(false)
   }
@@ -304,12 +313,42 @@ export default function AgentCreditPage() {
     }
     const key = `kuotakita_agent_credit_${user?.id || 'guest'}`
     const history = JSON.parse(localStorage.getItem(key) || '[]')
-    localStorage.setItem(key, JSON.stringify([application, ...history].slice(0, 10)))
+    const nextHistory = [application, ...history].slice(0, 10)
+    localStorage.setItem(key, JSON.stringify(nextHistory))
     const allKey = 'kuotakita_agent_credit_all'
     const allHistory = JSON.parse(localStorage.getItem(allKey) || '[]')
     localStorage.setItem(allKey, JSON.stringify([{...application, userId: user?.id || 'guest', userName: user?.name || form.agentName}, ...allHistory].slice(0, 50)))
     setMessage('')
     setApplication(application)
+    setApplications(nextHistory)
+    setShowForm(false)
+  }
+
+  const resetAgentForm = () => {
+    setForm({...initialForm, agentName: user?.name || '', whatsapp: user?.phone || '', email: user?.email || ''})
+    setFiles({ktp: null, store: null, selfie: null})
+    setSigned(false)
+    setAccepted(false)
+    setMessage('')
+    const canvas = canvasRef.current
+    if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+  }
+  const startNewApplication = () => {
+    resetAgentForm()
+    setApplication(null)
+    setShowForm(true)
+    window.setTimeout(() => document.querySelector('.agent-credit-form')?.scrollIntoView({behavior: 'smooth', block: 'start'}), 80)
+  }
+  const selectApplication = item => {
+    setApplication(item)
+    setShowForm(false)
+    setMessage('')
+    window.setTimeout(() => document.querySelector('.agent-verification')?.scrollIntoView({behavior: 'smooth', block: 'start'}), 80)
+  }
+  const applicationStatus = item => {
+    if (item.status === 'Disetujui') return {label: 'Sukses ACC', className: 'approved'}
+    if (item.status === 'Ditolak') return {label: 'Ditolak', className: 'rejected'}
+    return {label: 'Menunggu', className: 'waiting'}
   }
 
   const remainingMs = application?.status === 'Disetujui' ? 0 : Math.max(0, (application?.verifyUntil || 0) - now)
@@ -320,6 +359,7 @@ export default function AgentCreditPage() {
   const approved = application?.status === 'Disetujui'
   const rejected = application?.status === 'Ditolak'
   const waitingDecision = application && !approved && !rejected && remainingMs === 0
+  const shouldShowForm = showForm || applications.length === 0
   return <main className="mobile-app agent-credit-page">
     <SubPageHeader title="Kredit Saldo Agent" description="Ajukan tanam saldo langsung dari aplikasi" back/>
     <section className="agent-credit-hero">
@@ -338,6 +378,31 @@ export default function AgentCreditPage() {
       <div className="rank-meter"><span style={{width: `${rankProgress}%`}}/></div>
       <p><TrendingUp/> Pangkat naik otomatis saat riwayat pembayaran agent dinilai lancar oleh sistem.</p>
     </section>
+    <section className="agent-registered-list">
+      <header>
+        <div>
+          <span>DATA PENGAJUAN AGENT</span>
+          <h2>Orang yang didaftarkan</h2>
+          <p>Semua pengajuan yang kamu kirim tersimpan di sini, jadi agent bisa daftar orang lain tanpa menunggu status sebelumnya selesai.</p>
+        </div>
+        <button type="button" onClick={startNewApplication}>+ Daftar Baru</button>
+      </header>
+      {applications.length ? <div className="agent-registered-grid">
+        {applications.map(item => {
+          const status = applicationStatus(item)
+          return <article className={application?.id === item.id ? 'active' : ''} key={item.id}>
+            <i><FileText/></i>
+            <div>
+              <strong>{item.form?.agentName || item.userName || 'Pendaftar Agent'}</strong>
+              <small>{item.form?.storeName || 'Toko belum diisi'} • {item.createdAt ? new Date(item.createdAt).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'}) : 'Tanggal belum ada'}</small>
+              <b>{rupiah(item.form?.amount || 0)}</b>
+            </div>
+            <span className={`agent-status-pill ${status.className}`}>{status.label}</span>
+            <button type="button" onClick={() => selectApplication(item)}>Lihat Status</button>
+          </article>
+        })}
+      </div> : <div className="agent-registered-empty"><FileText/><strong>Belum ada yang didaftarkan</strong><small>Isi formulir pertama, nanti status pengajuan muncul otomatis di sini.</small></div>}
+    </section>
     {application && <section className={`agent-verification ${approved ? 'approved' : ''} ${rejected ? 'rejected' : ''}`}>
       <i>{approved ? <Stamp/> : rejected ? <X/> : <Loader2/>}</i>
       <span>{approved ? 'PENGAJUAN DISETUJUI' : rejected ? 'PENGAJUAN DITOLAK' : waitingDecision ? 'MENUNGGU KEPUTUSAN' : 'MOHON MENUNGGU'}</span>
@@ -355,7 +420,7 @@ export default function AgentCreditPage() {
         <li className={progress >= 55 || approved ? 'done' : ''}>{progress >= 55 || approved ? <CheckCircle2/> : <Clock3/>}Pengecekan tanda tangan online</li>
         <li className={approved ? 'done' : rejected ? 'rejected' : ''}>{approved ? <CheckCircle2/> : rejected ? <X/> : <Clock3/>}Keputusan analis pihak atas</li>
       </ul>
-      {(approved || rejected) && <button type="button" onClick={() => setApplication(null)}>Buat Pengajuan Baru <ArrowRight/></button>}
+      <button type="button" onClick={startNewApplication}>Daftarkan Orang Lain <ArrowRight/></button>
     </section>}
     {approved && <section className="agent-payment-lane">
         <header><i><CreditCard/></i><div><h2>Jalur Pembayaran Kredit</h2><p>Pembayaran cicilan dicatat oleh marketing. Agent hanya dapat memantau status pembayaran.</p></div></header>
@@ -369,7 +434,7 @@ export default function AgentCreditPage() {
         </article>)}
       </div>
     </section>}
-    {!application && <>
+    {shouldShowForm && <>
     <form className="agent-credit-form" onSubmit={submit}>
       <section className="agent-card">
         <header><i><UserRound/></i><div><h2>Data Agent</h2><p>Isi sesuai identitas asli agar pengajuan mudah diverifikasi.</p></div></header>
