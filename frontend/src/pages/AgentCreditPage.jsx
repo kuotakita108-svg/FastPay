@@ -358,14 +358,14 @@ export default function AgentCreditPage() {
       {(approved || rejected) && <button type="button" onClick={() => setApplication(null)}>Buat Pengajuan Baru <ArrowRight/></button>}
     </section>}
     {approved && <section className="agent-payment-lane">
-      <header><i><CreditCard/></i><div><h2>Jalur Pembayaran Kredit</h2><p>Bayar bertahap sesuai jadwal. Pembayaran lancar menaikkan pangkat agent.</p></div></header>
+        <header><i><CreditCard/></i><div><h2>Jalur Pembayaran Kredit</h2><p>Pembayaran cicilan dicatat oleh marketing. Agent hanya dapat memantau status pembayaran.</p></div></header>
       <div className="payment-lane-total"><span>Total pinjaman</span><strong>{rupiah(application.form.amount)}</strong></div>
       <div className="payment-lane-list">
         {paymentPlan.map(item => <article className={item.paid ? 'paid' : ''} key={item.key}>
           <i>{item.paid ? <CheckCircle2/> : <CalendarDays/>}</i>
           <div><strong>{item.label}</strong><small>Jatuh tempo {item.due.toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'})}</small></div>
           <b>{rupiah(item.amount)}</b>
-          <button type="button" disabled={item.paid} onClick={() => payInstallment(item)}>{item.paid ? 'Lunas' : 'Bayar'}</button>
+          <button type="button" disabled>{item.paid ? 'Lunas' : 'Menunggu Marketing'}</button>
         </article>)}
       </div>
     </section>}

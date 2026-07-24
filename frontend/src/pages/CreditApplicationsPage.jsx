@@ -1,5 +1,5 @@
 import {useRef, useState} from 'react'
-import {CalendarDays, CheckCircle2, Clock3, CreditCard, Eye, Filter, PenLine, Search, ShieldCheck, Stamp, Trash2, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
+import {Banknote, CalendarDays, CheckCircle2, Clock3, CreditCard, Eye, Filter, PenLine, PlusCircle, Search, ShieldCheck, Stamp, Trash2, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
 import PageHeader from '../components/common/PageHeader'
 import {useAuth} from '../context/AuthContext'
 import {rupiah} from '../utils/currency'
@@ -14,6 +14,20 @@ const paymentSteps = [
   {label: 'Pelunasan', day: 30, portion: 0.25},
 ]
 const filters = ['Semua', 'Review', 'Disetujui', 'Ditolak', 'Lunas']
+const manualInitial = {
+  agentName: '',
+  storeName: '',
+  nik: '',
+  whatsapp: '',
+  email: '',
+  amount: '500000',
+  monthlyTransactions: '',
+  homeAddress: '',
+  storeAddress: '',
+  familyName: '',
+  familyRelation: '',
+  familyWhatsapp: '',
+}
 
 const readAll = () => {
   try { return JSON.parse(localStorage.getItem(allKey)) || [] } catch { return [] }
@@ -70,6 +84,9 @@ export default function CreditApplicationsPage() {
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState('Semua')
   const [expandedId, setExpandedId] = useState('')
+  const [showCreate, setShowCreate] = useState(false)
+  const [manualForm, setManualForm] = useState(manualInitial)
+  const [manualMessage, setManualMessage] = useState('')
   const isMarketing = user?.role === 'marketing'
   const isAnalis = user?.role === 'analis'
   const isAdmin = ['master', 'admin'].includes(user?.role)
@@ -85,6 +102,45 @@ export default function CreditApplicationsPage() {
   const decide = (item, status) => {
     const changes = {status, decidedAt: new Date().toISOString()}
     saveApplication(item, changes)
+    refresh()
+  }
+  const createManual = event => {
+    event.preventDefault()
+    if (!isMarketing && !isAdmin) return
+    if (!manualForm.agentName.trim() || !manualForm.storeName.trim() || !manualForm.whatsapp.trim() || !manualForm.amount) {
+      return setManualMessage('Lengkapi nama agent, toko, WA, dan nominal pinjaman dulu.')
+    }
+    const amount = Math.min(5000000, Math.max(50000, Number(String(manualForm.amount).replace(/\D/g, '') || 0)))
+    const application = {
+      id: `KSA-${Date.now().toString().slice(-8)}`,
+      status: 'Sedang diverifikasi marketing',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      verifyUntil: Date.now(),
+      source: 'marketing',
+      userId: `manual-${Date.now()}`,
+      userName: manualForm.agentName.trim(),
+      paymentStatus: 'Belum ada pembayaran',
+      form: {...manualForm, amount},
+      documents: {},
+      repayments: [],
+      createdBy: {role: user.role, name: reviewerName(user), at: new Date().toISOString()},
+    }
+    const all = readAll()
+    localStorage.setItem(allKey, JSON.stringify([application, ...all].slice(0, 50)))
+    localStorage.setItem(userKey(application.userId), JSON.stringify([application]))
+    setManualForm(manualInitial)
+    setManualMessage('Peminjam berhasil ditambahkan. Marketing bisa verifikasi dan tanda tangan.')
+    setShowCreate(false)
+    setExpandedId(application.id)
+    refresh()
+  }
+  const updateManual = event => setManualForm({...manualForm, [event.target.name]: event.target.name === 'amount' ? event.target.value.replace(/\D/g, '').slice(0, 8) : event.target.value})
+  const markPayment = (item, row) => {
+    if ((!isMarketing && !isAdmin) || row.paid || item.status !== 'Disetujui') return
+    const repayments = [{key: row.key, applicationId: item.id, label: row.label, amount: row.amount, status: 'Lunas', paidAt: new Date().toISOString(), receivedBy: reviewerName(user)}, ...(item.repayments || []).filter(pay => pay.key !== row.key)]
+    const paymentStatus = repayments.length >= paymentSteps.length ? 'Lunas' : `Terbayar ${repayments.length}/${paymentSteps.length}`
+    saveApplication(item, {repayments, paymentStatus})
     refresh()
   }
   const openSignature = (item, role) => {
@@ -181,6 +237,25 @@ export default function CreditApplicationsPage() {
         <div><h2>Pengajuan Masuk</h2><p>{isMarketing ? 'Tugas marketing: cek data agent, tanda tangan, atau tolak jika data tidak layak.' : isAnalis ? 'Tugas analis: cek hasil marketing, tanda tangan, lalu ACC atau tolak.' : 'Pantau seluruh alur pengajuan kredit agent dari satu panel.'}</p></div>
         <span className="review-role-badge">{isMarketing ? 'MARKETING' : isAnalis ? 'ANALIS' : 'ADMIN'}</span>
       </div>
+      {(isMarketing || isAdmin) && <section className="credit-create-box">
+        <button type="button" className="credit-create-toggle" onClick={() => setShowCreate(value => !value)}><PlusCircle/>{showCreate ? 'Tutup Form Peminjam' : 'Tambah Peminjam Manual'}</button>
+        {manualMessage && <p>{manualMessage}</p>}
+        {showCreate && <form onSubmit={createManual}>
+          <label>Nama Agent<input name="agentName" value={manualForm.agentName} onChange={updateManual} placeholder="Nama peminjam"/></label>
+          <label>Nama Toko<input name="storeName" value={manualForm.storeName} onChange={updateManual} placeholder="Nama toko/usaha"/></label>
+          <label>NIK<input name="nik" value={manualForm.nik} onChange={updateManual} inputMode="numeric" maxLength="16" placeholder="16 digit NIK"/></label>
+          <label>Nomor WA<input name="whatsapp" value={manualForm.whatsapp} onChange={updateManual} inputMode="tel" placeholder="08xxxxxxxxxx"/></label>
+          <label>Email<input name="email" value={manualForm.email} onChange={updateManual} type="email" placeholder="Opsional"/></label>
+          <label>Transaksi/Bulan<input name="monthlyTransactions" value={manualForm.monthlyTransactions} onChange={updateManual} inputMode="numeric" placeholder="Contoh: 150"/></label>
+          <label>Nominal Pinjaman<input name="amount" value={manualForm.amount} onChange={updateManual} inputMode="numeric" placeholder="500000"/></label>
+          <label>Kontak Keluarga<input name="familyName" value={manualForm.familyName} onChange={updateManual} placeholder="Nama keluarga"/></label>
+          <label>Hubungan<input name="familyRelation" value={manualForm.familyRelation} onChange={updateManual} placeholder="Orang tua / saudara"/></label>
+          <label>WA Keluarga<input name="familyWhatsapp" value={manualForm.familyWhatsapp} onChange={updateManual} inputMode="tel" placeholder="08xxxxxxxxxx"/></label>
+          <label className="wide">Alamat Rumah<textarea name="homeAddress" value={manualForm.homeAddress} onChange={updateManual} placeholder="Alamat rumah"/></label>
+          <label className="wide">Alamat Toko<textarea name="storeAddress" value={manualForm.storeAddress} onChange={updateManual} placeholder="Alamat toko/usaha"/></label>
+          <button type="submit"><PlusCircle/>Simpan Peminjam</button>
+        </form>}
+      </section>}
       <div className="credit-review-tools">
         <label><Search/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Cari nama agent, toko, WA, NIK, atau ID pengajuan"/></label>
         <div><Filter/>{filters.map(name => <button type="button" className={filter === name ? 'active' : ''} onClick={() => setFilter(name)} key={name}>{name}</button>)}</div>
@@ -247,6 +322,7 @@ export default function CreditApplicationsPage() {
                     <i>{row.paid ? <CheckCircle2/> : <CalendarDays/>}</i>
                     <span><b>{row.label}</b><small>Jatuh tempo {row.due.toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'})}{row.paid ? ` · lunas ${dateTime(row.paid.paidAt)}` : ''}</small></span>
                     <strong>{rupiah(row.amount)}</strong>
+                    {(isMarketing || isAdmin) && item.status === 'Disetujui' && <button type="button" disabled={Boolean(row.paid)} onClick={() => markPayment(item, row)}><Banknote/>{row.paid ? 'Lunas' : 'Catat Bayar'}</button>}
                   </article>)}
                 </div>
               </div>
