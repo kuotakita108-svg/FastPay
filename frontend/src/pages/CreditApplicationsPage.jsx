@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react'
 import {useSearchParams} from 'react-router-dom'
-import {AlertCircle, Banknote, CalendarDays, CheckCircle2, ClipboardCheck, Clock3, CreditCard, Eye, Filter, PenLine, PhoneCall, PlusCircle, Search, ShieldCheck, Stamp, Trash2, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
+import {AlertCircle, Banknote, CalendarDays, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, Filter, PenLine, PhoneCall, PlusCircle, Search, ShieldCheck, Stamp, Trash2, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
 import PageHeader from '../components/common/PageHeader'
 import {useAuth} from '../context/AuthContext'
 import {rupiah} from '../utils/currency'
@@ -31,7 +31,24 @@ const manualInitial = {
 }
 
 const readAll = () => {
-  try { return JSON.parse(localStorage.getItem(allKey)) || [] } catch { return [] }
+  const merged = new Map()
+  try {
+    ;(JSON.parse(localStorage.getItem(allKey)) || []).forEach(item => merged.set(item.id, item))
+  } catch {/* data kosong */}
+  try {
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index)
+      if (!key?.startsWith('kuotakita_agent_credit_') || key === allKey || key.includes('repayments')) continue
+      const userId = key.replace('kuotakita_agent_credit_', '')
+      const rows = JSON.parse(localStorage.getItem(key)) || []
+      rows.forEach(item => {
+        if (item?.id && !merged.has(item.id)) merged.set(item.id, {...item, userId: item.userId || userId})
+      })
+    }
+  } catch {/* abaikan data lokal yang rusak */}
+  const list = [...merged.values()].sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+  if (list.length) localStorage.setItem(allKey, JSON.stringify(list.slice(0, 50)))
+  return list
 }
 
 function saveApplication(target, changes) {
@@ -117,6 +134,18 @@ export default function CreditApplicationsPage() {
   const isAdmin = ['master', 'admin'].includes(user?.role)
   const view = params.get('view') || 'overview'
   const refresh = () => setItems(readAll())
+
+  useEffect(() => {
+    const sync = () => refresh()
+    window.addEventListener('storage', sync)
+    window.addEventListener('kuotakita-credit-sync', sync)
+    const timer = window.setInterval(sync, 1500)
+    return () => {
+      window.removeEventListener('storage', sync)
+      window.removeEventListener('kuotakita-credit-sync', sync)
+      window.clearInterval(timer)
+    }
+  }, [])
 
   useEffect(() => {
     if (view === 'input') {

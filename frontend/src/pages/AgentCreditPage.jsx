@@ -48,6 +48,11 @@ const paymentSteps = [
   {label: 'Cicilan 3', day: 21, portion: 0.25},
   {label: 'Pelunasan', day: 30, portion: 0.25},
 ]
+const finalCreditStatus = ['Disetujui', 'Ditolak']
+
+const readJSON = (key, fallback = []) => {
+  try { return JSON.parse(localStorage.getItem(key)) || fallback } catch { return fallback }
+}
 
 function DocUpload({item, value, onOpenCamera}) {
   const state = value?.status || ''
@@ -169,7 +174,7 @@ export default function AgentCreditPage() {
 
   useEffect(() => {
     const key = `kuotakita_agent_credit_${user?.id || 'guest'}`
-    const history = JSON.parse(localStorage.getItem(key) || '[]')
+    const history = readJSON(key)
     setApplications(history)
     const latest = history[0]
     if (latest?.verifyUntil) setApplication(latest)
@@ -178,17 +183,41 @@ export default function AgentCreditPage() {
 
   useEffect(() => {
     const key = `kuotakita_agent_repayments_${user?.id || 'guest'}`
-    setRepayments(JSON.parse(localStorage.getItem(key) || '[]'))
+    setRepayments(readJSON(key))
   }, [user?.id])
 
   useEffect(() => {
     if (!application) return
     const key = `kuotakita_agent_credit_${user?.id || 'guest'}`
-    const history = JSON.parse(localStorage.getItem(key) || '[]')
+    const history = readJSON(key)
     setApplications(history)
     const latest = history.find(item => item.id === application.id)
     if (latest && latest.status !== application.status) setApplication(latest)
   }, [application, now, user?.id])
+
+  const persistApplication = nextApplication => {
+    const userId = nextApplication.userId || user?.id || 'guest'
+    const userName = nextApplication.userName || user?.name || nextApplication.form?.agentName
+    const ownKey = `kuotakita_agent_credit_${userId}`
+    const ownHistory = readJSON(ownKey)
+    const allKey = 'kuotakita_agent_credit_all'
+    const allHistory = readJSON(allKey)
+    const ownNext = [nextApplication, ...ownHistory.filter(row => row.id !== nextApplication.id)].slice(0, 10)
+    const allNext = [{...nextApplication, userId, userName}, ...allHistory.filter(row => row.id !== nextApplication.id)].slice(0, 50)
+    localStorage.setItem(ownKey, JSON.stringify(ownNext))
+    localStorage.setItem(allKey, JSON.stringify(allNext))
+    window.dispatchEvent(new Event('kuotakita-credit-sync'))
+    setApplications(ownNext)
+    setApplication(nextApplication)
+    return nextApplication
+  }
+
+  useEffect(() => {
+    if (!application || finalCreditStatus.includes(application.status)) return
+    if (application.marketingSignature || application.status === 'Menunggu verifikasi marketing' || application.status === 'Menunggu analis' || application.status === 'Menunggu ACC analis') return
+    if (now < Number(application.verifyUntil || 0)) return
+    persistApplication({...application, status: 'Menunggu verifikasi marketing', queuedAt: application.queuedAt || new Date().toISOString(), updatedAt: new Date().toISOString()})
+  }, [application, now])
 
   const update = event => setForm({...form, [event.target.name]: event.target.value})
   const updateFile = async (key, file) => {
@@ -286,13 +315,7 @@ export default function AgentCreditPage() {
     const appRepayments = next.filter(row => row.applicationId === application.id)
     const paymentStatus = appRepayments.length >= paymentSteps.length ? 'Lunas' : `Terbayar ${appRepayments.length}/${paymentSteps.length}`
     const updatedApplication = {...application, repayments: appRepayments, paymentStatus, updatedAt: new Date().toISOString()}
-    setApplication(updatedApplication)
-    const ownKey = `kuotakita_agent_credit_${user?.id || 'guest'}`
-    const ownHistory = JSON.parse(localStorage.getItem(ownKey) || '[]')
-    localStorage.setItem(ownKey, JSON.stringify([updatedApplication, ...ownHistory.filter(row => row.id !== application.id)].slice(0, 10)))
-    const allKey = 'kuotakita_agent_credit_all'
-    const allHistory = JSON.parse(localStorage.getItem(allKey) || '[]')
-    localStorage.setItem(allKey, JSON.stringify([{...updatedApplication, userId: user?.id || 'guest', userName: user?.name || updatedApplication.form.agentName}, ...allHistory.filter(row => row.id !== application.id)].slice(0, 50)))
+    persistApplication(updatedApplication)
   }
   const submit = event => {
     event.preventDefault()
@@ -305,22 +328,17 @@ export default function AgentCreditPage() {
     if (!signed) return setMessage('Tanda tangan online wajib diisi.')
     const application = {
       id: `KSA-${Date.now().toString().slice(-8)}`,
-      status: 'Sedang diverifikasi pihak atas',
+      status: 'Menunggu verifikasi marketing',
       createdAt: new Date().toISOString(),
+      queuedAt: new Date().toISOString(),
       verifyUntil: Date.now() + verificationDuration,
+      userId: user?.id || 'guest',
+      userName: user?.name || form.agentName,
       form: {...form, amount},
       documents: Object.fromEntries(Object.entries(files).map(([key, file]) => [key, file.file.name])),
     }
-    const key = `kuotakita_agent_credit_${user?.id || 'guest'}`
-    const history = JSON.parse(localStorage.getItem(key) || '[]')
-    const nextHistory = [application, ...history].slice(0, 10)
-    localStorage.setItem(key, JSON.stringify(nextHistory))
-    const allKey = 'kuotakita_agent_credit_all'
-    const allHistory = JSON.parse(localStorage.getItem(allKey) || '[]')
-    localStorage.setItem(allKey, JSON.stringify([{...application, userId: user?.id || 'guest', userName: user?.name || form.agentName}, ...allHistory].slice(0, 50)))
     setMessage('')
-    setApplication(application)
-    setApplications(nextHistory)
+    persistApplication(application)
     setShowForm(false)
   }
 
