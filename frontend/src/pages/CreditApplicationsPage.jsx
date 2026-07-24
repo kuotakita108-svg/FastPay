@@ -70,9 +70,11 @@ const statusGroup = item => item.paymentStatus === 'Lunas' ? 'Lunas' : item.stat
 const firstUnpaidRow = item => paymentRows(item).find(row => !row.paid)
 const viewInfo = {
   overview: {label: 'Ringkasan Kredit', title: 'Dashboard kredit agent', desc: 'Pantau semua pengajuan, verifikasi, pembayaran, dan status peminjam dari satu halaman.'},
+  peminjam: {label: 'Data Peminjam', title: 'Seluruh peminjam agent', desc: 'Lihat semua peminjam, status ACC/tolak, nominal pinjaman, dan progres angsuran mereka.'},
   input: {label: 'Input Peminjaman', title: 'Tambah peminjaman baru', desc: 'Isi data agent yang mengajukan lewat marketing. Setelah disimpan, data masuk antrean verifikasi.'},
   verifikasi: {label: 'Antrean Verifikasi', title: 'Cek pengajuan yang belum diverifikasi', desc: 'Fokus ke data yang masih butuh cek marketing, tanda tangan, atau keputusan awal.'},
-  pembayaran: {label: 'Catat Cicilan', title: 'Pembayaran dan cicilan aktif', desc: 'Fokus ke pinjaman yang sudah ACC. Marketing bisa mencatat cicilan dari tombol detail.'},
+  pembayaran: {label: 'Angsuran & Lunas', title: 'Pembayaran dan cicilan aktif', desc: 'Fokus ke pinjaman yang sudah ACC. Marketing bisa mencatat cicilan dari tombol detail.'},
+  angsuran: {label: 'Angsuran & Lunas', title: 'Monitor angsuran peminjam', desc: 'Lihat siapa saja yang sudah bayar, berapa cicilan yang lunas, sisa tagihan, dan catat pembayaran berikutnya.'},
   laporan: {label: 'Laporan Kredit', title: 'Rekap kinerja kredit', desc: 'Lihat total nominal pinjaman, pembayaran masuk, sisa tagihan, dan status seluruh peminjam.'},
   panduan: {label: 'Panduan Marketing', title: 'Panduan kerja marketing', desc: 'Ikuti alur input, verifikasi, tanda tangan, dan pencatatan cicilan supaya data rapi.'},
 }
@@ -133,7 +135,15 @@ export default function CreditApplicationsPage() {
       window.scrollTo({top: 0, behavior: 'smooth'})
       return
     }
-    if (view === 'pembayaran') {
+    if (view === 'peminjam') {
+      setShowCreate(false)
+      setFilter('Semua')
+      setExpandedId('')
+      setQuery('')
+      window.scrollTo({top: 0, behavior: 'smooth'})
+      return
+    }
+    if (view === 'pembayaran' || view === 'angsuran') {
       setShowCreate(false)
       setFilter('Disetujui')
       setExpandedId('')
@@ -278,7 +288,8 @@ export default function CreditApplicationsPage() {
   const visibleItems = sortedItems.filter(item => {
     const text = `${item.id} ${item.form.agentName} ${item.userName} ${item.form.storeName} ${item.form.whatsapp} ${item.form.nik}`.toLowerCase()
     const matchQuery = text.includes(query.toLowerCase().trim())
-    const matchFilter = filter === 'Semua' || statusGroup(item) === filter
+    const group = statusGroup(item)
+    const matchFilter = view === 'angsuran' || view === 'pembayaran' ? ['Disetujui', 'Lunas'].includes(group) : filter === 'Semua' || group === filter
     return matchQuery && matchFilter
   })
   const summary = {
@@ -293,6 +304,8 @@ export default function CreditApplicationsPage() {
     const next = firstUnpaidRow(item)
     return next && next.due.getTime() <= Date.now() + 3 * 86400000
   })
+  const borrowerRows = sortedItems.map(item => ({item, pay: paymentSummary(item), next: firstUnpaidRow(item), score: dataScore(item)}))
+  const installmentRows = borrowerRows.filter(row => row.item.status === 'Disetujui' || row.item.paymentStatus === 'Lunas')
   const marketingCards = [
     {title: 'Perlu Verifikasi', value: marketingQueue.length, note: 'Belum TTD marketing', icon: ClipboardCheck},
     {title: 'Tagihan Dekat', value: duePayments.length, note: 'Jatuh tempo <= 3 hari', icon: AlertCircle},
@@ -372,17 +385,27 @@ export default function CreditApplicationsPage() {
       {(isMarketing || isAdmin) && view === 'verifikasi' && <section className="marketing-action-panel">
         <header><ClipboardCheck/><div><span>FOKUS VERIFIKASI</span><h2>{marketingQueue.length} pengajuan perlu dicek</h2><p>Data di bawah otomatis difilter ke status review. Buka detail untuk cek checklist, hubungi WA, lalu tanda tangan marketing.</p></div></header>
       </section>}
-      {(isMarketing || isAdmin) && view === 'pembayaran' && <section className="marketing-action-panel payment">
-        <header><Banknote/><div><span>FOKUS PEMBAYARAN</span><h2>{approvedActive.length} pinjaman aktif</h2><p>Data di bawah otomatis fokus ke pengajuan ACC. Buka detail peminjam lalu tekan Catat Bayar pada cicilan yang masuk.</p></div></header>
+      {(isMarketing || isAdmin) && view === 'peminjam' && <section className="borrower-directory-panel">
+        <header><div><span>DIREKTORI PEMINJAM</span><h2>{items.length} data peminjam tersimpan</h2><p>Marketing bisa cek semua peminjam, status verifikasi, skor kelengkapan data, dan progres angsuran tanpa membuka satu-satu dulu.</p></div></header>
+        <div>
+          {borrowerRows.length ? borrowerRows.map(({item, pay, score}) => <button type="button" key={item.id} onClick={() => setExpandedId(item.id)}>
+            <span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id} · {item.status}</small></span>
+            <em><i style={{width: `${score.percent}%`}}/></em>
+            <strong>{pay.paid}/{pay.total} cicilan</strong>
+            <small>{rupiah(item.form.amount)}</small>
+          </button>) : <p>Belum ada data peminjam.</p>}
+        </div>
+      </section>}
+      {(isMarketing || isAdmin) && (view === 'pembayaran' || view === 'angsuran') && <section className="marketing-action-panel payment">
+        <header><Banknote/><div><span>FOKUS ANGSURAN</span><h2>{approvedActive.length} pinjaman aktif</h2><p>Lihat angsuran setiap peminjam, berapa cicilan sudah lunas, sisa tagihan, dan catat pembayaran dari detail.</p></div></header>
         <div className="quick-payment-list">
-          {approvedActive.slice(0, 5).map(item => {
-            const next = firstUnpaidRow(item)
+          {installmentRows.slice(0, 8).map(({item, pay, next}) => {
             return <button type="button" key={item.id} onClick={() => setExpandedId(item.id)}>
-              <span><b>{item.form.agentName || item.userName}</b><small>{next ? `${next.label} jatuh tempo ${next.due.toLocaleDateString('id-ID', {day: '2-digit', month: 'short'})}` : 'Semua cicilan lunas'}</small></span>
+              <span><b>{item.form.agentName || item.userName}</b><small>{pay.paid}/{pay.total} lunas · {next ? `${next.label} ${next.due.toLocaleDateString('id-ID', {day: '2-digit', month: 'short'})}` : 'semua lunas'}</small></span>
               <strong>{next ? rupiah(next.amount) : 'Lunas'}</strong>
             </button>
           })}
-          {!approvedActive.length && <p>Belum ada pinjaman ACC yang perlu dicatat cicilannya.</p>}
+          {!installmentRows.length && <p>Belum ada pinjaman ACC yang perlu dicatat cicilannya.</p>}
         </div>
       </section>}
       {(isMarketing || isAdmin) && view === 'laporan' && <>

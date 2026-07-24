@@ -1,6 +1,6 @@
 import {NavLink, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
-import {Banknote, BarChart3, CircleHelp, ClipboardCheck, FilePlus2, LogOut, ShieldCheck, WalletCards, Zap} from 'lucide-react'
+import {Banknote, BarChart3, CircleHelp, ClipboardCheck, FilePlus2, LogOut, ShieldCheck, Users, WalletCards, Zap} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
 
@@ -9,9 +9,10 @@ const marketingNavigation = [
     section: 'Marketing Kredit',
     items: [
       {to: '/credit-applications', label: 'Ringkasan Kredit', icon: WalletCards},
+      {to: '/credit-applications?view=peminjam', label: 'Data Peminjam', icon: Users},
       {to: '/credit-applications?view=input', label: 'Input Peminjaman', icon: FilePlus2},
       {to: '/credit-applications?view=verifikasi', label: 'Antrean Verifikasi', icon: ClipboardCheck},
-      {to: '/credit-applications?view=pembayaran', label: 'Catat Cicilan', icon: Banknote},
+      {to: '/credit-applications?view=angsuran', label: 'Angsuran & Lunas', icon: Banknote},
       {to: '/credit-applications?view=laporan', label: 'Laporan Kredit', icon: BarChart3},
     ],
   },
