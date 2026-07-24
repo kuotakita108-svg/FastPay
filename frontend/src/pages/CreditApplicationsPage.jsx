@@ -1,4 +1,5 @@
-import {useRef, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
+import {useSearchParams} from 'react-router-dom'
 import {AlertCircle, Banknote, CalendarDays, CheckCircle2, ClipboardCheck, Clock3, CreditCard, Eye, Filter, PenLine, PhoneCall, PlusCircle, Search, ShieldCheck, Stamp, Trash2, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
 import PageHeader from '../components/common/PageHeader'
 import {useAuth} from '../context/AuthContext'
@@ -89,6 +90,7 @@ function SignatureStep({title, note, signed, icon: Icon}) {
 
 export default function CreditApplicationsPage() {
   const {user} = useAuth()
+  const [params] = useSearchParams()
   const canvasRef = useRef(null)
   const drawing = useRef(false)
   const [items, setItems] = useState(readAll)
@@ -103,7 +105,36 @@ export default function CreditApplicationsPage() {
   const isMarketing = user?.role === 'marketing'
   const isAnalis = user?.role === 'analis'
   const isAdmin = ['master', 'admin'].includes(user?.role)
+  const view = params.get('view') || 'overview'
   const refresh = () => setItems(readAll())
+
+  useEffect(() => {
+    if (view === 'input') {
+      setShowCreate(true)
+      setFilter('Semua')
+      return
+    }
+    if (view === 'verifikasi') {
+      setShowCreate(false)
+      setFilter('Review')
+      return
+    }
+    if (view === 'pembayaran') {
+      setShowCreate(false)
+      setFilter('Disetujui')
+      return
+    }
+    if (view === 'laporan') {
+      setShowCreate(false)
+      setFilter('Semua')
+      return
+    }
+    if (view === 'panduan') {
+      setShowCreate(false)
+      setFilter('Semua')
+      return
+    }
+  }, [view])
   const signMarketing = (item, image) => {
     saveApplication(item, {marketingSignature: stampPayload({...user, role: 'marketing'}, image), status: 'Menunggu analis'})
     refresh()
@@ -283,6 +314,15 @@ export default function CreditApplicationsPage() {
             }) : <p>Belum ada cicilan jatuh tempo dekat.</p>}
           </div>
         </div>
+      </section>}
+      {(isMarketing || isAdmin) && view === 'panduan' && <section className="marketing-guide-panel">
+        <header><CircleHelp/><div><span>PANDUAN MARKETING</span><h2>Alur kerja yang benar</h2></div></header>
+        <ol>
+          <li><b>Input peminjaman</b><small>Masukkan data agent jika pengajuan dilakukan lewat marketing.</small></li>
+          <li><b>Verifikasi data</b><small>Cek WA, NIK, alamat toko, kontak keluarga, dan dokumen sebelum tanda tangan.</small></li>
+          <li><b>TTD marketing</b><small>Setelah yakin data layak, tanda tangan dari HP dan teruskan ke analis.</small></li>
+          <li><b>Catat cicilan</b><small>Jika analis sudah ACC, marketing mencatat pembayaran cicilan yang masuk.</small></li>
+        </ol>
       </section>}
       <div className="panel-header">
         <div><h2>Pengajuan Masuk</h2><p>{isMarketing ? 'Tugas marketing: cek data agent, tanda tangan, atau tolak jika data tidak layak.' : isAnalis ? 'Tugas analis: cek hasil marketing, tanda tangan, lalu ACC atau tolak.' : 'Pantau seluruh alur pengajuan kredit agent dari satu panel.'}</p></div>
