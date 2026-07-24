@@ -39,10 +39,10 @@ const terms = [
 
 const verificationDuration = 5 * 60 * 1000
 const rankLevels = [
-  {name: 'Agent Pemula', minPaid: 0, limit: 500000, badge: 'BRONZE'},
-  {name: 'Agent Lancar', minPaid: 3, limit: 1000000, badge: 'SILVER'},
-  {name: 'Agent Prioritas', minPaid: 6, limit: 2000000, badge: 'GOLD'},
-  {name: 'Agent Platinum', minPaid: 10, limit: 5000000, badge: 'PLATINUM'},
+  {name: 'Agent Pemula', minApproved: 0, limit: 500000, badge: 'BRONZE'},
+  {name: 'Agent Lancar', minApproved: 3, limit: 1000000, badge: 'SILVER'},
+  {name: 'Agent Prioritas', minApproved: 6, limit: 2000000, badge: 'GOLD'},
+  {name: 'Agent Platinum', minApproved: 10, limit: 5000000, badge: 'PLATINUM'},
 ]
 const paymentSteps = [
   {label: 'Cicilan 1', day: 7, portion: 0.25},
@@ -321,10 +321,10 @@ export default function AgentCreditPage() {
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
     setSigned(false)
   }
-  const paidCount = repayments.filter(item => item.status === 'Lunas').length
-  const currentRank = rankLevels.reduce((rank, item) => (paidCount >= item.minPaid ? item : rank), rankLevels[0])
-  const nextRank = rankLevels.find(item => item.minPaid > paidCount)
-  const rankProgress = nextRank ? Math.min(100, Math.round((paidCount / nextRank.minPaid) * 100)) : 100
+  const approvedBorrowerCount = applications.filter(item => item.status === 'Disetujui').length
+  const currentRank = rankLevels.reduce((rank, item) => (approvedBorrowerCount >= item.minApproved ? item : rank), rankLevels[0])
+  const nextRank = rankLevels.find(item => item.minApproved > approvedBorrowerCount)
+  const rankProgress = nextRank ? Math.min(100, Math.round((approvedBorrowerCount / nextRank.minApproved) * 100)) : 100
   const maxCredit = currentRank.limit
   const pendingApplications = applications.filter(item => !finalCreditStatus.includes(item.status)).length
   const approvedApplications = applications.filter(item => item.status === 'Disetujui').length
@@ -441,11 +441,11 @@ export default function AgentCreditPage() {
     <section className="agent-rank-card">
       <header>
         <i><Award/></i>
-        <div><span>PANGKAT AGENT</span><h2>{currentRank.name}</h2><p>Limit pengajuan aktif {rupiah(currentRank.limit)}.</p></div>
+        <div><span>PANGKAT AGENT</span><h2>{currentRank.name}</h2><p>{approvedBorrowerCount} peminjam disetujui · Limit {rupiah(currentRank.limit)}.</p></div>
         <b>{currentRank.badge}</b>
       </header>
       <div className="rank-meter"><span style={{width: `${rankProgress}%`}}/></div>
-      <p><TrendingUp/> Pangkat naik otomatis saat riwayat pembayaran agent dinilai lancar oleh sistem.</p>
+      <p><TrendingUp/> Pangkat naik otomatis setiap jumlah peminjam yang kamu daftarkan sudah disetujui pihak atas.</p>
     </section>
     <div className="agent-credit-tabs" role="tablist" aria-label="Menu Kredit Agent">
       <button type="button" className={!showForm && !detailOpen ? 'active' : ''} onClick={backToApplications}><FileText/><span>Semua Peminjam<small>{applications.length} pengajuan tersimpan</small></span></button>
