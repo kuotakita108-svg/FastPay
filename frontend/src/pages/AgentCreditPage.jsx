@@ -137,6 +137,7 @@ export default function AgentCreditPage() {
   const [application, setApplication] = useState(null)
   const [applications, setApplications] = useState([])
   const [showForm, setShowForm] = useState(false)
+  const [detailOpen, setDetailOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('Semua')
   const [repayments, setRepayments] = useState([])
@@ -378,14 +379,21 @@ export default function AgentCreditPage() {
   const startNewApplication = () => {
     resetAgentForm()
     setApplication(null)
+    setDetailOpen(false)
     setShowForm(true)
     window.setTimeout(() => document.querySelector('.agent-credit-form')?.scrollIntoView({behavior: 'smooth', block: 'start'}), 80)
   }
   const selectApplication = item => {
     setApplication(item)
     setShowForm(false)
+    setDetailOpen(true)
     setMessage('')
     window.setTimeout(() => document.querySelector('.agent-verification')?.scrollIntoView({behavior: 'smooth', block: 'start'}), 80)
+  }
+  const backToApplications = () => {
+    setDetailOpen(false)
+    setShowForm(false)
+    window.setTimeout(() => document.querySelector('.agent-registered-list')?.scrollIntoView({behavior: 'smooth', block: 'start'}), 60)
   }
   const applicationStatus = item => {
     if (item.status === 'Disetujui') return {label: 'Sukses ACC', className: 'approved'}
@@ -420,7 +428,11 @@ export default function AgentCreditPage() {
       <div className="rank-meter"><span style={{width: `${rankProgress}%`}}/></div>
       <p><TrendingUp/> Pangkat naik otomatis saat riwayat pembayaran agent dinilai lancar oleh sistem.</p>
     </section>
-    {(!showForm || applications.length === 0) && <section className="agent-registered-list">
+    <div className="agent-credit-tabs" role="tablist" aria-label="Menu Kredit Agent">
+      <button type="button" className={!showForm && !detailOpen ? 'active' : ''} onClick={backToApplications}><FileText/><span>Semua Peminjam<small>{applications.length} pengajuan tersimpan</small></span></button>
+      <button type="button" className={showForm ? 'active' : ''} onClick={startNewApplication}><UserRound/><span>Daftar Baru<small>Tambah orang yang ingin meminjam</small></span></button>
+    </div>
+    {(!showForm && !detailOpen || applications.length === 0) && <section className="agent-registered-list">
       <header>
         <div>
           <span>DATA PENGAJUAN AGENT</span>
@@ -458,7 +470,8 @@ export default function AgentCreditPage() {
         })}
       </div> : <div className="agent-registered-empty"><FileText/><strong>{applications.length ? 'Pengajuan tidak ditemukan' : 'Belum ada yang didaftarkan'}</strong><small>{applications.length ? 'Coba ubah kata pencarian atau filter status.' : 'Isi formulir pertama, nanti status pengajuan muncul otomatis di sini.'}</small></div>}
     </section>}
-    {!showForm && application && <section className={`agent-verification ${approved ? 'approved' : ''} ${rejected ? 'rejected' : ''}`}>
+    {detailOpen && application && <section className={`agent-verification ${approved ? 'approved' : ''} ${rejected ? 'rejected' : ''}`}>
+      <button type="button" className="agent-detail-back" onClick={backToApplications}><ArrowRight/> Kembali ke semua peminjam</button>
       <i>{approved ? <Stamp/> : rejected ? <X/> : <Loader2/>}</i>
       <span>{approved ? 'PENGAJUAN DISETUJUI' : rejected ? 'PENGAJUAN DITOLAK' : waitingDecision ? 'MENUNGGU KEPUTUSAN' : 'MOHON MENUNGGU'}</span>
       <h2>{approved ? 'Kredit saldo sudah ACC' : rejected ? 'Pengajuan belum disetujui' : waitingDecision ? 'Menunggu ACC pihak atas' : 'Data sedang diverifikasi pihak atas'}</h2>
@@ -476,7 +489,7 @@ export default function AgentCreditPage() {
         <li className={approved ? 'done' : rejected ? 'rejected' : ''}>{approved ? <CheckCircle2/> : rejected ? <X/> : <Clock3/>}Keputusan analis pihak atas</li>
       </ul>
     </section>}
-    {!showForm && approved && <section className="agent-payment-lane">
+    {detailOpen && approved && <section className="agent-payment-lane">
         <header><i><CreditCard/></i><div><h2>Jalur Pembayaran Kredit</h2><p>Pembayaran cicilan dicatat oleh marketing. Agent hanya dapat memantau status pembayaran.</p></div></header>
       <div className="payment-lane-total"><span>Total pinjaman</span><strong>{rupiah(application.form.amount)}</strong></div>
       <div className="payment-lane-list">
