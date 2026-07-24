@@ -259,8 +259,7 @@ export default function CreditApplicationsPage() {
       </div>
       {(isMarketing || isAdmin) && <section className="marketing-workspace">
         <header>
-          <div><span>MEJA KERJA MARKETING</span><h2>Kontrol Verifikasi & Cicilan</h2><p>Marketing bisa input peminjam, cek kelengkapan data, tanda tangan verifikasi, dan mencatat cicilan yang masuk.</p></div>
-          <button type="button" onClick={() => setShowCreate(true)}><PlusCircle/>Input Peminjam</button>
+          <div><span>MEJA KERJA MARKETING</span><h2>Kontrol Verifikasi & Cicilan</h2><p>Marketing bisa input peminjaman, cek kelengkapan data, tanda tangan verifikasi, dan mencatat cicilan yang masuk.</p></div>
         </header>
         <div className="marketing-task-grid">
           {marketingCards.map(({title, value, note, icon: Icon}) => <article key={title}><i><Icon/></i><span>{title}</span><strong>{value}</strong><small>{note}</small></article>)}
@@ -290,7 +289,7 @@ export default function CreditApplicationsPage() {
         <span className="review-role-badge">{isMarketing ? 'MARKETING' : isAnalis ? 'ANALIS' : 'ADMIN'}</span>
       </div>
       {(isMarketing || isAdmin) && <section className="credit-create-box">
-        <button type="button" className="credit-create-toggle" onClick={() => setShowCreate(value => !value)}><PlusCircle/>{showCreate ? 'Tutup Form Peminjam' : 'Tambah Peminjam Manual'}</button>
+        <button type="button" className="credit-create-toggle" onClick={() => setShowCreate(value => !value)}><PlusCircle/>{showCreate ? 'Tutup Form Peminjaman' : 'Input Peminjaman'}</button>
         {manualMessage && <p>{manualMessage}</p>}
         {showCreate && <form onSubmit={createManual}>
           <label>Nama Agent<input name="agentName" value={manualForm.agentName} onChange={updateManual} placeholder="Nama peminjam"/></label>
