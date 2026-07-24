@@ -1,68 +1,55 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 430" role="img" aria-label="Mobile Legends Bang Bang">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" role="img" aria-label="Mobile Legends Bang Bang">
   <defs>
-    <radialGradient id="aura" cx="50%" cy="45%" r="56%">
-      <stop offset="0" stop-color="#1ff4ff" stop-opacity=".95"/>
-      <stop offset=".27" stop-color="#2459ff" stop-opacity=".72"/>
-      <stop offset=".62" stop-color="#5b22d6" stop-opacity=".48"/>
+    <radialGradient id="mlAura" cx="50%" cy="50%" r="58%">
+      <stop offset="0" stop-color="#3be7ff" stop-opacity=".9"/>
+      <stop offset=".35" stop-color="#245bff" stop-opacity=".55"/>
+      <stop offset=".72" stop-color="#5f2bd8" stop-opacity=".35"/>
       <stop offset="1" stop-color="#000" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="steel" x1="0" x2="1" y1="0" y2="1">
+    <linearGradient id="mlGold" x1=".12" x2=".86" y1="0" y2="1">
+      <stop stop-color="#fff7d1"/>
+      <stop offset=".3" stop-color="#f7cf85"/>
+      <stop offset=".56" stop-color="#c27234"/>
+      <stop offset=".82" stop-color="#fff0b4"/>
+      <stop offset="1" stop-color="#8a421c"/>
+    </linearGradient>
+    <linearGradient id="mlSteel" x1="0" x2="1" y1="0" y2="1">
       <stop stop-color="#d9f5ff"/>
-      <stop offset=".36" stop-color="#5d7e95"/>
-      <stop offset="1" stop-color="#13293a"/>
+      <stop offset=".45" stop-color="#4c6b80"/>
+      <stop offset="1" stop-color="#162838"/>
     </linearGradient>
-    <linearGradient id="wood" x1="0" x2="1" y1="0" y2="1">
-      <stop stop-color="#9d5a32"/>
-      <stop offset=".55" stop-color="#5d2f1d"/>
-      <stop offset="1" stop-color="#20120f"/>
-    </linearGradient>
-    <linearGradient id="gold" x1=".18" x2=".85" y1="0" y2="1">
-      <stop stop-color="#fff6d0"/>
-      <stop offset=".22" stop-color="#f7d289"/>
-      <stop offset=".48" stop-color="#c87636"/>
-      <stop offset=".72" stop-color="#fff2bc"/>
-      <stop offset="1" stop-color="#8a451f"/>
-    </linearGradient>
-    <filter id="logoShadow" x="-16%" y="-18%" width="132%" height="148%">
-      <feDropShadow dx="0" dy="12" stdDeviation="9" flood-color="#000" flood-opacity=".82"/>
-      <feDropShadow dx="0" dy="0" stdDeviation="7" flood-color="#2fb8ff" flood-opacity=".38"/>
+    <filter id="mlDrop" x="-12%" y="-18%" width="124%" height="146%">
+      <feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#000" flood-opacity=".8"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#22c6ff" flood-opacity=".35"/>
     </filter>
   </defs>
 
-  <rect width="960" height="430" rx="30" fill="#000"/>
-  <ellipse cx="480" cy="213" rx="292" ry="170" fill="url(#aura)"/>
-  <path d="M480 72 534 137 511 287 480 352 449 287 426 137z" fill="#18d5ff" opacity=".75"/>
-  <path d="M480 96 516 142 497 263 480 309 463 263 444 142z" fill="#94f5ff" opacity=".72"/>
+  <rect width="900" height="360" rx="28" fill="#000"/>
+  <ellipse cx="450" cy="183" rx="285" ry="145" fill="url(#mlAura)"/>
 
-  <g filter="url(#logoShadow)">
-    <path d="M202 106c86 88 151 112 228 107-87 31-166 27-243-9L92 250l72-77-74-61 116 42z" fill="url(#steel)"/>
-    <path d="M758 106c-86 88-151 112-228 107 87 31 166 27 243-9l95 46-72-77 74-61-116 42z" fill="url(#steel)"/>
-    <path d="M174 171h612l42 86-73 55H205l-73-55z" fill="url(#wood)" stroke="#23394c" stroke-width="12" stroke-linejoin="round"/>
-    <path d="M205 184h550l27 55-48 37H226l-48-37z" fill="#7b4425"/>
-    <path d="M258 278h444l-40 76H298z" fill="#2e1d19" stroke="#203245" stroke-width="9"/>
+  <g filter="url(#mlDrop)">
+    <path d="M185 88c80 77 147 98 222 91-74 32-151 36-235 1L86 222l68-66-70-55 112 35z" fill="url(#mlSteel)"/>
+    <path d="M715 88c-80 77-147 98-222 91 74 32 151 36 235 1l86 42-68-66 70-55-112 35z" fill="url(#mlSteel)"/>
+    <path d="M450 45 506 107 486 250 450 317 414 250 394 107z" fill="#17d7ff" opacity=".72"/>
+    <path d="M450 73 489 116 473 238 450 284 427 238 411 116z" fill="#91f4ff" opacity=".66"/>
+    <path d="M172 139h556l43 73-64 47H193l-64-47z" fill="#5d3321" stroke="#24384a" stroke-width="10" stroke-linejoin="round"/>
 
-    <text x="480" y="242" text-anchor="middle"
+    <text x="450" y="209" text-anchor="middle"
           font-family="Arial Black, Impact, Haettenschweiler, sans-serif"
-          font-size="112" font-weight="900" letter-spacing="-3"
-          fill="#2b170c" stroke="#101722" stroke-width="14" stroke-linejoin="round">MOBILE</text>
-    <text x="480" y="242" text-anchor="middle"
+          font-size="104" font-weight="900" letter-spacing="-3"
+          fill="#2b160d" stroke="#101722" stroke-width="13" stroke-linejoin="round">MOBILE</text>
+    <text x="450" y="209" text-anchor="middle"
           font-family="Arial Black, Impact, Haettenschweiler, sans-serif"
-          font-size="112" font-weight="900" letter-spacing="-3"
-          fill="url(#gold)" stroke="#fff1be" stroke-width="3" stroke-linejoin="round">MOBILE</text>
+          font-size="104" font-weight="900" letter-spacing="-3"
+          fill="url(#mlGold)" stroke="#fff1bf" stroke-width="2.5" stroke-linejoin="round">MOBILE</text>
 
-    <text x="480" y="331" text-anchor="middle"
+    <text x="450" y="292" text-anchor="middle"
           font-family="Arial Black, Impact, Haettenschweiler, sans-serif"
-          font-size="98" font-weight="900" letter-spacing="-2"
-          fill="#2b170c" stroke="#101722" stroke-width="13" stroke-linejoin="round">LEGENDS</text>
-    <text x="480" y="331" text-anchor="middle"
+          font-size="91" font-weight="900" letter-spacing="-2"
+          fill="#2b160d" stroke="#101722" stroke-width="12" stroke-linejoin="round">LEGENDS</text>
+    <text x="450" y="292" text-anchor="middle"
           font-family="Arial Black, Impact, Haettenschweiler, sans-serif"
-          font-size="98" font-weight="900" letter-spacing="-2"
-          fill="url(#gold)" stroke="#fff1be" stroke-width="2.5" stroke-linejoin="round">LEGENDS</text>
-
-    <path d="M366 346h228l28 29-28 29H366l-28-29z" fill="#132033" stroke="#bd8d3e" stroke-width="6"/>
-    <text x="480" y="388" text-anchor="middle"
-          font-family="Arial Black, Arial, sans-serif"
-          font-size="38" font-weight="900" letter-spacing="6"
-          fill="#f5cf87">BANG BANG</text>
+          font-size="91" font-weight="900" letter-spacing="-2"
+          fill="url(#mlGold)" stroke="#fff1bf" stroke-width="2" stroke-linejoin="round">LEGENDS</text>
   </g>
 </svg>
