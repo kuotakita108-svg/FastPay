@@ -4,13 +4,13 @@
 .service-ewallet .purchase-head.modern,.service-bank .purchase-head.modern,.service-insurance .purchase-head.modern{background:linear-gradient(135deg,#063b39,#075651)!important}
 .service-pln .purchase-head.modern,.service-pdam .purchase-head.modern,.service-gas .purchase-head.modern,.service-internet .purchase-head.modern,.service-telkom .purchase-head.modern,.service-tv .purchase-head.modern{background:linear-gradient(135deg,#173b62,#1d507a)!important}
 .service-game .purchase-head.modern,.service-voucher .purchase-head.modern,.service-streaming .purchase-head.modern{background:linear-gradient(135deg,#251044,#461765)!important}
-.service-pascabayar .purchase-head.modern,.service-data .purchase-head.modern,.service-pulsa .purchase-head.modern,.service-esim .purchase-head.modern{background:linear-gradient(135deg,#173b62,#265c8d)!important}
+.service-pascabayar .purchase-head.modern,.service-data .purchase-head.modern,.service-pulsa .purchase-head.modern,.service-esim .purchase-head.modern{background:linear-gradient(135deg,#25166d,#352497)!important}
 .service-person-hero>img{position:absolute;z-index:0;inset:0;width:100%;height:100%;object-fit:cover;object-position:74% center;transform:scale(1.01)}
 .service-person-shade{position:absolute;z-index:1;inset:0;background:linear-gradient(90deg,#25166df7 0%,#352497e8 43%,#3524978a 65%,#24166d17 100%)}
 .service-ewallet .service-person-shade,.service-bank .service-person-shade,.service-insurance .service-person-shade{background:linear-gradient(90deg,#063b39f7 0%,#075651e7 43%,#09716486 65%,#063b3915 100%)}
 .service-pln .service-person-shade,.service-pdam .service-person-shade,.service-gas .service-person-shade,.service-internet .service-person-shade,.service-telkom .service-person-shade,.service-tv .service-person-shade{background:linear-gradient(90deg,#173b62f7 0%,#1d507ae7 43%,#315f7f82 65%,#173b6212 100%)}
 .service-game .service-person-shade,.service-voucher .service-person-shade{background:linear-gradient(90deg,#251044f7 0%,#461765e7 43%,#791e8682 65%,#25104412 100%)}
-.service-person-hero:after{content:"";position:absolute;z-index:2;inset:0;background:linear-gradient(180deg,#ffffff0d,transparent 45%,#10072d18 78%,#f7f8fc 100%);pointer-events:none}
+.service-person-hero:after{content:"";position:absolute;z-index:2;inset:0;background:linear-gradient(180deg,#ffffff0a,transparent 52%,#10072d1f 100%);pointer-events:none}
 .service-intro-copy{position:relative;z-index:3;display:flex;height:100%;width:65%;flex-direction:column;justify-content:center;padding:19px 18px;text-shadow:0 2px 9px #10072d80}
 .service-intro-copy>span{font-size:7px;letter-spacing:1.3px;color:#ded9ff;font-weight:900;text-transform:uppercase}
 .service-intro-copy h1{font-size:19px;line-height:1.18;margin:7px 0 6px;max-width:260px}
