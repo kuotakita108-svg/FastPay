@@ -395,7 +395,7 @@ export default function AgentCreditPage() {
         <label className="agent-check"><input type="checkbox" checked={accepted} onChange={event => setAccepted(event.target.checked)}/><span>Saya menyatakan data benar dan bersedia mengikuti ketentuan kredit saldo KuotaKita.</span></label>
       </section>
       <section className="agent-card">
-        <header><i><PenLine/></i><div><h2>Tanda Tangan & Persetujuan</h2><p>Lengkapi tanda tangan agent. Marketing dan analis akan diisi pihak atas setelah pengajuan dikirim.</p></div></header>
+        <header><i><PenLine/></i><div><h2>Tanda Tangan Agent</h2><p>Cukup tanda tangan agent di sini. Marketing dan analis akan memeriksa lalu tanda tangan dari panel pihak atas.</p></div></header>
         <div className="signature-approval-grid">
           <div className="signature-party active">
             <strong>AGENT</strong>
@@ -404,16 +404,6 @@ export default function AgentCreditPage() {
               {!signed && <span>Tanda tangan agent</span>}
             </div>
             <small>{form.agentName || user?.name || 'Nama & tanda tangan'}</small>
-          </div>
-          <div className="signature-party locked">
-            <strong>MARKETING</strong>
-            <div><Stamp/><span>Menunggu verifikasi</span></div>
-            <small>Diisi oleh pihak KuotaKita</small>
-          </div>
-          <div className="signature-party locked">
-            <strong>ANALIS</strong>
-            <div><ShieldCheck/><span>Menunggu keputusan</span></div>
-            <small>ACC / Tolak pihak atas</small>
           </div>
         </div>
         <button type="button" className="clear-signature" onClick={clearSignature}><X/>Hapus tanda tangan</button>
