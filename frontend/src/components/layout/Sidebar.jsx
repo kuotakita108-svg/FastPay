@@ -13,13 +13,6 @@ const marketingNavigation = [
       {to: '/credit-applications?view=input', label: 'Input Peminjaman', icon: FilePlus2},
       {to: '/credit-applications?view=verifikasi', label: 'Antrean Verifikasi', icon: ClipboardCheck},
       {to: '/credit-applications?view=angsuran', label: 'Angsuran & Lunas', icon: Banknote},
-      {to: '/credit-applications?view=laporan', label: 'Laporan Kredit', icon: BarChart3},
-    ],
-  },
-  {
-    section: 'Bantuan',
-    items: [
-      {to: '/credit-applications?view=panduan', label: 'Panduan Marketing', icon: CircleHelp},
     ],
   },
 ]
@@ -58,7 +51,7 @@ export default function Sidebar({open, onClose}) {
     </div>}
     <nav>{visibleNavigation.map(group => <div key={group.section}>
       <p className="nav-label">{group.section}</p>
-      {group.items.map(({to, label, icon: Icon, badge}) => <NavLink className={`nav-item ${active(to) ? 'active' : ''}`} to={to} key={to} onClick={onClose}>
+      {group.items.map(({to, label, icon: Icon, badge}) => <NavLink className={`nav-item nav-${label.toLowerCase().replace(/[^a-z]+/g, '-')} ${active(to) ? 'active' : ''}`} to={to} key={to} onClick={onClose}>
         <Icon size={18}/><span>{label}</span>{badge && <b>{badge}</b>}
       </NavLink>)}
     </div>)}</nav>
