@@ -180,6 +180,14 @@ export default function CreditApplicationsPage() {
       window.scrollTo({top: 0, behavior: 'smooth'})
       return
     }
+    if (view === 'detail') {
+      setShowCreate(false)
+      setFilter(params.get('filter') || 'Semua')
+      setExpandedId(params.get('id') || '')
+      setQuery('')
+      window.scrollTo({top: 0, behavior: 'smooth'})
+      return
+    }
     if (view === 'peminjam') {
       setShowCreate(false)
       setFilter('Semua')
@@ -219,7 +227,12 @@ export default function CreditApplicationsPage() {
     window.scrollTo({top: 0, behavior: 'smooth'})
   }, [view])
   const signMarketing = (item, image) => {
-    saveApplication(item, {marketingSignature: stampPayload({...user, role: 'marketing'}, image), status: 'Menunggu analis'})
+    saveApplication(item, {marketingSignature: stampPayload({...user, role: 'marketing'}, image), status: 'Siap dikirim ke analis'})
+    refresh()
+  }
+  const forwardToAnalis = item => {
+    if ((!isMarketing && !isAdmin) || !item.marketingSignature || item.status !== 'Siap dikirim ke analis') return
+    saveApplication(item, {status: 'Menunggu analis', forwardedAt: new Date().toISOString()})
     refresh()
   }
   const signAnalis = (item, image) => {
@@ -332,11 +345,12 @@ export default function CreditApplicationsPage() {
   }
   const sortedItems = [...items].sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
   const visibleItems = sortedItems.filter(item => {
+    const matchDetail = view !== 'detail' || item.id === params.get('id')
     const text = `${item.id} ${item.form.agentName} ${item.userName} ${item.form.storeName} ${item.form.whatsapp} ${item.form.nik}`.toLowerCase()
     const matchQuery = text.includes(query.toLowerCase().trim())
     const group = statusGroup(item)
     const matchFilter = view === 'angsuran' || view === 'pembayaran' ? ['Disetujui', 'Lunas'].includes(group) : filter === 'Semua' || group === filter
-    return matchQuery && matchFilter
+    return matchDetail && matchQuery && matchFilter
   })
   const summary = {
     total: items.length,
@@ -370,7 +384,7 @@ export default function CreditApplicationsPage() {
   const showCreateArea = (isMarketing || isAdmin) && ['overview', 'input'].includes(view)
   // Setiap menu punya satu tujuan: daftar detail hanya muncul di Antrean Verifikasi.
   // Ringkasan, Direktori Peminjam, dan Angsuran memakai panel khusus masing-masing.
-  const showMainList = view === 'verifikasi'
+  const showMainList = view === 'verifikasi' || view === 'detail'
   const exportReport = () => {
     const header = ['ID', 'Agent', 'Toko', 'WA', 'Status', 'Nominal', 'Terbayar', 'Sisa']
     const rows = sortedItems.map(item => {
@@ -459,7 +473,7 @@ export default function CreditApplicationsPage() {
         <header><Banknote/><div><span>FOKUS ANGSURAN</span><h2>{approvedActive.length} pinjaman aktif</h2><p>Lihat angsuran setiap peminjam, berapa cicilan sudah lunas, sisa tagihan, dan catat pembayaran dari detail.</p></div></header>
         <div className="quick-payment-list">
           {installmentRows.slice(0, 8).map(({item, pay, next}) => {
-            return <button type="button" key={item.id} onClick={() => setExpandedId(item.id)}>
+            return <button type="button" key={item.id} onClick={() => goToView('detail', item.id, 'Disetujui')}>
               <span><b>{item.form.agentName || item.userName}</b><small>{pay.paid}/{pay.total} lunas · {next ? `${next.label} ${next.due.toLocaleDateString('id-ID', {day: '2-digit', month: 'short'})}` : 'semua lunas'}</small></span>
               <strong>{next ? rupiah(next.amount) : 'Lunas'}</strong>
             </button>
@@ -527,10 +541,10 @@ export default function CreditApplicationsPage() {
           <strong>{rupiah(item.form.amount)}</strong>
         </button>) : <p>Belum ada input peminjaman dari marketing.</p>}</div>
       </section>}
-      {showMainList && <><div className="credit-review-tools">
+      {showMainList && <>{view === 'verifikasi' && <div className="credit-review-tools">
         <label><Search/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Cari nama agent, toko, WA, NIK, atau ID pengajuan"/></label>
         <div><Filter/>{filters.map(name => <button type="button" className={filter === name ? 'active' : ''} onClick={() => setFilter(name)} key={name}>{name}</button>)}</div>
-      </div>
+      </div>}
       {items.length === 0 ? <div className="credit-review-empty"><ShieldCheck/><strong>Belum ada pengajuan</strong><span>Pengajuan kredit saldo dari aplikasi agent akan tampil di sini.</span></div> : visibleItems.length === 0 ? <div className="credit-review-empty"><Search/><strong>Data tidak ditemukan</strong><span>Coba ubah kata pencarian atau filter status.</span></div> : <div className="credit-review-list">
         {visibleItems.map(item => {
           const done = finalStatus.includes(item.status)
@@ -540,7 +554,7 @@ export default function CreditApplicationsPage() {
           const score = dataScore(item)
           const expanded = expandedId === item.id
           const canMarketingSign = !done && !marketingSigned && (isMarketing || isAdmin)
-          const canAnalisSign = !done && marketingSigned && !analisSigned && (isAnalis || isAdmin)
+          const canAnalisSign = !done && item.status === 'Menunggu analis' && marketingSigned && !analisSigned && (isAnalis || isAdmin)
           const canApprove = !done && marketingSigned && analisSigned && (isAnalis || isAdmin)
           const canReject = !done && (isMarketing || isAnalis || isAdmin)
           return <article className={`credit-review-card status-${item.status.toLowerCase().replaceAll(' ', '-')}`} key={item.id}>
@@ -566,10 +580,11 @@ export default function CreditApplicationsPage() {
               <SignatureStep title="Analis" note="Menunggu tanda tangan analis" signed={item.analisSignature} icon={Stamp}/>
             </div>}
             <footer>
-              {item.status === 'Disetujui' ? <><span className="approved"><CheckCircle2/>Sudah ACC analis</span><button type="button" className="detail" onClick={() => setExpandedId(expanded ? '' : item.id)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : item.status === 'Ditolak' ? <><span className="rejected"><XCircle/>Ditolak pihak atas</span><button type="button" className="detail" onClick={() => setExpandedId(expanded ? '' : item.id)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : <>
-                <span><Clock3/>{marketingSigned ? 'Menunggu keputusan analis' : 'Menunggu verifikasi marketing'}</span>
-                <button type="button" className="detail" onClick={() => setExpandedId(expanded ? '' : item.id)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button>
+              {item.status === 'Disetujui' ? <><span className="approved"><CheckCircle2/>Sudah ACC analis</span><button type="button" className="detail" onClick={() => expanded ? goToView('verifikasi', '', filter) : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : item.status === 'Ditolak' ? <><span className="rejected"><XCircle/>Ditolak pihak atas</span><button type="button" className="detail" onClick={() => expanded ? goToView('verifikasi', '', filter) : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : <>
+                <span><Clock3/>{item.status === 'Siap dikirim ke analis' ? 'Sudah TTD, siap dikirim ke analis' : marketingSigned ? 'Menunggu keputusan analis' : 'Menunggu verifikasi marketing'}</span>
+                <button type="button" className="detail" onClick={() => expanded ? goToView('verifikasi', '', filter) : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button>
                 {expanded && canMarketingSign && <button type="button" className="sign" onClick={() => openSignature(item, 'marketing')}><PenLine/>TTD Marketing</button>}
+                {expanded && marketingSigned && item.status === 'Siap dikirim ke analis' && (isMarketing || isAdmin) && <button type="button" className="approve" onClick={() => forwardToAnalis(item)}><CheckCircle2/>Verifikasi &amp; Kirim ke Analis</button>}
                 {expanded && canAnalisSign && <button type="button" className="sign" onClick={() => openSignature(item, 'analis')}><PenLine/>TTD Analis</button>}
                 {expanded && canReject && <button type="button" className="reject" onClick={() => decide(item, 'Ditolak')}><XCircle/>Tolak</button>}
                 {expanded && canApprove && <button type="button" className="approve" onClick={() => decide(item, 'Disetujui')}><CheckCircle2/>ACC</button>}
