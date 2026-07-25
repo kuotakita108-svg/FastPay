@@ -548,31 +548,31 @@ export default function CreditApplicationsPage() {
               <div><span>{item.id}</span><h3>{item.form.agentName || item.userName}</h3><p>{item.form.storeName} · {item.form.whatsapp}</p></div>
               <b>{rupiah(item.form.amount)}</b>
             </header>
-            <div className="credit-review-grid">
+            {expanded && <div className="credit-review-grid">
               <span><small>NIK</small><strong>{item.form.nik}</strong></span>
               <span><small>Transaksi/Bulan</small><strong>{item.form.monthlyTransactions}</strong></span>
               <span><small>Status</small><strong>{item.status}</strong></span>
               <span><small>Dokumen</small><strong>{Object.values(item.documents || {}).length} foto</strong></span>
-            </div>
-            <div className="credit-payment-summary">
+            </div>}
+            {expanded && <div className="credit-payment-summary">
               <div><CreditCard/><span><b>{item.paymentStatus || `${pay.paid}/${pay.total} cicilan`}</b><small>{rupiah(pay.totalPaid)} sudah dibayar</small></span></div>
               <strong>{pay.percent}%</strong>
               <em><i style={{width: `${pay.percent}%`}}/></em>
-            </div>
-            <p className="credit-review-address">{item.form.homeAddress}</p>
-            <div className="credit-review-signatures">
+            </div>}
+            {expanded && <p className="credit-review-address">{item.form.homeAddress}</p>}
+            {expanded && <div className="credit-review-signatures">
               <SignatureStep title="Agent" note="Ditandatangani saat pengajuan dikirim" signed={{name: item.form.agentName || item.userName || 'Agent', at: item.createdAt}} icon={PenLine}/>
               <SignatureStep title="Marketing" note="Menunggu tanda tangan marketing" signed={item.marketingSignature} icon={UserCheck}/>
               <SignatureStep title="Analis" note="Menunggu tanda tangan analis" signed={item.analisSignature} icon={Stamp}/>
-            </div>
+            </div>}
             <footer>
               {item.status === 'Disetujui' ? <><span className="approved"><CheckCircle2/>Sudah ACC analis</span><button type="button" className="detail" onClick={() => setExpandedId(expanded ? '' : item.id)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : item.status === 'Ditolak' ? <><span className="rejected"><XCircle/>Ditolak pihak atas</span><button type="button" className="detail" onClick={() => setExpandedId(expanded ? '' : item.id)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : <>
                 <span><Clock3/>{marketingSigned ? 'Menunggu keputusan analis' : 'Menunggu verifikasi marketing'}</span>
-                {canMarketingSign && <button type="button" className="sign" onClick={() => openSignature(item, 'marketing')}><PenLine/>TTD Marketing</button>}
-                {canAnalisSign && <button type="button" className="sign" onClick={() => openSignature(item, 'analis')}><PenLine/>TTD Analis</button>}
-                {canReject && <button type="button" className="reject" onClick={() => decide(item, 'Ditolak')}><XCircle/>Tolak</button>}
-                {canApprove && <button type="button" className="approve" onClick={() => decide(item, 'Disetujui')}><CheckCircle2/>ACC</button>}
                 <button type="button" className="detail" onClick={() => setExpandedId(expanded ? '' : item.id)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button>
+                {expanded && canMarketingSign && <button type="button" className="sign" onClick={() => openSignature(item, 'marketing')}><PenLine/>TTD Marketing</button>}
+                {expanded && canAnalisSign && <button type="button" className="sign" onClick={() => openSignature(item, 'analis')}><PenLine/>TTD Analis</button>}
+                {expanded && canReject && <button type="button" className="reject" onClick={() => decide(item, 'Ditolak')}><XCircle/>Tolak</button>}
+                {expanded && canApprove && <button type="button" className="approve" onClick={() => decide(item, 'Disetujui')}><CheckCircle2/>ACC</button>}
               </>}
             </footer>
             {expanded && <section className="credit-borrower-detail">
