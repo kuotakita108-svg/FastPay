@@ -135,7 +135,7 @@ export default function CreditApplicationsPage() {
   const isAnalis = user?.role === 'analis'
   const isAdmin = ['master', 'admin'].includes(user?.role)
   const view = params.get('view') || 'overview'
-  const goToView = nextView => setSearchParams(nextView ? {view: nextView} : {})
+  const goToView = (nextView, id = '', nextFilter = '') => setSearchParams(nextView ? {view: nextView, ...(id ? {id} : {}), ...(nextFilter ? {filter: nextFilter} : {})} : {})
   const refresh = () => setItems(readAll())
   const refreshRemote = () => request('/agent-credit/applications').then(remote => {
     if (!Array.isArray(remote)) return
@@ -174,8 +174,8 @@ export default function CreditApplicationsPage() {
     }
     if (view === 'verifikasi') {
       setShowCreate(false)
-      setFilter('Review')
-      setExpandedId('')
+      setFilter(params.get('filter') || 'Review')
+      setExpandedId(params.get('id') || '')
       setQuery('')
       window.scrollTo({top: 0, behavior: 'smooth'})
       return
@@ -368,7 +368,9 @@ export default function CreditApplicationsPage() {
     return next && next.due.toDateString() === new Date().toDateString()
   })
   const showCreateArea = (isMarketing || isAdmin) && ['overview', 'input'].includes(view)
-  const showMainList = !['input', 'laporan', 'panduan'].includes(view)
+  // Setiap menu punya satu tujuan: daftar detail hanya muncul di Antrean Verifikasi.
+  // Ringkasan, Direktori Peminjam, dan Angsuran memakai panel khusus masing-masing.
+  const showMainList = view === 'verifikasi'
   const exportReport = () => {
     const header = ['ID', 'Agent', 'Toko', 'WA', 'Status', 'Nominal', 'Terbayar', 'Sisa']
     const rows = sortedItems.map(item => {
@@ -422,7 +424,7 @@ export default function CreditApplicationsPage() {
         <div className="marketing-focus-grid">
           <div>
             <h3>Antrean Verifikasi</h3>
-            {marketingQueue.slice(0, 4).length ? marketingQueue.slice(0, 4).map(item => <button type="button" key={item.id} onClick={() => {setExpandedId(item.id); setFilter('Review')}}>
+            {marketingQueue.slice(0, 4).length ? marketingQueue.slice(0, 4).map(item => <button type="button" key={item.id} onClick={() => goToView('verifikasi', item.id, 'Review')}>
               <span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id}</small></span>
               <strong>{rupiah(item.form.amount)}</strong>
             </button>) : <p>Belum ada antrean verifikasi marketing.</p>}
@@ -431,7 +433,7 @@ export default function CreditApplicationsPage() {
             <h3>Pembayaran Perlu Dicek</h3>
             {duePayments.slice(0, 4).length ? duePayments.slice(0, 4).map(item => {
               const due = firstUnpaidRow(item)
-              return <button type="button" key={item.id} onClick={() => {setExpandedId(item.id); setFilter('Disetujui')}}>
+              return <button type="button" key={item.id} onClick={() => goToView('verifikasi', item.id, 'Disetujui')}>
                 <span><b>{item.form.agentName || item.userName}</b><small>{due.label} · {due.due.toLocaleDateString('id-ID', {day: '2-digit', month: 'short'})}</small></span>
                 <strong>{rupiah(due.amount)}</strong>
               </button>
@@ -445,7 +447,7 @@ export default function CreditApplicationsPage() {
       {(isMarketing || isAdmin) && view === 'peminjam' && <section className="borrower-directory-panel">
         <header><div><span>DIREKTORI PEMINJAM</span><h2>{items.length} data peminjam tersimpan</h2><p>Marketing bisa cek semua peminjam, status verifikasi, skor kelengkapan data, dan progres angsuran tanpa membuka satu-satu dulu.</p></div></header>
         <div>
-          {borrowerRows.length ? borrowerRows.map(({item, pay, score}) => <button type="button" key={item.id} onClick={() => setExpandedId(item.id)}>
+          {borrowerRows.length ? borrowerRows.map(({item, pay, score}) => <button type="button" key={item.id} onClick={() => goToView('verifikasi', item.id, 'Semua')}>
             <span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id} · {item.status}</small></span>
             <em><i style={{width: `${score.percent}%`}}/></em>
             <strong>{pay.paid}/{pay.total} cicilan</strong>
@@ -495,10 +497,10 @@ export default function CreditApplicationsPage() {
           <li><b>Catat cicilan</b><small>Jika analis sudah ACC, marketing mencatat pembayaran cicilan yang masuk.</small></li>
         </ol>
       </section>}
-      <div className="panel-header">
+      {showMainList && <div className="panel-header">
         <div><h2>Pengajuan Masuk</h2><p>{isMarketing ? 'Tugas marketing: cek data agent, tanda tangan, atau tolak jika data tidak layak.' : isAnalis ? 'Tugas analis: cek hasil marketing, tanda tangan, lalu ACC atau tolak.' : 'Pantau seluruh alur pengajuan kredit agent dari satu panel.'}</p></div>
         <span className="review-role-badge">{isMarketing ? 'MARKETING' : isAnalis ? 'ANALIS' : 'ADMIN'}</span>
-      </div>
+      </div>}
       {showCreateArea && <section className={`credit-create-box ${view === 'input' ? 'focus' : ''}`}>
         <button type="button" className="credit-create-toggle" onClick={() => setShowCreate(value => !value)}><PlusCircle/>{showCreate ? 'Tutup Form Peminjaman' : 'Input Peminjaman'}</button>
         {manualMessage && <p>{manualMessage}</p>}
@@ -520,7 +522,7 @@ export default function CreditApplicationsPage() {
       </section>}
       {(isMarketing || isAdmin) && view === 'input' && <section className="marketing-input-history">
         <header><ClipboardCheck/><div><span>RIWAYAT INPUT MARKETING</span><h2>Data yang baru ditambahkan</h2><p>Supaya marketing bisa cepat cek ulang data input peminjaman tanpa masuk daftar besar.</p></div></header>
-        <div>{recentManual.length ? recentManual.map(item => <button type="button" key={item.id} onClick={() => {setExpandedId(item.id); setFilter('Review')}}>
+        <div>{recentManual.length ? recentManual.map(item => <button type="button" key={item.id} onClick={() => goToView('verifikasi', item.id, 'Review')}>
           <span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id} · {dateTime(item.createdAt)}</small></span>
           <strong>{rupiah(item.form.amount)}</strong>
         </button>) : <p>Belum ada input peminjaman dari marketing.</p>}</div>
