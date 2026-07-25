@@ -119,7 +119,7 @@ function SignatureStep({title, note, signed, icon: Icon}) {
 
 export default function CreditApplicationsPage() {
   const {user} = useAuth()
-  const [params] = useSearchParams()
+  const [params, setSearchParams] = useSearchParams()
   const canvasRef = useRef(null)
   const drawing = useRef(false)
   const [items, setItems] = useState(readAll)
@@ -135,6 +135,7 @@ export default function CreditApplicationsPage() {
   const isAnalis = user?.role === 'analis'
   const isAdmin = ['master', 'admin'].includes(user?.role)
   const view = params.get('view') || 'overview'
+  const goToView = nextView => setSearchParams(nextView ? {view: nextView} : {})
   const refresh = () => setItems(readAll())
   const refreshRemote = () => request('/agent-credit/applications').then(remote => {
     if (!Array.isArray(remote)) return
@@ -361,6 +362,11 @@ export default function CreditApplicationsPage() {
   const totalPaidAmount = items.reduce((sum, item) => sum + paymentSummary(item).totalPaid, 0)
   const remainingLoan = Math.max(0, totalLoan - totalPaidAmount)
   const recentManual = sortedItems.filter(item => item.source === 'marketing').slice(0, 5)
+  const incompleteData = sortedItems.filter(item => !finalStatus.includes(item.status) && dataScore(item).percent < 100)
+  const paymentToday = approvedActive.filter(item => {
+    const next = firstUnpaidRow(item)
+    return next && next.due.toDateString() === new Date().toDateString()
+  })
   const showCreateArea = (isMarketing || isAdmin) && ['overview', 'input'].includes(view)
   const showMainList = !['input', 'laporan', 'panduan'].includes(view)
   const exportReport = () => {
@@ -402,10 +408,16 @@ export default function CreditApplicationsPage() {
       </section>
       {(isMarketing || isAdmin) && view === 'overview' && <section className="marketing-workspace">
         <header>
-          <div><span>MEJA KERJA MARKETING</span><h2>Kontrol Verifikasi & Cicilan</h2><p>Marketing bisa input peminjaman, cek kelengkapan data, tanda tangan verifikasi, dan mencatat cicilan yang masuk.</p></div>
+          <div><span>MEJA KERJA MARKETING</span><h2>Kontrol Verifikasi & Cicilan</h2><p>Kerjakan yang paling penting dulu. Setiap tombol di bawah langsung membuka daftar yang sesuai, jadi marketing tidak perlu mencari manual.</p></div>
         </header>
         <div className="marketing-task-grid">
           {marketingCards.map(({title, value, note, icon: Icon}) => <article key={title}><i><Icon/></i><span>{title}</span><strong>{value}</strong><small>{note}</small></article>)}
+        </div>
+        <div className="marketing-quick-actions" aria-label="Aksi cepat marketing">
+          <button type="button" className="primary" onClick={() => goToView('verifikasi')}><ClipboardCheck/><span><b>Mulai verifikasi</b><small>{marketingQueue.length ? `${marketingQueue.length} pengajuan menunggu` : 'Antrean sedang kosong'}</small></span><strong>→</strong></button>
+          <button type="button" onClick={() => goToView('input')}><PlusCircle/><span><b>Input peminjaman</b><small>Tambah data agent baru</small></span><strong>→</strong></button>
+          <button type="button" onClick={() => goToView('angsuran')}><Banknote/><span><b>Cek angsuran</b><small>{paymentToday.length ? `${paymentToday.length} jatuh tempo hari ini` : `${approvedActive.length} pinjaman aktif`}</small></span><strong>→</strong></button>
+          <button type="button" onClick={() => goToView('peminjam')}><UserCheck/><span><b>Direktori peminjam</b><small>{incompleteData.length ? `${incompleteData.length} data belum lengkap` : 'Semua data lengkap'}</small></span><strong>→</strong></button>
         </div>
         <div className="marketing-focus-grid">
           <div>
