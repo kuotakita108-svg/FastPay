@@ -41,6 +41,7 @@ export default function Sidebar({open, onClose}) {
   const roleLabel = role === 'master' ? 'Master Account' : role === 'marketing' ? 'Marketing Kredit' : role === 'analis' ? 'Analis Kredit' : 'Panel Administrator'
   const current = `${location.pathname}${location.search}`
   const active = to => current === to || (!to.includes('?') && location.pathname === to && !location.search)
+  const activeLabel = visibleNavigation.flatMap(group => group.items).find(item => active(item.to))?.label || 'Ringkasan Kredit'
 
   return <aside className={`sidebar ${open ? 'open' : ''}`}>
     <NavLink className="brand" to={home} onClick={onClose}><span><Zap size={20}/></span>KuotaKita</NavLink>
@@ -48,6 +49,7 @@ export default function Sidebar({open, onClose}) {
       <span>MODE MARKETING</span>
       <strong>Kelola pinjaman agent</strong>
       <small>Input, verifikasi, cicilan, dan laporan dari satu tempat.</small>
+      <em>Bagian aktif: {activeLabel}</em>
     </div>}
     <nav>{visibleNavigation.map(group => <div key={group.section}>
       <p className="nav-label">{group.section}</p>
