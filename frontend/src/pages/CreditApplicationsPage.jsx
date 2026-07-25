@@ -563,7 +563,7 @@ export default function CreditApplicationsPage() {
               <div><span>{item.id}</span><h3>{item.form.agentName || item.userName}</h3><p>{item.form.storeName} · {item.form.whatsapp}</p></div>
               <b>{rupiah(item.form.amount)}</b>
             </header>
-            {expanded && <div className="credit-review-grid">
+            {!isDetail && expanded && <div className="credit-review-grid">
               <span><small>NIK</small><strong>{item.form.nik}</strong></span>
               <span><small>Transaksi/Bulan</small><strong>{item.form.monthlyTransactions}</strong></span>
               <span><small>Status</small><strong>{item.status}</strong></span>
@@ -575,7 +575,7 @@ export default function CreditApplicationsPage() {
               <em><i style={{width: `${pay.percent}%`}}/></em>
             </div>}
             {!isDetail && expanded && <p className="credit-review-address">{item.form.homeAddress}</p>}
-            {expanded && <div className="credit-review-signatures">
+            {!isDetail && expanded && <div className="credit-review-signatures">
               <SignatureStep title="Agent" note="Ditandatangani saat pengajuan dikirim" signed={{name: item.form.agentName || item.userName || 'Agent', at: item.createdAt}} icon={PenLine}/>
               <SignatureStep title="Marketing" note="Menunggu tanda tangan marketing" signed={item.marketingSignature} icon={UserCheck}/>
               <SignatureStep title="Analis" note="Menunggu tanda tangan analis" signed={item.analisSignature} icon={Stamp}/>
@@ -599,6 +599,10 @@ export default function CreditApplicationsPage() {
                   <span><dt>Nama Toko</dt><dd>{item.form.storeName}</dd></span>
                   <span><dt>Nomor WA</dt><dd>{item.form.whatsapp}</dd></span>
                   <span><dt>Email</dt><dd>{item.form.email || '-'}</dd></span>
+                  <span><dt>NIK</dt><dd>{item.form.nik || '-'}</dd></span>
+                  <span><dt>Transaksi/Bulan</dt><dd>{item.form.monthlyTransactions || '-'}</dd></span>
+                  <span><dt>Status Pengajuan</dt><dd>{item.status}</dd></span>
+                  <span><dt>Dokumen</dt><dd>{Object.values(item.documents || {}).length} foto terunggah</dd></span>
                   <span><dt>Alamat Toko</dt><dd>{item.form.storeAddress}</dd></span>
                   <span><dt>Keluarga</dt><dd>{item.form.familyName} · {item.form.familyRelation} · {item.form.familyWhatsapp}</dd></span>
                 </dl>
