@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react'
 import {useSearchParams} from 'react-router-dom'
-import {AlertCircle, ArrowRight, Banknote, CalendarDays, Check, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, Filter, Landmark, PenLine, PhoneCall, PlusCircle, QrCode, Search, ShieldCheck, Stamp, Trash2, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
+import {AlertCircle, ArrowRight, Banknote, BarChart3, CalendarDays, Check, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, Filter, Landmark, PenLine, PhoneCall, PlusCircle, QrCode, Search, ShieldCheck, Stamp, Trash2, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
 import {QRCodeSVG} from 'qrcode.react'
 import PageHeader from '../components/common/PageHeader'
 import {useAuth} from '../context/AuthContext'
@@ -397,7 +397,7 @@ export default function CreditApplicationsPage() {
     const next = firstUnpaidRow(item)
     return next && next.due.toDateString() === new Date().toDateString()
   })
-  const showCreateArea = (isMarketing || isAdmin) && ['overview', 'input'].includes(view)
+  const showCreateArea = (isMarketing || isAdmin) && view === 'input'
   // Setiap menu punya satu tujuan: daftar detail hanya muncul di Antrean Verifikasi.
   // Ringkasan, Direktori Peminjam, dan Angsuran memakai panel khusus masing-masing.
   const showMainList = view === 'verifikasi' || isStandaloneDetail
@@ -445,12 +445,14 @@ export default function CreditApplicationsPage() {
         <div className="marketing-task-grid">
           {marketingCards.map(({title, value, note, icon: Icon}) => <article key={title}><i><Icon/></i><span>{title}</span><strong>{value}</strong><small>{note}</small></article>)}
         </div>
+        <div className="marketing-section-label"><span>AKSI UTAMA</span><small>Pilih pekerjaan yang ingin diselesaikan sekarang</small></div>
         <div className="marketing-quick-actions" aria-label="Aksi cepat marketing">
           <button type="button" className="primary" onClick={() => goToView('verifikasi')}><ClipboardCheck/><span><b>Mulai verifikasi</b><small>{marketingQueue.length ? `${marketingQueue.length} pengajuan menunggu` : 'Antrean sedang kosong'}</small></span><strong>→</strong></button>
-          <button type="button" onClick={() => goToView('input')}><PlusCircle/><span><b>Input peminjaman</b><small>Tambah data agent baru</small></span><strong>→</strong></button>
           <button type="button" onClick={() => goToView('angsuran')}><Banknote/><span><b>Cek angsuran</b><small>{paymentToday.length ? `${paymentToday.length} jatuh tempo hari ini` : `${approvedActive.length} pinjaman aktif`}</small></span><strong>→</strong></button>
           <button type="button" onClick={() => goToView('peminjam')}><UserCheck/><span><b>Direktori peminjam</b><small>{incompleteData.length ? `${incompleteData.length} data belum lengkap` : 'Semua data lengkap'}</small></span><strong>→</strong></button>
+          <button type="button" onClick={() => goToView('laporan')}><BarChart3/><span><b>Lihat laporan</b><small>Rekap pinjaman dan pembayaran</small></span><strong>→</strong></button>
         </div>
+        <div className="marketing-section-label focus-label"><span>PEKERJAAN TERDEKAT</span><small>Daftar yang membutuhkan perhatian lebih dulu</small></div>
         <div className="marketing-focus-grid">
           <div>
             <h3>Antrean Verifikasi</h3>
