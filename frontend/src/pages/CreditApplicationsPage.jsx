@@ -135,6 +135,7 @@ export default function CreditApplicationsPage() {
   const isAnalis = user?.role === 'analis'
   const isAdmin = ['master', 'admin'].includes(user?.role)
   const view = params.get('view') || 'overview'
+  const isDetail = view === 'detail'
   const goToView = (nextView, id = '', nextFilter = '') => setSearchParams(nextView ? {view: nextView, ...(id ? {id} : {}), ...(nextFilter ? {filter: nextFilter} : {})} : {})
   const refresh = () => setItems(readAll())
   const refreshRemote = () => request('/agent-credit/applications').then(remote => {
@@ -401,8 +402,8 @@ export default function CreditApplicationsPage() {
   }
 
   return <>
-    <PageHeader eyebrow="Pihak Atas" title="Review Kredit Saldo Agent" description="Marketing verifikasi dan tanda tangan dulu, lalu analis memberi keputusan akhir."/>
-    <section className="panel credit-review-panel">
+    {!isDetail && <PageHeader eyebrow="Pihak Atas" title="Review Kredit Saldo Agent" description="Marketing verifikasi dan tanda tangan dulu, lalu analis memberi keputusan akhir."/>}
+    <section className={`panel credit-review-panel ${isDetail ? 'detail-mode' : ''}`}>
       <div className="credit-review-hero">
         <div>
           <span>RUANG DATA PEMINJAM</span>
@@ -568,12 +569,12 @@ export default function CreditApplicationsPage() {
               <span><small>Status</small><strong>{item.status}</strong></span>
               <span><small>Dokumen</small><strong>{Object.values(item.documents || {}).length} foto</strong></span>
             </div>}
-            {expanded && <div className="credit-payment-summary">
+            {!isDetail && expanded && <div className="credit-payment-summary">
               <div><CreditCard/><span><b>{item.paymentStatus || `${pay.paid}/${pay.total} cicilan`}</b><small>{rupiah(pay.totalPaid)} sudah dibayar</small></span></div>
               <strong>{pay.percent}%</strong>
               <em><i style={{width: `${pay.percent}%`}}/></em>
             </div>}
-            {expanded && <p className="credit-review-address">{item.form.homeAddress}</p>}
+            {!isDetail && expanded && <p className="credit-review-address">{item.form.homeAddress}</p>}
             {expanded && <div className="credit-review-signatures">
               <SignatureStep title="Agent" note="Ditandatangani saat pengajuan dikirim" signed={{name: item.form.agentName || item.userName || 'Agent', at: item.createdAt}} icon={PenLine}/>
               <SignatureStep title="Marketing" note="Menunggu tanda tangan marketing" signed={item.marketingSignature} icon={UserCheck}/>
@@ -602,15 +603,15 @@ export default function CreditApplicationsPage() {
                   <span><dt>Keluarga</dt><dd>{item.form.familyName} · {item.form.familyRelation} · {item.form.familyWhatsapp}</dd></span>
                 </dl>
               </div>
-              <div className="credit-detail-block marketing-checklist">
+              {!isDetail && <div className="credit-detail-block marketing-checklist">
                 <h4>Checklist Marketing</h4>
                 <div className="data-score"><strong>{score.percent}%</strong><span><i style={{width: `${score.percent}%`}}/></span></div>
                 <ul>
                   {score.checks.map(check => <li className={check.ok ? 'ok' : ''} key={check.label}>{check.ok ? <CheckCircle2/> : <AlertCircle/>}<span>{check.label}</span></li>)}
                 </ul>
                 <a href={`https://wa.me/${String(item.form.whatsapp || '').replace(/\D/g, '').replace(/^0/, '62')}`} target="_blank" rel="noreferrer"><PhoneCall/>Hubungi via WhatsApp</a>
-              </div>
-              <div className="credit-detail-block">
+              </div>}
+              {!isDetail && <div className="credit-detail-block">
                 <h4>Jalur Pembayaran</h4>
                 <div className="credit-payment-list">
                   {paymentRows(item).map(row => <article className={row.paid ? 'paid' : ''} key={row.key}>
@@ -620,7 +621,7 @@ export default function CreditApplicationsPage() {
                     {(isMarketing || isAdmin) && item.status === 'Disetujui' && <button type="button" disabled={Boolean(row.paid)} onClick={() => markPayment(item, row)}><Banknote/>{row.paid ? 'Lunas' : 'Catat Bayar'}</button>}
                   </article>)}
                 </div>
-              </div>
+              </div>}
             </section>}
           </article>
         })}
