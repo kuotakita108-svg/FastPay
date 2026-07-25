@@ -54,7 +54,7 @@ export default function Sidebar({open, onClose}) {
     <nav>{visibleNavigation.map(group => <div key={group.section}>
       <p className="nav-label">{group.section}</p>
       {group.items.map(({to, label, icon: Icon, badge}) => <NavLink className={`nav-item nav-${label.toLowerCase().replace(/[^a-z]+/g, '-')} ${active(to) ? 'active' : ''}`} to={to} key={to} onClick={onClose}>
-        <Icon size={18}/><span>{label}</span>{badge && <b>{badge}</b>}
+        <Icon size={18}/><span>{label}</span>{active(to) && <b className="nav-current">AKTIF</b>}{badge && <b>{badge}</b>}
       </NavLink>)}
     </div>)}</nav>
     <div className="sidebar-bottom">
