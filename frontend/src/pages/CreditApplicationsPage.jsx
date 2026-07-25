@@ -1,6 +1,7 @@
 import {useEffect, useRef, useState} from 'react'
 import {useSearchParams} from 'react-router-dom'
-import {AlertCircle, Banknote, CalendarDays, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, Filter, PenLine, PhoneCall, PlusCircle, Search, ShieldCheck, Stamp, Trash2, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
+import {AlertCircle, ArrowRight, Banknote, CalendarDays, Check, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, Filter, Landmark, PenLine, PhoneCall, PlusCircle, QrCode, Search, ShieldCheck, Stamp, Trash2, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
+import {QRCodeSVG} from 'qrcode.react'
 import PageHeader from '../components/common/PageHeader'
 import {useAuth} from '../context/AuthContext'
 import {rupiah} from '../utils/currency'
@@ -131,11 +132,15 @@ export default function CreditApplicationsPage() {
   const [showCreate, setShowCreate] = useState(false)
   const [manualForm, setManualForm] = useState(manualInitial)
   const [manualMessage, setManualMessage] = useState('')
+  const [paymentTarget, setPaymentTarget] = useState(null)
+  const [paymentMethod, setPaymentMethod] = useState('')
   const isMarketing = user?.role === 'marketing'
   const isAnalis = user?.role === 'analis'
   const isAdmin = ['master', 'admin'].includes(user?.role)
   const view = params.get('view') || 'overview'
   const isDetail = view === 'detail'
+  const isInstallmentDetail = view === 'angsuran-detail'
+  const isStandaloneDetail = isDetail || isInstallmentDetail
   const goToView = (nextView, id = '', nextFilter = '') => setSearchParams(nextView ? {view: nextView, ...(id ? {id} : {}), ...(nextFilter ? {filter: nextFilter} : {})} : {})
   const refresh = () => setItems(readAll())
   const refreshRemote = () => request('/agent-credit/applications').then(remote => {
@@ -184,6 +189,14 @@ export default function CreditApplicationsPage() {
     if (view === 'detail') {
       setShowCreate(false)
       setFilter(params.get('filter') || 'Semua')
+      setExpandedId(params.get('id') || '')
+      setQuery('')
+      window.scrollTo({top: 0, behavior: 'smooth'})
+      return
+    }
+    if (view === 'angsuran-detail') {
+      setShowCreate(false)
+      setFilter('Disetujui')
       setExpandedId(params.get('id') || '')
       setQuery('')
       window.scrollTo({top: 0, behavior: 'smooth'})
@@ -284,6 +297,8 @@ export default function CreditApplicationsPage() {
     const paymentStatus = repayments.length >= paymentSteps.length ? 'Lunas' : `Terbayar ${repayments.length}/${paymentSteps.length}`
     saveApplication(item, {repayments, paymentStatus})
     refresh()
+    setPaymentTarget(null)
+    setPaymentMethod('')
   }
   const openSignature = (item, role) => {
     setSignaturePad({item, role})
@@ -346,7 +361,7 @@ export default function CreditApplicationsPage() {
   }
   const sortedItems = [...items].sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
   const visibleItems = sortedItems.filter(item => {
-    const matchDetail = view !== 'detail' || item.id === params.get('id')
+    const matchDetail = !isStandaloneDetail || item.id === params.get('id')
     const text = `${item.id} ${item.form.agentName} ${item.userName} ${item.form.storeName} ${item.form.whatsapp} ${item.form.nik}`.toLowerCase()
     const matchQuery = text.includes(query.toLowerCase().trim())
     const group = statusGroup(item)
@@ -385,7 +400,7 @@ export default function CreditApplicationsPage() {
   const showCreateArea = (isMarketing || isAdmin) && ['overview', 'input'].includes(view)
   // Setiap menu punya satu tujuan: daftar detail hanya muncul di Antrean Verifikasi.
   // Ringkasan, Direktori Peminjam, dan Angsuran memakai panel khusus masing-masing.
-  const showMainList = view === 'verifikasi' || view === 'detail'
+  const showMainList = view === 'verifikasi' || isStandaloneDetail
   const exportReport = () => {
     const header = ['ID', 'Agent', 'Toko', 'WA', 'Status', 'Nominal', 'Terbayar', 'Sisa']
     const rows = sortedItems.map(item => {
@@ -402,8 +417,8 @@ export default function CreditApplicationsPage() {
   }
 
   return <>
-    {!isDetail && <PageHeader eyebrow="Pihak Atas" title="Review Kredit Saldo Agent" description="Marketing verifikasi dan tanda tangan dulu, lalu analis memberi keputusan akhir."/>}
-    <section className={`panel credit-review-panel ${isDetail ? 'detail-mode' : ''}`}>
+    {!isStandaloneDetail && <PageHeader eyebrow="Pihak Atas" title="Review Kredit Saldo Agent" description="Marketing verifikasi dan tanda tangan dulu, lalu analis memberi keputusan akhir."/>}
+    <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''}`}>
       <div className="credit-review-hero">
         <div>
           <span>RUANG DATA PEMINJAM</span>
@@ -474,7 +489,7 @@ export default function CreditApplicationsPage() {
         <header><Banknote/><div><span>FOKUS ANGSURAN</span><h2>{approvedActive.length} pinjaman aktif</h2><p>Lihat angsuran setiap peminjam, berapa cicilan sudah lunas, sisa tagihan, dan catat pembayaran dari detail.</p></div></header>
         <div className="quick-payment-list">
           {installmentRows.slice(0, 8).map(({item, pay, next}) => {
-            return <button type="button" key={item.id} onClick={() => goToView('detail', item.id, 'Disetujui')}>
+            return <button type="button" key={item.id} onClick={() => goToView('angsuran-detail', item.id, 'Disetujui')}>
               <span><b>{item.form.agentName || item.userName}</b><small>{pay.paid}/{pay.total} lunas · {next ? `${next.label} ${next.due.toLocaleDateString('id-ID', {day: '2-digit', month: 'short'})}` : 'semua lunas'}</small></span>
               <strong>{next ? rupiah(next.amount) : 'Lunas'}</strong>
             </button>
@@ -563,19 +578,19 @@ export default function CreditApplicationsPage() {
               <div><span>{item.id}</span><h3>{item.form.agentName || item.userName}</h3><p>{item.form.storeName} · {item.form.whatsapp}</p></div>
               <b>{rupiah(item.form.amount)}</b>
             </header>
-            {!isDetail && expanded && <div className="credit-review-grid">
+            {!isStandaloneDetail && expanded && <div className="credit-review-grid">
               <span><small>NIK</small><strong>{item.form.nik}</strong></span>
               <span><small>Transaksi/Bulan</small><strong>{item.form.monthlyTransactions}</strong></span>
               <span><small>Status</small><strong>{item.status}</strong></span>
               <span><small>Dokumen</small><strong>{Object.values(item.documents || {}).length} foto</strong></span>
             </div>}
-            {!isDetail && expanded && <div className="credit-payment-summary">
+            {!isStandaloneDetail && expanded && <div className="credit-payment-summary">
               <div><CreditCard/><span><b>{item.paymentStatus || `${pay.paid}/${pay.total} cicilan`}</b><small>{rupiah(pay.totalPaid)} sudah dibayar</small></span></div>
               <strong>{pay.percent}%</strong>
               <em><i style={{width: `${pay.percent}%`}}/></em>
             </div>}
-            {!isDetail && expanded && <p className="credit-review-address">{item.form.homeAddress}</p>}
-            {!isDetail && expanded && <div className="credit-review-signatures">
+            {!isStandaloneDetail && expanded && <p className="credit-review-address">{item.form.homeAddress}</p>}
+            {!isStandaloneDetail && expanded && <div className="credit-review-signatures">
               <SignatureStep title="Agent" note="Ditandatangani saat pengajuan dikirim" signed={{name: item.form.agentName || item.userName || 'Agent', at: item.createdAt}} icon={PenLine}/>
               <SignatureStep title="Marketing" note="Menunggu tanda tangan marketing" signed={item.marketingSignature} icon={UserCheck}/>
               <SignatureStep title="Analis" note="Menunggu tanda tangan analis" signed={item.analisSignature} icon={Stamp}/>
@@ -607,7 +622,7 @@ export default function CreditApplicationsPage() {
                   <span><dt>Keluarga</dt><dd>{item.form.familyName} · {item.form.familyRelation} · {item.form.familyWhatsapp}</dd></span>
                 </dl>
               </div>
-              {!isDetail && <div className="credit-detail-block marketing-checklist">
+              {!isStandaloneDetail && <div className="credit-detail-block marketing-checklist">
                 <h4>Checklist Marketing</h4>
                 <div className="data-score"><strong>{score.percent}%</strong><span><i style={{width: `${score.percent}%`}}/></span></div>
                 <ul>
@@ -615,14 +630,14 @@ export default function CreditApplicationsPage() {
                 </ul>
                 <a href={`https://wa.me/${String(item.form.whatsapp || '').replace(/\D/g, '').replace(/^0/, '62')}`} target="_blank" rel="noreferrer"><PhoneCall/>Hubungi via WhatsApp</a>
               </div>}
-              {!isDetail && <div className="credit-detail-block">
+              {isInstallmentDetail && <div className="credit-detail-block installment-detail-block">
                 <h4>Jalur Pembayaran</h4>
                 <div className="credit-payment-list">
                   {paymentRows(item).map(row => <article className={row.paid ? 'paid' : ''} key={row.key}>
                     <i>{row.paid ? <CheckCircle2/> : <CalendarDays/>}</i>
                     <span><b>{row.label}</b><small>Jatuh tempo {row.due.toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'})}{row.paid ? ` · lunas ${dateTime(row.paid.paidAt)}` : ''}</small></span>
                     <strong>{rupiah(row.amount)}</strong>
-                    {(isMarketing || isAdmin) && item.status === 'Disetujui' && <button type="button" disabled={Boolean(row.paid)} onClick={() => markPayment(item, row)}><Banknote/>{row.paid ? 'Lunas' : 'Catat Bayar'}</button>}
+                    {(isMarketing || isAdmin) && item.status === 'Disetujui' && <button type="button" disabled={Boolean(row.paid)} onClick={() => {setPaymentTarget({item, row}); setPaymentMethod('')}}><Banknote/>{row.paid ? 'Lunas' : 'Bayar Angsuran'}</button>}
                   </article>)}
                 </div>
               </div>}
@@ -631,6 +646,19 @@ export default function CreditApplicationsPage() {
         })}
       </div>}</>}
     </section>
+    {paymentTarget && <section className="review-payment-backdrop" aria-label="Bayar angsuran">
+      <div className="review-payment-sheet">
+        <header><div><span>BAYAR ANGSURAN</span><h2>{paymentTarget.row.label}</h2><p>{paymentTarget.item.form.agentName || paymentTarget.item.userName}</p></div><button type="button" onClick={() => setPaymentTarget(null)} aria-label="Tutup"><X/></button></header>
+        <div className="review-payment-amount"><small>Total yang harus dibayar</small><strong>{rupiah(paymentTarget.row.amount)}</strong></div>
+        <div className="review-payment-methods">
+          <button type="button" className={paymentMethod === 'bank' ? 'active' : ''} onClick={() => setPaymentMethod('bank')}><Landmark/><span><b>Transfer Bank</b><small>BCA · 1234567890 a.n. KuotaKita</small></span>{paymentMethod === 'bank' && <Check/>}</button>
+          <button type="button" className={paymentMethod === 'qris' ? 'active' : ''} onClick={() => setPaymentMethod('qris')}><QrCode/><span><b>QRIS / Barcode</b><small>Nominal otomatis sesuai angsuran</small></span>{paymentMethod === 'qris' && <Check/>}</button>
+        </div>
+        {paymentMethod === 'bank' && <div className="review-bank-detail"><span>Transfer tepat sebesar</span><strong>{rupiah(paymentTarget.row.amount)}</strong><small>Kode referensi: {paymentTarget.row.key.toUpperCase()}</small></div>}
+        {paymentMethod === 'qris' && <div className="review-qr-detail"><QRCodeSVG value={`https://kuotakita-app.pages.dev/pay?ref=${encodeURIComponent(paymentTarget.row.key)}&amount=${paymentTarget.row.amount}`} size={210} level="H" includeMargin/><strong>{rupiah(paymentTarget.row.amount)}</strong><small>QR dibuat khusus untuk cicilan ini.</small></div>}
+        <button type="button" className="review-payment-confirm" disabled={!paymentMethod} onClick={() => markPayment(paymentTarget.item, paymentTarget.row)}>Konfirmasi Pembayaran <ArrowRight/></button>
+      </div>
+    </section>}
     {signaturePad && <section className="review-signature-backdrop" aria-label="Tanda tangan reviewer">
       <div className="review-signature-sheet">
         <header>
