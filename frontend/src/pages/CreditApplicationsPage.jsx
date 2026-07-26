@@ -67,6 +67,22 @@ const mergeDocuments = (remote = {}, local = {}) => {
     return [key, {...remoteFile, ...localFile, dataUrl: localFile.dataUrl || remoteFile.dataUrl || ''}]
   }))
 }
+const compressDocumentPreview = file => new Promise(resolve => {
+  const url = URL.createObjectURL(file)
+  const image = new Image()
+  image.onload = () => {
+    const max = 1200
+    const ratio = Math.min(1, max / Math.max(image.naturalWidth, image.naturalHeight))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * ratio))
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * ratio))
+    canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height)
+    URL.revokeObjectURL(url)
+    resolve(canvas.toDataURL('image/jpeg', .82))
+  }
+  image.onerror = () => { URL.revokeObjectURL(url); resolve('') }
+  image.src = url
+})
 
 function saveApplication(target, changes) {
   const next = {...target, ...changes, updatedAt: new Date().toISOString()}
@@ -346,6 +362,15 @@ export default function CreditApplicationsPage() {
     refresh()
     setPaymentTarget(null)
     setPaymentMethod('')
+  }
+  const replaceBorrowerDocument = async (item, key, event) => {
+    const file = event.target.files?.[0]
+    if (!file || !file.type.startsWith('image/')) return
+    const dataUrl = await compressDocumentPreview(file)
+    if (!dataUrl) return
+    const documents = {...(item.documents || {}), [key]: {name: file.name, dataUrl}}
+    saveApplication(item, {documents})
+    refresh()
   }
   const openSignature = (item, role) => {
     setSignaturePad({item, role})
@@ -683,7 +708,7 @@ export default function CreditApplicationsPage() {
               </div>
               {isStandaloneDetail && <div className="credit-detail-block borrower-document-gallery">
                 <h4>Dokumen Peminjam</h4>
-                <div>{Object.entries(item.documents || {}).map(([key, value]) => { const file = typeof value === 'string' ? {name: value} : value || {}; const title = manualDocumentTypes.find(doc => doc.key === key)?.label || key; return <figure key={key}>{file.dataUrl ? <img src={file.dataUrl} alt={title}/> : <i><Images/></i>}<figcaption><b>{title}</b><small>{file.name || 'Foto tersimpan'}</small></figcaption></figure> })}</div>
+                <div>{Object.entries(item.documents || {}).map(([key, value]) => { const file = typeof value === 'string' ? {name: value} : value || {}; const title = manualDocumentTypes.find(doc => doc.key === key)?.label || key; return <figure key={key}>{file.dataUrl ? <img src={file.dataUrl} alt={title}/> : <label className="missing-document"><Images/><b>Foto belum tersedia</b><small>Unggah ulang</small><input type="file" accept="image/*" onChange={event => replaceBorrowerDocument(item, key, event)}/></label>}<figcaption><b>{title}</b><small>{file.name || 'Dokumen tersimpan'}</small></figcaption></figure> })}</div>
               </div>}
               {!isStandaloneDetail && <div className="credit-detail-block marketing-checklist">
                 <h4>Checklist Marketing</h4>
