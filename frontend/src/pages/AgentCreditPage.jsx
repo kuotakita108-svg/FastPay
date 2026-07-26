@@ -122,6 +122,23 @@ function checkImageQuality(file, key) {
   })
 }
 
+const filePreviewData = file => new Promise(resolve => {
+  const url = URL.createObjectURL(file)
+  const image = new Image()
+  image.onload = () => {
+    const max = 1200
+    const ratio = Math.min(1, max / Math.max(image.naturalWidth, image.naturalHeight))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * ratio))
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * ratio))
+    canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height)
+    URL.revokeObjectURL(url)
+    resolve(canvas.toDataURL('image/jpeg', .8))
+  }
+  image.onerror = () => { URL.revokeObjectURL(url); resolve('') }
+  image.src = url
+})
+
 export default function AgentCreditPage() {
   const {user} = useAuth()
   const location = useLocation()
@@ -361,7 +378,7 @@ export default function AgentCreditPage() {
     setPaymentMethod('')
   }
   const copyPaymentReference = value => navigator.clipboard?.writeText(value)
-  const submit = event => {
+  const submit = async event => {
     event.preventDefault()
     const amount = Math.min(maxCredit, Math.max(50000, Number(form.amount || 0)))
     const documentValues = Object.values(files)
@@ -370,6 +387,7 @@ export default function AgentCreditPage() {
     if (badDocument) return setMessage(`${badDocument.name}: ${badDocument.error || 'Foto belum lolos pengecekan kualitas. Upload ulang dulu.'}`)
     if (!accepted) return setMessage('Centang persetujuan ketentuan pengajuan dulu.')
     if (!signed) return setMessage('Tanda tangan online wajib diisi.')
+    const documentEntries = await Promise.all(Object.entries(files).map(async ([key, file]) => [key, {name: file.file.name, dataUrl: await filePreviewData(file.file)}]))
     const application = {
       id: `KSA-${Date.now().toString().slice(-8)}`,
       status: 'Menunggu verifikasi marketing',
@@ -379,7 +397,7 @@ export default function AgentCreditPage() {
       userId: user?.id || 'guest',
       userName: user?.name || form.agentName,
       form: {...form, amount},
-      documents: Object.fromEntries(Object.entries(files).map(([key, file]) => [key, file.file.name])),
+      documents: Object.fromEntries(documentEntries),
     }
     setMessage('')
     persistApplication(application)
