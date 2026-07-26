@@ -388,6 +388,9 @@ export default function AgentCreditPage() {
     if (!accepted) return setMessage('Centang persetujuan ketentuan pengajuan dulu.')
     if (!signed) return setMessage('Tanda tangan online wajib diisi.')
     const documentEntries = await Promise.all(Object.entries(files).map(async ([key, file]) => [key, {name: file.file.name, dataUrl: await filePreviewData(file.file)}]))
+    if (documentEntries.some(([, document]) => !document.dataUrl)) {
+      return setMessage('Foto belum berhasil disimpan. Pilih ulang atau ambil ulang ketiga foto agar langsung terlihat saat dicek Marketing.')
+    }
     const application = {
       id: `KSA-${Date.now().toString().slice(-8)}`,
       status: 'Menunggu verifikasi marketing',

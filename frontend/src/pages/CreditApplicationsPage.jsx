@@ -709,7 +709,7 @@ export default function CreditApplicationsPage() {
               </div>
               {isDetail && <div className="credit-detail-block borrower-document-gallery">
                 <h4>Dokumen Peminjam</h4>
-                <div>{Object.entries(item.documents || {}).map(([key, value]) => { const file = typeof value === 'string' ? {name: value} : value || {}; const title = manualDocumentTypes.find(doc => doc.key === key)?.label || key; return <figure key={key}>{file.dataUrl ? <img src={file.dataUrl} alt={title}/> : <label className="missing-document"><Images/><b>Foto belum tersedia</b><small>Unggah ulang</small><input type="file" accept="image/*" onChange={event => replaceBorrowerDocument(item, key, event)}/></label>}<figcaption><b>{title}</b><small>{file.name || 'Dokumen tersimpan'}</small></figcaption></figure> })}</div>
+                <div>{Object.entries(item.documents || {}).map(([key, value]) => { const file = typeof value === 'string' ? {name: value} : value || {}; const title = manualDocumentTypes.find(doc => doc.key === key)?.label || key; const source = file.dataUrl || file.preview || ''; return <figure key={key}>{source ? <img src={source} alt={title}/> : <label className="missing-document"><Images/><b>Foto belum tersinkron</b><small>Pengajuan lama tanpa data foto</small></label>}<figcaption><b>{title}</b><small>{file.name || 'Dokumen tersimpan'}</small></figcaption></figure> })}</div>
               </div>}
               {!isStandaloneDetail && <div className="credit-detail-block marketing-checklist">
                 <h4>Checklist Marketing</h4>
