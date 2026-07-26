@@ -526,7 +526,7 @@ export default function CreditApplicationsPage() {
         <div className="marketing-task-grid">
           {marketingCards.map(({title, value, note, icon: Icon}) => <article key={title}><i><Icon/></i><span>{title}</span><strong>{value}</strong><small>{note}</small></article>)}
         </div>
-        <div className="marketing-section-label"><span>AKSI UTAMA</span><small>Pilih pekerjaan yang ingin diselesaikan sekarang</small></div>
+        <div className="overview-status-strip"><article><i><ClipboardCheck/></i><span><b>Verifikasi</b><small>{marketingQueue.length ? `${marketingQueue.length} pengajuan menunggu` : 'Antrean kosong'}</small></span><strong>{marketingQueue.length}</strong></article><article><i><Banknote/></i><span><b>Angsuran</b><small>{approvedActive.length ? `${approvedActive.length} pinjaman aktif` : 'Belum ada cicilan aktif'}</small></span><strong>{approvedActive.length}</strong></article><article><i><UserCheck/></i><span><b>Peminjam ACC</b><small>{summary.approved + summary.paid} data tersimpan</small></span><strong>{summary.approved + summary.paid}</strong></article></div>
         <div className="marketing-quick-actions" aria-label="Aksi cepat marketing">
           <button type="button" className="primary" onClick={() => goToView('verifikasi')}><ClipboardCheck/><span><b>Mulai verifikasi</b><small>{marketingQueue.length ? `${marketingQueue.length} pengajuan menunggu` : 'Antrean sedang kosong'}</small></span><strong>→</strong></button>
           <button type="button" onClick={() => goToView('angsuran')}><Banknote/><span><b>Cek angsuran</b><small>{paymentToday.length ? `${paymentToday.length} jatuh tempo hari ini` : `${approvedActive.length} pinjaman aktif`}</small></span><strong>→</strong></button>
