@@ -557,7 +557,7 @@ export default function CreditApplicationsPage() {
         <header><ClipboardCheck/><div><span>FOKUS VERIFIKASI</span><h2>{marketingQueue.length} pengajuan perlu dicek</h2><p>Data di bawah otomatis difilter ke status review. Buka detail untuk cek checklist, hubungi WA, lalu tanda tangan marketing.</p></div></header>
       </section>}
       {(isMarketing || isAdmin) && view === 'peminjam' && <section className="borrower-directory-panel">
-        <header><div><span>DIREKTORI PEMINJAM</span><h2>Data peminjam yang sudah ACC</h2><p>Hanya peminjam yang sudah disetujui dan masuk pemantauan marketing. Cari nama, toko, WA, atau ID untuk membuka detailnya.</p></div><strong className="directory-total">{approvedBorrowerRows.length}<small>ACC tersimpan</small></strong></header>
+        <header><div><span>DIREKTORI PEMINJAM</span><h2>Data peminjam diterima</h2><p>Hanya pengajuan yang sudah diterima dan sedang berjalan atau lunas. Data review dan ditolak tidak ditampilkan di sini.</p></div><strong className="directory-total">{approvedBorrowerRows.length}<small>Data diterima</small></strong></header>
         <div className="directory-stats">
           <article><b>{approvedBorrowerRows.length}</b><span>Total ACC</span></article><article><b>{summary.approved}</b><span>Aktif dipantau</span></article><article><b>{summary.paid}</b><span>Sudah lunas</span></article><article><b>{approvedBorrowerRows.filter(row => row.score.percent < 100).length}</b><span>Data perlu dilengkapi</span></article>
         </div>
