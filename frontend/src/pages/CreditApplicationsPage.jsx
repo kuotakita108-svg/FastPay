@@ -511,7 +511,7 @@ export default function CreditApplicationsPage() {
       {view === 'overview' && <div className="credit-review-stats">
         <article><span>Total Peminjam</span><strong>{summary.total}</strong><small>Seluruh pengajuan</small></article>
         <article><span>Butuh Review</span><strong>{summary.review}</strong><small>Menunggu pihak atas</small></article>
-        <article><span>Sudah ACC</span><strong>{summary.approved}</strong><small>Aktif dipantau</small></article>
+        <article><span>Sudah Diterima</span><strong>{summary.approved}</strong><small>Aktif dipantau</small></article>
         <article><span>Lunas</span><strong>{summary.paid}</strong><small>Pembayaran selesai</small></article>
       </div>}
       <section className={`credit-mode-panel view-${view}`}>
@@ -526,7 +526,6 @@ export default function CreditApplicationsPage() {
         <div className="marketing-task-grid">
           {marketingCards.map(({title, value, note, icon: Icon}) => <article key={title}><i><Icon/></i><span>{title}</span><strong>{value}</strong><small>{note}</small></article>)}
         </div>
-        <div className="overview-status-strip"><article><i><Stamp/></i><span><b>Menunggu Analis</b><small>{sortedItems.filter(item => ['Menunggu analis', 'Menunggu ACC analis'].includes(item.status)).length ? 'Perlu keputusan pihak atas' : 'Tidak ada antrean analis'}</small></span><strong>{sortedItems.filter(item => ['Menunggu analis', 'Menunggu ACC analis'].includes(item.status)).length}</strong></article><article><i><Banknote/></i><span><b>Angsuran</b><small>{approvedActive.length ? `${approvedActive.length} pinjaman aktif` : 'Belum ada cicilan aktif'}</small></span><strong>{approvedActive.length}</strong></article><article><i><UserCheck/></i><span><b>Pinjaman Diterima</b><small>{summary.approved + summary.paid} pengajuan sudah diterima</small></span><strong>{summary.approved + summary.paid}</strong></article></div>
         <div className="marketing-quick-actions" aria-label="Aksi cepat marketing">
           <button type="button" className="primary" onClick={() => goToView('verifikasi')}><ClipboardCheck/><span><b>Mulai verifikasi</b><small>{marketingQueue.length ? `${marketingQueue.length} pengajuan menunggu` : 'Antrean sedang kosong'}</small></span><strong>→</strong></button>
           <button type="button" onClick={() => goToView('angsuran')}><Banknote/><span><b>Cek angsuran</b><small>{paymentToday.length ? `${paymentToday.length} jatuh tempo hari ini` : `${approvedActive.length} pinjaman aktif`}</small></span><strong>→</strong></button>
