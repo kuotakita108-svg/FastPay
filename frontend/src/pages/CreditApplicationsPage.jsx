@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react'
 import {useSearchParams} from 'react-router-dom'
-import {AlertCircle, ArrowRight, Banknote, BarChart3, CalendarDays, Check, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, Filter, Landmark, PenLine, PhoneCall, PlusCircle, QrCode, Search, ShieldCheck, Stamp, Trash2, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
+import {AlertCircle, ArrowRight, Banknote, BarChart3, CalendarDays, Camera, Check, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, Filter, Images, Landmark, PenLine, PhoneCall, PlusCircle, QrCode, Search, ShieldCheck, Stamp, Trash2, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
 import {QRCodeSVG} from 'qrcode.react'
 import PageHeader from '../components/common/PageHeader'
 import {useAuth} from '../context/AuthContext'
@@ -31,6 +31,12 @@ const manualInitial = {
   familyRelation: '',
   familyWhatsapp: '',
 }
+const manualDocumentTypes = [
+  {key: 'ktp', label: 'Foto KTP', hint: 'KTP asli dan tidak buram'},
+  {key: 'store', label: 'Foto Toko', hint: 'Tampak depan toko/usaha'},
+  {key: 'selfie', label: 'Selfie Pegang KTP', hint: 'Wajah dan KTP terlihat jelas'},
+]
+const emptyManualDocuments = {ktp: null, store: null, selfie: null}
 
 const readAll = () => {
   const merged = new Map()
@@ -134,6 +140,7 @@ export default function CreditApplicationsPage() {
   const [showCreate, setShowCreate] = useState(false)
   const [manualForm, setManualForm] = useState(manualInitial)
   const [manualMessage, setManualMessage] = useState('')
+  const [manualDocuments, setManualDocuments] = useState(emptyManualDocuments)
   const [paymentTarget, setPaymentTarget] = useState(null)
   const [paymentMethod, setPaymentMethod] = useState('')
   const isMarketing = user?.role === 'marketing'
@@ -266,6 +273,7 @@ export default function CreditApplicationsPage() {
     if (!manualForm.agentName.trim() || !manualForm.storeName.trim() || !manualForm.whatsapp.trim() || !manualForm.amount) {
       return setManualMessage('Lengkapi nama agent, toko, WA, dan nominal pinjaman dulu.')
     }
+    if (manualDocumentTypes.some(doc => !manualDocuments[doc.key])) return setManualMessage('Lengkapi Foto KTP, Foto Toko, dan Selfie Pegang KTP dulu.')
     const amount = Math.min(5000000, Math.max(50000, Number(String(manualForm.amount).replace(/\D/g, '') || 0)))
     const application = {
       id: `KSA-${Date.now().toString().slice(-8)}`,
@@ -278,7 +286,7 @@ export default function CreditApplicationsPage() {
       userName: manualForm.agentName.trim(),
       paymentStatus: 'Belum ada pembayaran',
       form: {...manualForm, amount},
-      documents: {},
+      documents: Object.fromEntries(manualDocumentTypes.map(doc => [doc.key, manualDocuments[doc.key].name])),
       repayments: [],
       createdBy: {role: user.role, name: reviewerName(user), at: new Date().toISOString()},
     }
@@ -287,10 +295,19 @@ export default function CreditApplicationsPage() {
     localStorage.setItem(userKey(application.userId), JSON.stringify([application]))
     request('/me/agent-credit', {method: 'POST', body: JSON.stringify(application)}).catch(() => {})
     setManualForm(manualInitial)
+    setManualDocuments(emptyManualDocuments)
     setManualMessage('Peminjam berhasil ditambahkan. Marketing bisa verifikasi dan tanda tangan.')
     setShowCreate(false)
     setExpandedId(application.id)
     refresh()
+  }
+  const chooseManualDocument = (key, event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) return setManualMessage('Dokumen harus berupa foto/gambar.')
+    if (file.size > 8 * 1024 * 1024) return setManualMessage('Ukuran foto maksimal 8 MB.')
+    setManualDocuments(current => ({...current, [key]: file}))
+    setManualMessage('')
   }
   const updateManual = event => setManualForm({...manualForm, [event.target.name]: event.target.name === 'amount' ? event.target.value.replace(/\D/g, '').slice(0, 8) : event.target.value})
   const markPayment = (item, row) => {
@@ -559,6 +576,7 @@ export default function CreditApplicationsPage() {
           <label>WA Keluarga<input name="familyWhatsapp" value={manualForm.familyWhatsapp} onChange={updateManual} inputMode="tel" placeholder="08xxxxxxxxxx"/></label>
           <label className="wide">Alamat Rumah<textarea name="homeAddress" value={manualForm.homeAddress} onChange={updateManual} placeholder="Alamat rumah"/></label>
           <label className="wide">Alamat Toko<textarea name="storeAddress" value={manualForm.storeAddress} onChange={updateManual} placeholder="Alamat toko/usaha"/></label>
+          <fieldset className="marketing-document-upload wide"><legend>Dokumen Peminjam</legend><p>Upload foto dari kamera atau galeri. Pastikan foto jelas, tidak buram, dan tidak terpotong.</p><div>{manualDocumentTypes.map(doc => <article key={doc.key} className={manualDocuments[doc.key] ? 'uploaded' : ''}><i>{manualDocuments[doc.key] ? <CheckCircle2/> : <Camera/>}</i><span><b>{doc.label}</b><small>{manualDocuments[doc.key]?.name || doc.hint}</small></span><label><Camera/>Kamera<input type="file" accept="image/*" capture="environment" onChange={event => chooseManualDocument(doc.key, event)}/></label><label><Images/>Galeri<input type="file" accept="image/*" onChange={event => chooseManualDocument(doc.key, event)}/></label></article>)}</div></fieldset>
           <button type="submit"><PlusCircle/>Simpan Peminjam</button>
         </form>}
       </section>}
