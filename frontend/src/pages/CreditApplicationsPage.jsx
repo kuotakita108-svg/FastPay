@@ -458,6 +458,12 @@ export default function CreditApplicationsPage() {
     const text = `${item.form.agentName || item.userName} ${item.form.storeName} ${item.form.whatsapp} ${item.id}`.toLowerCase()
     return text.includes(borrowerQuery.toLowerCase().trim()) && (borrowerFilter === 'Semua' || statusGroup(item) === borrowerFilter)
   })
+  const directoryGroups = Object.values(directoryRows.reduce((groups, row) => {
+    const key = row.item.userId || row.item.userName || row.item.form.agentName || 'agent-tanpa-nama'
+    if (!groups[key]) groups[key] = {key, agent: row.item.userName || row.item.form.agentName || 'Agent KuotaKita', rows: []}
+    groups[key].rows.push(row)
+    return groups
+  }, {}))
   const installmentRows = borrowerRows.filter(row => row.item.status === 'Disetujui' || row.item.paymentStatus === 'Lunas')
   const installmentActive = installmentRows.filter(({item}) => item.paymentStatus !== 'Lunas')
   const installmentFinished = installmentRows.filter(({item}) => item.paymentStatus === 'Lunas')
@@ -562,6 +568,12 @@ export default function CreditApplicationsPage() {
           <article><b>{approvedBorrowerRows.length}</b><span>Total ACC</span></article><article><b>{summary.approved}</b><span>Aktif dipantau</span></article><article><b>{summary.paid}</b><span>Sudah lunas</span></article><article><b>{approvedBorrowerRows.filter(row => row.score.percent < 100).length}</b><span>Data perlu dilengkapi</span></article>
         </div>
         <div className="directory-tools"><label><Search/><input value={borrowerQuery} onChange={event => setBorrowerQuery(event.target.value)} placeholder="Cari nama, toko, WA, atau ID..."/></label><div>{['Semua', 'Disetujui', 'Lunas'].map(name => <button type="button" className={borrowerFilter === name ? 'active' : ''} onClick={() => setBorrowerFilter(name)} key={name}>{name}</button>)}</div></div>
+        <div className="directory-agent-list">
+          {directoryGroups.length ? directoryGroups.map(group => <details className="directory-agent" key={group.key}>
+            <summary><span><b>{group.agent}</b><small>{group.rows.length} peminjam diterima</small></span><strong>{rupiah(group.rows.reduce((sum, row) => sum + Number(row.item.form.amount || 0), 0))}</strong></summary>
+            <div className="directory-agent-borrowers">{group.rows.map(({item, pay, score}) => <article key={item.id}><span><b>{item.form.storeName || item.form.agentName || item.id}</b><small>{item.id} · {statusGroup(item) === 'Lunas' ? 'Lunas' : 'Sedang berjalan'}</small></span><em><i style={{width: `${score.percent}%`}}/></em><strong>{pay.paid}/{pay.total} cicilan</strong><small>{rupiah(item.form.amount)}</small><button type="button" onClick={() => goToView('detail', item.id, 'Semua')}><Eye/>Cek data</button></article>)}</div>
+          </details>) : <p>Data peminjam diterima belum ada.</p>}
+        </div>
         <div className="directory-list">
           {directoryRows.length ? directoryRows.map(({item, pay, score}) => <button type="button" key={item.id} onClick={() => goToView('verifikasi', item.id, 'Semua')}>
             <span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id} · {item.status}</small></span>
