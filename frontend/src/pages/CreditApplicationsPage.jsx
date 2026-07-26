@@ -127,6 +127,8 @@ export default function CreditApplicationsPage() {
   const [signaturePad, setSignaturePad] = useState(null)
   const [signatureDrawn, setSignatureDrawn] = useState(false)
   const [query, setQuery] = useState('')
+  const [borrowerQuery, setBorrowerQuery] = useState('')
+  const [borrowerFilter, setBorrowerFilter] = useState('Semua')
   const [filter, setFilter] = useState('Semua')
   const [expandedId, setExpandedId] = useState('')
   const [showCreate, setShowCreate] = useState(false)
@@ -381,6 +383,10 @@ export default function CreditApplicationsPage() {
     return next && next.due.getTime() <= Date.now() + 3 * 86400000
   })
   const borrowerRows = sortedItems.map(item => ({item, pay: paymentSummary(item), next: firstUnpaidRow(item), score: dataScore(item)}))
+  const directoryRows = borrowerRows.filter(({item}) => {
+    const text = `${item.form.agentName || item.userName} ${item.form.storeName} ${item.form.whatsapp} ${item.id}`.toLowerCase()
+    return text.includes(borrowerQuery.toLowerCase().trim()) && (borrowerFilter === 'Semua' || statusGroup(item) === borrowerFilter)
+  })
   const installmentRows = borrowerRows.filter(row => row.item.status === 'Disetujui' || row.item.paymentStatus === 'Lunas')
   const marketingCards = [
     {title: 'Perlu Verifikasi', value: marketingQueue.length, note: 'Belum TTD marketing', icon: ClipboardCheck},
@@ -477,14 +483,18 @@ export default function CreditApplicationsPage() {
         <header><ClipboardCheck/><div><span>FOKUS VERIFIKASI</span><h2>{marketingQueue.length} pengajuan perlu dicek</h2><p>Data di bawah otomatis difilter ke status review. Buka detail untuk cek checklist, hubungi WA, lalu tanda tangan marketing.</p></div></header>
       </section>}
       {(isMarketing || isAdmin) && view === 'peminjam' && <section className="borrower-directory-panel">
-        <header><div><span>DIREKTORI PEMINJAM</span><h2>{items.length} data peminjam tersimpan</h2><p>Marketing bisa cek semua peminjam, status verifikasi, skor kelengkapan data, dan progres angsuran tanpa membuka satu-satu dulu.</p></div></header>
-        <div>
-          {borrowerRows.length ? borrowerRows.map(({item, pay, score}) => <button type="button" key={item.id} onClick={() => goToView('verifikasi', item.id, 'Semua')}>
+        <header><div><span>DIREKTORI PEMINJAM</span><h2>Data peminjam tersusun rapi</h2><p>Cari berdasarkan nama, toko, WA, atau ID. Pilih status untuk melihat kelompok tertentu tanpa membuka semua data sekaligus.</p></div><strong className="directory-total">{items.length}<small>Total data</small></strong></header>
+        <div className="directory-stats">
+          <article><b>{summary.review}</b><span>Perlu review</span></article><article><b>{summary.approved}</b><span>Aktif / ACC</span></article><article><b>{summary.paid}</b><span>Sudah lunas</span></article><article><b>{incompleteData.length}</b><span>Data belum lengkap</span></article>
+        </div>
+        <div className="directory-tools"><label><Search/><input value={borrowerQuery} onChange={event => setBorrowerQuery(event.target.value)} placeholder="Cari nama, toko, WA, atau ID..."/></label><div>{['Semua', 'Review', 'Disetujui', 'Lunas', 'Ditolak'].map(name => <button type="button" className={borrowerFilter === name ? 'active' : ''} onClick={() => setBorrowerFilter(name)} key={name}>{name}</button>)}</div></div>
+        <div className="directory-list">
+          {directoryRows.length ? directoryRows.map(({item, pay, score}) => <button type="button" key={item.id} onClick={() => goToView('verifikasi', item.id, 'Semua')}>
             <span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id} · {item.status}</small></span>
             <em><i style={{width: `${score.percent}%`}}/></em>
             <strong>{pay.paid}/{pay.total} cicilan</strong>
             <small>{rupiah(item.form.amount)}</small>
-          </button>) : <p>Belum ada data peminjam.</p>}
+          </button>) : <p>Data peminjam tidak ditemukan.</p>}
         </div>
       </section>}
       {(isMarketing || isAdmin) && (view === 'pembayaran' || view === 'angsuran') && <section className="marketing-action-panel payment">
