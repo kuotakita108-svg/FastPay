@@ -141,6 +141,7 @@ export default function CreditApplicationsPage() {
   const [manualForm, setManualForm] = useState(manualInitial)
   const [manualMessage, setManualMessage] = useState('')
   const [manualDocuments, setManualDocuments] = useState(emptyManualDocuments)
+  const [manualDocumentChoice, setManualDocumentChoice] = useState('')
   const [paymentTarget, setPaymentTarget] = useState(null)
   const [paymentMethod, setPaymentMethod] = useState('')
   const isMarketing = user?.role === 'marketing'
@@ -576,10 +577,11 @@ export default function CreditApplicationsPage() {
           <label>WA Keluarga<input name="familyWhatsapp" value={manualForm.familyWhatsapp} onChange={updateManual} inputMode="tel" placeholder="08xxxxxxxxxx"/></label>
           <label className="wide">Alamat Rumah<textarea name="homeAddress" value={manualForm.homeAddress} onChange={updateManual} placeholder="Alamat rumah"/></label>
           <label className="wide">Alamat Toko<textarea name="storeAddress" value={manualForm.storeAddress} onChange={updateManual} placeholder="Alamat toko/usaha"/></label>
-          <fieldset className="marketing-document-upload wide"><legend>Dokumen Peminjam</legend><p>Upload foto dari kamera atau galeri. Pastikan foto jelas, tidak buram, dan tidak terpotong.</p><div>{manualDocumentTypes.map(doc => <article key={doc.key} className={manualDocuments[doc.key] ? 'uploaded' : ''}><i>{manualDocuments[doc.key] ? <CheckCircle2/> : <Camera/>}</i><span><b>{doc.label}</b><small>{manualDocuments[doc.key]?.name || doc.hint}</small></span><label><Camera/>Kamera<input type="file" accept="image/*" capture="environment" onChange={event => chooseManualDocument(doc.key, event)}/></label><label><Images/>Galeri<input type="file" accept="image/*" onChange={event => chooseManualDocument(doc.key, event)}/></label></article>)}</div></fieldset>
+          <fieldset className="marketing-document-upload wide"><legend>Dokumen Peminjam</legend><p>Klik kartu untuk mengambil foto dari kamera atau mengunggah file. Pastikan foto jelas dan tidak terpotong.</p><div>{manualDocumentTypes.map(doc => <article role="button" tabIndex="0" key={doc.key} className={manualDocuments[doc.key] ? 'uploaded' : ''} onClick={() => setManualDocumentChoice(doc.key)} onKeyDown={event => event.key === 'Enter' && setManualDocumentChoice(doc.key)}><i>{manualDocuments[doc.key] ? <CheckCircle2/> : <Camera/>}</i><span><b>{doc.label}</b><small>{manualDocuments[doc.key]?.name || doc.hint}</small></span><strong>{manualDocuments[doc.key] ? 'Siap dicek' : 'Klik untuk memilih'}</strong></article>)}</div></fieldset>
           <button type="submit"><PlusCircle/>Simpan Peminjam</button>
         </form>}
       </section>}
+      {showCreate && manualDocumentChoice && <section className="marketing-document-choice" onMouseDown={event => event.target === event.currentTarget && setManualDocumentChoice('')}><div><header><div><span>UPLOAD DOKUMEN</span><h3>{manualDocumentTypes.find(doc => doc.key === manualDocumentChoice)?.label}</h3><p>Pilih cara pengambilan dokumen.</p></div><button type="button" onClick={() => setManualDocumentChoice('')}><X/></button></header><div className="marketing-document-choice-actions"><label><Camera/><b>Ambil dari Kamera</b><small>Gunakan kamera perangkat</small><input type="file" accept="image/*" capture="environment" onChange={event => {chooseManualDocument(manualDocumentChoice, event); setManualDocumentChoice('')}}/></label><label><Images/><b>Unggah File</b><small>Pilih foto dari perangkat</small><input type="file" accept="image/*" onChange={event => {chooseManualDocument(manualDocumentChoice, event); setManualDocumentChoice('')}}/></label></div></div></section>}
       {(isMarketing || isAdmin) && view === 'input' && <section className="marketing-input-history">
         <header><ClipboardCheck/><div><span>RIWAYAT INPUT MARKETING</span><h2>Data yang baru ditambahkan</h2><p>Supaya marketing bisa cepat cek ulang data input peminjaman tanpa masuk daftar besar.</p></div></header>
         <div>{recentManual.length ? recentManual.map(item => <button type="button" key={item.id} onClick={() => goToView('verifikasi', item.id, 'Review')}>
