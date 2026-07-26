@@ -287,7 +287,7 @@ export default function CreditApplicationsPage() {
       userName: manualForm.agentName.trim(),
       paymentStatus: 'Belum ada pembayaran',
       form: {...manualForm, amount},
-      documents: Object.fromEntries(manualDocumentTypes.map(doc => [doc.key, manualDocuments[doc.key].name])),
+      documents: Object.fromEntries(manualDocumentTypes.map(doc => [doc.key, {name: manualDocuments[doc.key].name, dataUrl: manualDocuments[doc.key].dataUrl || ''}])),
       repayments: [],
       createdBy: {role: user.role, name: reviewerName(user), at: new Date().toISOString()},
     }
@@ -307,8 +307,22 @@ export default function CreditApplicationsPage() {
     if (!file) return
     if (!file.type.startsWith('image/')) return setManualMessage('Dokumen harus berupa foto/gambar.')
     if (file.size > 8 * 1024 * 1024) return setManualMessage('Ukuran foto maksimal 8 MB.')
-    setManualDocuments(current => ({...current, [key]: file}))
-    setManualMessage('')
+    const previewUrl = URL.createObjectURL(file)
+    const image = new Image()
+    image.onload = () => {
+      const max = 1200
+      const ratio = Math.min(1, max / Math.max(image.naturalWidth, image.naturalHeight))
+      const canvas = document.createElement('canvas')
+      canvas.width = Math.max(1, Math.round(image.naturalWidth * ratio))
+      canvas.height = Math.max(1, Math.round(image.naturalHeight * ratio))
+      canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height)
+      const dataUrl = canvas.toDataURL('image/jpeg', .82)
+      URL.revokeObjectURL(previewUrl)
+      setManualDocuments(current => ({...current, [key]: {name: file.name, dataUrl}}))
+      setManualMessage('')
+    }
+    image.onerror = () => { URL.revokeObjectURL(previewUrl); setManualDocuments(current => ({...current, [key]: {name: file.name}})); setManualMessage('') }
+    image.src = previewUrl
   }
   const updateManual = event => setManualForm({...manualForm, [event.target.name]: event.target.name === 'amount' ? event.target.value.replace(/\D/g, '').slice(0, 8) : event.target.value})
   const markPayment = (item, row) => {
@@ -654,6 +668,10 @@ export default function CreditApplicationsPage() {
                   <span><dt>Keluarga</dt><dd>{item.form.familyName} · {item.form.familyRelation} · {item.form.familyWhatsapp}</dd></span>
                 </dl>
               </div>
+              {isStandaloneDetail && <div className="credit-detail-block borrower-document-gallery">
+                <h4>Dokumen Peminjam</h4>
+                <div>{Object.entries(item.documents || {}).map(([key, value]) => { const file = typeof value === 'string' ? {name: value} : value || {}; const title = manualDocumentTypes.find(doc => doc.key === key)?.label || key; return <figure key={key}>{file.dataUrl ? <img src={file.dataUrl} alt={title}/> : <i><Images/></i>}<figcaption><b>{title}</b><small>{file.name || 'Foto tersimpan'}</small></figcaption></figure> })}</div>
+              </div>}
               {!isStandaloneDetail && <div className="credit-detail-block marketing-checklist">
                 <h4>Checklist Marketing</h4>
                 <div className="data-score"><strong>{score.percent}%</strong><span><i style={{width: `${score.percent}%`}}/></span></div>
