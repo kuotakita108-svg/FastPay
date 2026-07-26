@@ -494,7 +494,7 @@ export default function CreditApplicationsPage() {
   }
 
   return <>
-    {!isStandaloneDetail && <PageHeader eyebrow="Pihak Atas" title="Review Kredit Saldo Agent" description="Marketing verifikasi dan tanda tangan dulu, lalu analis memberi keputusan akhir."/>}
+    {!isStandaloneDetail && view === 'overview' && <PageHeader eyebrow="Pihak Atas" title="Review Kredit Saldo Agent" description="Marketing verifikasi dan tanda tangan dulu, lalu analis memberi keputusan akhir."/>}
     <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''}`}>
       {view === 'overview' && <div className="credit-review-hero">
         <div>
