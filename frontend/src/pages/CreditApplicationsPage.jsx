@@ -59,6 +59,15 @@ const readAll = () => {
   return list
 }
 
+const mergeDocuments = (remote = {}, local = {}) => {
+  const keys = new Set([...Object.keys(remote || {}), ...Object.keys(local || {})])
+  return Object.fromEntries([...keys].map(key => {
+    const remoteFile = typeof remote[key] === 'string' ? {name: remote[key]} : (remote[key] || {})
+    const localFile = typeof local[key] === 'string' ? {name: local[key]} : (local[key] || {})
+    return [key, {...remoteFile, ...localFile, dataUrl: localFile.dataUrl || remoteFile.dataUrl || ''}]
+  }))
+}
+
 function saveApplication(target, changes) {
   const next = {...target, ...changes, updatedAt: new Date().toISOString()}
   const all = readAll()
@@ -156,7 +165,11 @@ export default function CreditApplicationsPage() {
   const refreshRemote = () => request('/agent-credit/applications').then(remote => {
     if (!Array.isArray(remote)) return
     const local = readAll()
-    const merged = [...remote, ...local.filter(item => !remote.some(row => row.id === item.id))]
+    const localById = new Map(local.map(item => [item.id, item]))
+    const merged = remote.map(row => {
+      const localRow = localById.get(row.id)
+      return localRow ? {...row, ...localRow, documents: mergeDocuments(row.documents, localRow.documents)} : row
+    }).concat(local.filter(item => !remote.some(row => row.id === item.id)))
     localStorage.setItem(allKey, JSON.stringify(merged.slice(0, 50)))
     merged.forEach(item => {
       if (!item.userId) return
