@@ -459,6 +459,10 @@ export default function CreditApplicationsPage() {
     return text.includes(borrowerQuery.toLowerCase().trim()) && (borrowerFilter === 'Semua' || statusGroup(item) === borrowerFilter)
   })
   const installmentRows = borrowerRows.filter(row => row.item.status === 'Disetujui' || row.item.paymentStatus === 'Lunas')
+  const installmentActive = installmentRows.filter(({item}) => item.paymentStatus !== 'Lunas')
+  const installmentFinished = installmentRows.filter(({item}) => item.paymentStatus === 'Lunas')
+  const installmentPaidAmount = installmentRows.reduce((sum, {pay}) => sum + pay.totalPaid, 0)
+  const installmentRemainingAmount = installmentRows.reduce((sum, {item, pay}) => sum + Math.max(0, Number(item.form.amount || 0) - pay.totalPaid), 0)
   const marketingCards = [
     {title: 'Perlu Verifikasi', value: marketingQueue.length, note: 'Belum TTD marketing', icon: ClipboardCheck},
     {title: 'Tagihan Dekat', value: duePayments.length, note: 'Jatuh tempo <= 3 hari', icon: AlertCircle},
@@ -569,7 +573,8 @@ export default function CreditApplicationsPage() {
         </div>
       </section>}
       {(isMarketing || isAdmin) && (view === 'pembayaran' || view === 'angsuran') && <section className="marketing-action-panel payment">
-        <header><Banknote/><div><span>FOKUS ANGSURAN</span><h2>{approvedActive.length} pinjaman aktif</h2><p>Lihat angsuran setiap peminjam, berapa cicilan sudah lunas, sisa tagihan, dan catat pembayaran dari detail.</p></div></header>
+        <header><Banknote/><div><span>MONITOR PEMBAYARAN</span><h2>Angsuran &amp; Lunas</h2><p>Kelola cicilan peminjam yang sudah ACC. Buka satu kartu untuk melihat jadwal dan mencatat pembayaran.</p></div></header>
+        <div className="payment-overview-stats"><article><small>Pinjaman aktif</small><strong>{installmentActive.length}</strong><span>Masih punya cicilan</span></article><article><small>Sudah lunas</small><strong>{installmentFinished.length}</strong><span>Pembayaran selesai</span></article><article><small>Total diterima</small><strong>{rupiah(installmentPaidAmount)}</strong><span>Semua cicilan tercatat</span></article><article><small>Sisa tagihan</small><strong>{rupiah(installmentRemainingAmount)}</strong><span>Perlu dipantau</span></article></div>
         <div className="quick-payment-list">
           {installmentRows.slice(0, 8).map(({item, pay, next}) => {
             return <button type="button" key={item.id} onClick={() => goToView('angsuran-detail', item.id, 'Disetujui')}>
