@@ -453,7 +453,8 @@ export default function CreditApplicationsPage() {
     return next && next.due.getTime() <= Date.now() + 3 * 86400000
   })
   const borrowerRows = sortedItems.map(item => ({item, pay: paymentSummary(item), next: firstUnpaidRow(item), score: dataScore(item)}))
-  const directoryRows = borrowerRows.filter(({item}) => {
+  const approvedBorrowerRows = borrowerRows.filter(({item}) => ['Disetujui', 'Lunas'].includes(statusGroup(item)))
+  const directoryRows = approvedBorrowerRows.filter(({item}) => {
     const text = `${item.form.agentName || item.userName} ${item.form.storeName} ${item.form.whatsapp} ${item.id}`.toLowerCase()
     return text.includes(borrowerQuery.toLowerCase().trim()) && (borrowerFilter === 'Semua' || statusGroup(item) === borrowerFilter)
   })
@@ -553,11 +554,11 @@ export default function CreditApplicationsPage() {
         <header><ClipboardCheck/><div><span>FOKUS VERIFIKASI</span><h2>{marketingQueue.length} pengajuan perlu dicek</h2><p>Data di bawah otomatis difilter ke status review. Buka detail untuk cek checklist, hubungi WA, lalu tanda tangan marketing.</p></div></header>
       </section>}
       {(isMarketing || isAdmin) && view === 'peminjam' && <section className="borrower-directory-panel">
-        <header><div><span>DIREKTORI PEMINJAM</span><h2>Data peminjam tersusun rapi</h2><p>Cari berdasarkan nama, toko, WA, atau ID. Pilih status untuk melihat kelompok tertentu tanpa membuka semua data sekaligus.</p></div><strong className="directory-total">{items.length}<small>Total data</small></strong></header>
+        <header><div><span>DIREKTORI PEMINJAM</span><h2>Data peminjam yang sudah ACC</h2><p>Hanya peminjam yang sudah disetujui dan masuk pemantauan marketing. Cari nama, toko, WA, atau ID untuk membuka detailnya.</p></div><strong className="directory-total">{approvedBorrowerRows.length}<small>ACC tersimpan</small></strong></header>
         <div className="directory-stats">
-          <article><b>{summary.review}</b><span>Perlu review</span></article><article><b>{summary.approved}</b><span>Aktif / ACC</span></article><article><b>{summary.paid}</b><span>Sudah lunas</span></article><article><b>{incompleteData.length}</b><span>Data belum lengkap</span></article>
+          <article><b>{approvedBorrowerRows.length}</b><span>Total ACC</span></article><article><b>{summary.approved}</b><span>Aktif dipantau</span></article><article><b>{summary.paid}</b><span>Sudah lunas</span></article><article><b>{approvedBorrowerRows.filter(row => row.score.percent < 100).length}</b><span>Data perlu dilengkapi</span></article>
         </div>
-        <div className="directory-tools"><label><Search/><input value={borrowerQuery} onChange={event => setBorrowerQuery(event.target.value)} placeholder="Cari nama, toko, WA, atau ID..."/></label><div>{['Semua', 'Review', 'Disetujui', 'Lunas', 'Ditolak'].map(name => <button type="button" className={borrowerFilter === name ? 'active' : ''} onClick={() => setBorrowerFilter(name)} key={name}>{name}</button>)}</div></div>
+        <div className="directory-tools"><label><Search/><input value={borrowerQuery} onChange={event => setBorrowerQuery(event.target.value)} placeholder="Cari nama, toko, WA, atau ID..."/></label><div>{['Semua', 'Disetujui', 'Lunas'].map(name => <button type="button" className={borrowerFilter === name ? 'active' : ''} onClick={() => setBorrowerFilter(name)} key={name}>{name}</button>)}</div></div>
         <div className="directory-list">
           {directoryRows.length ? directoryRows.map(({item, pay, score}) => <button type="button" key={item.id} onClick={() => goToView('verifikasi', item.id, 'Semua')}>
             <span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id} · {item.status}</small></span>
@@ -706,7 +707,7 @@ export default function CreditApplicationsPage() {
                   <span><dt>Keluarga</dt><dd>{item.form.familyName} · {item.form.familyRelation} · {item.form.familyWhatsapp}</dd></span>
                 </dl>
               </div>
-              {isStandaloneDetail && <div className="credit-detail-block borrower-document-gallery">
+              {isDetail && <div className="credit-detail-block borrower-document-gallery">
                 <h4>Dokumen Peminjam</h4>
                 <div>{Object.entries(item.documents || {}).map(([key, value]) => { const file = typeof value === 'string' ? {name: value} : value || {}; const title = manualDocumentTypes.find(doc => doc.key === key)?.label || key; return <figure key={key}>{file.dataUrl ? <img src={file.dataUrl} alt={title}/> : <label className="missing-document"><Images/><b>Foto belum tersedia</b><small>Unggah ulang</small><input type="file" accept="image/*" onChange={event => replaceBorrowerDocument(item, key, event)}/></label>}<figcaption><b>{title}</b><small>{file.name || 'Dokumen tersimpan'}</small></figcaption></figure> })}</div>
               </div>}
