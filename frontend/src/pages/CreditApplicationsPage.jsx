@@ -425,20 +425,20 @@ export default function CreditApplicationsPage() {
   return <>
     {!isStandaloneDetail && <PageHeader eyebrow="Pihak Atas" title="Review Kredit Saldo Agent" description="Marketing verifikasi dan tanda tangan dulu, lalu analis memberi keputusan akhir."/>}
     <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''}`}>
-      <div className="credit-review-hero">
+      {view === 'overview' && <div className="credit-review-hero">
         <div>
           <span>RUANG DATA PEMINJAM</span>
           <h2>Monitoring Kredit Agent</h2>
           <p>Semua pengajuan tersusun rapi dari yang terbaru. Marketing, analis, dan admin bisa cek data agent, tanda tangan, keputusan, sampai pembayaran.</p>
         </div>
         <i><WalletCards/></i>
-      </div>
-      <div className="credit-review-stats">
+      </div>}
+      {view === 'overview' && <div className="credit-review-stats">
         <article><span>Total Peminjam</span><strong>{summary.total}</strong><small>Seluruh pengajuan</small></article>
         <article><span>Butuh Review</span><strong>{summary.review}</strong><small>Menunggu pihak atas</small></article>
         <article><span>Sudah ACC</span><strong>{summary.approved}</strong><small>Aktif dipantau</small></article>
         <article><span>Lunas</span><strong>{summary.paid}</strong><small>Pembayaran selesai</small></article>
-      </div>
+      </div>}
       <section className={`credit-mode-panel view-${view}`}>
         <span>{activeView.label}</span>
         <h2>{activeView.title}</h2>
