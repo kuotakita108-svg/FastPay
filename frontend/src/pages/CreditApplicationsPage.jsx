@@ -177,6 +177,7 @@ export default function CreditApplicationsPage() {
   const isInstallmentDetail = view === 'angsuran-detail'
   const isStandaloneDetail = isDetail || isInstallmentDetail
   const goToView = (nextView, id = '', nextFilter = '') => setSearchParams(nextView ? {view: nextView, ...(id ? {id} : {}), ...(nextFilter ? {filter: nextFilter} : {})} : {})
+  const closeDetailView = () => goToView(isInstallmentDetail ? 'angsuran' : isDetail ? 'peminjam' : 'verifikasi', '', filter)
   const refresh = () => setItems(readAll())
   const refreshRemote = () => request('/agent-credit/applications').then(remote => {
     if (!Array.isArray(remote)) return
@@ -697,9 +698,9 @@ export default function CreditApplicationsPage() {
               <SignatureStep title="Analis" note="Menunggu tanda tangan analis" signed={item.analisSignature} icon={Stamp}/>
             </div>}
             <footer>
-              {item.status === 'Disetujui' ? <><span className="approved"><CheckCircle2/>Sudah Diterima analis</span><button type="button" className="detail" onClick={() => expanded ? goToView('verifikasi', '', filter) : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : item.status === 'Ditolak' ? <><span className="rejected"><XCircle/>Ditolak</span><button type="button" className="detail" onClick={() => expanded ? goToView('verifikasi', '', filter) : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : <>
+              {item.status === 'Disetujui' ? <><span className="approved"><CheckCircle2/>Sudah Diterima analis</span><button type="button" className="detail" onClick={() => expanded ? closeDetailView() : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : item.status === 'Ditolak' ? <><span className="rejected"><XCircle/>Ditolak</span><button type="button" className="detail" onClick={() => expanded ? closeDetailView() : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : <>
                 <span><Clock3/>{item.status === 'Siap dikirim ke analis' ? 'Sudah TTD, siap dikirim ke analis' : marketingSigned ? 'Menunggu keputusan analis' : 'Menunggu verifikasi marketing'}</span>
-                <button type="button" className="detail" onClick={() => expanded ? goToView('verifikasi', '', filter) : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button>
+                <button type="button" className="detail" onClick={() => expanded ? closeDetailView() : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button>
                 {expanded && canMarketingSign && <button type="button" className="sign" onClick={() => openSignature(item, 'marketing')}><PenLine/>TTD Marketing</button>}
                 {expanded && marketingSigned && item.status === 'Siap dikirim ke analis' && (isMarketing || isAdmin) && <button type="button" className="approve" onClick={() => forwardToAnalis(item)}><CheckCircle2/>Verifikasi &amp; Kirim ke Analis</button>}
                 {expanded && canAnalisSign && <button type="button" className="sign" onClick={() => openSignature(item, 'analis')}><PenLine/>TTD Analis</button>}
