@@ -263,7 +263,7 @@ export default function AgentCreditPage() {
 
   useEffect(() => {
     if (!application || finalCreditStatus.includes(application.status)) return
-    if (application.marketingSignature || application.status === 'Menunggu verifikasi marketing' || application.status === 'Menunggu analis' || application.status === 'Menunggu ACC analis') return
+    if (application.marketingSignature || application.status === 'Menunggu verifikasi marketing' || application.status === 'Menunggu analis' || application.status === 'Menunggu keputusan analis') return
     if (now < Number(application.verifyUntil || 0)) return
     persistApplication({...application, status: 'Menunggu verifikasi marketing', queuedAt: application.queuedAt || new Date().toISOString(), updatedAt: new Date().toISOString()})
   }, [application, now])
@@ -442,7 +442,7 @@ export default function AgentCreditPage() {
     window.setTimeout(() => document.querySelector('.agent-registered-list')?.scrollIntoView({behavior: 'smooth', block: 'start'}), 60)
   }
   const applicationStatus = item => {
-    if (item.status === 'Disetujui') return {label: 'Sukses ACC', className: 'approved'}
+    if (item.status === 'Disetujui') return {label: 'Sukses Diterima', className: 'approved'}
     if (item.status === 'Ditolak') return {label: 'Ditolak', className: 'rejected'}
     return {label: 'Menunggu', className: 'waiting'}
   }
@@ -472,7 +472,7 @@ export default function AgentCreditPage() {
         <b>{currentRank.badge}</b>
       </header>
       <div className="rank-meter"><span style={{width: `${rankProgress}%`}}/></div>
-      <p><TrendingUp/> Pangkat naik otomatis setiap jumlah peminjam yang kamu daftarkan sudah disetujui pihak atas.</p>
+      <p><TrendingUp/> Pangkat naik otomatis setiap jumlah peminjam yang kamu daftarkan sudah diterima tim verifikasi.</p>
     </section>
     <div className="agent-credit-tabs" role="tablist" aria-label="Menu Kredit Agent">
       <button type="button" className={!showForm && !detailOpen ? 'active' : ''} onClick={backToApplications}><FileText/><span>Semua Peminjam<small>{applications.length} pengajuan tersimpan</small></span></button>
@@ -490,13 +490,13 @@ export default function AgentCreditPage() {
       <div className="agent-list-summary" aria-label="Ringkasan pengajuan">
         <div><strong>{applications.length}</strong><span>Total</span></div>
         <div><strong>{pendingApplications}</strong><span>Menunggu</span></div>
-        <div><strong>{approvedApplications}</strong><span>Disetujui</span></div>
+        <div><strong>{approvedApplications}</strong><span>Diterima</span></div>
         <div><strong>{rejectedApplications}</strong><span>Ditolak</span></div>
       </div>
       {applications.length > 0 && <div className="agent-list-tools">
         <label><Search/><input value={searchTerm} onChange={event => setSearchTerm(event.target.value)} placeholder="Cari nama, toko, nomor, atau ID..."/></label>
         <div className="agent-list-filters" role="tablist" aria-label="Filter status">
-          {['Semua', 'Menunggu', 'Disetujui', 'Ditolak'].map(filter => <button key={filter} type="button" className={statusFilter === filter ? 'active' : ''} onClick={() => setStatusFilter(filter)}>{filter}</button>)}
+          {['Semua', 'Menunggu', 'Disetujui', 'Ditolak'].map(filter => <button key={filter} type="button" className={statusFilter === filter ? 'active' : ''} onClick={() => setStatusFilter(filter)}>{filter === 'Disetujui' ? 'Diterima' : filter}</button>)}
         </div>
         <small>Menampilkan {filteredApplications.length} dari {applications.length} pengajuan</small>
       </div>}
@@ -519,19 +519,19 @@ export default function AgentCreditPage() {
     {detailOpen && application && <section className={`agent-verification ${approved ? 'approved' : ''} ${rejected ? 'rejected' : ''}`}>
       <i>{approved ? <Stamp/> : rejected ? <X/> : <Loader2/>}</i>
       <span>{approved ? 'PENGAJUAN DISETUJUI' : rejected ? 'PENGAJUAN DITOLAK' : waitingDecision ? 'MENUNGGU KEPUTUSAN' : 'MOHON MENUNGGU'}</span>
-      <h2>{approved ? 'Kredit saldo sudah ACC' : rejected ? 'Pengajuan belum disetujui' : waitingDecision ? 'Menunggu ACC pihak atas' : 'Data sedang diverifikasi pihak atas'}</h2>
-      <p>{approved ? 'Pengajuan agent kamu sudah disetujui. Limit kredit saldo siap diproses sesuai nominal yang diajukan.' : rejected ? 'Pihak atas menolak pengajuan ini. Periksa kembali data dan dokumen sebelum membuat pengajuan baru.' : waitingDecision ? 'Pemeriksaan awal sudah selesai. Status akan berubah sukses hanya jika pihak atas menekan ACC.' : 'Sistem sedang mengecek formulir, dokumen, kualitas foto, dan tanda tangan online. Status sukses hanya muncul setelah pihak atas ACC.'}</p>
+      <h2>{approved ? 'Kredit saldo sudah diterima' : rejected ? 'Pengajuan belum diterima' : waitingDecision ? 'Menunggu keputusan' : 'Data sedang diverifikasi'}</h2>
+      <p>{approved ? 'Pengajuan agent kamu sudah diterima. Limit kredit saldo siap diproses sesuai nominal yang diajukan.' : rejected ? 'Pengajuan ini ditolak tim verifikasi. Periksa kembali data dan dokumen sebelum membuat pengajuan baru.' : waitingDecision ? 'Pemeriksaan awal sudah selesai. Status akan berubah setelah keputusan akhir diberikan.' : 'Sistem sedang mengecek formulir, dokumen, kualitas foto, dan tanda tangan online.'}</p>
       <div className="verification-meta">
         <b>{application.id}</b>
         <strong>{rupiah(application.form.amount)}</strong>
       </div>
-      <div className="verification-timer"><Clock3/><strong>{approved ? 'ACC' : rejected ? 'TOLAK' : waitingDecision ? 'REVIEW' : `${minutes}:${seconds}`}</strong><small>{approved ? 'Disetujui pihak atas' : rejected ? 'Ditolak pihak atas' : waitingDecision ? 'Menunggu keputusan admin' : 'Estimasi pemeriksaan 5 menit'}</small></div>
+      <div className="verification-timer"><Clock3/><strong>{approved ? 'DITERIMA' : rejected ? 'DITOLAK' : waitingDecision ? 'REVIEW' : `${minutes}:${seconds}`}</strong><small>{approved ? 'Diterima tim verifikasi' : rejected ? 'Ditolak tim verifikasi' : waitingDecision ? 'Menunggu keputusan' : 'Estimasi pemeriksaan 5 menit'}</small></div>
       <div className="verification-progress"><span style={{width: `${approved ? 100 : progress}%`}}/></div>
       <ul className="verification-steps">
         <li className="done"><CheckCircle2/>Formulir agent diterima</li>
         <li className={progress >= 25 || approved ? 'done' : 'active'}>{progress >= 25 || approved ? <CheckCircle2/> : <Loader2/>}Validasi foto KTP, toko, dan selfie</li>
         <li className={progress >= 55 || approved ? 'done' : ''}>{progress >= 55 || approved ? <CheckCircle2/> : <Clock3/>}Pengecekan tanda tangan online</li>
-        <li className={approved ? 'done' : rejected ? 'rejected' : ''}>{approved ? <CheckCircle2/> : rejected ? <X/> : <Clock3/>}Keputusan analis pihak atas</li>
+        <li className={approved ? 'done' : rejected ? 'rejected' : ''}>{approved ? <CheckCircle2/> : rejected ? <X/> : <Clock3/>}Keputusan analis</li>
       </ul>
     </section>}
     {detailOpen && approved && <section className="agent-payment-lane">
@@ -595,7 +595,7 @@ export default function AgentCreditPage() {
         <label className="agent-check"><input type="checkbox" checked={accepted} onChange={event => setAccepted(event.target.checked)}/><span>Saya menyatakan data benar dan bersedia mengikuti ketentuan kredit saldo KuotaKita.</span></label>
       </section>
       <section className="agent-card">
-        <header><i><PenLine/></i><div><h2>Tanda Tangan Agent</h2><p>Cukup tanda tangan agent di sini. Marketing dan analis akan memeriksa lalu tanda tangan dari panel pihak atas.</p></div></header>
+        <header><i><PenLine/></i><div><h2>Tanda Tangan Agent</h2><p>Cukup tanda tangan agent di sini. Marketing dan analis akan memeriksa lalu menandatangani dari panel verifikasi.</p></div></header>
         <div className="signature-approval-grid">
           <div className="signature-party active">
             <strong>AGENT</strong>

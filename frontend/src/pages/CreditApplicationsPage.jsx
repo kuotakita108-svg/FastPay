@@ -121,10 +121,10 @@ const statusGroup = item => item.paymentStatus === 'Lunas' ? 'Lunas' : item.stat
 const firstUnpaidRow = item => paymentRows(item).find(row => !row.paid)
 const viewInfo = {
   overview: {label: 'Ringkasan Kredit', title: 'Dashboard kredit agent', desc: 'Pantau semua pengajuan, verifikasi, pembayaran, dan status peminjam dari satu halaman.'},
-  peminjam: {label: 'Data Peminjam', title: 'Seluruh peminjam agent', desc: 'Lihat semua peminjam, status ACC/tolak, nominal pinjaman, dan progres angsuran mereka.'},
+  peminjam: {label: 'Data Peminjam', title: 'Seluruh peminjam agent', desc: 'Lihat semua peminjam, status diterima/ditolak, nominal pinjaman, dan progres angsuran mereka.'},
   input: {label: 'Input Peminjaman', title: 'Tambah peminjaman baru', desc: 'Isi data agent yang mengajukan lewat marketing. Setelah disimpan, data masuk antrean verifikasi.'},
   verifikasi: {label: 'Antrean Verifikasi', title: 'Cek pengajuan yang belum diverifikasi', desc: 'Fokus ke data yang masih butuh cek marketing, tanda tangan, atau keputusan awal.'},
-  pembayaran: {label: 'Angsuran & Lunas', title: 'Pembayaran dan cicilan aktif', desc: 'Fokus ke pinjaman yang sudah ACC. Marketing bisa mencatat cicilan dari tombol detail.'},
+  pembayaran: {label: 'Angsuran & Lunas', title: 'Pembayaran dan cicilan aktif', desc: 'Fokus ke pinjaman yang sudah diterima. Marketing bisa mencatat cicilan dari tombol detail.'},
   angsuran: {label: 'Angsuran & Lunas', title: 'Monitor angsuran peminjam', desc: 'Lihat siapa saja yang sudah bayar, berapa cicilan yang lunas, sisa tagihan, dan catat pembayaran berikutnya.'},
   laporan: {label: 'Laporan Kredit', title: 'Rekap kinerja kredit', desc: 'Lihat total nominal pinjaman, pembayaran masuk, sisa tagihan, dan status seluruh peminjam.'},
   panduan: {label: 'Panduan Marketing', title: 'Panduan kerja marketing', desc: 'Ikuti alur input, verifikasi, tanda tangan, dan pencatatan cicilan supaya data rapi.'},
@@ -289,7 +289,7 @@ export default function CreditApplicationsPage() {
     refresh()
   }
   const signAnalis = (item, image) => {
-    saveApplication(item, {analisSignature: stampPayload({...user, role: 'analis'}, image), status: 'Menunggu ACC analis'})
+    saveApplication(item, {analisSignature: stampPayload({...user, role: 'analis'}, image), status: 'Menunggu keputusan analis'})
     refresh()
   }
   const decide = (item, status) => {
@@ -472,7 +472,7 @@ export default function CreditApplicationsPage() {
   const marketingCards = [
     {title: 'Perlu Verifikasi', value: marketingQueue.length, note: 'Belum TTD marketing', icon: ClipboardCheck},
     {title: 'Tagihan Dekat', value: duePayments.length, note: 'Jatuh tempo <= 3 hari', icon: AlertCircle},
-    {title: 'Pinjaman Aktif', value: approvedActive.length, note: 'Sudah ACC belum lunas', icon: CreditCard},
+    {title: 'Pinjaman Aktif', value: approvedActive.length, note: 'Sudah diterima belum lunas', icon: CreditCard},
   ]
   const activeView = viewInfo[view] || viewInfo.overview
   const totalLoan = items.reduce((sum, item) => sum + Number(item.form.amount || 0), 0)
@@ -504,7 +504,7 @@ export default function CreditApplicationsPage() {
   }
 
   return <>
-    {!isStandaloneDetail && view === 'overview' && <PageHeader eyebrow="Pihak Atas" title="Review Kredit Saldo Agent" description="Marketing verifikasi dan tanda tangan dulu, lalu analis memberi keputusan akhir."/>}
+    {!isStandaloneDetail && view === 'overview' && <PageHeader eyebrow="MARKETING KREDIT" title="Review Kredit Saldo Agent" description="Marketing memeriksa data dan menandatangani pengajuan, lalu analis memberi keputusan akhir."/>}
     <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''}`}>
       {view === 'overview' && <div className="credit-review-hero">
         <div>
@@ -516,7 +516,7 @@ export default function CreditApplicationsPage() {
       </div>}
       {view === 'overview' && <div className="credit-review-stats">
         <article><span>Total Peminjam</span><strong>{summary.total}</strong><small>Seluruh pengajuan</small></article>
-        <article><span>Butuh Review</span><strong>{summary.review}</strong><small>Menunggu pihak atas</small></article>
+        <article><span>Butuh Review</span><strong>{summary.review}</strong><small>Menunggu keputusan</small></article>
         <article><span>Sudah Diterima</span><strong>{summary.approved}</strong><small>Aktif dipantau</small></article>
         <article><span>Lunas</span><strong>{summary.paid}</strong><small>Pembayaran selesai</small></article>
       </div>}
@@ -565,7 +565,7 @@ export default function CreditApplicationsPage() {
       {(isMarketing || isAdmin) && view === 'peminjam' && <section className="borrower-directory-panel">
         <header><div><span>DIREKTORI PEMINJAM</span><h2>Data peminjam diterima</h2><p>Hanya pengajuan yang sudah diterima dan sedang berjalan atau lunas. Data review dan ditolak tidak ditampilkan di sini.</p></div><strong className="directory-total">{approvedBorrowerRows.length}<small>Data diterima</small></strong></header>
         <div className="directory-stats">
-          <article><b>{approvedBorrowerRows.length}</b><span>Total ACC</span></article><article><b>{summary.approved}</b><span>Aktif dipantau</span></article><article><b>{summary.paid}</b><span>Sudah lunas</span></article><article><b>{approvedBorrowerRows.filter(row => row.score.percent < 100).length}</b><span>Data perlu dilengkapi</span></article>
+          <article><b>{approvedBorrowerRows.length}</b><span>Total Diterima</span></article><article><b>{summary.approved}</b><span>Aktif dipantau</span></article><article><b>{summary.paid}</b><span>Sudah lunas</span></article><article><b>{approvedBorrowerRows.filter(row => row.score.percent < 100).length}</b><span>Data perlu dilengkapi</span></article>
         </div>
         <div className="directory-tools"><label><Search/><input value={borrowerQuery} onChange={event => setBorrowerQuery(event.target.value)} placeholder="Cari nama, toko, WA, atau ID..."/></label><div>{['Semua', 'Disetujui', 'Lunas'].map(name => <button type="button" className={borrowerFilter === name ? 'active' : ''} onClick={() => setBorrowerFilter(name)} key={name}>{name}</button>)}</div></div>
         <div className="directory-agent-list">
@@ -584,7 +584,7 @@ export default function CreditApplicationsPage() {
         </div>
       </section>}
       {(isMarketing || isAdmin) && (view === 'pembayaran' || view === 'angsuran') && <section className="marketing-action-panel payment">
-        <header><Banknote/><div><span>MONITOR PEMBAYARAN</span><h2>Angsuran &amp; Lunas</h2><p>Kelola cicilan peminjam yang sudah ACC. Buka satu kartu untuk melihat jadwal dan mencatat pembayaran.</p></div></header>
+        <header><Banknote/><div><span>MONITOR PEMBAYARAN</span><h2>Angsuran &amp; Lunas</h2><p>Kelola cicilan peminjam yang sudah diterima. Buka satu kartu untuk melihat jadwal dan mencatat pembayaran.</p></div></header>
         <div className="payment-overview-stats"><article><small>Pinjaman aktif</small><strong>{installmentActive.length}</strong><span>Masih punya cicilan</span></article><article><small>Sudah lunas</small><strong>{installmentFinished.length}</strong><span>Pembayaran selesai</span></article><article><small>Total diterima</small><strong>{rupiah(installmentPaidAmount)}</strong><span>Semua cicilan tercatat</span></article><article><small>Sisa tagihan</small><strong>{rupiah(installmentRemainingAmount)}</strong><span>Perlu dipantau</span></article></div>
         <div className="quick-payment-list">
           {installmentRows.slice(0, 8).map(({item, pay, next}) => {
@@ -593,7 +593,7 @@ export default function CreditApplicationsPage() {
               <strong>{next ? rupiah(next.amount) : 'Lunas'}</strong>
             </button>
           })}
-          {!installmentRows.length && <p>Belum ada pinjaman ACC yang perlu dicatat cicilannya.</p>}
+          {!installmentRows.length && <p>Belum ada pinjaman diterima yang perlu dicatat cicilannya.</p>}
         </div>
       </section>}
       {(isMarketing || isAdmin) && view === 'laporan' && <>
@@ -623,11 +623,11 @@ export default function CreditApplicationsPage() {
           <li><b>Input peminjaman</b><small>Masukkan data agent jika pengajuan dilakukan lewat marketing.</small></li>
           <li><b>Verifikasi data</b><small>Cek WA, NIK, alamat toko, kontak keluarga, dan dokumen sebelum tanda tangan.</small></li>
           <li><b>TTD marketing</b><small>Setelah yakin data layak, tanda tangan dari HP dan teruskan ke analis.</small></li>
-          <li><b>Catat cicilan</b><small>Jika analis sudah ACC, marketing mencatat pembayaran cicilan yang masuk.</small></li>
+          <li><b>Catat cicilan</b><small>Jika pengajuan sudah diterima, marketing mencatat pembayaran cicilan yang masuk.</small></li>
         </ol>
       </section>}
       {showMainList && <div className="panel-header">
-        <div><h2>Pengajuan Masuk</h2><p>{isMarketing ? 'Tugas marketing: cek data agent, tanda tangan, atau tolak jika data tidak layak.' : isAnalis ? 'Tugas analis: cek hasil marketing, tanda tangan, lalu ACC atau tolak.' : 'Pantau seluruh alur pengajuan kredit agent dari satu panel.'}</p></div>
+        <div><h2>Pengajuan Masuk</h2><p>{isMarketing ? 'Tugas marketing: cek data agent, tanda tangan, atau tolak jika data tidak layak.' : isAnalis ? 'Tugas analis: cek hasil marketing, tanda tangan, lalu terima atau tolak.' : 'Pantau seluruh alur pengajuan kredit agent dari satu panel.'}</p></div>
         <span className="review-role-badge">{isMarketing ? 'MARKETING' : isAnalis ? 'ANALIS' : 'ADMIN'}</span>
       </div>}
       {showCreateArea && <section className={`credit-create-box ${view === 'input' ? 'focus' : ''}`}>
@@ -697,14 +697,14 @@ export default function CreditApplicationsPage() {
               <SignatureStep title="Analis" note="Menunggu tanda tangan analis" signed={item.analisSignature} icon={Stamp}/>
             </div>}
             <footer>
-              {item.status === 'Disetujui' ? <><span className="approved"><CheckCircle2/>Sudah ACC analis</span><button type="button" className="detail" onClick={() => expanded ? goToView('verifikasi', '', filter) : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : item.status === 'Ditolak' ? <><span className="rejected"><XCircle/>Ditolak pihak atas</span><button type="button" className="detail" onClick={() => expanded ? goToView('verifikasi', '', filter) : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : <>
+              {item.status === 'Disetujui' ? <><span className="approved"><CheckCircle2/>Sudah Diterima analis</span><button type="button" className="detail" onClick={() => expanded ? goToView('verifikasi', '', filter) : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : item.status === 'Ditolak' ? <><span className="rejected"><XCircle/>Ditolak</span><button type="button" className="detail" onClick={() => expanded ? goToView('verifikasi', '', filter) : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : <>
                 <span><Clock3/>{item.status === 'Siap dikirim ke analis' ? 'Sudah TTD, siap dikirim ke analis' : marketingSigned ? 'Menunggu keputusan analis' : 'Menunggu verifikasi marketing'}</span>
                 <button type="button" className="detail" onClick={() => expanded ? goToView('verifikasi', '', filter) : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button>
                 {expanded && canMarketingSign && <button type="button" className="sign" onClick={() => openSignature(item, 'marketing')}><PenLine/>TTD Marketing</button>}
                 {expanded && marketingSigned && item.status === 'Siap dikirim ke analis' && (isMarketing || isAdmin) && <button type="button" className="approve" onClick={() => forwardToAnalis(item)}><CheckCircle2/>Verifikasi &amp; Kirim ke Analis</button>}
                 {expanded && canAnalisSign && <button type="button" className="sign" onClick={() => openSignature(item, 'analis')}><PenLine/>TTD Analis</button>}
                 {expanded && canReject && <button type="button" className="reject" onClick={() => decide(item, 'Ditolak')}><XCircle/>Tolak</button>}
-                {expanded && canApprove && <button type="button" className="approve" onClick={() => decide(item, 'Disetujui')}><CheckCircle2/>ACC</button>}
+                {expanded && canApprove && <button type="button" className="approve" onClick={() => decide(item, 'Disetujui')}><CheckCircle2/>Terima Pengajuan</button>}
               </>}
             </footer>
             {expanded && <section className="credit-borrower-detail">
@@ -775,7 +775,7 @@ export default function CreditApplicationsPage() {
           <canvas ref={canvasRef} width="760" height="330" onPointerDown={startSignature} onPointerMove={moveSignature} onPointerUp={stopSignature} onPointerCancel={stopSignature} onPointerLeave={stopSignature}/>
           {!signatureDrawn && <span>Gunakan jari untuk tanda tangan di area ini</span>}
         </div>
-        <p>Tanda tangan ini akan tersimpan di pengajuan kredit agent sebagai bukti verifikasi pihak atas.</p>
+        <p>Tanda tangan ini akan tersimpan di pengajuan kredit agent sebagai bukti verifikasi tim.</p>
         <footer>
           <button type="button" className="clear" onClick={clearSignaturePad}><Trash2/>Hapus</button>
           <button type="button" className="save" disabled={!signatureDrawn} onClick={saveSignature}><CheckCircle2/>Simpan TTD</button>
