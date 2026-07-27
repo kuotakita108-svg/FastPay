@@ -575,7 +575,7 @@ export default function CreditApplicationsPage() {
           </details>) : <p>Data peminjam diterima belum ada.</p>}
         </div>
         <div className="directory-list">
-          {directoryRows.length ? directoryRows.map(({item, pay, score}) => <button type="button" key={item.id} onClick={() => goToView('verifikasi', item.id, 'Semua')}>
+          {directoryRows.length ? directoryRows.map(({item, pay, score}) => <button type="button" key={item.id} onClick={() => goToView('detail', item.id, 'Semua')}>
             <span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id} · {item.status}</small></span>
             <em><i style={{width: `${score.percent}%`}}/></em>
             <strong>{pay.paid}/{pay.total} cicilan</strong>
