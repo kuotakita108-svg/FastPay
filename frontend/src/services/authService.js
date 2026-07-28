@@ -15,12 +15,14 @@ const demo={
 export async function login(credentials){
   const demoUsername=credentials.username.toLowerCase().trim()
   if(demoUsername==='octa'&&demo[credentials.password])return result(demo[credentials.password])
+  // Akun yang dibuat marketing (termasuk agent baru) harus bisa masuk
+  // sebelum mencoba API demo/hardcoded yang belum mengenal akun tersebut.
+  const username=credentials.username.toLowerCase().trim(),passwordHash=await hash(credentials.password)
+  const local=readAccounts().find(account=>(account.username===username||account.phone===username||account.email===username)&&account.passwordHash===passwordHash)
+  if(local){const{passwordHash:_,...user}=local;void _;return result(user)}
   try{return await request('/auth/login',{method:'POST',body:JSON.stringify(credentials)})}
   catch(error){
     if(!connectionError(error))throw error
-    const username=credentials.username.toLowerCase().trim(),passwordHash=await hash(credentials.password)
-    const local=readAccounts().find(account=>(account.username===username||account.phone===username||account.email===username)&&account.passwordHash===passwordHash)
-    if(local){const{passwordHash:_,...user}=local;void _;return result(user)}
     if(username==='octa'&&demo[credentials.password])return result(demo[credentials.password])
     throw new Error('Akun belum tersimpan di perangkat ini. Daftar akun terlebih dahulu.',{cause:error})
   }
@@ -37,6 +39,19 @@ export async function register(profile){
     localStorage.setItem(ACCOUNTS_KEY,JSON.stringify(accounts))
     return result(user)
   }
+}
+
+// Dipakai marketing untuk membuat kredensial agent dari panel internal.
+// Akun disimpan dengan hash password dan tidak pernah menyimpan password mentah.
+export async function createManagedAgent(profile){
+  const name=String(profile.name||'').trim(),username=String(profile.username||'').toLowerCase().trim(),phone=String(profile.phone||'').trim(),email=String(profile.email||'').toLowerCase().trim(),password=String(profile.password||'')
+  if(name.length<3||username.length<3||password.length<6)throw new Error('Nama, username, dan password minimal harus diisi dengan benar.')
+  const accounts=readAccounts()
+  if(accounts.some(account=>account.username===username))throw new Error('Username agent sudah digunakan di perangkat ini.')
+  const user={id:`AGENT-${crypto.randomUUID()}`,username,name,role:'agent',balance:0,phone,email}
+  accounts.push({...user,passwordHash:await hash(password),createdBy:'marketing',createdAt:new Date().toISOString()})
+  localStorage.setItem(ACCOUNTS_KEY,JSON.stringify(accounts))
+  return user
 }
 
 export async function resetPassword(profile){

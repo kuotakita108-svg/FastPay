@@ -6,6 +6,7 @@ import PageHeader from '../components/common/PageHeader'
 import {useAuth} from '../context/AuthContext'
 import {rupiah} from '../utils/currency'
 import {request} from '../services/http'
+import AgentAccountForm from '../components/credit/AgentAccountForm'
 
 const allKey = 'kuotakita_agent_credit_all'
 const userKey = userId => `kuotakita_agent_credit_${userId || 'guest'}`
@@ -128,6 +129,7 @@ const viewInfo = {
   angsuran: {label: 'Angsuran & Lunas', title: 'Monitor angsuran peminjam', desc: 'Lihat siapa saja yang sudah bayar, berapa cicilan yang lunas, sisa tagihan, dan catat pembayaran berikutnya.'},
   laporan: {label: 'Laporan Kredit', title: 'Rekap kinerja kredit', desc: 'Lihat total nominal pinjaman, pembayaran masuk, sisa tagihan, dan status seluruh peminjam.'},
   panduan: {label: 'Panduan Marketing', title: 'Panduan kerja marketing', desc: 'Ikuti alur input, verifikasi, tanda tangan, dan pencatatan cicilan supaya data rapi.'},
+  'agent-input': {label: 'Tambah Agent', title: 'Daftarkan agent baru', desc: 'Buat akun agent resmi agar agent dapat login dan menggunakan layanan Kredit Saldo Agent.'},
 }
 const dataScore = item => {
   const checks = [
@@ -212,6 +214,14 @@ export default function CreditApplicationsPage() {
   useEffect(() => {
     if (view === 'input') {
       setShowCreate(true)
+      setFilter('Semua')
+      setExpandedId('')
+      setQuery('')
+      window.scrollTo({top: 0, behavior: 'smooth'})
+      return
+    }
+    if (view === 'agent-input') {
+      setShowCreate(false)
       setFilter('Semua')
       setExpandedId('')
       setQuery('')
@@ -521,11 +531,12 @@ export default function CreditApplicationsPage() {
         <article><span>Sudah Diterima</span><strong>{summary.approved}</strong><small>Aktif dipantau</small></article>
         <article><span>Lunas</span><strong>{summary.paid}</strong><small>Pembayaran selesai</small></article>
       </div>}
-      <section className={`credit-mode-panel view-${view}`}>
+      {view !== 'overview' && <section className={`credit-mode-panel view-${view}`}>
         <span>{activeView.label}</span>
         <h2>{activeView.title}</h2>
         <p>{activeView.desc}</p>
-      </section>
+      </section>}
+      {(isMarketing || isAdmin) && view === 'agent-input' && <AgentAccountForm onClose={() => goToView('overview')}/>}
       {(isMarketing || isAdmin) && view === 'overview' && <section className="marketing-workspace">
         <header>
           <div><span>MEJA KERJA MARKETING</span><h2>Kontrol Verifikasi & Cicilan</h2><p>Kerjakan yang paling penting dulu. Setiap tombol di bawah langsung membuka daftar yang sesuai, jadi marketing tidak perlu mencari manual.</p></div>
