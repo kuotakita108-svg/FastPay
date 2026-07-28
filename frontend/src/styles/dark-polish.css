@@ -132,3 +132,77 @@
 :root[data-theme="dark"] a { color: #c8d2ff; }
 :root[data-theme="dark"] .primary-button,
 :root[data-theme="dark"] .login-submit { color: #fff; }
+
+/* Credit and data views contain a few intentionally light hard-coded cards. */
+:root[data-theme="dark"] .credit-review-panel .credit-review-card,
+:root[data-theme="dark"] .credit-review-panel .borrower-directory-panel,
+:root[data-theme="dark"] .credit-review-panel .credit-review-stats article,
+:root[data-theme="dark"] .credit-review-panel .credit-review-tools label,
+:root[data-theme="dark"] .credit-review-panel .credit-review-tools button,
+:root[data-theme="dark"] .credit-review-panel .credit-detail-block,
+:root[data-theme="dark"] .credit-review-panel .credit-review-grid span,
+:root[data-theme="dark"] .credit-review-panel .credit-review-signatures > div,
+:root[data-theme="dark"] .credit-review-panel .directory-stats article,
+:root[data-theme="dark"] .credit-review-panel .directory-tools label,
+:root[data-theme="dark"] .credit-review-panel .directory-tools button,
+:root[data-theme="dark"] .credit-review-panel .directory-list > button,
+:root[data-theme="dark"] .credit-review-panel .borrower-directory-panel > div > p,
+:root[data-theme="dark"] .credit-review-panel .credit-payment-list article {
+  background: #18243a;
+  border-color: #30405a;
+  color: var(--text);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .2);
+}
+
+:root[data-theme="dark"] .credit-review-panel .credit-review-card.status-disetujui,
+:root[data-theme="dark"] .credit-review-panel .credit-payment-list article.paid {
+  background: #12372f;
+  border-color: #1e8067;
+}
+:root[data-theme="dark"] .credit-review-panel .credit-review-card.status-ditolak {
+  background: #3a202d;
+  border-color: #874458;
+}
+:root[data-theme="dark"] .credit-review-panel .borrower-directory-panel {
+  background: #141f34;
+  border-color: #30405a;
+}
+:root[data-theme="dark"] .credit-review-panel .borrower-directory-panel h2,
+:root[data-theme="dark"] .credit-review-panel .borrower-directory-panel b,
+:root[data-theme="dark"] .credit-review-panel .directory-stats b,
+:root[data-theme="dark"] .credit-review-panel .directory-total,
+:root[data-theme="dark"] .credit-review-panel .credit-detail-block h4,
+:root[data-theme="dark"] .credit-review-panel .credit-payment-list b {
+  color: #f7faff;
+}
+:root[data-theme="dark"] .credit-review-panel .borrower-directory-panel p,
+:root[data-theme="dark"] .credit-review-panel .borrower-directory-panel small,
+:root[data-theme="dark"] .credit-review-panel .directory-stats span,
+:root[data-theme="dark"] .credit-review-panel .credit-detail-block dt,
+:root[data-theme="dark"] .credit-review-panel .credit-detail-block dd,
+:root[data-theme="dark"] .credit-review-panel .credit-payment-list small {
+  color: #b1bfd4;
+}
+:root[data-theme="dark"] .credit-review-panel .credit-review-tools input,
+:root[data-theme="dark"] .credit-review-panel .directory-tools input {
+  background: transparent;
+  color: #f7faff;
+}
+:root[data-theme="dark"] .credit-review-panel .credit-review-tools input::placeholder,
+:root[data-theme="dark"] .credit-review-panel .directory-tools input::placeholder {
+  color: #91a1ba;
+}
+
+/* Tables and list rows stay dark throughout every marketing screen. */
+:root[data-theme="dark"] table,
+:root[data-theme="dark"] tbody,
+:root[data-theme="dark"] tbody tr,
+:root[data-theme="dark"] tbody td,
+:root[data-theme="dark"] .table-scroll,
+:root[data-theme="dark"] .data-table,
+:root[data-theme="dark"] .list-row {
+  background: #111d31;
+  color: #f1f5fb;
+  border-color: #2b3b55;
+}
+:root[data-theme="dark"] th { color: #b8c5d8; }
