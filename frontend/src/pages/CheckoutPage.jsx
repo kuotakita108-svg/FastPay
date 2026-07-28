@@ -7,6 +7,7 @@ import {getSecurity} from '../services/securityService'
 import PaymentSecurityModal from '../components/mobile/PaymentSecurityModal'
 import TransactionReceipt from '../components/mobile/TransactionReceipt'
 import {rupiah} from '../utils/currency'
+import {saveFavoriteContact} from '../services/contactFavorites'
 
 export default function CheckoutPage() {
   const {state} = useLocation()
@@ -63,6 +64,9 @@ export default function CheckoutPage() {
       }
       const transaction = enrichTransaction(response.transaction)
       saveReceipt(transaction)
+      if (state.type === 'pulsa' || state.type === 'ewallet') {
+        saveFavoriteContact({number: state.target, label: state.provider || state.title, service: state.type}, user.id)
+      }
       setResult({...response, transaction})
     } catch (current) {
       setError(current.message)

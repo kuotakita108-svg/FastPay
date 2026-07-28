@@ -284,3 +284,8 @@
 :root[data-theme="dark"] .agent-credit-totals div { background:#111d31; border-color:#354762; }
 :root[data-theme="dark"] .agent-credit-totals small { color:#b1bfd4; }
 :root[data-theme="dark"] .agent-credit-totals strong { color:#f7faff; }
+:root[data-theme="dark"] .contact-target-tools button,
+:root[data-theme="dark"] .contact-favorites button { background:#111d31; border-color:#354762; color:#dce7f5; }
+:root[data-theme="dark"] .contact-target-tools button.active { background:#2c255e; border-color:#8c7cff; color:#fff; }
+:root[data-theme="dark"] .contact-favorites button span { color:#dce7f5; }
+:root[data-theme="dark"] .contact-favorites button b { color:#bcb2ff; }
