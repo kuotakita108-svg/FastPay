@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react'
 import {useSearchParams} from 'react-router-dom'
-import {AlertCircle, ArrowRight, Banknote, BarChart3, CalendarDays, Camera, Check, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, Filter, Images, Landmark, PenLine, PhoneCall, PlusCircle, QrCode, Search, ShieldCheck, Stamp, Trash2, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
+import {AlertCircle, ArrowRight, Banknote, BarChart3, CalendarDays, Camera, Check, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, Filter, Images, Landmark, PenLine, PhoneCall, PlusCircle, QrCode, Search, ShieldCheck, Stamp, Trash2, Upload, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
 import {QRCodeSVG} from 'qrcode.react'
 import PageHeader from '../components/common/PageHeader'
 import {useAuth} from '../context/AuthContext'
@@ -36,8 +36,9 @@ const manualDocumentTypes = [
   {key: 'ktp', label: 'Foto KTP', hint: 'KTP asli dan tidak buram'},
   {key: 'store', label: 'Foto Toko', hint: 'Tampak depan toko/usaha'},
   {key: 'selfie', label: 'Selfie Pegang KTP', hint: 'Wajah dan KTP terlihat jelas'},
+  {key: 'selfieMarketing', label: 'Selfie dengan Marketing', hint: 'Agent dan marketing terlihat jelas'},
 ]
-const emptyManualDocuments = {ktp: null, store: null, selfie: null}
+const emptyManualDocuments = {ktp: null, store: null, selfie: null, selfieMarketing: null}
 
 const readAll = () => {
   const merged = new Map()
@@ -171,6 +172,7 @@ export default function CreditApplicationsPage() {
   const [manualDocumentChoice, setManualDocumentChoice] = useState('')
   const [paymentTarget, setPaymentTarget] = useState(null)
   const [paymentMethod, setPaymentMethod] = useState('')
+  const [paymentProof, setPaymentProof] = useState(null)
   const isMarketing = user?.role === 'marketing'
   const isAnalis = user?.role === 'analis'
   const isAdmin = ['master', 'admin'].includes(user?.role)
@@ -314,7 +316,7 @@ export default function CreditApplicationsPage() {
     if (!manualForm.agentName.trim() || !manualForm.storeName.trim() || !manualForm.whatsapp.trim() || !manualForm.amount) {
       return setManualMessage('Lengkapi nama agent, toko, WA, dan nominal pinjaman dulu.')
     }
-    if (manualDocumentTypes.some(doc => !manualDocuments[doc.key])) return setManualMessage('Lengkapi Foto KTP, Foto Toko, dan Selfie Pegang KTP dulu.')
+    if (manualDocumentTypes.some(doc => !manualDocuments[doc.key])) return setManualMessage('Lengkapi KTP, toko, selfie pegang KTP, dan selfie dengan marketing dulu.')
     const amount = Math.min(5000000, Math.max(50000, Number(String(manualForm.amount).replace(/\D/g, '') || 0)))
     const application = {
       id: `KSA-${Date.now().toString().slice(-8)}`,
@@ -366,13 +368,21 @@ export default function CreditApplicationsPage() {
   }
   const updateManual = event => setManualForm({...manualForm, [event.target.name]: event.target.name === 'amount' ? event.target.value.replace(/\D/g, '').slice(0, 8) : event.target.value})
   const markPayment = (item, row) => {
-    if ((!isMarketing && !isAdmin) || row.paid || item.status !== 'Disetujui') return
-    const repayments = [{key: row.key, applicationId: item.id, label: row.label, amount: row.amount, status: 'Lunas', paidAt: new Date().toISOString(), receivedBy: reviewerName(user)}, ...(item.repayments || []).filter(pay => pay.key !== row.key)]
+    if ((!isMarketing && !isAdmin) || row.paid || item.status !== 'Disetujui' || !paymentProof) return
+    const repayments = [{key: row.key, applicationId: item.id, label: row.label, amount: row.amount, status: 'Lunas', paidAt: new Date().toISOString(), receivedBy: reviewerName(user), proof: paymentProof}, ...(item.repayments || []).filter(pay => pay.key !== row.key)]
     const paymentStatus = repayments.length >= paymentSteps.length ? 'Lunas' : `Terbayar ${repayments.length}/${paymentSteps.length}`
     saveApplication(item, {repayments, paymentStatus})
     refresh()
     setPaymentTarget(null)
     setPaymentMethod('')
+    setPaymentProof(null)
+  }
+  const choosePaymentProof = async event => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    const dataUrl = file.type.startsWith('image/') ? await compressDocumentPreview(file) : ''
+    setPaymentProof({name: file.name, type: file.type, dataUrl})
+    event.target.value = ''
   }
   const replaceBorrowerDocument = async (item, key, event) => {
     const file = event.target.files?.[0]
@@ -754,7 +764,7 @@ export default function CreditApplicationsPage() {
                     <i>{row.paid ? <CheckCircle2/> : <CalendarDays/>}</i>
                     <span><b>{row.label}</b><small>Jatuh tempo {row.due.toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'})}{row.paid ? ` · lunas ${dateTime(row.paid.paidAt)}` : ''}</small></span>
                     <strong>{rupiah(row.amount)}</strong>
-                    {(isMarketing || isAdmin) && item.status === 'Disetujui' && <button type="button" disabled={Boolean(row.paid)} onClick={() => {setPaymentTarget({item, row}); setPaymentMethod('')}}><Banknote/>{row.paid ? 'Lunas' : 'Bayar Angsuran'}</button>}
+                    {(isMarketing || isAdmin) && item.status === 'Disetujui' && <button type="button" disabled={Boolean(row.paid)} onClick={() => {setPaymentTarget({item, row}); setPaymentMethod(''); setPaymentProof(null)}}><Banknote/>{row.paid ? 'Lunas' : 'Bayar Angsuran'}</button>}
                   </article>)}
                 </div>
               </div>}
@@ -773,7 +783,8 @@ export default function CreditApplicationsPage() {
         </div>
         {paymentMethod === 'bank' && <div className="review-bank-detail"><span>Transfer tepat sebesar</span><strong>{rupiah(paymentTarget.row.amount)}</strong><small>Kode referensi: {paymentTarget.row.key.toUpperCase()}</small></div>}
         {paymentMethod === 'qris' && <div className="review-qr-detail"><QRCodeSVG value={`https://kuotakita-app.pages.dev/pay?ref=${encodeURIComponent(paymentTarget.row.key)}&amount=${paymentTarget.row.amount}`} size={210} level="H" includeMargin/><strong>{rupiah(paymentTarget.row.amount)}</strong><small>QR dibuat khusus untuk cicilan ini.</small></div>}
-        <button type="button" className="review-payment-confirm" disabled={!paymentMethod} onClick={() => markPayment(paymentTarget.item, paymentTarget.row)}>Konfirmasi Pembayaran <ArrowRight/></button>
+        <label className="review-payment-proof"><Upload/><span><b>Bukti transfer wajib</b><small>{paymentProof?.name || 'Unggah bukti transfer atau screenshot pembayaran'}</small></span><input type="file" accept="image/*,.pdf" onChange={choosePaymentProof}/></label>
+        <button type="button" className="review-payment-confirm" disabled={!paymentMethod || !paymentProof} onClick={() => markPayment(paymentTarget.item, paymentTarget.row)}>Konfirmasi Pembayaran <ArrowRight/></button>
       </div>
     </section>}
     {signaturePad && <section className="review-signature-backdrop" aria-label="Tanda tangan reviewer">

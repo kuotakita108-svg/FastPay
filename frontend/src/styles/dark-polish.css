@@ -206,3 +206,78 @@
   border-color: #2b3b55;
 }
 :root[data-theme="dark"] th { color: #b8c5d8; }
+
+:root[data-theme="dark"] .agent-credit-page,
+:root[data-theme="dark"] .agent-rank-card,
+:root[data-theme="dark"] .agent-payment-lane,
+:root[data-theme="dark"] .agent-registered-list,
+:root[data-theme="dark"] .agent-card,
+:root[data-theme="dark"] .agent-payment-sheet,
+:root[data-theme="dark"] .agent-credit-preview {
+  background: #18243a;
+  border-color: #30405a;
+  color: #f4f7fb;
+}
+:root[data-theme="dark"] .agent-credit-preview {
+  background: linear-gradient(135deg, #1d2450, #123143);
+}
+:root[data-theme="dark"] .agent-credit-preview h2,
+:root[data-theme="dark"] .agent-credit-preview b,
+:root[data-theme="dark"] .agent-rank-card h2,
+:root[data-theme="dark"] .agent-payment-lane h2,
+:root[data-theme="dark"] .agent-card h2,
+:root[data-theme="dark"] .agent-payment-sheet h2,
+:root[data-theme="dark"] .agent-payment-methods b,
+:root[data-theme="dark"] .agent-payment-proof b {
+  color: #f7faff;
+}
+:root[data-theme="dark"] .agent-credit-preview p,
+:root[data-theme="dark"] .agent-credit-preview small,
+:root[data-theme="dark"] .agent-rank-card p,
+:root[data-theme="dark"] .agent-payment-lane p,
+:root[data-theme="dark"] .agent-card p,
+:root[data-theme="dark"] .agent-payment-proof small {
+  color: #b1bfd4;
+}
+:root[data-theme="dark"] .agent-credit-preview article,
+:root[data-theme="dark"] .agent-payment-methods button,
+:root[data-theme="dark"] .agent-payment-proof,
+:root[data-theme="dark"] .agent-bank-detail,
+:root[data-theme="dark"] .agent-qr-detail,
+:root[data-theme="dark"] .payment-lane-list article,
+:root[data-theme="dark"] .verification-meta,
+:root[data-theme="dark"] .verification-steps li {
+  background: #111d31;
+  border-color: #354762;
+  color: #f4f7fb;
+}
+:root[data-theme="dark"] .agent-doc-upload,
+:root[data-theme="dark"] .signature-party,
+:root[data-theme="dark"] .signature-box,
+:root[data-theme="dark"] .agent-check,
+:root[data-theme="dark"] .agent-message {
+  background: #111d31;
+  border-color: #354762;
+  color: #eaf0f8;
+}
+:root[data-theme="dark"] .agent-terms,
+:root[data-theme="dark"] .agent-fields label,
+:root[data-theme="dark"] .agent-doc-upload b,
+:root[data-theme="dark"] .signature-party > strong,
+:root[data-theme="dark"] .agent-check {
+  color: #eaf0f8;
+}
+:root[data-theme="dark"] .review-payment-proof,
+:root[data-theme="dark"] .review-payment-sheet,
+:root[data-theme="dark"] .review-payment-methods button,
+:root[data-theme="dark"] .review-bank-detail,
+:root[data-theme="dark"] .review-qr-detail {
+  background: #111d31;
+  border-color: #354762;
+  color: #edf3fb;
+}
+:root[data-theme="dark"] .review-payment-proof b,
+:root[data-theme="dark"] .review-payment-sheet h2,
+:root[data-theme="dark"] .review-payment-methods b { color: #f7faff; }
+:root[data-theme="dark"] .review-payment-proof small,
+:root[data-theme="dark"] .review-payment-methods small { color: #aab8cc; }

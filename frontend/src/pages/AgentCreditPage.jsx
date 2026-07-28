@@ -29,6 +29,7 @@ const docs = [
   {key: 'ktp', title: 'Foto KTP', hint: 'KTP asli, jelas, tidak buram', camera: 'environment'},
   {key: 'store', title: 'Foto Toko', hint: 'Tampak depan toko/usaha', camera: 'environment'},
   {key: 'selfie', title: 'Selfie Pegang KTP', hint: 'Wajah dan KTP terlihat jelas', camera: 'user'},
+  {key: 'selfieMarketing', title: 'Selfie dengan Marketing', hint: 'Agent dan marketing terlihat jelas', camera: 'user'},
 ]
 
 const terms = [
@@ -102,9 +103,10 @@ function checkImageQuality(file, key) {
     const preview = URL.createObjectURL(file)
     const fail = error => resolve({file, name: file.name, preview, status: 'error', error})
     if (!file.type.startsWith('image/')) return fail('File harus foto/gambar, bukan dokumen lain.')
-    const minimumSize = key === 'selfie' ? 90000 : 65000
-    const minimumWidth = key === 'selfie' ? 700 : 640
-    const minimumHeight = key === 'selfie' ? 700 : 420
+    const isSelfie = key === 'selfie' || key === 'selfieMarketing'
+    const minimumSize = isSelfie ? 90000 : 65000
+    const minimumWidth = isSelfie ? 700 : 640
+    const minimumHeight = isSelfie ? 700 : 420
     const image = new Image()
     image.onload = () => {
       const width = image.naturalWidth
@@ -148,7 +150,7 @@ export default function AgentCreditPage() {
   const galleryRef = useRef(null)
   const drawing = useRef(false)
   const [form, setForm] = useState({...initialForm, agentName: user?.name || '', whatsapp: user?.phone || '', email: user?.email || ''})
-  const [files, setFiles] = useState({ktp: null, store: null, selfie: null})
+  const [files, setFiles] = useState({ktp: null, store: null, selfie: null, selfieMarketing: null})
   const [signed, setSigned] = useState(false)
   const [accepted, setAccepted] = useState(false)
   const [message, setMessage] = useState('')
@@ -164,6 +166,7 @@ export default function AgentCreditPage() {
   const [repayments, setRepayments] = useState([])
   const [paymentItem, setPaymentItem] = useState(null)
   const [paymentMethod, setPaymentMethod] = useState('')
+  const [paymentProof, setPaymentProof] = useState(null)
   const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => {
@@ -366,8 +369,9 @@ export default function AgentCreditPage() {
     paid: isPaid(application.id, index),
   })) : []
   const payInstallment = item => {
+    if (!paymentProof) return setMessage('Bukti transfer wajib diunggah sebelum pembayaran dikonfirmasi.')
     const key = `kuotakita_agent_repayments_${user?.id || 'guest'}`
-    const next = [{key: item.key, applicationId: application.id, label: item.label, amount: item.amount, status: 'Lunas', paidAt: new Date().toISOString()}, ...repayments.filter(row => row.key !== item.key)]
+    const next = [{key: item.key, applicationId: application.id, label: item.label, amount: item.amount, status: 'Lunas', paidAt: new Date().toISOString(), proof: paymentProof}, ...repayments.filter(row => row.key !== item.key)]
     setRepayments(next)
     localStorage.setItem(key, JSON.stringify(next))
     const appRepayments = next.filter(row => row.applicationId === application.id)
@@ -376,13 +380,14 @@ export default function AgentCreditPage() {
     persistApplication(updatedApplication)
     setPaymentItem(null)
     setPaymentMethod('')
+    setPaymentProof(null)
   }
   const copyPaymentReference = value => navigator.clipboard?.writeText(value)
   const submit = async event => {
     event.preventDefault()
     const amount = Math.min(maxCredit, Math.max(50000, Number(form.amount || 0)))
     const documentValues = Object.values(files)
-    if (documentValues.some(file => !file?.file)) return setMessage('Lengkapi Foto KTP, Foto toko, dan Foto selfie pegang KTP dulu bro.')
+    if (documentValues.some(file => !file?.file)) return setMessage('Lengkapi Foto KTP, Foto toko, selfie pegang KTP, dan selfie dengan marketing dulu bro.')
     const badDocument = documentValues.find(file => file.status !== 'ok')
     if (badDocument) return setMessage(`${badDocument.name}: ${badDocument.error || 'Foto belum lolos pengecekan kualitas. Upload ulang dulu.'}`)
     if (!accepted) return setMessage('Centang persetujuan ketentuan pengajuan dulu.')
@@ -409,7 +414,7 @@ export default function AgentCreditPage() {
 
   const resetAgentForm = () => {
     setForm({...initialForm, agentName: user?.name || '', whatsapp: user?.phone || '', email: user?.email || ''})
-    setFiles({ktp: null, store: null, selfie: null})
+    setFiles({ktp: null, store: null, selfie: null, selfieMarketing: null})
     setSigned(false)
     setAccepted(false)
     setMessage('')
@@ -456,6 +461,9 @@ export default function AgentCreditPage() {
   const rejected = application?.status === 'Ditolak'
   const waitingDecision = application && !approved && !rejected && remainingMs === 0
   const shouldShowForm = showForm || applications.length === 0
+  const totalCreditApproved = applications.filter(item => item.status === 'Disetujui' || item.paymentStatus === 'Lunas').reduce((sum, item) => sum + Number(item.form?.amount || 0), 0)
+  const totalCreditPaid = repayments.filter(item => item.status === 'Lunas').reduce((sum, item) => sum + Number(item.amount || 0), 0)
+  const canRefill = approved && paymentPlan.length > 0 && paymentPlan.every(item => item.paid)
   return <main className="mobile-app agent-credit-page">
     <SubPageHeader title="Kredit Saldo Agent" description="Ajukan tanam saldo langsung dari aplikasi" back/>
     <section className="agent-credit-hero">
@@ -473,6 +481,7 @@ export default function AgentCreditPage() {
       </header>
       <div className="rank-meter"><span style={{width: `${rankProgress}%`}}/></div>
       <p><TrendingUp/> Pangkat naik otomatis setiap jumlah peminjam yang kamu daftarkan sudah diterima tim verifikasi.</p>
+      <div className="agent-credit-totals"><div><small>Total kredit diterima</small><strong>{rupiah(totalCreditApproved)}</strong></div><div><small>Total sudah lunas</small><strong>{rupiah(totalCreditPaid)}</strong></div></div>
     </section>
     <div className="agent-credit-tabs" role="tablist" aria-label="Menu Kredit Agent">
       <button type="button" className={!showForm && !detailOpen ? 'active' : ''} onClick={backToApplications}><FileText/><span>Semua Peminjam<small>{applications.length} pengajuan tersimpan</small></span></button>
@@ -533,6 +542,7 @@ export default function AgentCreditPage() {
         <li className={progress >= 55 || approved ? 'done' : ''}>{progress >= 55 || approved ? <CheckCircle2/> : <Clock3/>}Pengecekan tanda tangan online</li>
         <li className={approved ? 'done' : rejected ? 'rejected' : ''}>{approved ? <CheckCircle2/> : rejected ? <X/> : <Clock3/>}Keputusan analis</li>
       </ul>
+      {canRefill && <button type="button" className="agent-refill-button" onClick={startNewApplication}><PlusCircle/> Ajukan Refill Kredit</button>}
     </section>}
     {detailOpen && approved && <section className="agent-payment-lane">
         <header><i><CreditCard/></i><div><h2>Jalur Pembayaran Kredit</h2><p>Pembayaran cicilan dicatat oleh marketing. Agent hanya dapat memantau status pembayaran.</p></div></header>
@@ -548,7 +558,7 @@ export default function AgentCreditPage() {
     </section>}
     {paymentItem && <section className="agent-payment-backdrop" onClick={event => event.target === event.currentTarget && setPaymentItem(null)}>
       <div className="agent-payment-sheet">
-        <header><div><span>PEMBAYARAN CICILAN</span><h2>{paymentItem.label}</h2></div><button type="button" onClick={() => setPaymentItem(null)}><X/></button></header>
+        <header><div><span>PEMBAYARAN CICILAN</span><h2>{paymentItem.label}</h2></div><button type="button" onClick={() => {setPaymentItem(null);setPaymentProof(null)}}><X/></button></header>
         <div className="agent-payment-amount"><small>Total yang harus dibayar</small><strong>{rupiah(paymentItem.amount)}</strong><span>Jatuh tempo {paymentItem.due.toLocaleDateString('id-ID', {day: '2-digit', month: 'long', year: 'numeric'})}</span></div>
         <div className="agent-payment-methods">
           <button type="button" className={paymentMethod === 'bank' ? 'active' : ''} onClick={() => setPaymentMethod('bank')}><i><Landmark/></i><span><b>Transfer Bank</b><small>BCA · 1234567890 · a.n. KuotaKita</small></span>{paymentMethod === 'bank' && <Check/>}</button>
@@ -556,7 +566,8 @@ export default function AgentCreditPage() {
         </div>
         {paymentMethod === 'bank' && <div className="agent-bank-detail"><div><span>Nominal transfer</span><strong>{rupiah(paymentItem.amount)}</strong></div><div><span>Kode pembayaran</span><strong>{paymentItem.key.toUpperCase()}</strong></div><button type="button" onClick={() => copyPaymentReference(paymentItem.key.toUpperCase())}><Copy/> Salin kode</button></div>}
         {paymentMethod === 'qris' && <div className="agent-qr-detail"><div className="agent-qr-art"><QRCodeSVG value={`https://kuotakita-app.pages.dev/pay?ref=${encodeURIComponent(paymentItem.key)}&amount=${paymentItem.amount}`} size={220} level="H" minVersion={5} includeMargin/></div><strong>{rupiah(paymentItem.amount)}</strong><small>QR dinamis untuk {paymentItem.label}. Scan dari kamera, bank, atau e-wallet.</small></div>}
-        <button type="button" className="agent-payment-confirm" disabled={!paymentMethod} onClick={() => payInstallment(paymentItem)}>Konfirmasi Pembayaran <ArrowRight/></button>
+        <label className="agent-payment-proof"><Upload/><span><b>Bukti transfer wajib</b><small>{paymentProof?.name || 'Unggah foto/screenshot bukti pembayaran'}</small></span><input type="file" accept="image/*,.pdf" onChange={event => setPaymentProof(event.target.files?.[0] ? {name: event.target.files[0].name, type: event.target.files[0].type} : null)}/></label>
+        <button type="button" className="agent-payment-confirm" disabled={!paymentMethod || !paymentProof} onClick={() => payInstallment(paymentItem)}>Konfirmasi Pembayaran <ArrowRight/></button>
       </div>
     </section>}
     {shouldShowForm && <>
@@ -583,6 +594,10 @@ export default function AgentCreditPage() {
           <label>Hubungan<input name="familyRelation" value={form.familyRelation} onChange={update} required placeholder="Orang tua / saudara"/></label>
           <label className="wide">Alamat<textarea name="familyAddress" value={form.familyAddress} onChange={update} required placeholder="Alamat keluarga yang dapat dihubungi"/></label>
         </div>
+      </section>
+      <section className="agent-credit-preview" aria-label="Ringkasan nominal kredit">
+        <header><div><span>RINGKASAN SEBELUM TANDA TANGAN</span><h2>Nominal yang diajukan</h2><p>Pastikan jumlah kredit dan cicilan sudah sesuai sebelum menyetujui ketentuan.</p></div><strong>{rupiah(Number(form.amount || 0))}</strong></header>
+        <div><article><small>Total kredit</small><b>{rupiah(Number(form.amount || 0))}</b></article><article><small>Per cicilan (4x)</small><b>{rupiah(Math.ceil(Number(form.amount || 0) * .25))}</b></article><article><small>Status</small><b>Menunggu verifikasi</b></article></div>
       </section>
       <section className="agent-card">
         <header><i><Camera/></i><div><h2>Upload Dokumen</h2><p>Sistem mengecek kualitas foto. Jika buram, kecil, atau rusak wajib upload ulang.</p></div></header>
