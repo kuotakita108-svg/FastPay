@@ -383,6 +383,13 @@ export default function AgentCreditPage() {
     setPaymentProof(null)
   }
   const copyPaymentReference = value => navigator.clipboard?.writeText(value)
+  const choosePaymentProof = async event => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    const dataUrl = file.type.startsWith('image/') ? await filePreviewData(file) : ''
+    setPaymentProof({name: file.name, type: file.type, dataUrl})
+    event.target.value = ''
+  }
   const submit = async event => {
     event.preventDefault()
     const amount = Math.min(maxCredit, Math.max(50000, Number(form.amount || 0)))
@@ -566,7 +573,7 @@ export default function AgentCreditPage() {
         </div>
         {paymentMethod === 'bank' && <div className="agent-bank-detail"><div><span>Nominal transfer</span><strong>{rupiah(paymentItem.amount)}</strong></div><div><span>Kode pembayaran</span><strong>{paymentItem.key.toUpperCase()}</strong></div><button type="button" onClick={() => copyPaymentReference(paymentItem.key.toUpperCase())}><Copy/> Salin kode</button></div>}
         {paymentMethod === 'qris' && <div className="agent-qr-detail"><div className="agent-qr-art"><QRCodeSVG value={`https://kuotakita-app.pages.dev/pay?ref=${encodeURIComponent(paymentItem.key)}&amount=${paymentItem.amount}`} size={220} level="H" minVersion={5} includeMargin/></div><strong>{rupiah(paymentItem.amount)}</strong><small>QR dinamis untuk {paymentItem.label}. Scan dari kamera, bank, atau e-wallet.</small></div>}
-        <label className="agent-payment-proof"><Upload/><span><b>Bukti transfer wajib</b><small>{paymentProof?.name || 'Unggah foto/screenshot bukti pembayaran'}</small></span><input type="file" accept="image/*,.pdf" onChange={event => setPaymentProof(event.target.files?.[0] ? {name: event.target.files[0].name, type: event.target.files[0].type} : null)}/></label>
+        <label className="agent-payment-proof"><Upload/><span><b>Bukti transfer wajib</b><small>{paymentProof?.name || 'Unggah foto/screenshot bukti pembayaran'}</small></span><input type="file" accept="image/*" onChange={choosePaymentProof}/></label>
         <button type="button" className="agent-payment-confirm" disabled={!paymentMethod || !paymentProof} onClick={() => payInstallment(paymentItem)}>Konfirmasi Pembayaran <ArrowRight/></button>
       </div>
     </section>}
