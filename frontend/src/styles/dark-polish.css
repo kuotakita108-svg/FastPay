@@ -1,0 +1,134 @@
+/* KuotaKita dark mode: deep navy surfaces with enough contrast for long sessions. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f1728;
+  --surface: #18243a;
+  --surface-2: #121d31;
+  --text: #f4f7fb;
+  --muted: #aab7cb;
+  --line: #30405a;
+  --primary-soft: #29245a;
+  --shadow: 0 12px 30px rgba(0, 0, 0, .28);
+}
+
+:root[data-theme="dark"] body,
+:root[data-theme="dark"] #root,
+:root[data-theme="dark"] .app-shell,
+:root[data-theme="dark"] .app-main,
+:root[data-theme="dark"] main,
+:root[data-theme="dark"] .page-content {
+  background: #0f1728;
+  color: var(--text);
+}
+
+:root[data-theme="dark"] .topbar,
+:root[data-theme="dark"] .panel,
+:root[data-theme="dark"] .stat-card,
+:root[data-theme="dark"] .customer-card,
+:root[data-theme="dark"] .method-card,
+:root[data-theme="dark"] .insight-card,
+:root[data-theme="dark"] .state-card,
+:root[data-theme="dark"] .modal-card,
+:root[data-theme="dark"] .credit-review-card,
+:root[data-theme="dark"] .credit-mode-panel,
+:root[data-theme="dark"] .marketing-workspace,
+:root[data-theme="dark"] .marketing-task-grid article,
+:root[data-theme="dark"] .marketing-focus-grid > div,
+:root[data-theme="dark"] .credit-review-stats article,
+:root[data-theme="dark"] .agent-account-form,
+:root[data-theme="dark"] .wallet-insight,
+:root[data-theme="dark"] .wallet-promo,
+:root[data-theme="dark"] .purchase-body,
+:root[data-theme="dark"] .mobile-products button,
+:root[data-theme="dark"] .recent-mobile article,
+:root[data-theme="dark"] .service-group button,
+:root[data-theme="dark"] .service-icon-group,
+:root[data-theme="dark"] .modern-all-services .service-group-grid > button {
+  background: #18243a;
+  border-color: var(--line);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] .global-search input,
+:root[data-theme="dark"] .customer-input > div,
+:root[data-theme="dark"] .purchase-body > label > div,
+:root[data-theme="dark"] .date-chip {
+  background: #111d31;
+  border-color: #354762;
+  color: var(--text);
+}
+
+:root[data-theme="dark"] input::placeholder,
+:root[data-theme="dark"] textarea::placeholder {
+  color: #8291aa;
+}
+
+:root[data-theme="dark"] h1,
+:root[data-theme="dark"] h2,
+:root[data-theme="dark"] h3,
+:root[data-theme="dark"] h4,
+:root[data-theme="dark"] strong,
+:root[data-theme="dark"] b,
+:root[data-theme="dark"] th,
+:root[data-theme="dark"] td,
+:root[data-theme="dark"] label,
+:root[data-theme="dark"] .service-group strong,
+:root[data-theme="dark"] .service-group span,
+:root[data-theme="dark"] .service-group-grid strong {
+  color: var(--text);
+}
+
+:root[data-theme="dark"] p,
+:root[data-theme="dark"] small,
+:root[data-theme="dark"] .panel-header p,
+:root[data-theme="dark"] .service-group small,
+:root[data-theme="dark"] .service-group-grid small,
+:root[data-theme="dark"] .mobile-placeholder p,
+:root[data-theme="dark"] .purchase-step p {
+  color: var(--muted);
+}
+
+:root[data-theme="dark"] .mobile-app,
+:root[data-theme="dark"] .balance-page,
+:root[data-theme="dark"] .services-page,
+:root[data-theme="dark"] .user-dashboard {
+  background: #0f1728;
+  color: var(--text);
+}
+
+:root[data-theme="dark"] .mobile-nav,
+:root[data-theme="dark"] .purchase-head,
+:root[data-theme="dark"] .mobile-checkout {
+  background: #152238;
+  border-color: var(--line);
+  color: var(--text);
+}
+
+:root[data-theme="dark"] .icon-button,
+:root[data-theme="dark"] .menu-button,
+:root[data-theme="dark"] .notification-popover,
+:root[data-theme="dark"] .notification-popover > button:hover {
+  background: #1b2a43;
+  border-color: #3a4c69;
+  color: var(--text);
+}
+
+:root[data-theme="dark"] .notification-popover > button:hover,
+:root[data-theme="dark"] .service-group button:hover,
+:root[data-theme="dark"] .mobile-products button:focus {
+  background: #243653;
+}
+
+:root[data-theme="dark"] .announcement,
+:root[data-theme="dark"] .service-highlight,
+:root[data-theme="dark"] .wallet-security {
+  filter: brightness(.86) saturate(.9);
+}
+
+:root[data-theme="dark"] a { color: #c8d2ff; }
+:root[data-theme="dark"] .primary-button,
+:root[data-theme="dark"] .login-submit { color: #fff; }
