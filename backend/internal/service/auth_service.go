@@ -5,8 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
-	"kuotakita/backend/internal/domain"
 	"fmt"
+	"kuotakita/backend/internal/domain"
 	"strconv"
 	"strings"
 	"time"
@@ -32,6 +32,38 @@ func (s *AuthService) Register(in domain.RegisterInput) (domain.AuthResult, erro
 		return domain.AuthResult{}, errors.New("lengkapi data dengan benar; password minimal 6 karakter")
 	}
 	user := domain.User{ID: fmt.Sprintf("USR-%d", time.Now().Unix()), Username: in.Username, Name: in.Name, Role: "user", Balance: 0, Phone: in.Phone, Email: strings.ToLower(strings.TrimSpace(in.Email))}
+	return s.result(user), nil
+}
+
+// GoogleLogin creates a normal KuotaKita session from the identity verified by Google.
+// This project currently uses an in-memory user store, so account profile data is created
+// from Google's verified OpenID Connect response for the active session.
+func (s *AuthService) GoogleLogin(googleID, name, email string) (domain.AuthResult, error) {
+	googleID = strings.TrimSpace(googleID)
+	email = strings.ToLower(strings.TrimSpace(email))
+	name = strings.TrimSpace(name)
+	if googleID == "" || !strings.Contains(email, "@") {
+		return domain.AuthResult{}, errors.New("profil Google tidak valid")
+	}
+	if name == "" {
+		name = strings.Split(email, "@")[0]
+	}
+	username := strings.Split(email, "@")[0]
+	username = strings.Map(func(r rune) rune {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == '_' || r == '.' {
+			return r
+		}
+		return '_'
+	}, username)
+	sum := sha256.Sum256([]byte(googleID))
+	user := domain.User{
+		ID:       "GOO-" + fmt.Sprintf("%x", sum[:6]),
+		Username: username,
+		Name:     name,
+		Role:     "user",
+		Balance:  0,
+		Email:    email,
+	}
 	return s.result(user), nil
 }
 func (s *AuthService) result(user domain.User) domain.AuthResult {

@@ -28,7 +28,7 @@ func New(cfg config.Config) *App {
 	auth := service.NewAuthService(cfg.JWTSecret)
 	lookup := service.NewLookupService()
 	userTransactions := handler.NewUserTransactionHandler(auth)
-	routes := router.New(router.Handlers{Transactions: handler.NewTransactionHandler(tx), Customers: handler.NewCustomerHandler(customers), Dashboard: handler.NewDashboardHandler(dashboard), Products: handler.NewProductHandler(products), Auth: handler.NewAuthHandler(auth), Lookup: handler.NewLookupHandler(lookup), UserTransactions: userTransactions})
+	routes := router.New(router.Handlers{Transactions: handler.NewTransactionHandler(tx), Customers: handler.NewCustomerHandler(customers), Dashboard: handler.NewDashboardHandler(dashboard), Products: handler.NewProductHandler(products), Auth: handler.NewAuthHandler(auth, cfg), Lookup: handler.NewLookupHandler(lookup), UserTransactions: userTransactions})
 	var root http.Handler = routes
 	if cfg.StaticDir != "" {
 		root = spaHandler(cfg.StaticDir, routes)
