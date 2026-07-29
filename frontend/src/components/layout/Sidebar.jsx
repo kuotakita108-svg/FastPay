@@ -21,9 +21,9 @@ const analisNavigation = [
   {
     section: 'Analisis Kredit',
     items: [
-      {to: '/credit-applications', label: 'Review Kredit Agent', icon: ShieldCheck},
-      {to: '/credit-applications?view=verifikasi', label: 'Menunggu Analisis', icon: ClipboardCheck},
-      {to: '/credit-applications?view=laporan', label: 'Laporan Kredit', icon: BarChart3},
+      {to: '/credit-applications', label: 'Meja Analisis', icon: ShieldCheck},
+      {to: '/credit-applications?view=verifikasi', label: 'Keputusan Analis', icon: ClipboardCheck},
+      {to: '/credit-applications?view=laporan', label: 'Rekap Keputusan', icon: BarChart3},
     ],
   },
 ]

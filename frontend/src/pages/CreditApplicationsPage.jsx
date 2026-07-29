@@ -185,8 +185,8 @@ export default function CreditApplicationsPage() {
   const isDetail = view === 'detail'
   const isInstallmentDetail = view === 'angsuran-detail'
   const isStandaloneDetail = isDetail || isInstallmentDetail
-  const goToView = (nextView, id = '', nextFilter = '') => setSearchParams(nextView ? {view: nextView, ...(id ? {id} : {}), ...(nextFilter ? {filter: nextFilter} : {})} : {})
-  const closeDetailView = () => goToView(isInstallmentDetail ? 'angsuran' : isDetail ? 'peminjam' : 'verifikasi', '', filter)
+  const goToView = (nextView, id = '', nextFilter = '') => setSearchParams(nextView ? {view: nextView, ...(id ? {id} : {}), ...(nextFilter ? {filter: nextFilter} : {}), ...(nextView === 'detail' ? {from: view} : {})} : {})
+  const closeDetailView = () => goToView(isInstallmentDetail ? 'angsuran' : isDetail ? (params.get('from') || (isAnalis ? 'verifikasi' : 'peminjam')) : 'verifikasi', '', filter)
   // Used immediately after a local UI action. The periodic server refresh below
   // replaces this short-lived cache with the saved server response.
   const refresh = () => setItems(readAll())
@@ -461,7 +461,8 @@ export default function CreditApplicationsPage() {
     const matchQuery = text.includes(query.toLowerCase().trim())
     const group = statusGroup(item)
     const matchFilter = view === 'angsuran' || view === 'pembayaran' ? ['Disetujui', 'Lunas'].includes(group) : filter === 'Semua' || group === filter
-    return matchDetail && matchQuery && matchFilter
+    const matchRoleQueue = !isAnalis || isStandaloneDetail || ['Menunggu analis', 'Menunggu keputusan analis'].includes(item.status)
+    return matchDetail && matchQuery && matchFilter && matchRoleQueue
   })
   const summary = {
     total: items.length,
@@ -470,6 +471,9 @@ export default function CreditApplicationsPage() {
     paid: items.filter(item => statusGroup(item) === 'Lunas').length,
   }
   const marketingQueue = sortedItems.filter(item => !finalStatus.includes(item.status) && !item.marketingSignature)
+  const analystQueue = sortedItems.filter(item => ['Menunggu analis', 'Menunggu keputusan analis'].includes(item.status))
+  const analystReadyToDecide = analystQueue.filter(item => Boolean(item.analisSignature))
+  const analystDecidedToday = sortedItems.filter(item => finalStatus.includes(item.status) && new Date(item.decidedAt || 0).toDateString() === new Date().toDateString())
   const approvedActive = sortedItems.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas')
   const duePayments = approvedActive.filter(item => {
     const next = firstUnpaidRow(item)
@@ -527,13 +531,13 @@ export default function CreditApplicationsPage() {
   }
 
   return <>
-    {!isStandaloneDetail && view === 'overview' && <PageHeader eyebrow="MARKETING KREDIT" title="Review Kredit Saldo Agent" description="Marketing memeriksa data dan menandatangani pengajuan, lalu analis memberi keputusan akhir."/>}
+    {!isStandaloneDetail && view === 'overview' && <PageHeader eyebrow={isAnalis ? 'ANALISIS KREDIT' : 'MARKETING KREDIT'} title={isAnalis ? 'Keputusan Kredit Agent' : 'Review Kredit Saldo Agent'} description={isAnalis ? 'Analis memeriksa hasil verifikasi marketing, menandatangani, lalu memberi keputusan akhir.' : 'Marketing memeriksa data dan menandatangani pengajuan, lalu analis memberi keputusan akhir.'}/>}
     <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''}`}>
       {view === 'overview' && <div className="credit-review-hero">
         <div>
-          <span>RUANG DATA PEMINJAM</span>
-          <h2>Monitoring Kredit Agent</h2>
-          <p>Semua pengajuan tersusun rapi dari yang terbaru. Marketing, analis, dan admin bisa cek data agent, tanda tangan, keputusan, sampai pembayaran.</p>
+          <span>{isAnalis ? 'RUANG KEPUTUSAN ANALIS' : 'RUANG DATA PEMINJAM'}</span>
+          <h2>{isAnalis ? 'Kontrol Keputusan Kredit' : 'Monitoring Kredit Agent'}</h2>
+          <p>{isAnalis ? 'Fokus hanya pada pengajuan yang sudah diverifikasi Marketing. Analis mengecek kelayakan, tanda tangan, lalu menerima atau menolak.' : 'Semua pengajuan tersusun rapi dari yang terbaru. Marketing, analis, dan admin bisa cek data agent, tanda tangan, keputusan, sampai pembayaran.'}</p>
         </div>
         <i><WalletCards/></i>
       </div>}
@@ -583,8 +587,27 @@ export default function CreditApplicationsPage() {
           </div>
         </div>
       </section>}
-      {(isMarketing || isAdmin) && view === 'verifikasi' && <section className="marketing-action-panel">
-        <header><ClipboardCheck/><div><span>FOKUS VERIFIKASI</span><h2>{marketingQueue.length} pengajuan perlu dicek</h2><p>Data di bawah otomatis difilter ke status review. Buka detail untuk cek checklist, hubungi WA, lalu tanda tangan marketing.</p></div></header>
+      {(isAnalis || isAdmin) && view === 'overview' && <section className="marketing-workspace analyst-workspace">
+        <header>
+          <div><span>MEJA KERJA ANALIS</span><h2>Keputusan Akhir Kredit</h2><p>Hanya berkas yang sudah diverifikasi dan dikirim Marketing yang masuk ke sini. Analis tidak menginput peminjam atau mencatat cicilan.</p></div>
+        </header>
+        <div className="marketing-task-grid">
+          <article><i><ClipboardCheck/></i><span>Masuk dari Marketing</span><strong>{analystQueue.length}</strong><small>Menunggu pengecekan analis</small></article>
+          <article><i><Stamp/></i><span>Siap Diputuskan</span><strong>{analystReadyToDecide.length}</strong><small>TTD analis sudah tersimpan</small></article>
+          <article><i><CheckCircle2/></i><span>Keputusan Hari Ini</span><strong>{analystDecidedToday.length}</strong><small>Diterima atau ditolak hari ini</small></article>
+        </div>
+        <div className="marketing-quick-actions" aria-label="Aksi cepat analis">
+          <button type="button" className="primary" onClick={() => goToView('verifikasi')}><ClipboardCheck/><span><b>Buka antrean analis</b><small>{analystQueue.length ? `${analystQueue.length} berkas siap diperiksa` : 'Tidak ada berkas baru'}</small></span><strong>→</strong></button>
+          <button type="button" onClick={() => goToView('laporan')}><BarChart3/><span><b>Lihat rekap keputusan</b><small>Riwayat kredit dan keputusan</small></span><strong>→</strong></button>
+        </div>
+        <div className="marketing-section-label focus-label"><span>BERKAS PRIORITAS</span><small>Periksa kelayakan dan kelengkapan sebelum memberi keputusan</small></div>
+        <div className="marketing-focus-grid">
+          <div><h3>Menunggu tanda tangan analis</h3>{analystQueue.filter(item => !item.analisSignature).slice(0, 4).map(item => <button type="button" key={item.id} onClick={() => goToView('verifikasi', item.id, 'Review')}><span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id}</small></span><strong>{rupiah(item.form.amount)}</strong></button>)}{!analystQueue.some(item => !item.analisSignature) && <p>Tidak ada berkas yang menunggu tanda tangan analis.</p>}</div>
+          <div><h3>Siap diberi keputusan</h3>{analystReadyToDecide.slice(0, 4).map(item => <button type="button" key={item.id} onClick={() => goToView('verifikasi', item.id, 'Review')}><span><b>{item.form.agentName || item.userName}</b><small>TTD analis sudah tersimpan</small></span><strong>{rupiah(item.form.amount)}</strong></button>)}{!analystReadyToDecide.length && <p>Belum ada berkas yang siap diberi keputusan.</p>}</div>
+        </div>
+      </section>}
+      {(isMarketing || isAnalis || isAdmin) && view === 'verifikasi' && <section className="marketing-action-panel">
+        <header><ClipboardCheck/><div><span>{isAnalis ? 'FOKUS ANALISIS' : 'FOKUS VERIFIKASI'}</span><h2>{isAnalis ? analystQueue.length : marketingQueue.length} pengajuan perlu dicek</h2><p>{isAnalis ? 'Hanya berkas yang sudah diteruskan Marketing tampil di bawah. Buka detail, cek kelayakan, tanda tangan analis, lalu berikan keputusan akhir.' : 'Data di bawah otomatis difilter ke status review. Buka detail untuk cek checklist, hubungi WA, lalu tanda tangan marketing.'}</p></div></header>
       </section>}
       {(isMarketing || isAdmin) && view === 'peminjam' && <section className="borrower-directory-panel">
         <header><div><span>DIREKTORI PEMINJAM</span><h2>Data peminjam diterima</h2><p>Hanya pengajuan yang sudah diterima dan sedang berjalan atau lunas. Data review dan ditolak tidak ditampilkan di sini.</p></div><strong className="directory-total">{approvedBorrowerRows.length}<small>Data diterima</small></strong></header>
@@ -620,7 +643,7 @@ export default function CreditApplicationsPage() {
           {!installmentRows.length && <p>Belum ada pinjaman diterima yang perlu dicatat cicilannya.</p>}
         </div>
       </section>}
-      {(isMarketing || isAdmin) && view === 'laporan' && <>
+      {(isMarketing || isAnalis || isAdmin) && view === 'laporan' && <>
         <section className="marketing-report-panel">
           <article><span>Total Pinjaman</span><strong>{rupiah(totalLoan)}</strong><small>Akumulasi nominal pengajuan</small></article>
           <article><span>Pembayaran Masuk</span><strong>{rupiah(totalPaidAmount)}</strong><small>Cicilan yang sudah dicatat</small></article>
@@ -628,7 +651,7 @@ export default function CreditApplicationsPage() {
           <article><span>Rasio Lunas</span><strong>{items.length ? Math.round((summary.paid / items.length) * 100) : 0}%</strong><small>Dari seluruh peminjam</small></article>
         </section>
         <section className="marketing-report-table">
-          <header><div><span>LAPORAN DETAIL</span><h2>Rekap peminjam & pembayaran</h2><p>Data ini berguna buat kontrol tagihan, lihat sisa pembayaran, dan arsip kerja marketing.</p></div><button type="button" onClick={exportReport}><Banknote/>Export CSV</button></header>
+          <header><div><span>LAPORAN DETAIL</span><h2>Rekap peminjam & pembayaran</h2><p>{isAnalis ? 'Gunakan rekap ini untuk memantau keputusan akhir dan kesehatan kredit yang sudah berjalan.' : 'Data ini berguna buat kontrol tagihan, lihat sisa pembayaran, dan arsip kerja marketing.'}</p></div><button type="button" onClick={exportReport}><Banknote/>Export CSV</button></header>
           <div>{sortedItems.length ? sortedItems.map(item => {
             const pay = paymentSummary(item)
             return <article key={item.id}>
@@ -651,7 +674,7 @@ export default function CreditApplicationsPage() {
         </ol>
       </section>}
       {showMainList && <div className="panel-header">
-        <div><h2>Pengajuan Masuk</h2><p>{isMarketing ? 'Tugas marketing: cek data agent, tanda tangan, atau tolak jika data tidak layak.' : isAnalis ? 'Tugas analis: cek hasil marketing, tanda tangan, lalu terima atau tolak.' : 'Pantau seluruh alur pengajuan kredit agent dari satu panel.'}</p></div>
+        <div><h2>{isAnalis ? 'Berkas Siap Dianalisis' : 'Pengajuan Masuk'}</h2><p>{isMarketing ? 'Tugas marketing: cek data agent, tanda tangan, atau tolak jika data tidak layak.' : isAnalis ? 'Tugas analis: cek hasil marketing, tanda tangan, lalu terima atau tolak.' : 'Pantau seluruh alur pengajuan kredit agent dari satu panel.'}</p></div>
         <span className="review-role-badge">{isMarketing ? 'MARKETING' : isAnalis ? 'ANALIS' : 'ADMIN'}</span>
       </div>}
       {showCreateArea && <section className={`credit-create-box ${view === 'input' ? 'focus' : ''}`}>
