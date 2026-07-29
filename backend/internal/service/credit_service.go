@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"kuotakita/backend/internal/database"
 	"os"
 	"path/filepath"
 	"sort"
@@ -15,10 +16,11 @@ import (
 // The frontend may cache for display, but all writes are stored in the
 // persistent Docker volume so they are available to agent, marketing and analis.
 type CreditService struct {
-	path string
-	auth *AuthService
-	mu   sync.RWMutex
-	rows map[string]map[string]any
+	path  string
+	auth  *AuthService
+	state *database.StateStore
+	mu    sync.RWMutex
+	rows  map[string]map[string]any
 }
 
 type creditFile struct {
@@ -26,7 +28,11 @@ type creditFile struct {
 }
 
 func NewCreditService(path string, auth *AuthService) *CreditService {
-	s := &CreditService{path: path, auth: auth, rows: map[string]map[string]any{}}
+	return NewDatabaseCreditService(path, auth, nil)
+}
+
+func NewDatabaseCreditService(path string, auth *AuthService, state *database.StateStore) *CreditService {
+	s := &CreditService{path: path, auth: auth, state: state, rows: map[string]map[string]any{}}
 	if err := s.load(); err != nil {
 		panic(err)
 	}
@@ -95,6 +101,21 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 }
 
 func (s *CreditService) load() error {
+	if s.state != nil {
+		var file creditFile
+		found, err := s.state.Load("credit-applications", &file)
+		if err != nil {
+			return err
+		}
+		if found {
+			for _, row := range file.Applications {
+				if id := strings.TrimSpace(stringValue(row["id"])); id != "" {
+					s.rows[id] = row
+				}
+			}
+			return nil
+		}
+	}
 	if err := os.MkdirAll(filepath.Dir(s.path), 0700); err != nil {
 		return err
 	}
@@ -114,13 +135,16 @@ func (s *CreditService) load() error {
 			s.rows[id] = row
 		}
 	}
+	if s.state != nil {
+		return s.state.Save("credit-applications", creditFile{Applications: s.allRows()})
+	}
 	return nil
 }
 
 func (s *CreditService) saveLocked() error {
-	items := make([]map[string]any, 0, len(s.rows))
-	for _, row := range s.rows {
-		items = append(items, row)
+	items := s.allRows()
+	if s.state != nil {
+		return s.state.Save("credit-applications", creditFile{Applications: items})
 	}
 	bytes, err := json.MarshalIndent(creditFile{Applications: items}, "", "  ")
 	if err != nil {
@@ -131,6 +155,14 @@ func (s *CreditService) saveLocked() error {
 		return err
 	}
 	return os.Rename(tmp, s.path)
+}
+
+func (s *CreditService) allRows() []map[string]any {
+	items := make([]map[string]any, 0, len(s.rows))
+	for _, row := range s.rows {
+		items = append(items, row)
+	}
+	return items
 }
 
 func cloneCredit(value map[string]any) map[string]any {

@@ -2,6 +2,7 @@ package app
 
 import (
 	"kuotakita/backend/internal/config"
+	"kuotakita/backend/internal/database"
 	"kuotakita/backend/internal/http/handler"
 	"kuotakita/backend/internal/http/middleware"
 	"kuotakita/backend/internal/http/router"
@@ -20,12 +21,16 @@ type App struct {
 }
 
 func New(cfg config.Config) *App {
+	state, err := database.OpenStateStore(cfg.DatabaseDriver, cfg.DatabaseURL)
+	if err != nil {
+		panic("database KuotaKita belum siap: " + err.Error())
+	}
 	store := memory.New()
 	tx := service.NewTransactionService(store)
 	customers := service.NewCustomerService(store)
 	dashboard := service.NewDashboardService(tx)
 	products := service.NewProductService(store)
-	auth := service.NewPersistentAuthService(cfg.JWTSecret, filepath.Join(cfg.DataDir, "accounts.json"), []service.AccountSeed{
+	auth := service.NewDatabaseAuthService(cfg.JWTSecret, filepath.Join(cfg.DataDir, "accounts.json"), state, []service.AccountSeed{
 		{Username: cfg.MasterUsername, Password: cfg.MasterPassword, Name: "Master KuotaKita", Role: "master"},
 		{Username: cfg.AgentUsername, Password: cfg.AgentPassword, Name: "Agent KuotaKita", Role: "agent", InitialBalance: cfg.AgentInitialBalance},
 		{Username: cfg.MarketingUsername, Password: cfg.MarketingPassword, Name: "Marketing KuotaKita", Role: "marketing"},
@@ -33,9 +38,9 @@ func New(cfg config.Config) *App {
 	})
 	lookup := service.NewLookupService()
 	// Wallet history lives in the server volume, not in a browser tab.
-	userTransactions := handler.NewUserTransactionHandler(auth, filepath.Join(cfg.DataDir, "wallet-transactions.json"))
-	credit := service.NewCreditService(filepath.Join(cfg.DataDir, "credit-applications.json"), auth)
-	preferences := service.NewPreferenceService(auth, filepath.Join(cfg.DataDir, "user-preferences.json"))
+	userTransactions := handler.NewDatabaseUserTransactionHandler(auth, filepath.Join(cfg.DataDir, "wallet-transactions.json"), state)
+	credit := service.NewDatabaseCreditService(filepath.Join(cfg.DataDir, "credit-applications.json"), auth, state)
+	preferences := service.NewDatabasePreferenceService(auth, filepath.Join(cfg.DataDir, "user-preferences.json"), state)
 	routes := router.New(router.Handlers{Transactions: handler.NewTransactionHandler(tx), Customers: handler.NewCustomerHandler(customers), Dashboard: handler.NewDashboardHandler(dashboard), Products: handler.NewProductHandler(products), Auth: handler.NewAuthHandler(auth, cfg), Lookup: handler.NewLookupHandler(lookup), UserTransactions: userTransactions, Credit: handler.NewCreditHandler(credit), Preferences: handler.NewPreferenceHandler(preferences)})
 	var root http.Handler = routes
 	if cfg.StaticDir != "" {

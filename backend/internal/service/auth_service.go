@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"kuotakita/backend/internal/database"
 	"kuotakita/backend/internal/domain"
 	"os"
 	"path/filepath"
@@ -46,6 +47,7 @@ type accountFile struct {
 type AuthService struct {
 	secret   string
 	dataFile string
+	state    *database.StateStore
 	mu       sync.RWMutex
 	users    map[string]storedUser
 }
@@ -53,16 +55,38 @@ type AuthService struct {
 // NewAuthService is kept for tests and local development. Production should use
 // NewPersistentAuthService so registration survives restarts and is shared by all devices.
 func NewAuthService(secret string) *AuthService {
-	return newAuthService(secret, "", nil)
+	return newAuthService(secret, "", nil, nil)
 }
 
 func NewPersistentAuthService(secret, dataFile string, seeds []AccountSeed) *AuthService {
-	return newAuthService(secret, dataFile, seeds)
+	return newAuthService(secret, dataFile, nil, seeds)
 }
 
-func newAuthService(secret, dataFile string, seeds []AccountSeed) *AuthService {
-	s := &AuthService{secret: secret, dataFile: dataFile, users: make(map[string]storedUser)}
-	if dataFile != "" {
+// NewDatabaseAuthService uses PostgreSQL as the source of truth. dataFile is
+// retained only to import older server data when the database is still empty.
+func NewDatabaseAuthService(secret, dataFile string, state *database.StateStore, seeds []AccountSeed) *AuthService {
+	return newAuthService(secret, dataFile, state, seeds)
+}
+
+func newAuthService(secret, dataFile string, state *database.StateStore, seeds []AccountSeed) *AuthService {
+	s := &AuthService{secret: secret, dataFile: dataFile, state: state, users: make(map[string]storedUser)}
+	loadedDatabase := false
+	if state != nil {
+		var file accountFile
+		found, err := state.Load("accounts", &file)
+		if err != nil {
+			panic(fmt.Errorf("gagal memuat akun PostgreSQL: %w", err))
+		}
+		if found {
+			loadedDatabase = true
+			for _, user := range file.Users {
+				if user.Username != "" {
+					s.users[user.Username] = user
+				}
+			}
+		}
+	}
+	if !loadedDatabase && dataFile != "" {
 		if err := s.load(); err != nil {
 			panic(fmt.Errorf("gagal memuat data akun: %w", err))
 		}
@@ -76,7 +100,7 @@ func newAuthService(secret, dataFile string, seeds []AccountSeed) *AuthService {
 			changed = true
 		}
 	}
-	if changed || len(s.users) == 0 {
+	if changed || len(s.users) == 0 || (state != nil && !loadedDatabase) {
 		if err := s.save(); err != nil {
 			panic(fmt.Errorf("gagal menyimpan akun awal: %w", err))
 		}
@@ -348,12 +372,15 @@ func (s *AuthService) save() error {
 	return s.saveLocked()
 }
 func (s *AuthService) saveLocked() error {
-	if s.dataFile == "" {
-		return nil
-	}
 	users := make([]storedUser, 0, len(s.users))
 	for _, user := range s.users {
 		users = append(users, user)
+	}
+	if s.state != nil {
+		return s.state.Save("accounts", accountFile{Users: users})
+	}
+	if s.dataFile == "" {
+		return nil
 	}
 	data, err := json.MarshalIndent(accountFile{Users: users}, "", "  ")
 	if err != nil {

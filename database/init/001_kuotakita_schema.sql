@@ -64,3 +64,11 @@ CREATE TABLE IF NOT EXISTS legacy_state_backups (
   payload JSONB NOT NULL,
   imported_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Sumber data operasional aplikasi. Setiap namespace menyimpan dokumen JSONB
+-- atomik sehingga seluruh data lama dapat dimigrasi tanpa kehilangan field.
+CREATE TABLE IF NOT EXISTS app_state (
+  namespace TEXT PRIMARY KEY,
+  payload JSONB NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
