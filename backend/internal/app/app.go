@@ -33,7 +33,8 @@ func New(cfg config.Config) *App {
 	})
 	lookup := service.NewLookupService()
 	userTransactions := handler.NewUserTransactionHandler(auth)
-	routes := router.New(router.Handlers{Transactions: handler.NewTransactionHandler(tx), Customers: handler.NewCustomerHandler(customers), Dashboard: handler.NewDashboardHandler(dashboard), Products: handler.NewProductHandler(products), Auth: handler.NewAuthHandler(auth, cfg), Lookup: handler.NewLookupHandler(lookup), UserTransactions: userTransactions})
+	credit := service.NewCreditService(filepath.Join(cfg.DataDir, "credit-applications.json"), auth)
+	routes := router.New(router.Handlers{Transactions: handler.NewTransactionHandler(tx), Customers: handler.NewCustomerHandler(customers), Dashboard: handler.NewDashboardHandler(dashboard), Products: handler.NewProductHandler(products), Auth: handler.NewAuthHandler(auth, cfg), Lookup: handler.NewLookupHandler(lookup), UserTransactions: userTransactions, Credit: handler.NewCreditHandler(credit)})
 	var root http.Handler = routes
 	if cfg.StaticDir != "" {
 		root = spaHandler(cfg.StaticDir, routes)

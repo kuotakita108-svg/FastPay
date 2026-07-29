@@ -204,22 +204,24 @@ export default function AgentCreditPage() {
 
   useEffect(() => {
     const key = `kuotakita_agent_credit_${user?.id || 'guest'}`
-    const history = readJSON(key)
-    setApplications(history)
-    const latest = history[0]
-    if (latest?.verifyUntil) setApplication(latest)
-    if (!latest) setShowForm(true)
-    history.forEach(item => {
-      if (item?.id) request('/me/agent-credit', {method: 'POST', body: JSON.stringify(item)}).catch(() => {})
+    const legacy = readJSON(key)
+    request('/me/agent-credit').then(async remote => {
+      if (!Array.isArray(remote)) return
+      // One-time migration for applications made before server persistence.
+      if (!remote.length && legacy.length) {
+        await Promise.all(legacy.filter(item => item?.id).map(item => request('/me/agent-credit', {method: 'POST', body: JSON.stringify(item)}).catch(() => null)))
+        remote = await request('/me/agent-credit')
+      }
+      const rows = Array.isArray(remote) ? remote : []
+      setApplications(rows)
+      setApplication(rows[0] || null)
+      setShowForm(rows.length === 0)
+    }).catch(() => {
+      // Offline display only; once online the server always replaces this cache.
+      setApplications(legacy)
+      setApplication(legacy[0] || null)
+      setShowForm(legacy.length === 0)
     })
-    request('/me/agent-credit').then(remote => {
-      if (!Array.isArray(remote) || !remote.length) return
-      const merged = [...remote, ...history.filter(local => !remote.some(item => item.id === local.id))].slice(0, 10)
-      localStorage.setItem(key, JSON.stringify(merged))
-      setApplications(merged)
-      setApplication(merged[0])
-      setShowForm(false)
-    }).catch(() => {})
   }, [user?.id])
 
   useEffect(() => {
@@ -239,29 +241,21 @@ export default function AgentCreditPage() {
 
   useEffect(() => {
     if (!application) return
-    const key = `kuotakita_agent_credit_${user?.id || 'guest'}`
-    const history = readJSON(key)
-    setApplications(history)
-    const latest = history.find(item => item.id === application.id)
-    if (latest && latest.status !== application.status) setApplication(latest)
-  }, [application, now, user?.id])
+    const latest = applications.find(item => item.id === application.id)
+    if (latest && latest.updatedAt !== application.updatedAt) setApplication(latest)
+  }, [applications, application])
 
   const persistApplication = nextApplication => {
     const userId = nextApplication.userId || user?.id || 'guest'
     const userName = nextApplication.userName || user?.name || nextApplication.form?.agentName
-    const ownKey = `kuotakita_agent_credit_${userId}`
-    const ownHistory = readJSON(ownKey)
-    const allKey = 'kuotakita_agent_credit_all'
-    const allHistory = readJSON(allKey)
-    const ownNext = [nextApplication, ...ownHistory.filter(row => row.id !== nextApplication.id)].slice(0, 10)
-    const allNext = [{...nextApplication, userId, userName}, ...allHistory.filter(row => row.id !== nextApplication.id)].slice(0, 50)
-    localStorage.setItem(ownKey, JSON.stringify(ownNext))
-    localStorage.setItem(allKey, JSON.stringify(allNext))
-    window.dispatchEvent(new Event('kuotakita-credit-sync'))
-    request('/me/agent-credit', {method: 'POST', body: JSON.stringify({...nextApplication, userId, userName})}).catch(() => {})
-    setApplications(ownNext)
-    setApplication(nextApplication)
-    return nextApplication
+    const optimistic = {...nextApplication, userId, userName, updatedAt: new Date().toISOString()}
+    setApplications(current => [optimistic, ...current.filter(row => row.id !== optimistic.id)])
+    setApplication(optimistic)
+    request('/me/agent-credit', {method: 'POST', body: JSON.stringify(optimistic)}).then(saved => {
+      setApplications(current => [saved, ...current.filter(row => row.id !== saved.id)])
+      setApplication(current => current?.id === saved.id ? saved : current)
+    }).catch(() => setMessage('Data belum tersimpan ke server. Periksa koneksi lalu coba lagi.'))
+    return optimistic
   }
 
   useEffect(() => {
@@ -370,10 +364,8 @@ export default function AgentCreditPage() {
   })) : []
   const payInstallment = item => {
     if (!paymentProof) return setMessage('Bukti transfer wajib diunggah sebelum pembayaran dikonfirmasi.')
-    const key = `kuotakita_agent_repayments_${user?.id || 'guest'}`
     const next = [{key: item.key, applicationId: application.id, label: item.label, amount: item.amount, status: 'Lunas', paidAt: new Date().toISOString(), proof: paymentProof}, ...repayments.filter(row => row.key !== item.key)]
     setRepayments(next)
-    localStorage.setItem(key, JSON.stringify(next))
     const appRepayments = next.filter(row => row.applicationId === application.id)
     const paymentStatus = appRepayments.length >= paymentSteps.length ? 'Lunas' : `Terbayar ${appRepayments.length}/${paymentSteps.length}`
     const updatedApplication = {...application, repayments: appRepayments, paymentStatus, updatedAt: new Date().toISOString()}

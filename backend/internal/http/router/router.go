@@ -13,6 +13,7 @@ type Handlers struct {
 	Auth             *handler.AuthHandler
 	Lookup           *handler.LookupHandler
 	UserTransactions *handler.UserTransactionHandler
+	Credit           *handler.CreditHandler
 }
 
 func New(h Handlers) http.Handler {
@@ -31,5 +32,9 @@ func New(h Handlers) http.Handler {
 	mux.HandleFunc("POST /api/v1/services/lookup", h.Lookup.Lookup)
 	mux.HandleFunc("GET /api/v1/me/transactions", h.UserTransactions.List)
 	mux.HandleFunc("POST /api/v1/me/transactions", h.UserTransactions.Create)
+	mux.HandleFunc("GET /api/v1/me/agent-credit", h.Credit.List)
+	mux.HandleFunc("POST /api/v1/me/agent-credit", h.Credit.Save)
+	mux.HandleFunc("GET /api/v1/agent-credit/applications", h.Credit.List)
+	mux.HandleFunc("PUT /api/v1/agent-credit/applications/{id}", h.Credit.Save)
 	return mux
 }

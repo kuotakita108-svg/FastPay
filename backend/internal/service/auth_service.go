@@ -230,6 +230,23 @@ func (s *AuthService) UserID(token string) (string, error) {
 	return id, err
 }
 
+// CurrentUser resolves the signed-in user from a session token. Handlers use
+// this instead of trusting a user id sent by the browser.
+func (s *AuthService) CurrentUser(token string) (domain.User, error) {
+	id, _, err := s.session(token)
+	if err != nil {
+		return domain.User{}, err
+	}
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	for _, item := range s.users {
+		if item.ID == id {
+			return item.User, nil
+		}
+	}
+	return domain.User{}, errors.New("akun tidak ditemukan")
+}
+
 func (s *AuthService) addSeed(seed AccountSeed) error {
 	username := normalize(seed.Username)
 	if username == "" || seed.Password == "" {

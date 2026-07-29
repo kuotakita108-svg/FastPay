@@ -157,7 +157,7 @@ export default function CreditApplicationsPage() {
   const [params, setSearchParams] = useSearchParams()
   const canvasRef = useRef(null)
   const drawing = useRef(false)
-  const [items, setItems] = useState(readAll)
+  const [items, setItems] = useState([])
   const [signaturePad, setSignaturePad] = useState(null)
   const [signatureDrawn, setSignatureDrawn] = useState(false)
   const [query, setQuery] = useState('')
@@ -182,23 +182,15 @@ export default function CreditApplicationsPage() {
   const isStandaloneDetail = isDetail || isInstallmentDetail
   const goToView = (nextView, id = '', nextFilter = '') => setSearchParams(nextView ? {view: nextView, ...(id ? {id} : {}), ...(nextFilter ? {filter: nextFilter} : {})} : {})
   const closeDetailView = () => goToView(isInstallmentDetail ? 'angsuran' : isDetail ? 'peminjam' : 'verifikasi', '', filter)
+  // Used immediately after a local UI action. The periodic server refresh below
+  // replaces this short-lived cache with the saved server response.
   const refresh = () => setItems(readAll())
   const refreshRemote = () => request('/agent-credit/applications').then(remote => {
     if (!Array.isArray(remote)) return
-    const local = readAll()
-    const localById = new Map(local.map(item => [item.id, item]))
-    const merged = remote.map(row => {
-      const localRow = localById.get(row.id)
-      return localRow ? {...row, ...localRow, documents: mergeDocuments(row.documents, localRow.documents)} : row
-    }).concat(local.filter(item => !remote.some(row => row.id === item.id)))
-    localStorage.setItem(allKey, JSON.stringify(merged.slice(0, 50)))
-    merged.forEach(item => {
-      if (!item.userId) return
-      const own = JSON.parse(localStorage.getItem(userKey(item.userId)) || '[]')
-      localStorage.setItem(userKey(item.userId), JSON.stringify([item, ...own.filter(row => row.id !== item.id)].slice(0, 10)))
-    })
-    setItems(readAll())
-  }).catch(() => refresh())
+    // Server data wins. This prevents stale browser cache from overwriting
+    // signatures, documents, status and repayments from other users.
+    setItems(remote)
+  }).catch(() => setItems(readAll()))
 
   useEffect(() => {
     const sync = () => refreshRemote()
