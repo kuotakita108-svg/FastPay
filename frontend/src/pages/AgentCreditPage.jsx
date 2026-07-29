@@ -460,7 +460,11 @@ export default function AgentCreditPage() {
   const approved = application?.status === 'Disetujui'
   const rejected = application?.status === 'Ditolak'
   const waitingDecision = application && !approved && !rejected && remainingMs === 0
-  const shouldShowForm = showForm || applications.length === 0
+  // Dua menu ini memang terpisah: daftar baru hanya formulir, sedangkan
+  // semua peminjam hanya direktori/status pengajuan. Jangan otomatis membuka
+  // formulir saat daftar masih kosong karena itu membuat keduanya terlihat
+  // seperti halaman yang sama.
+  const shouldShowForm = showForm
   const totalCreditApproved = applications.filter(item => item.status === 'Disetujui' || item.paymentStatus === 'Lunas').reduce((sum, item) => sum + Number(item.form?.amount || 0), 0)
   const totalCreditPaid = repayments.filter(item => item.status === 'Lunas').reduce((sum, item) => sum + Number(item.amount || 0), 0)
   const canRefill = approved && paymentPlan.length > 0 && paymentPlan.every(item => item.paid)
@@ -487,14 +491,13 @@ export default function AgentCreditPage() {
       <button type="button" className={!showForm && !detailOpen ? 'active' : ''} onClick={backToApplications}><FileText/><span>Semua Peminjam<small>{applications.length} pengajuan tersimpan</small></span></button>
       <button type="button" className={showForm ? 'active' : ''} onClick={startNewApplication}><UserRound/><span>Daftar Baru<small>Tambah orang yang ingin meminjam</small></span></button>
     </div>
-    {(!showForm && !detailOpen || applications.length === 0) && <section className="agent-registered-list">
+    {!showForm && !detailOpen && <section className="agent-registered-list">
       <header>
         <div>
           <span>DATA PENGAJUAN AGENT</span>
           <h2>Orang yang didaftarkan</h2>
           <p>Semua pengajuan tersimpan rapi di sini. Pilih salah satu untuk melihat detail dan progres verifikasinya.</p>
         </div>
-        <button type="button" onClick={startNewApplication}>+ Daftar Baru</button>
       </header>
       <div className="agent-list-summary" aria-label="Ringkasan pengajuan">
         <div><strong>{applications.length}</strong><span>Total</span></div>
