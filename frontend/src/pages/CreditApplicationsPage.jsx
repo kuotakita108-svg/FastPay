@@ -92,7 +92,11 @@ function saveApplication(target, changes) {
   localStorage.setItem(allKey, JSON.stringify([next, ...all.filter(item => item.id !== target.id)].slice(0, 50)))
   const own = JSON.parse(localStorage.getItem(userKey(target.userId)) || '[]')
   localStorage.setItem(userKey(target.userId), JSON.stringify([next, ...own.filter(item => item.id !== target.id)].slice(0, 10)))
-  request(`/agent-credit/applications/${encodeURIComponent(target.id)}`, {method: 'PUT', body: JSON.stringify(next)}).catch(() => {})
+  request(`/agent-credit/applications/${encodeURIComponent(target.id)}`, {method: 'PUT', body: JSON.stringify(next)}).then(saved => {
+    const current = readAll()
+    localStorage.setItem(allKey, JSON.stringify([saved, ...current.filter(item => item.id !== saved.id)].slice(0, 50)))
+    window.dispatchEvent(new Event('kuotakita-credit-sync'))
+  }).catch(() => {})
   return next
 }
 

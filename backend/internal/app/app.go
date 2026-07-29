@@ -32,7 +32,8 @@ func New(cfg config.Config) *App {
 		{Username: cfg.AnalisUsername, Password: cfg.AnalisPassword, Name: "Analis KuotaKita", Role: "analis"},
 	})
 	lookup := service.NewLookupService()
-	userTransactions := handler.NewUserTransactionHandler(auth)
+	// Wallet history lives in the server volume, not in a browser tab.
+	userTransactions := handler.NewUserTransactionHandler(auth, filepath.Join(cfg.DataDir, "wallet-transactions.json"))
 	credit := service.NewCreditService(filepath.Join(cfg.DataDir, "credit-applications.json"), auth)
 	routes := router.New(router.Handlers{Transactions: handler.NewTransactionHandler(tx), Customers: handler.NewCustomerHandler(customers), Dashboard: handler.NewDashboardHandler(dashboard), Products: handler.NewProductHandler(products), Auth: handler.NewAuthHandler(auth, cfg), Lookup: handler.NewLookupHandler(lookup), UserTransactions: userTransactions, Credit: handler.NewCreditHandler(credit)})
 	var root http.Handler = routes

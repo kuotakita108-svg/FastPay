@@ -234,10 +234,11 @@ export default function AgentCreditPage() {
     }
   }, [location.state, applications.length])
 
+  // Pembayaran berasal dari pengajuan yang sudah disimpan server, sehingga
+  // agent membuka dari perangkat lain tetap melihat cicilan yang sama.
   useEffect(() => {
-    const key = `kuotakita_agent_repayments_${user?.id || 'guest'}`
-    setRepayments(readJSON(key))
-  }, [user?.id])
+    setRepayments(applications.flatMap(item => item.repayments || []))
+  }, [applications])
 
   useEffect(() => {
     if (!application) return

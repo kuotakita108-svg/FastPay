@@ -247,6 +247,32 @@ func (s *AuthService) CurrentUser(token string) (domain.User, error) {
 	return domain.User{}, errors.New("akun tidak ditemukan")
 }
 
+// ChangeBalance keeps wallet balance on the server. Positive values are top
+// ups; negative values are successful purchases or transfers.
+func (s *AuthService) ChangeBalance(token string, delta int64) (domain.User, error) {
+	id, _, err := s.session(token)
+	if err != nil {
+		return domain.User{}, err
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for key, item := range s.users {
+		if item.ID != id {
+			continue
+		}
+		if delta < 0 && item.Balance < -delta {
+			return domain.User{}, errors.New("saldo KuotaKita tidak mencukupi")
+		}
+		item.Balance += delta
+		s.users[key] = item
+		if err := s.saveLocked(); err != nil {
+			return domain.User{}, errors.New("saldo belum dapat disimpan ke server")
+		}
+		return item.User, nil
+	}
+	return domain.User{}, errors.New("akun tidak ditemukan")
+}
+
 func (s *AuthService) addSeed(seed AccountSeed) error {
 	username := normalize(seed.Username)
 	if username == "" || seed.Password == "" {
