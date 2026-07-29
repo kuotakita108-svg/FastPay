@@ -94,6 +94,9 @@ func (s *PreferenceService) load() error {
 	}
 	b, err := os.ReadFile(s.dataFile)
 	if os.IsNotExist(err) {
+		if s.state != nil {
+			return s.state.Save("user-preferences", preferenceFile{Users: s.users})
+		}
 		return nil
 	}
 	if err != nil {

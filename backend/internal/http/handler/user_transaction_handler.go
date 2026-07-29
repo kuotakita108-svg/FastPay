@@ -161,6 +161,9 @@ func (h *UserTransactionHandler) load() error {
 	}
 	data, err := os.ReadFile(h.dataFile)
 	if os.IsNotExist(err) {
+		if h.state != nil {
+			return h.state.Save("wallet-transactions", transactionFile{Items: h.items})
+		}
 		return nil
 	}
 	if err != nil {

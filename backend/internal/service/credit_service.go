@@ -121,6 +121,9 @@ func (s *CreditService) load() error {
 	}
 	bytes, err := os.ReadFile(s.path)
 	if errors.Is(err, os.ErrNotExist) {
+		if s.state != nil {
+			return s.state.Save("credit-applications", creditFile{Applications: s.allRows()})
+		}
 		return nil
 	}
 	if err != nil {
