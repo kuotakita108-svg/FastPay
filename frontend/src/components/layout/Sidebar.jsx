@@ -41,14 +41,19 @@ export default function Sidebar({open, onClose}) {
   const roleLabel = role === 'master' ? 'Master Account' : role === 'marketing' ? 'Marketing Kredit' : role === 'analis' ? 'Analis Kredit' : 'Panel Administrator'
   const current = `${location.pathname}${location.search}`
   const active = to => current === to || (!to.includes('?') && location.pathname === to && !location.search)
-  const activeLabel = visibleNavigation.flatMap(group => group.items).find(item => active(item.to))?.label || 'Ringkasan Kredit'
+  const activeLabel = visibleNavigation.flatMap(group => group.items).find(item => active(item.to))?.label || (isAnalis ? 'Meja Analisis' : 'Ringkasan Kredit')
+  const rolePanel = isMarketing
+    ? {eyebrow: 'MODE MARKETING', title: 'Kelola pengajuan agent', description: 'Validasi data, selfie pertemuan, verifikasi, lalu pantau cicilan.'}
+    : isAnalis
+      ? {eyebrow: 'MODE ANALIS', title: 'Keputusan akhir kredit', description: 'Periksa hanya berkas yang sudah diverifikasi Marketing, lalu terima atau tolak.'}
+      : null
 
   return <aside className={`sidebar ${open ? 'open' : ''}`}>
     <NavLink className="brand" to={home} onClick={onClose}><span><Zap size={20}/></span>KuotaKita</NavLink>
-    {isMarketing && <div className="sidebar-role-panel">
-      <span>MODE MARKETING</span>
-      <strong>Kelola pinjaman agent</strong>
-      <small>Input, verifikasi, cicilan, dan laporan dari satu tempat.</small>
+    {rolePanel && <div className={`sidebar-role-panel ${isAnalis ? 'analis-role-panel' : ''}`}>
+      <span>{rolePanel.eyebrow}</span>
+      <strong>{rolePanel.title}</strong>
+      <small>{rolePanel.description}</small>
       <em>Bagian aktif: {activeLabel}</em>
     </div>}
     <nav>{visibleNavigation.map(group => <div key={group.section}>

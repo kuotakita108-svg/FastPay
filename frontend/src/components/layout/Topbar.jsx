@@ -10,9 +10,12 @@ export default function Topbar({onMenu}) {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [noticeOpen, setNoticeOpen] = useState(false)
-  const isReviewer = ['marketing', 'analis', 'admin', 'master'].includes(user?.role)
-  const notices = isReviewer
-    ? [{title: 'Ruang kerja kredit siap', desc: 'Cek antrean verifikasi dan data agent terbaru.', action: () => navigate('/credit-applications?view=verifikasi'), icon: ClipboardCheck}]
+  const isMarketing = user?.role === 'marketing'
+  const isAnalis = user?.role === 'analis'
+  const canCreateAgent = ['marketing', 'admin', 'master'].includes(user?.role)
+  const isCreditTeam = isMarketing || isAnalis || ['admin', 'master'].includes(user?.role)
+  const notices = isCreditTeam
+    ? [{title: isAnalis ? 'Berkas analisis siap' : 'Ruang kerja kredit siap', desc: isAnalis ? 'Periksa berkas dari marketing lalu beri keputusan akhir.' : 'Cek antrean verifikasi dan data agent terbaru.', action: () => navigate('/credit-applications?view=verifikasi'), icon: ClipboardCheck}]
     : [{title: 'Transaksi KuotaKita', desc: 'Pantau transaksi dan status pembayaran terbaru.', action: () => navigate('/transactions'), icon: Bell}]
   const submit = event => {
     event.preventDefault()
@@ -27,7 +30,11 @@ export default function Topbar({onMenu}) {
         <button className="icon-button notification" onClick={() => setNoticeOpen(value => !value)} aria-label="Buka notifikasi"><Bell size={18}/><i/></button>
         {noticeOpen && <div className="notification-popover"><header><div><strong>Notifikasi</strong><small>Informasi yang perlu kamu cek</small></div><span>{notices.length}</span></header>{notices.map(({title, desc, action, icon: Icon}) => <button type="button" key={title} onClick={() => {setNoticeOpen(false); action()}}><i><Icon/></i><span><b>{title}</b><small>{desc}</small></span><em>›</em></button>)}</div>}
       </div>
-      <button className="primary-button" onClick={() => navigate(isReviewer ? '/credit-applications?view=agent-input' : '/topup')}><Plus size={17}/>{isReviewer ? 'Tambah Agent' : 'Transaksi Pulsa'}</button>
+      {canCreateAgent
+        ? <button className="primary-button" onClick={() => navigate('/credit-applications?view=agent-input')}><Plus size={17}/>Tambah Agent</button>
+        : isAnalis
+          ? <button className="primary-button" onClick={() => navigate('/credit-applications?view=verifikasi')}><ClipboardCheck size={17}/>Buka Analisis</button>
+          : <button className="primary-button" onClick={() => navigate('/topup')}><Plus size={17}/>Transaksi Pulsa</button>}
     </div>
   </header>
 }
