@@ -58,6 +58,31 @@ const readJSON = (key, fallback = []) => {
   try { return JSON.parse(localStorage.getItem(key)) || fallback } catch { return fallback }
 }
 
+// Older releases used the account id in the local-storage key. Once the
+// persistent server account was created its id changed, so look for the old
+// records by agent identity as well. This runs only to import the current
+// agent's own historical applications, never records from another agent.
+const legacyApplicationsFor = user => {
+  const found = new Map()
+  const identity = [user?.id, user?.username, user?.name].filter(Boolean).map(value => String(value).trim().toLowerCase())
+  const belongsToUser = item => {
+    const values = [item?.userId, item?.userName, item?.form?.agentName].filter(Boolean).map(value => String(value).trim().toLowerCase())
+    return values.some(value => identity.includes(value))
+  }
+  const add = rows => (Array.isArray(rows) ? rows : []).forEach(item => {
+    if (item?.id && belongsToUser(item)) found.set(item.id, item)
+  })
+  add(readJSON('kuotakita_agent_credit_all'))
+  try {
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index)
+      if (!key?.startsWith('kuotakita_agent_credit_') || key.includes('repayments') || key.endsWith('_all')) continue
+      add(readJSON(key))
+    }
+  } catch {/* browser storage unavailable */}
+  return [...found.values()]
+}
+
 function DocUpload({item, value, onOpenCamera}) {
   const state = value?.status || ''
   return <button type="button" className={`agent-doc-upload ${state === 'ok' ? 'filled' : ''} ${state === 'error' ? 'error' : ''} ${state === 'checking' ? 'checking' : ''}`} onClick={() => onOpenCamera(item)}>
@@ -203,24 +228,26 @@ export default function AgentCreditPage() {
   }, [])
 
   useEffect(() => {
-    const key = `kuotakita_agent_credit_${user?.id || 'guest'}`
-    const legacy = readJSON(key)
+    const legacy = legacyApplicationsFor(user)
     request('/me/agent-credit').then(async remote => {
       if (!Array.isArray(remote)) return
-      // One-time migration for applications made before server persistence.
-      if (!remote.length && legacy.length) {
-        await Promise.all(legacy.filter(item => item?.id).map(item => request('/me/agent-credit', {method: 'POST', body: JSON.stringify(item)}).catch(() => null)))
+      // Import only missing historical records. Existing server records win,
+      // so an old browser cache cannot overwrite decisions or repayments.
+      const remoteIDs = new Set(remote.map(item => item?.id))
+      const missingLegacy = legacy.filter(item => item?.id && !remoteIDs.has(item.id))
+      if (missingLegacy.length) {
+        await Promise.all(missingLegacy.map(item => request('/me/agent-credit', {method: 'POST', body: JSON.stringify(item)}).catch(() => null)))
         remote = await request('/me/agent-credit')
       }
       const rows = Array.isArray(remote) ? remote : []
       setApplications(rows)
       setApplication(rows[0] || null)
-      setShowForm(rows.length === 0)
+      setShowForm(false)
     }).catch(() => {
       // Offline display only; once online the server always replaces this cache.
       setApplications(legacy)
       setApplication(legacy[0] || null)
-      setShowForm(legacy.length === 0)
+      setShowForm(false)
     })
   }, [user?.id])
 
