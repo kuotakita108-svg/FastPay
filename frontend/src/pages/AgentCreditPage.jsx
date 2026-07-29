@@ -29,7 +29,6 @@ const docs = [
   {key: 'ktp', title: 'Foto KTP', hint: 'KTP asli, jelas, tidak buram', camera: 'environment'},
   {key: 'store', title: 'Foto Toko', hint: 'Tampak depan toko/usaha', camera: 'environment'},
   {key: 'selfie', title: 'Selfie Pegang KTP', hint: 'Wajah dan KTP terlihat jelas', camera: 'user'},
-  {key: 'selfieMarketing', title: 'Selfie dengan Marketing', hint: 'Agent dan marketing terlihat jelas', camera: 'user'},
 ]
 
 const terms = [
@@ -128,7 +127,7 @@ function checkImageQuality(file, key) {
     const preview = URL.createObjectURL(file)
     const fail = error => resolve({file, name: file.name, preview, status: 'error', error})
     if (!file.type.startsWith('image/')) return fail('File harus foto/gambar, bukan dokumen lain.')
-    const isSelfie = key === 'selfie' || key === 'selfieMarketing'
+    const isSelfie = key === 'selfie'
     const minimumSize = isSelfie ? 90000 : 65000
     const minimumWidth = isSelfie ? 700 : 640
     const minimumHeight = isSelfie ? 700 : 420
@@ -175,7 +174,7 @@ export default function AgentCreditPage() {
   const galleryRef = useRef(null)
   const drawing = useRef(false)
   const [form, setForm] = useState({...initialForm, agentName: user?.name || '', whatsapp: user?.phone || '', email: user?.email || ''})
-  const [files, setFiles] = useState({ktp: null, store: null, selfie: null, selfieMarketing: null})
+  const [files, setFiles] = useState({ktp: null, store: null, selfie: null})
   const [signed, setSigned] = useState(false)
   const [accepted, setAccepted] = useState(false)
   const [message, setMessage] = useState('')
@@ -414,9 +413,9 @@ export default function AgentCreditPage() {
   const submit = async event => {
     event.preventDefault()
     const amount = Math.min(maxCredit, Math.max(50000, Number(form.amount || 0)))
-    // Selfie bersama marketing dibuat saat marketing benar-benar bertemu
-    // dengan agent. Agent hanya mengirim dokumen inti pada tahap pengajuan.
-    const requiredDocuments = docs.filter(item => item.key !== 'selfieMarketing')
+    // Agent hanya mengirim tiga dokumen inti. Selfie bersama marketing
+    // baru diambil marketing saat pertemuan verifikasi.
+    const requiredDocuments = docs
     const documentValues = requiredDocuments.map(item => files[item.key])
     if (documentValues.some(file => !file?.file)) return setMessage('Lengkapi Foto KTP, Foto toko, dan selfie pegang KTP dulu bro.')
     const badDocument = documentValues.find(file => file.status !== 'ok')
@@ -452,7 +451,7 @@ export default function AgentCreditPage() {
 
   const resetAgentForm = () => {
     setForm({...initialForm, agentName: user?.name || '', whatsapp: user?.phone || '', email: user?.email || ''})
-    setFiles({ktp: null, store: null, selfie: null, selfieMarketing: null})
+    setFiles({ktp: null, store: null, selfie: null})
     setSigned(false)
     setAccepted(false)
     setRefillSource(null)
@@ -668,8 +667,7 @@ export default function AgentCreditPage() {
       </section>
       <section className="agent-card">
         <header><i><Camera/></i><div><h2>Upload Dokumen</h2><p>Sistem mengecek kualitas foto. Jika buram, kecil, atau rusak wajib upload ulang.</p></div></header>
-        <div className="agent-doc-grid">{docs.filter(item => item.key !== 'selfieMarketing').map(item => <DocUpload key={item.key} item={item} value={files[item.key]} onOpenCamera={setCameraDoc}/>)}</div>
-        <div className="agent-doc-tips"><b>Selfie bersama marketing</b><span>Akan diambil oleh marketing saat pertemuan verifikasi. KTP tidak boleh kepotong dan wajah harus terlihat jelas.</span></div>
+        <div className="agent-doc-grid">{docs.map(item => <DocUpload key={item.key} item={item} value={files[item.key]} onOpenCamera={setCameraDoc}/>)}</div>
       </section>
       <section className="agent-card">
         <header><i><FileText/></i><div><h2>Ketentuan Umum</h2><p>Baca dan setujui sebelum mengajukan.</p></div></header>

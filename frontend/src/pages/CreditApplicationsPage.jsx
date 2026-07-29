@@ -32,10 +32,13 @@ const manualInitial = {
   familyRelation: '',
   familyWhatsapp: '',
 }
-const manualDocumentTypes = [
+const coreDocumentTypes = [
   {key: 'ktp', label: 'Foto KTP', hint: 'KTP asli dan tidak buram'},
   {key: 'store', label: 'Foto Toko', hint: 'Tampak depan toko/usaha'},
   {key: 'selfie', label: 'Selfie Pegang KTP', hint: 'Wajah dan KTP terlihat jelas'},
+]
+const manualDocumentTypes = [
+  ...coreDocumentTypes,
   {key: 'selfieMarketing', label: 'Selfie dengan Marketing', hint: 'Agent dan marketing terlihat jelas'},
 ]
 const emptyManualDocuments = {ktp: null, store: null, selfie: null, selfieMarketing: null}
@@ -318,7 +321,7 @@ export default function CreditApplicationsPage() {
     if (!manualForm.agentName.trim() || !manualForm.storeName.trim() || !manualForm.whatsapp.trim() || !manualForm.amount) {
       return setManualMessage('Lengkapi nama agent, toko, WA, dan nominal pinjaman dulu.')
     }
-    if (manualDocumentTypes.some(doc => !manualDocuments[doc.key])) return setManualMessage('Lengkapi KTP, toko, selfie pegang KTP, dan selfie dengan marketing dulu.')
+    if (coreDocumentTypes.some(doc => !manualDocuments[doc.key])) return setManualMessage('Lengkapi Foto KTP, Foto Toko, dan Selfie Pegang KTP dulu.')
     const amount = Math.min(5000000, Math.max(50000, Number(String(manualForm.amount).replace(/\D/g, '') || 0)))
     const application = {
       id: `KSA-${Date.now().toString().slice(-8)}`,
@@ -331,7 +334,7 @@ export default function CreditApplicationsPage() {
       userName: manualForm.agentName.trim(),
       paymentStatus: 'Belum ada pembayaran',
       form: {...manualForm, amount},
-      documents: Object.fromEntries(manualDocumentTypes.map(doc => [doc.key, {name: manualDocuments[doc.key].name, dataUrl: manualDocuments[doc.key].dataUrl || ''}])),
+      documents: Object.fromEntries(coreDocumentTypes.map(doc => [doc.key, {name: manualDocuments[doc.key].name, dataUrl: manualDocuments[doc.key].dataUrl || ''}])),
       repayments: [],
       createdBy: {role: user.role, name: reviewerName(user), at: new Date().toISOString()},
     }
@@ -693,7 +696,7 @@ export default function CreditApplicationsPage() {
           <label>WA Keluarga<input name="familyWhatsapp" value={manualForm.familyWhatsapp} onChange={updateManual} inputMode="tel" placeholder="08xxxxxxxxxx"/></label>
           <label className="wide">Alamat Rumah<textarea name="homeAddress" value={manualForm.homeAddress} onChange={updateManual} placeholder="Alamat rumah"/></label>
           <label className="wide">Alamat Toko<textarea name="storeAddress" value={manualForm.storeAddress} onChange={updateManual} placeholder="Alamat toko/usaha"/></label>
-          <fieldset className="marketing-document-upload wide"><legend>Dokumen Peminjam</legend><p>Klik kartu untuk mengambil foto dari kamera atau mengunggah file. Pastikan foto jelas dan tidak terpotong.</p><div>{manualDocumentTypes.map(doc => <article role="button" tabIndex="0" key={doc.key} className={manualDocuments[doc.key] ? 'uploaded' : ''} onClick={() => setManualDocumentChoice(doc.key)} onKeyDown={event => event.key === 'Enter' && setManualDocumentChoice(doc.key)}><i>{manualDocuments[doc.key] ? <CheckCircle2/> : <Camera/>}</i><span><b>{doc.label}</b><small>{manualDocuments[doc.key]?.name || doc.hint}</small></span><strong>{manualDocuments[doc.key] ? 'Siap dicek' : 'Klik untuk memilih'}</strong></article>)}</div></fieldset>
+          <fieldset className="marketing-document-upload wide"><legend>Dokumen Peminjam</legend><p>Klik kartu untuk mengambil foto dari kamera atau mengunggah file. Pastikan foto jelas dan tidak terpotong.</p><div>{coreDocumentTypes.map(doc => <article role="button" tabIndex="0" key={doc.key} className={manualDocuments[doc.key] ? 'uploaded' : ''} onClick={() => setManualDocumentChoice(doc.key)} onKeyDown={event => event.key === 'Enter' && setManualDocumentChoice(doc.key)}><i>{manualDocuments[doc.key] ? <CheckCircle2/> : <Camera/>}</i><span><b>{doc.label}</b><small>{manualDocuments[doc.key]?.name || doc.hint}</small></span><strong>{manualDocuments[doc.key] ? 'Siap dicek' : 'Klik untuk memilih'}</strong></article>)}</div></fieldset>
           <button type="submit"><PlusCircle/>Simpan Peminjam</button>
         </form>}
       </section>}
