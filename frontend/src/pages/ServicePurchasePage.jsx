@@ -10,7 +10,7 @@ import {fallbackProducts} from '../constants/fallbackProducts'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
 import {useToast} from '../context/ToastContext'
-import {getFavoriteContacts,isFavoriteContact,normalizeNumber,removeFavoriteContact,saveFavoriteContact} from '../services/contactFavorites'
+import {getFavoriteContacts,loadFavoriteContacts,normalizeNumber,removeFavoriteContact,saveFavoriteContact} from '../services/contactFavorites'
 import ServiceEmblem from '../components/mobile/ServiceEmblem'
 import ProviderLogo from '../components/mobile/ProviderLogo'
 import communicationHero from '../assets/service-heroes/communication.png'
@@ -88,19 +88,19 @@ export default function ServicePurchasePage(){
  const [favoriteContacts,setFavoriteContacts]=useState(()=>getFavoriteContacts(user?.id)),[contactHint,setContactHint]=useState('')
  const supportsContacts=type==='pulsa'||type==='ewallet'
  const matchingFavorites=useMemo(()=>favoriteContacts.filter(item=>item.service===type),[favoriteContacts,type])
- const favorite=isFavoriteContact(target,type,user?.id)
+ const favorite=favoriteContacts.some(item=>item.id===`${normalizeNumber(target)}-${type}`)
  const openCatalog=()=>{setCatalog(true);navigate(location.pathname,{state:{catalog:true}})}
  const closeCatalog=()=>{if(location.state?.catalog){navigate(-1);return}setCatalog(false)}
  useEffect(()=>{setCatalog(Boolean(location.state?.catalog))},[location.state])
+ useEffect(()=>{if(user?.id)loadFavoriteContacts(user.id).then(setFavoriteContacts).catch(()=>setContactHint('Favorit belum dapat dimuat dari server.'))},[user?.id])
  const products=useMemo(()=>{const normalize=value=>String(value||'').trim().toLocaleLowerCase('id-ID'),remote=Array.isArray(data)?data.filter(product=>normalize(product.category)===normalize(config.category)&&normalize(product.operator)===normalize(provider)):[],local=fallbackProducts(config.category,provider),seen=new Set();return [...remote,...local].filter(product=>{const key=[normalize(product.category),normalize(product.operator),normalize(product.name),Number(product.nominal||product.price||0)].join('|');if(seen.has(key))return false;seen.add(key);return true})},[data,config.category,provider])
  const amount=type==='pln'&&plnMode==='bill'?plnBill?.total||0:mode==='custom'?Number(freeAmount):selected?.price||0
  const [inputPrefix,inputPlaceholder,inputMode]=inputMeta[type]||[phoneServices.includes(type)?'+62':'Akun',config.placeholder,textInputServices.includes(type)?'text':'numeric']
  const providerIndex=Math.max(0,config.providers.indexOf(provider))
  const changeTarget=value=>{setTarget(value);setContactHint('');closeCatalog();setSelected(null);setPlnBill(null);if(automatic.includes(type))setProvider(detectOperator(value)?.name||'')}
- const toggleFavorite=()=>{
+ const toggleFavorite=async()=>{
   if(!normalizeNumber(target)||normalizeNumber(target).length<9){setContactHint('Masukkan nomor yang valid dulu untuk menyimpan favorit.');return}
-  const next=favorite?removeFavoriteContact(target,type,user?.id):saveFavoriteContact({number:target,label:provider||config.title,service:type},user?.id)
-  setFavoriteContacts(next);show(favorite?'Nomor dihapus dari favorit':'Nomor disimpan ke favorit')
+  try{const next=await(favorite?removeFavoriteContact(target,type,user?.id):saveFavoriteContact({number:target,label:provider||config.title,service:type},user?.id));setFavoriteContacts(next);show(favorite?'Nomor dihapus dari favorit':'Nomor disimpan ke favorit')}catch(error){setContactHint(error.message)}
  }
  const pickContact=async()=>{
   setContactHint('')

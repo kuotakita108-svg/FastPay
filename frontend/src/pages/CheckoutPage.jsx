@@ -1,9 +1,9 @@
-import {useState} from 'react'
+import {useEffect,useState} from 'react'
 import {Navigate, useLocation, useNavigate} from 'react-router-dom'
 import {ArrowLeft, Check, ChevronRight, Clock3, ReceiptText, ShieldCheck, WalletCards, XCircle} from 'lucide-react'
 import {useAuth} from '../context/AuthContext'
 import {createTransaction, makeReceiptNumber, payWithBalance, saveReceipt} from '../services/transactionService'
-import {getSecurity} from '../services/securityService'
+import {getSecurity,loadSecurity} from '../services/securityService'
 import PaymentSecurityModal from '../components/mobile/PaymentSecurityModal'
 import TransactionReceipt from '../components/mobile/TransactionReceipt'
 import {rupiah} from '../utils/currency'
@@ -21,7 +21,8 @@ export default function CheckoutPage() {
 
   if (!state?.amount) return <Navigate to="/app/services" replace/>
 
-  const security = getSecurity(user.id)
+  const [security,setSecurity] = useState(()=>getSecurity(user.id))
+  useEffect(()=>{loadSecurity(user.id).then(setSecurity).catch(()=>{})},[user.id])
   const protectedPayment = Boolean(security.pinHash || security.biometricEnabled)
   const enrichTransaction = transaction => ({
     ...transaction,
@@ -65,7 +66,7 @@ export default function CheckoutPage() {
       const transaction = enrichTransaction(response.transaction)
       saveReceipt(transaction)
       if (state.type === 'pulsa' || state.type === 'ewallet') {
-        saveFavoriteContact({number: state.target, label: state.provider || state.title, service: state.type}, user.id)
+        await saveFavoriteContact({number: state.target, label: state.provider || state.title, service: state.type}, user.id)
       }
       setResult({...response, transaction})
     } catch (current) {

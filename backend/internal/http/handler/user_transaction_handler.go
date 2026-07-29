@@ -50,7 +50,8 @@ func (h *UserTransactionHandler) Create(w http.ResponseWriter, r *http.Request) 
 	var in domain.CreateTransactionInput
 	if json.NewDecoder(r.Body).Decode(&in) != nil { response.Error(w, 400, "data transaksi tidak valid"); return }
 	if in.Amount < 1000 || in.Customer == "" { response.Error(w, 422, "tujuan dan nominal wajib diisi"); return }
-	tx := domain.Transaction{ID: fmt.Sprintf("PP-%d", time.Now().UnixMilli()), Customer: in.Customer, Email: in.Email, Method: in.Method, Amount: in.Amount, Status: "Berhasil", CreatedAt: time.Now()}
+	now := time.Now()
+	tx := domain.Transaction{ID: fmt.Sprintf("PP-%d", now.UnixMilli()), Customer: in.Customer, Email: in.Email, Method: in.Method, Amount: in.Amount, Status: "Berhasil", Target: in.Target, Provider: in.Provider, Title: in.Title, Product: in.Product, OrderNumber: fmt.Sprintf("ORD-%d", now.UnixMilli()), SN: fmt.Sprintf("SN-%d", now.UnixNano()%100000000), CreatedAt: now}
 	h.append(id, tx)
 	response.JSON(w, http.StatusCreated, tx)
 }
@@ -62,7 +63,8 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 	user, err := h.auth.ChangeBalance(r.Header.Get("Authorization"), -in.Amount)
 	if err != nil { response.Error(w, 422, err.Error()); return }
 	method := strings.TrimSpace(strings.TrimSpace(in.Provider) + " · " + strings.TrimSpace(in.Title))
-	tx := domain.Transaction{ID: fmt.Sprintf("PP-%d", time.Now().UnixMilli()), Customer: in.Target, Email: in.Email, Method: method, Amount: in.Amount, Status: "Berhasil", CreatedAt: time.Now()}
+	now := time.Now()
+	tx := domain.Transaction{ID: fmt.Sprintf("PP-%d", now.UnixMilli()), Customer: in.Target, Email: in.Email, Method: method, Amount: in.Amount, Status: "Berhasil", Target: in.Target, Provider: in.Provider, Title: in.Title, Product: in.Product, OrderNumber: fmt.Sprintf("ORD-%d", now.UnixMilli()), SN: fmt.Sprintf("SN-%d", now.UnixNano()%100000000), CreatedAt: now}
 	h.append(id, tx)
 	response.JSON(w, http.StatusCreated, map[string]any{"transaction": tx, "balance": user.Balance})
 }

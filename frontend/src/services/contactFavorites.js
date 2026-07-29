@@ -1,9 +1,7 @@
-const sessionUserId = () => {
-  try { return JSON.parse(localStorage.getItem('kuotakita_session'))?.user?.id || 'guest' } catch { return 'guest' }
-}
+import {request} from './http'
 
-const storageKey = userId => `kuotakita_favorite_contacts_${userId || sessionUserId()}`
-
+const cache = new Map()
+const defaults = []
 const normalizeNumber = value => {
   let number = String(value || '').replace(/[^\d+]/g, '')
   if (number.startsWith('+62')) number = `0${number.slice(3)}`
@@ -11,38 +9,25 @@ const normalizeNumber = value => {
   else if (number.startsWith('8')) number = `0${number}`
   return number.replace(/\D/g, '').slice(0, 15)
 }
-
-export function getFavoriteContacts(userId) {
-  try {
-    const list = JSON.parse(localStorage.getItem(storageKey(userId)))
-    return Array.isArray(list) ? list : []
-  } catch { return [] }
+const list = userId => cache.get(userId) || defaults
+const write = async (userId, next) => {
+  const result = await request('/me/preferences',{method:'PUT',body:JSON.stringify({favorites:next})})
+  const saved = Array.isArray(result.favorites) ? result.favorites : next
+  cache.set(userId,saved); return saved
 }
-
-export function saveFavoriteContact(contact, userId) {
-  const number = normalizeNumber(contact?.number)
-  if (number.length < 9) return getFavoriteContacts(userId)
-  const next = [{
-    id: `${number}-${contact?.service || 'pulsa'}`,
-    number,
-    label: String(contact?.label || 'Nomor favorit').trim(),
-    service: contact?.service || 'pulsa',
-    updatedAt: new Date().toISOString(),
-  }, ...getFavoriteContacts(userId).filter(item => item.id !== `${number}-${contact?.service || 'pulsa'}`)].slice(0, 20)
-  localStorage.setItem(storageKey(userId), JSON.stringify(next))
-  return next
+export async function loadFavoriteContacts(userId){
+  const result=await request('/me/preferences'); const items=Array.isArray(result.favorites)?result.favorites:[]
+  cache.set(userId,items); return items
 }
-
-export function removeFavoriteContact(number, service, userId) {
-  const normalized = normalizeNumber(number)
-  const next = getFavoriteContacts(userId).filter(item => item.id !== `${normalized}-${service || 'pulsa'}`)
-  localStorage.setItem(storageKey(userId), JSON.stringify(next))
-  return next
+export const getFavoriteContacts=userId=>list(userId)
+export async function saveFavoriteContact(contact,userId){
+  const number=normalizeNumber(contact?.number); const current=list(userId)
+  if(number.length<9)return current
+  const item={id:`${number}-${contact?.service||'pulsa'}`,number,label:String(contact?.label||'Nomor favorit').trim(),service:contact?.service||'pulsa',updatedAt:new Date().toISOString()}
+  return write(userId,[item,...current.filter(value=>value.id!==item.id)].slice(0,20))
 }
-
-export function isFavoriteContact(number, service, userId) {
-  const normalized = normalizeNumber(number)
-  return getFavoriteContacts(userId).some(item => item.id === `${normalized}-${service || 'pulsa'}`)
+export async function removeFavoriteContact(number,service,userId){
+  const normalized=normalizeNumber(number); return write(userId,list(userId).filter(item=>item.id!==`${normalized}-${service||'pulsa'}`))
 }
-
+export const isFavoriteContact=(number,service,userId)=>list(userId).some(item=>item.id===`${normalizeNumber(number)}-${service||'pulsa'}`)
 export {normalizeNumber}

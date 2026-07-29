@@ -14,6 +14,7 @@ type Handlers struct {
 	Lookup           *handler.LookupHandler
 	UserTransactions *handler.UserTransactionHandler
 	Credit           *handler.CreditHandler
+	Preferences      *handler.PreferenceHandler
 }
 
 func New(h Handlers) http.Handler {
@@ -34,6 +35,8 @@ func New(h Handlers) http.Handler {
 	mux.HandleFunc("POST /api/v1/me/transactions", h.UserTransactions.Create)
 	mux.HandleFunc("POST /api/v1/me/payments", h.UserTransactions.Payment)
 	mux.HandleFunc("POST /api/v1/me/topups", h.UserTransactions.TopUp)
+	mux.HandleFunc("GET /api/v1/me/preferences", h.Preferences.Get)
+	mux.HandleFunc("PUT /api/v1/me/preferences", h.Preferences.Save)
 	mux.HandleFunc("GET /api/v1/me/agent-credit", h.Credit.List)
 	mux.HandleFunc("POST /api/v1/me/agent-credit", h.Credit.Save)
 	mux.HandleFunc("GET /api/v1/agent-credit/applications", h.Credit.List)
