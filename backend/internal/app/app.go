@@ -27,7 +27,7 @@ func New(cfg config.Config) *App {
 	products := service.NewProductService(store)
 	auth := service.NewPersistentAuthService(cfg.JWTSecret, filepath.Join(cfg.DataDir, "accounts.json"), []service.AccountSeed{
 		{Username: cfg.MasterUsername, Password: cfg.MasterPassword, Name: "Master KuotaKita", Role: "master"},
-		{Username: cfg.AgentUsername, Password: cfg.AgentPassword, Name: "Agent KuotaKita", Role: "agent"},
+		{Username: cfg.AgentUsername, Password: cfg.AgentPassword, Name: "Agent KuotaKita", Role: "agent", InitialBalance: cfg.AgentInitialBalance},
 		{Username: cfg.MarketingUsername, Password: cfg.MarketingPassword, Name: "Marketing KuotaKita", Role: "marketing"},
 		{Username: cfg.AnalisUsername, Password: cfg.AnalisPassword, Name: "Analis KuotaKita", Role: "analis"},
 	})

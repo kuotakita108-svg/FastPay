@@ -26,13 +26,17 @@ type AccountSeed struct {
 	Password string
 	Name     string
 	Role     string
+	// InitialBalance is granted just once to the matching seed account. It is
+	// useful for an operator-provided opening balance, never for top-up mocks.
+	InitialBalance int64
 }
 
 type storedUser struct {
 	domain.User
-	PasswordHash string    `json:"password_hash,omitempty"`
-	GoogleID     string    `json:"google_id,omitempty"`
-	CreatedAt    time.Time `json:"created_at"`
+	PasswordHash          string    `json:"password_hash,omitempty"`
+	GoogleID              string    `json:"google_id,omitempty"`
+	InitialBalanceGranted bool      `json:"initial_balance_granted,omitempty"`
+	CreatedAt             time.Time `json:"created_at"`
 }
 
 type accountFile struct {
@@ -63,15 +67,16 @@ func newAuthService(secret, dataFile string, seeds []AccountSeed) *AuthService {
 			panic(fmt.Errorf("gagal memuat data akun: %w", err))
 		}
 	}
-	if len(s.users) == 0 {
-		for _, seed := range seeds {
-			if strings.TrimSpace(seed.Username) == "" || seed.Password == "" {
-				continue
-			}
-			if err := s.addSeed(seed); err != nil {
-				panic(fmt.Errorf("gagal membuat akun awal: %w", err))
-			}
+	changed := false
+	for _, seed := range seeds {
+		if strings.TrimSpace(seed.Username) == "" || seed.Password == "" {
+			continue
 		}
+		if s.applySeed(seed) {
+			changed = true
+		}
+	}
+	if changed || len(s.users) == 0 {
 		if err := s.save(); err != nil {
 			panic(fmt.Errorf("gagal menyimpan akun awal: %w", err))
 		}
@@ -285,8 +290,33 @@ func (s *AuthService) addSeed(seed AccountSeed) error {
 	if err != nil {
 		return err
 	}
-	s.users[username] = storedUser{User: domain.User{ID: newUserID(), Username: username, Name: seed.Name, Role: seed.Role, Balance: 0}, PasswordHash: string(hash), CreatedAt: time.Now().UTC()}
+	balance := seed.InitialBalance
+	s.users[username] = storedUser{User: domain.User{ID: newUserID(), Username: username, Name: seed.Name, Role: seed.Role, Balance: balance}, PasswordHash: string(hash), InitialBalanceGranted: balance > 0, CreatedAt: time.Now().UTC()}
 	return nil
+}
+
+// applySeed never changes a password or overwrites an existing balance.  It
+// may grant the configured opening balance once to an existing seeded account
+// that was created before this setting existed.
+func (s *AuthService) applySeed(seed AccountSeed) bool {
+	username := normalize(seed.Username)
+	if username == "" || seed.Password == "" {
+		return false
+	}
+	item, exists := s.users[username]
+	if !exists {
+		if err := s.addSeed(seed); err != nil {
+			panic(fmt.Errorf("gagal membuat akun awal: %w", err))
+		}
+		return true
+	}
+	if seed.InitialBalance > 0 && !item.InitialBalanceGranted && item.Balance == 0 {
+		item.Balance = seed.InitialBalance
+		item.InitialBalanceGranted = true
+		s.users[username] = item
+		return true
+	}
+	return false
 }
 
 func (s *AuthService) load() error {
