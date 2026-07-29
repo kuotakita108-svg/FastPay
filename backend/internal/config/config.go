@@ -5,6 +5,11 @@ import "os"
 type Config struct {
 	AppName, Environment, Port, FrontendURL, DatabaseDriver, DatabaseURL, JWTSecret, LogLevel, StaticDir string
 	GoogleClientID, GoogleClientSecret, GoogleRedirectURL                                                string
+	DataDir                                                                                              string
+	MasterUsername, MasterPassword                                                                       string
+	AgentUsername, AgentPassword                                                                         string
+	MarketingUsername, MarketingPassword                                                                 string
+	AnalisUsername, AnalisPassword                                                                       string
 }
 
 func Load() Config {
@@ -22,6 +27,15 @@ func Load() Config {
 		GoogleClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
 		GoogleClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
 		GoogleRedirectURL:  os.Getenv("GOOGLE_REDIRECT_URL"),
+		DataDir:            env("DATA_DIR", "/app/data"),
+		MasterUsername:     os.Getenv("MASTER_USERNAME"),
+		MasterPassword:     os.Getenv("MASTER_PASSWORD"),
+		AgentUsername:      os.Getenv("AGENT_USERNAME"),
+		AgentPassword:      os.Getenv("AGENT_PASSWORD"),
+		MarketingUsername:  os.Getenv("MARKETING_USERNAME"),
+		MarketingPassword:  os.Getenv("MARKETING_PASSWORD"),
+		AnalisUsername:     os.Getenv("ANALIS_USERNAME"),
+		AnalisPassword:     os.Getenv("ANALIS_PASSWORD"),
 	}
 }
 func env(k, v string) string {

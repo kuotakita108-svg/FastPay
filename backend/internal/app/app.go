@@ -25,7 +25,12 @@ func New(cfg config.Config) *App {
 	customers := service.NewCustomerService(store)
 	dashboard := service.NewDashboardService(tx)
 	products := service.NewProductService(store)
-	auth := service.NewAuthService(cfg.JWTSecret)
+	auth := service.NewPersistentAuthService(cfg.JWTSecret, filepath.Join(cfg.DataDir, "accounts.json"), []service.AccountSeed{
+		{Username: cfg.MasterUsername, Password: cfg.MasterPassword, Name: "Master KuotaKita", Role: "master"},
+		{Username: cfg.AgentUsername, Password: cfg.AgentPassword, Name: "Agent KuotaKita", Role: "agent"},
+		{Username: cfg.MarketingUsername, Password: cfg.MarketingPassword, Name: "Marketing KuotaKita", Role: "marketing"},
+		{Username: cfg.AnalisUsername, Password: cfg.AnalisPassword, Name: "Analis KuotaKita", Role: "analis"},
+	})
 	lookup := service.NewLookupService()
 	userTransactions := handler.NewUserTransactionHandler(auth)
 	routes := router.New(router.Handlers{Transactions: handler.NewTransactionHandler(tx), Customers: handler.NewCustomerHandler(customers), Dashboard: handler.NewDashboardHandler(dashboard), Products: handler.NewProductHandler(products), Auth: handler.NewAuthHandler(auth, cfg), Lookup: handler.NewLookupHandler(lookup), UserTransactions: userTransactions})

@@ -55,6 +55,20 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, 201, result)
 }
 
+func (h *AuthHandler) CreateAgent(w http.ResponseWriter, r *http.Request) {
+	var in domain.RegisterInput
+	if json.NewDecoder(r.Body).Decode(&in) != nil {
+		response.Error(w, http.StatusBadRequest, "data agent tidak valid")
+		return
+	}
+	user, err := h.service.CreateAgent(r.Header.Get("Authorization"), in)
+	if err != nil {
+		response.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+	response.JSON(w, http.StatusCreated, user)
+}
+
 func (h *AuthHandler) Google(w http.ResponseWriter, r *http.Request) {
 	if !h.googleReady() {
 		response.Error(w, http.StatusServiceUnavailable, "Login Google belum diaktifkan pengelola. Lengkapi GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, dan GOOGLE_REDIRECT_URL di server.")

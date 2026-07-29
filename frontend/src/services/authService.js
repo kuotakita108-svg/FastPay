@@ -46,6 +46,12 @@ export async function register(profile){
 export async function createManagedAgent(profile){
   const name=String(profile.name||'').trim(),username=String(profile.username||'').toLowerCase().trim(),phone=String(profile.phone||'').trim(),email=String(profile.email||'').toLowerCase().trim(),password=String(profile.password||'')
   if(name.length<3||username.length<3||password.length<6)throw new Error('Nama, username, dan password minimal harus diisi dengan benar.')
+  try{return await request('/auth/agents',{method:'POST',body:JSON.stringify({name,username,phone,email,password})})}
+  catch(error){
+    if(!connectionError(error))throw error
+  }
+  // Fallback hanya saat perangkat benar-benar offline. Saat server aktif, akun
+  // selalu dibuat di server agar agent dapat masuk dari perangkat mana pun.
   const accounts=readAccounts()
   if(accounts.some(account=>account.username===username))throw new Error('Username agent sudah digunakan di perangkat ini.')
   const user={id:`AGENT-${crypto.randomUUID()}`,username,name,role:'agent',balance:0,phone,email}
