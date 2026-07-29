@@ -192,6 +192,7 @@ export default function AgentCreditPage() {
   const [paymentItem, setPaymentItem] = useState(null)
   const [paymentMethod, setPaymentMethod] = useState('')
   const [paymentProof, setPaymentProof] = useState(null)
+  const [refillSource, setRefillSource] = useState(null)
   const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => {
@@ -392,7 +393,7 @@ export default function AgentCreditPage() {
   })) : []
   const payInstallment = item => {
     if (!paymentProof) return setMessage('Bukti transfer wajib diunggah sebelum pembayaran dikonfirmasi.')
-    const next = [{key: item.key, applicationId: application.id, label: item.label, amount: item.amount, status: 'Lunas', paidAt: new Date().toISOString(), proof: paymentProof}, ...repayments.filter(row => row.key !== item.key)]
+    const next = [{key: item.key, applicationId: application.id, label: item.label, amount: item.amount, status: 'Lunas', paidAt: new Date().toISOString(), method: paymentMethod, paymentReference: item.key.toUpperCase(), proof: paymentProof}, ...repayments.filter(row => row.key !== item.key)]
     setRepayments(next)
     const appRepayments = next.filter(row => row.applicationId === application.id)
     const paymentStatus = appRepayments.length >= paymentSteps.length ? 'Lunas' : `Terbayar ${appRepayments.length}/${paymentSteps.length}`
@@ -413,15 +414,21 @@ export default function AgentCreditPage() {
   const submit = async event => {
     event.preventDefault()
     const amount = Math.min(maxCredit, Math.max(50000, Number(form.amount || 0)))
-    const documentValues = Object.values(files)
-    if (documentValues.some(file => !file?.file)) return setMessage('Lengkapi Foto KTP, Foto toko, selfie pegang KTP, dan selfie dengan marketing dulu bro.')
+    // Selfie bersama marketing dibuat saat marketing benar-benar bertemu
+    // dengan agent. Agent hanya mengirim dokumen inti pada tahap pengajuan.
+    const requiredDocuments = docs.filter(item => item.key !== 'selfieMarketing')
+    const documentValues = requiredDocuments.map(item => files[item.key])
+    if (documentValues.some(file => !file?.file)) return setMessage('Lengkapi Foto KTP, Foto toko, dan selfie pegang KTP dulu bro.')
     const badDocument = documentValues.find(file => file.status !== 'ok')
     if (badDocument) return setMessage(`${badDocument.name}: ${badDocument.error || 'Foto belum lolos pengecekan kualitas. Upload ulang dulu.'}`)
     if (!accepted) return setMessage('Centang persetujuan ketentuan pengajuan dulu.')
     if (!signed) return setMessage('Tanda tangan online wajib diisi.')
-    const documentEntries = await Promise.all(Object.entries(files).map(async ([key, file]) => [key, {name: file.file.name, dataUrl: await filePreviewData(file.file)}]))
+    const documentEntries = await Promise.all(requiredDocuments.map(async item => {
+      const file = files[item.key]
+      return [item.key, {name: file.file.name, dataUrl: await filePreviewData(file.file)}]
+    }))
     if (documentEntries.some(([, document]) => !document.dataUrl)) {
-      return setMessage('Foto belum berhasil disimpan. Pilih ulang atau ambil ulang ketiga foto agar langsung terlihat saat dicek Marketing.')
+      return setMessage('Foto belum berhasil disimpan. Pilih ulang atau ambil ulang tiga foto agar langsung terlihat saat dicek Marketing.')
     }
     const application = {
       id: `KSA-${Date.now().toString().slice(-8)}`,
@@ -433,6 +440,10 @@ export default function AgentCreditPage() {
       userName: user?.name || form.agentName,
       form: {...form, amount},
       documents: Object.fromEntries(documentEntries),
+      applicationType: refillSource ? 'Refill Kredit' : 'Pengajuan Baru',
+      refillOf: refillSource?.id || '',
+      termsAcceptedAt: new Date().toISOString(),
+      agentSignature: {name: form.agentName || user?.name || 'Agent KuotaKita', role: 'agent', at: new Date().toISOString(), image: canvasRef.current?.toDataURL('image/png') || ''},
     }
     setMessage('')
     persistApplication(application)
@@ -444,6 +455,7 @@ export default function AgentCreditPage() {
     setFiles({ktp: null, store: null, selfie: null, selfieMarketing: null})
     setSigned(false)
     setAccepted(false)
+    setRefillSource(null)
     setMessage('')
     const canvas = canvasRef.current
     if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
@@ -454,6 +466,30 @@ export default function AgentCreditPage() {
     setDetailOpen(false)
     if (applications.length && location.state?.creditView !== 'form') navigate(location.pathname, {state: {creditView: 'form'}})
     setShowForm(true)
+    window.setTimeout(() => document.querySelector('.agent-credit-form')?.scrollIntoView({behavior: 'smooth', block: 'start'}), 80)
+  }
+  const startRefill = source => {
+    resetAgentForm()
+    setRefillSource(source)
+    setForm({...initialForm,
+      agentName: source.form?.agentName || user?.name || '',
+      storeName: source.form?.storeName || '',
+      nik: source.form?.nik || '',
+      homeAddress: source.form?.homeAddress || '',
+      storeAddress: source.form?.storeAddress || '',
+      whatsapp: source.form?.whatsapp || user?.phone || '',
+      email: source.form?.email || user?.email || '',
+      monthlyTransactions: source.form?.monthlyTransactions || '',
+      amount: String(Math.min(maxCredit, Math.max(50000, Number(source.form?.amount || 500000)))),
+      familyName: source.form?.familyName || '',
+      familyAddress: source.form?.familyAddress || '',
+      familyWhatsapp: source.form?.familyWhatsapp || '',
+      familyRelation: source.form?.familyRelation || '',
+    })
+    setApplication(null)
+    setDetailOpen(false)
+    setShowForm(true)
+    navigate(location.pathname, {state: {creditView: 'form'}})
     window.setTimeout(() => document.querySelector('.agent-credit-form')?.scrollIntoView({behavior: 'smooth', block: 'start'}), 80)
   }
   const selectApplication = item => {
@@ -572,10 +608,10 @@ export default function AgentCreditPage() {
         <li className={progress >= 55 || approved ? 'done' : ''}>{progress >= 55 || approved ? <CheckCircle2/> : <Clock3/>}Pengecekan tanda tangan online</li>
         <li className={approved ? 'done' : rejected ? 'rejected' : ''}>{approved ? <CheckCircle2/> : rejected ? <X/> : <Clock3/>}Keputusan analis</li>
       </ul>
-      {canRefill && <button type="button" className="agent-refill-button" onClick={startNewApplication}><PlusCircle/> Ajukan Refill Kredit</button>}
+      {canRefill && <button type="button" className="agent-refill-button" onClick={() => startRefill(application)}><PlusCircle/> Ajukan Refill Kredit</button>}
     </section>}
     {detailOpen && approved && <section className="agent-payment-lane">
-        <header><i><CreditCard/></i><div><h2>Jalur Pembayaran Kredit</h2><p>Pembayaran cicilan dicatat oleh marketing. Agent hanya dapat memantau status pembayaran.</p></div></header>
+        <header><i><CreditCard/></i><div><h2>Jalur Pembayaran Kredit</h2><p>Bayar cicilan melalui transfer bank atau QRIS. Bukti pembayaran wajib diunggah untuk diverifikasi marketing.</p></div></header>
       <div className="payment-lane-total"><span>Total pinjaman</span><strong>{rupiah(application.form.amount)}</strong></div>
       <div className="payment-lane-list">
         {paymentPlan.map(item => <article className={item.paid ? 'paid' : ''} key={item.key}>
@@ -604,6 +640,7 @@ export default function AgentCreditPage() {
     <form className="agent-credit-form" onSubmit={submit}>
       <section className="agent-card">
         <header><i><UserRound/></i><div><h2>Data Agent</h2><p>Isi sesuai identitas asli agar pengajuan mudah diverifikasi.</p></div></header>
+        {refillSource && <div className="agent-refill-note"><CheckCircle2/><span><b>Pengajuan refill</b><small>Data dasar diisi dari pengajuan yang sudah lunas. Periksa kembali sebelum dikirim.</small></span></div>}
         <div className="agent-fields">
           <label>Nama Agent<input name="agentName" value={form.agentName} onChange={update} required placeholder="Nama lengkap"/></label>
           <label>Nama Toko<input name="storeName" value={form.storeName} onChange={update} required placeholder="Nama toko/usaha"/></label>
@@ -627,12 +664,12 @@ export default function AgentCreditPage() {
       </section>
       <section className="agent-credit-preview" aria-label="Ringkasan nominal kredit">
         <header><div><span>RINGKASAN SEBELUM TANDA TANGAN</span><h2>Nominal yang diajukan</h2><p>Pastikan jumlah kredit dan cicilan sudah sesuai sebelum menyetujui ketentuan.</p></div><strong>{rupiah(Number(form.amount || 0))}</strong></header>
-        <div><article><small>Total kredit</small><b>{rupiah(Number(form.amount || 0))}</b></article><article><small>Per cicilan (4x)</small><b>{rupiah(Math.ceil(Number(form.amount || 0) * .25))}</b></article><article><small>Status</small><b>Menunggu verifikasi</b></article></div>
+        <div><article><small>Total kredit diajukan</small><b>{rupiah(Number(form.amount || 0))}</b></article><article><small>Per cicilan (4x)</small><b>{rupiah(Math.ceil(Number(form.amount || 0) * .25))}</b></article><article><small>Riwayat kredit diterima</small><b>{rupiah(totalCreditApproved)}</b></article><article><small>Riwayat sudah lunas</small><b>{rupiah(totalCreditPaid)}</b></article><article><small>Status</small><b>Menunggu verifikasi</b></article></div>
       </section>
       <section className="agent-card">
         <header><i><Camera/></i><div><h2>Upload Dokumen</h2><p>Sistem mengecek kualitas foto. Jika buram, kecil, atau rusak wajib upload ulang.</p></div></header>
-        <div className="agent-doc-grid">{docs.map(item => <DocUpload key={item.key} item={item} value={files[item.key]} onOpenCamera={setCameraDoc}/>)}</div>
-        <div className="agent-doc-tips"><b>Tips foto lolos cepat</b><span>KTP tidak kepotong, cahaya cukup, wajah terlihat, dan foto selfie harus benar-benar sambil memegang KTP.</span></div>
+        <div className="agent-doc-grid">{docs.filter(item => item.key !== 'selfieMarketing').map(item => <DocUpload key={item.key} item={item} value={files[item.key]} onOpenCamera={setCameraDoc}/>)}</div>
+        <div className="agent-doc-tips"><b>Selfie bersama marketing</b><span>Akan diambil oleh marketing saat pertemuan verifikasi. KTP tidak boleh kepotong dan wajah harus terlihat jelas.</span></div>
       </section>
       <section className="agent-card">
         <header><i><FileText/></i><div><h2>Ketentuan Umum</h2><p>Baca dan setujui sebelum mengajukan.</p></div></header>

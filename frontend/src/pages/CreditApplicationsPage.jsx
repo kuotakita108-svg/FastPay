@@ -143,7 +143,8 @@ const dataScore = item => {
     {label: 'NIK', ok: String(item.form.nik || '').length >= 12},
     {label: 'Alamat toko', ok: Boolean(item.form.storeAddress || item.form.homeAddress)},
     {label: 'Kontak keluarga', ok: Boolean(item.form.familyName && item.form.familyWhatsapp)},
-    {label: 'Dokumen/foto', ok: Object.values(item.documents || {}).length > 0 || item.source === 'marketing'},
+    {label: 'Dokumen inti', ok: ['ktp', 'store', 'selfie'].every(key => Boolean(item.documents?.[key]))},
+    {label: 'Selfie dengan marketing', ok: Boolean(item.documents?.selfieMarketing)},
   ]
   const done = checks.filter(check => check.ok).length
   return {checks, done, total: checks.length, percent: Math.round((done / checks.length) * 100)}
@@ -289,7 +290,12 @@ export default function CreditApplicationsPage() {
     window.scrollTo({top: 0, behavior: 'smooth'})
   }, [view])
   const signMarketing = (item, image) => {
-    saveApplication(item, {marketingSignature: stampPayload({...user, role: 'marketing'}, image), status: 'Siap dikirim ke analis'})
+    if (!item.documents?.selfieMarketing) return
+    saveApplication(item, {
+      marketingSignature: stampPayload({...user, role: 'marketing'}, image),
+      marketingMeeting: {at: new Date().toISOString(), by: reviewerName(user), selfieName: item.documents.selfieMarketing.name || 'Selfie dengan marketing'},
+      status: 'Siap dikirim ke analis',
+    })
     refresh()
   }
   const forwardToAnalis = item => {
@@ -365,7 +371,7 @@ export default function CreditApplicationsPage() {
   const updateManual = event => setManualForm({...manualForm, [event.target.name]: event.target.name === 'amount' ? event.target.value.replace(/\D/g, '').slice(0, 8) : event.target.value})
   const markPayment = (item, row) => {
     if ((!isMarketing && !isAdmin) || row.paid || item.status !== 'Disetujui' || !paymentProof) return
-    const repayments = [{key: row.key, applicationId: item.id, label: row.label, amount: row.amount, status: 'Lunas', paidAt: new Date().toISOString(), receivedBy: reviewerName(user), proof: paymentProof}, ...(item.repayments || []).filter(pay => pay.key !== row.key)]
+    const repayments = [{key: row.key, applicationId: item.id, label: row.label, amount: row.amount, status: 'Lunas', paidAt: new Date().toISOString(), receivedBy: reviewerName(user), method: paymentMethod, paymentReference: row.key.toUpperCase(), proof: paymentProof}, ...(item.repayments || []).filter(pay => pay.key !== row.key)]
     const paymentStatus = repayments.length >= paymentSteps.length ? 'Lunas' : `Terbayar ${repayments.length}/${paymentSteps.length}`
     saveApplication(item, {repayments, paymentStatus})
     refresh()
@@ -688,7 +694,8 @@ export default function CreditApplicationsPage() {
           const pay = paymentSummary(item)
           const score = dataScore(item)
           const expanded = expandedId === item.id
-          const canMarketingSign = !done && !marketingSigned && (isMarketing || isAdmin)
+          const meetingSelfieReady = Boolean(item.documents?.selfieMarketing?.dataUrl || item.documents?.selfieMarketing?.preview)
+          const canMarketingSign = !done && !marketingSigned && meetingSelfieReady && (isMarketing || isAdmin)
           const canAnalisSign = !done && item.status === 'Menunggu analis' && marketingSigned && !analisSigned && (isAnalis || isAdmin)
           const canApprove = !done && marketingSigned && analisSigned && (isAnalis || isAdmin)
           const canReject = !done && (isMarketing || isAnalis || isAdmin)
@@ -710,7 +717,7 @@ export default function CreditApplicationsPage() {
             </div>}
             {!isStandaloneDetail && expanded && <p className="credit-review-address">{item.form.homeAddress}</p>}
             {!isStandaloneDetail && expanded && <div className="credit-review-signatures">
-              <SignatureStep title="Agent" note="Ditandatangani saat pengajuan dikirim" signed={{name: item.form.agentName || item.userName || 'Agent', at: item.createdAt}} icon={PenLine}/>
+              <SignatureStep title="Agent" note="Ditandatangani saat pengajuan dikirim" signed={item.agentSignature || {name: item.form.agentName || item.userName || 'Agent', at: item.createdAt}} icon={PenLine}/>
               <SignatureStep title="Marketing" note="Menunggu tanda tangan marketing" signed={item.marketingSignature} icon={UserCheck}/>
               <SignatureStep title="Analis" note="Menunggu tanda tangan analis" signed={item.analisSignature} icon={Stamp}/>
             </div>}
@@ -718,6 +725,7 @@ export default function CreditApplicationsPage() {
               {item.status === 'Disetujui' ? <><span className="approved"><CheckCircle2/>Sudah Diterima analis</span><button type="button" className="detail" onClick={() => expanded ? closeDetailView() : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : item.status === 'Ditolak' ? <><span className="rejected"><XCircle/>Ditolak</span><button type="button" className="detail" onClick={() => expanded ? closeDetailView() : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : <>
                 <span><Clock3/>{item.status === 'Siap dikirim ke analis' ? 'Sudah TTD, siap dikirim ke analis' : marketingSigned ? 'Menunggu keputusan analis' : 'Menunggu verifikasi marketing'}</span>
                 <button type="button" className="detail" onClick={() => expanded ? closeDetailView() : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button>
+                {expanded && !marketingSigned && (isMarketing || isAdmin) && !meetingSelfieReady && <span className="meeting-required"><Camera/>Selfie pertemuan dengan marketing wajib</span>}
                 {expanded && canMarketingSign && <button type="button" className="sign" onClick={() => openSignature(item, 'marketing')}><PenLine/>TTD Marketing</button>}
                 {expanded && marketingSigned && item.status === 'Siap dikirim ke analis' && (isMarketing || isAdmin) && <button type="button" className="approve" onClick={() => forwardToAnalis(item)}><CheckCircle2/>Verifikasi &amp; Kirim ke Analis</button>}
                 {expanded && canAnalisSign && <button type="button" className="sign" onClick={() => openSignature(item, 'analis')}><PenLine/>TTD Analis</button>}
@@ -737,13 +745,19 @@ export default function CreditApplicationsPage() {
                   <span><dt>Transaksi/Bulan</dt><dd>{item.form.monthlyTransactions || '-'}</dd></span>
                   <span><dt>Status Pengajuan</dt><dd>{item.status}</dd></span>
                   <span><dt>Dokumen</dt><dd>{Object.values(item.documents || {}).length} foto terunggah</dd></span>
+                  <span><dt>Pertemuan Marketing</dt><dd>{item.marketingMeeting ? `Sudah selfie ${dateTime(item.marketingMeeting.at)}` : 'Menunggu selfie pertemuan'}</dd></span>
                   <span><dt>Alamat Toko</dt><dd>{item.form.storeAddress}</dd></span>
                   <span><dt>Keluarga</dt><dd>{item.form.familyName} · {item.form.familyRelation} · {item.form.familyWhatsapp}</dd></span>
                 </dl>
               </div>
+              {isDetail && <div className="credit-detail-block credit-finance-summary">
+                <h4>Ringkasan Kredit Sebelum Keputusan</h4>
+                <div><span><small>Nominal kredit</small><b>{rupiah(item.form.amount)}</b></span><span><small>Sudah dibayar</small><b>{rupiah(pay.totalPaid)}</b></span><span><small>Sisa tagihan</small><b>{rupiah(Math.max(0, Number(item.form.amount || 0) - pay.totalPaid))}</b></span></div>
+                <p>Marketing menandatangani setelah data dan selfie pertemuan lengkap. Analis memberi keputusan akhir.</p>
+              </div>}
               {isDetail && <div className="credit-detail-block borrower-document-gallery">
                 <h4>Dokumen Peminjam</h4>
-                <div>{Object.entries(item.documents || {}).map(([key, value]) => { const file = typeof value === 'string' ? {name: value} : value || {}; const title = manualDocumentTypes.find(doc => doc.key === key)?.label || key; const source = file.dataUrl || file.preview || ''; return <figure key={key}>{source ? <img src={source} alt={title}/> : <label className="missing-document"><Images/><b>Foto belum tersinkron</b><small>Pengajuan lama tanpa data foto</small></label>}<figcaption><b>{title}</b><small>{file.name || 'Dokumen tersimpan'}</small></figcaption></figure> })}</div>
+                <div>{manualDocumentTypes.map(doc => { const value = item.documents?.[doc.key]; const file = typeof value === 'string' ? {name: value} : value || {}; const source = file.dataUrl || file.preview || ''; const needsMeeting = doc.key === 'selfieMarketing' && !source; return <figure key={doc.key}>{source ? <img src={source} alt={doc.label}/> : needsMeeting && (isMarketing || isAdmin) ? <label className="missing-document meeting-upload"><Camera/><b>Ambil selfie dengan marketing</b><small>Wajib sebelum TTD marketing</small><input type="file" accept="image/*" capture="user" onChange={event => replaceBorrowerDocument(item, doc.key, event)}/></label> : <label className="missing-document"><Images/><b>Foto belum tersinkron</b><small>Pengajuan lama tanpa data foto</small></label>}<figcaption><b>{doc.label}</b><small>{file.name || (needsMeeting ? 'Menunggu pertemuan marketing' : 'Dokumen tersimpan')}</small></figcaption></figure> })}</div>
               </div>}
               {!isStandaloneDetail && <div className="credit-detail-block marketing-checklist">
                 <h4>Checklist Marketing</h4>

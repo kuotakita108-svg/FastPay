@@ -92,3 +92,4 @@
 .agent-credit-totals div{display:grid;gap:3px;padding:9px 10px;border:1px solid #e1e5ef;border-radius:12px;background:#fff}
 .agent-credit-totals small{color:#8992a3;font-size:8px;line-height:1.2}
 .agent-credit-totals strong{color:#26314a;font-size:11px;line-height:1.2}
+.agent-refill-note{display:flex;align-items:flex-start;gap:9px;margin:2px 0 13px;padding:11px 12px;border:1px solid #b8efe1;border-radius:14px;background:linear-gradient(135deg,#effff9,#eaf7ff);color:#0d8d70}.agent-refill-note svg{width:18px;flex:none}.agent-refill-note span{display:grid;gap:3px}.agent-refill-note b{font-size:11px}.agent-refill-note small{font-size:9px;line-height:1.45;color:#54717b}
