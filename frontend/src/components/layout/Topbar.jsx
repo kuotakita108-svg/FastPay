@@ -17,7 +17,10 @@ export default function Topbar({onMenu}) {
   const isCreditTeam = isMarketing || isAnalis || ['admin', 'master'].includes(user?.role)
   // Admin/master memakai ruang kerja marketing juga. Semua role yang dapat
   // menambah agent perlu topbar kredit yang ringkas ketika dibuka dari HP.
-  const isMarketingPanel = canCreateAgent && location.pathname === '/credit-applications'
+  // Halaman kredit adalah ruang kerja khusus. Jangan tampilkan pencarian
+  // transaksi di sini, bahkan saat sesi pengguna baru saja dipulihkan.
+  const isCreditPanel = isCreditTeam && location.pathname === '/credit-applications'
+  const isMarketingPanel = isCreditPanel
   const notices = isCreditTeam
     ? [{title: isAnalis ? 'Berkas analisis siap' : 'Ruang kerja kredit siap', desc: isAnalis ? 'Periksa berkas dari marketing lalu beri keputusan akhir.' : 'Cek antrean verifikasi dan data agent terbaru.', action: () => navigate('/credit-applications?view=verifikasi'), icon: ClipboardCheck}]
     : [{title: 'Transaksi KuotaKita', desc: 'Pantau transaksi dan status pembayaran terbaru.', action: () => navigate('/transactions'), icon: Bell}]
@@ -26,7 +29,7 @@ export default function Topbar({onMenu}) {
     if (query) navigate(`/transactions?q=${encodeURIComponent(query)}`)
   }
 
-  return <header className={`topbar ${isMarketingPanel ? 'marketing-topbar' : ''}`}>
+  return <header className={`topbar ${isCreditPanel ? 'marketing-topbar' : ''}`}>
     <button className="menu-button" onClick={onMenu} aria-label="Buka menu"><Menu/></button>
     {!isMarketingPanel && <form className="global-search" onSubmit={submit}><Search size={18}/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Cari produk, nomor, transaksi..."/><kbd>⌘ K</kbd></form>}
     <div className="top-actions">
