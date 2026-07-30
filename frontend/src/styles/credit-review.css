@@ -78,3 +78,27 @@
   .marketing-review .marketing-focus-grid h3{margin-bottom:7px;font-size:12px}
   .marketing-review .marketing-focus-grid button{min-height:52px;margin-top:6px;padding:8px 10px}
 }
+
+/* Form input marketing: satu alur yang padat untuk layar telepon, tanpa
+   kartu besar mengambang maupun judul yang mengambil setengah layar. */
+@media(max-width:760px){
+  .marketing-review .credit-mode-panel.view-input{
+    min-height:0;
+    padding:14px 15px;
+    margin:0 0 10px;
+    border-radius:18px;
+    box-shadow:none;
+  }
+  .marketing-review .credit-mode-panel.view-input::before{width:100px;height:100px;right:-34px;top:-48px}
+  .marketing-review .credit-mode-panel.view-input span{font-size:9px;letter-spacing:.16em}
+  .marketing-review .credit-mode-panel.view-input h2{margin:5px 0 4px;font-size:20px;line-height:1.16}
+  .marketing-review .credit-mode-panel.view-input p{max-width:38ch;margin:0;font-size:11px;line-height:1.45}
+  .marketing-review .credit-create-box.focus{margin:0;border:1px solid #d9e9ee;border-radius:18px;padding:12px;background:#fff;box-shadow:0 8px 22px rgba(33,60,98,.06)}
+  .marketing-review .credit-create-toggle{width:100%;min-height:46px;justify-content:center;border-radius:13px;font-size:14px;box-shadow:0 8px 16px rgba(69,76,220,.18)}
+  .marketing-review .credit-create-box form{grid-template-columns:1fr;gap:12px;margin-top:14px}
+  .marketing-review .credit-create-box form label{font-size:12px;gap:6px}
+  .marketing-review .credit-create-box form input,.marketing-review .credit-create-box form textarea{min-height:48px;padding:11px 13px;font-size:15px;border-radius:13px}
+  .marketing-review .credit-create-box form textarea{min-height:76px}
+  .marketing-review .credit-create-box form button[type=submit]{min-height:48px;border-radius:13px;font-size:14px}
+  .marketing-review .marketing-input-history{margin:12px 0 0;border-radius:18px;padding:14px}
+}

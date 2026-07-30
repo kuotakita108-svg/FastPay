@@ -604,7 +604,7 @@ export default function CreditApplicationsPage() {
 
   return <>
     {!isStandaloneDetail && view === 'overview' && <PageHeader eyebrow={isAnalis ? 'ANALISIS KREDIT' : 'MARKETING KREDIT'} title={isAnalis ? 'Keputusan Kredit Agent' : 'Review Kredit Saldo Agent'} description={isAnalis ? 'Analis memeriksa hasil verifikasi marketing, menandatangani, lalu memberi keputusan akhir.' : 'Marketing memeriksa data dan menandatangani pengajuan, lalu analis memberi keputusan akhir.'}/>}
-    <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''} ${isMarketing ? 'marketing-review' : ''} ${isAnalis ? 'analyst-review' : ''}`}>
+    <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''} ${(isMarketing || isAdmin) ? 'marketing-review' : ''} ${isAnalis ? 'analyst-review' : ''}`}>
       {view === 'overview' && <div className="credit-review-hero">
         <div>
           <span>{isAnalis ? 'RUANG KEPUTUSAN ANALIS' : 'RUANG DATA PEMINJAM'}</span>

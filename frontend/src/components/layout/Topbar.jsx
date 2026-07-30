@@ -15,7 +15,9 @@ export default function Topbar({onMenu}) {
   const isAnalis = user?.role === 'analis'
   const canCreateAgent = ['marketing', 'admin', 'master'].includes(user?.role)
   const isCreditTeam = isMarketing || isAnalis || ['admin', 'master'].includes(user?.role)
-  const isMarketingPanel = isMarketing && location.pathname === '/credit-applications'
+  // Admin/master memakai ruang kerja marketing juga. Semua role yang dapat
+  // menambah agent perlu topbar kredit yang ringkas ketika dibuka dari HP.
+  const isMarketingPanel = canCreateAgent && location.pathname === '/credit-applications'
   const notices = isCreditTeam
     ? [{title: isAnalis ? 'Berkas analisis siap' : 'Ruang kerja kredit siap', desc: isAnalis ? 'Periksa berkas dari marketing lalu beri keputusan akhir.' : 'Cek antrean verifikasi dan data agent terbaru.', action: () => navigate('/credit-applications?view=verifikasi'), icon: ClipboardCheck}]
     : [{title: 'Transaksi KuotaKita', desc: 'Pantau transaksi dan status pembayaran terbaru.', action: () => navigate('/transactions'), icon: Bell}]
