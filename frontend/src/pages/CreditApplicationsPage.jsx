@@ -11,11 +11,10 @@ import AgentAccountForm from '../components/credit/AgentAccountForm'
 const allKey = 'kuotakita_agent_credit_all'
 const userKey = userId => `kuotakita_agent_credit_${userId || 'guest'}`
 const finalStatus = ['Disetujui', 'Ditolak']
-const paymentSteps = [
-  {label: 'Cicilan 1', day: 7, portion: 0.25},
-  {label: 'Cicilan 2', day: 14, portion: 0.25},
-  {label: 'Cicilan 3', day: 21, portion: 0.25},
-  {label: 'Pelunasan', day: 30, portion: 0.25},
+const creditLevels = [
+  {name: 'Agent Pemula', limit: 500000, minPaid: 0, nextAt: 3},
+  {name: 'Agent Lancar', limit: 1000000, minPaid: 3, nextAt: 8},
+  {name: 'Agent Prioritas', limit: 2000000, minPaid: 8, nextAt: 13},
 ]
 const filters = ['Semua', 'Review', 'Disetujui', 'Ditolak', 'Lunas']
 const manualInitial = {
@@ -52,6 +51,9 @@ const normalizeApplication = item => ({
   form: {...manualInitial, ...(item?.form || {})},
   documents: item?.documents && typeof item.documents === 'object' ? item.documents : {},
   repayments: Array.isArray(item?.repayments) ? item.repayments : [],
+  creditStatus: item?.creditStatus || (item?.paymentStatus === 'Lunas' ? 'Lunas' : item?.status === 'Disetujui' ? 'Aktif' : 'Menunggu keputusan'),
+  creditBalance: Number(item?.creditBalance || 0),
+  creditOutstanding: Number(item?.creditOutstanding || 0),
   status: item?.status || 'Menunggu verifikasi marketing',
 })
 
@@ -119,18 +121,9 @@ const reviewerName = user => user?.name || (user?.role === 'analis' ? 'Analis Ku
 const stampPayload = (user, image) => ({name: reviewerName(user), role: user?.role || 'reviewer', at: new Date().toISOString(), image})
 const dateTime = iso => iso ? new Date(iso).toLocaleString('id-ID', {day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'}) : 'Belum tanda tangan'
 const paymentRows = item => {
-  const paidRows = item.repayments || []
-  return paymentSteps.map((step, index) => {
-    const key = `${item.id}-${index}`
-    const paid = paidRows.find(row => row.key === key)
-    return {
-      ...step,
-      key,
-      paid,
-      amount: Math.ceil(Number(item.form.amount || 0) * step.portion),
-      due: new Date(new Date(item.createdAt).getTime() + step.day * 86400000),
-    }
-  })
+  const key = `${item.id}-pelunasan`
+  const paid = (item.repayments || []).find(row => row.key === key) || (item.paymentStatus === 'Lunas' ? {key, paidAt: item.settledAt || item.updatedAt || item.decidedAt} : null)
+  return [{key, paid, label: 'Pelunasan Saldo Kredit', amount: Number(item.creditOriginalAmount || item.form?.amount || item.creditOutstanding || 0)}]
 }
 const paymentSummary = item => {
   const rows = paymentRows(item)
@@ -140,15 +133,22 @@ const paymentSummary = item => {
 }
 const statusGroup = item => item.paymentStatus === 'Lunas' ? 'Lunas' : item.status === 'Disetujui' ? 'Disetujui' : item.status === 'Ditolak' ? 'Ditolak' : 'Review'
 const firstUnpaidRow = item => paymentRows(item).find(row => !row.paid)
+const agentIdentity = item => String(item?.form?.whatsapp || item?.userId || item?.userName || item?.form?.agentName || '').trim().toLowerCase()
+const creditProfile = (items, target) => {
+  const key = agentIdentity(target)
+  const paidCycles = items.filter(item => agentIdentity(item) === key && (item.paymentStatus === 'Lunas' || item.creditStatus === 'Lunas')).length
+  const level = creditLevels.reduce((current, row) => paidCycles >= row.minPaid ? row : current, creditLevels[0])
+  return {paidCycles, ...level}
+}
 const viewInfo = {
   overview: {label: 'Ringkasan Kredit', title: 'Dashboard kredit agent', desc: 'Pantau semua pengajuan, verifikasi, pembayaran, dan status peminjam dari satu halaman.'},
-  peminjam: {label: 'Data Peminjam', title: 'Seluruh peminjam agent', desc: 'Lihat semua peminjam, status diterima/ditolak, nominal pinjaman, dan progres angsuran mereka.'},
+  peminjam: {label: 'Data Peminjam', title: 'Seluruh peminjam agent', desc: 'Lihat pengajuan yang sudah diterima, nominal kredit, saldo kredit aktif, dan status pelunasannya.'},
   input: {label: 'Input Peminjaman', title: 'Tambah peminjaman baru', desc: 'Isi data agent yang mengajukan lewat marketing. Setelah disimpan, data masuk antrean verifikasi.'},
   verifikasi: {label: 'Antrean Verifikasi', title: 'Cek pengajuan yang belum diverifikasi', desc: 'Fokus ke data yang masih butuh cek marketing, tanda tangan, atau keputusan awal.'},
-  pembayaran: {label: 'Angsuran & Lunas', title: 'Pembayaran dan cicilan aktif', desc: 'Fokus ke pinjaman yang sudah diterima. Marketing bisa mencatat cicilan dari tombol detail.'},
-  angsuran: {label: 'Angsuran & Lunas', title: 'Monitor angsuran peminjam', desc: 'Lihat siapa saja yang sudah bayar, berapa cicilan yang lunas, sisa tagihan, dan catat pembayaran berikutnya.'},
+  pembayaran: {label: 'Saldo Kredit', title: 'Pelunasan saldo kredit', desc: 'Fokus ke kredit yang sudah diterima. Pembayaran dilakukan satu kali penuh via Bank atau QRIS.'},
+  angsuran: {label: 'Saldo Kredit', title: 'Monitor pelunasan kredit', desc: 'Lihat saldo kredit aktif, nominal pelunasan, bukti pembayaran, dan pengajuan refill.'},
   laporan: {label: 'Laporan Kredit', title: 'Rekap kinerja kredit', desc: 'Lihat total nominal pinjaman, pembayaran masuk, sisa tagihan, dan status seluruh peminjam.'},
-  panduan: {label: 'Panduan Marketing', title: 'Panduan kerja marketing', desc: 'Ikuti alur input, verifikasi, tanda tangan, dan pencatatan cicilan supaya data rapi.'},
+  panduan: {label: 'Panduan Marketing', title: 'Panduan kerja marketing', desc: 'Ikuti alur input, verifikasi, tanda tangan, dan pencatatan pelunasan supaya data rapi.'},
   'agent-input': {label: 'Tambah Agent', title: 'Daftarkan agent baru', desc: 'Buat akun agent resmi agar agent dapat login dan menggunakan layanan Kredit Saldo Agent.'},
 }
 const dataScore = item => {
@@ -185,12 +185,13 @@ const analystReadiness = item => {
   const core = dataScore(item)
   const marketing = marketingReadiness(item)
   const amount = Number(item.form?.amount || 0)
+  const limit = Number(item.creditLimit || 500000)
   const checks = [
     {label: 'Data peminjam lengkap', ok: core.percent === 100},
     {label: 'Selfie pertemuan marketing', ok: marketing.meetingReady},
     {label: 'Tanda tangan marketing', ok: Boolean(item.marketingSignature)},
     {label: 'Berkas sudah dikirim ke analis', ok: Boolean(item.forwardedAt) || ['Menunggu analis', 'Menunggu keputusan analis'].includes(item.status)},
-    {label: 'Nominal sesuai limit pengajuan', ok: amount >= 50000 && amount <= 5000000},
+    {label: 'Nominal sesuai limit agent', ok: amount >= 50000 && amount <= limit},
   ]
   const done = checks.filter(check => check.ok).length
   return {checks, done, total: checks.length, percent: Math.round((done / checks.length) * 100), ready: checks.every(check => check.ok)}
@@ -356,11 +357,28 @@ export default function CreditApplicationsPage() {
   }
   const decide = (item, status) => {
     if (isAnalis && (!item.analisSignature || (status === 'Ditolak' && !decisionNote.trim()))) return
+    const profile = creditProfile(items, item)
+    const amount = Number(item.form?.amount || 0)
+    if (status === 'Disetujui' && (amount < 50000 || amount > profile.limit)) {
+      setDecisionNote(`Nominal ${rupiah(amount)} melewati limit aktif ${rupiah(profile.limit)} untuk agent ini.`)
+      return
+    }
     const changes = {
       status,
       decidedAt: new Date().toISOString(),
       analysisDecision: {by: reviewerName(user), at: new Date().toISOString(), note: decisionNote.trim()},
     }
+    if (status === 'Disetujui') Object.assign(changes, {
+      creditLimit: profile.limit,
+      creditTier: profile.name,
+      paidCreditCycles: profile.paidCycles,
+      creditOriginalAmount: amount,
+      creditBalance: amount,
+      creditOutstanding: amount,
+      creditStatus: 'Aktif',
+      paymentStatus: 'Menunggu pelunasan',
+      repayments: [],
+    })
     saveApplication(item, changes)
     setDecisionNote('')
     refresh()
@@ -372,7 +390,7 @@ export default function CreditApplicationsPage() {
       return setManualMessage('Lengkapi nama agent, toko, WA, dan nominal pinjaman dulu.')
     }
     if (coreDocumentTypes.some(doc => !manualDocuments[doc.key])) return setManualMessage('Lengkapi Foto KTP, Foto Toko, dan Selfie Pegang KTP dulu.')
-    const amount = Math.min(5000000, Math.max(50000, Number(String(manualForm.amount).replace(/\D/g, '') || 0)))
+    const amount = Math.min(500000, Math.max(50000, Number(String(manualForm.amount).replace(/\D/g, '') || 0)))
     const application = {
       id: `KSA-${Date.now().toString().slice(-8)}`,
       status: 'Sedang diverifikasi marketing',
@@ -383,6 +401,10 @@ export default function CreditApplicationsPage() {
       userId: `manual-${Date.now()}`,
       userName: manualForm.agentName.trim(),
       paymentStatus: 'Belum ada pembayaran',
+      creditLimit: 500000,
+      creditBalance: 0,
+      creditOutstanding: 0,
+      creditOriginalAmount: 0,
       form: {...manualForm, amount},
       documents: Object.fromEntries(coreDocumentTypes.map(doc => [doc.key, {name: manualDocuments[doc.key].name, dataUrl: manualDocuments[doc.key].dataUrl || ''}])),
       repayments: [],
@@ -423,10 +445,9 @@ export default function CreditApplicationsPage() {
   }
   const updateManual = event => setManualForm({...manualForm, [event.target.name]: event.target.name === 'amount' ? event.target.value.replace(/\D/g, '').slice(0, 8) : event.target.value})
   const markPayment = (item, row) => {
-    if ((!isMarketing && !isAdmin) || row.paid || item.status !== 'Disetujui' || !paymentProof) return
+    if (row.paid || item.status !== 'Disetujui' || !paymentProof) return
     const repayments = [{key: row.key, applicationId: item.id, label: row.label, amount: row.amount, status: 'Lunas', paidAt: new Date().toISOString(), receivedBy: reviewerName(user), method: paymentMethod, paymentReference: row.key.toUpperCase(), proof: paymentProof}, ...(item.repayments || []).filter(pay => pay.key !== row.key)]
-    const paymentStatus = repayments.length >= paymentSteps.length ? 'Lunas' : `Terbayar ${repayments.length}/${paymentSteps.length}`
-    saveApplication(item, {repayments, paymentStatus})
+    saveApplication(item, {repayments, paymentStatus: 'Lunas', creditStatus: 'Lunas', creditBalance: 0, creditOutstanding: 0, settledAt: new Date().toISOString()})
     refresh()
     setPaymentTarget(null)
     setPaymentMethod('')
@@ -533,10 +554,6 @@ export default function CreditApplicationsPage() {
   const analystDecidedToday = sortedItems.filter(item => finalStatus.includes(item.status) && new Date(item.decidedAt || 0).toDateString() === new Date().toDateString())
   const analystApprovedActive = sortedItems.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas')
   const approvedActive = sortedItems.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas')
-  const duePayments = approvedActive.filter(item => {
-    const next = firstUnpaidRow(item)
-    return next && next.due.getTime() <= Date.now() + 3 * 86400000
-  })
   const borrowerRows = sortedItems.map(item => ({item, pay: paymentSummary(item), next: firstUnpaidRow(item), score: dataScore(item)}))
   const approvedBorrowerRows = borrowerRows.filter(({item}) => ['Disetujui', 'Lunas'].includes(statusGroup(item)))
   const directoryRows = approvedBorrowerRows.filter(({item}) => {
@@ -553,7 +570,7 @@ export default function CreditApplicationsPage() {
   const installmentActive = installmentRows.filter(({item}) => item.paymentStatus !== 'Lunas')
   const installmentFinished = installmentRows.filter(({item}) => item.paymentStatus === 'Lunas')
   const installmentPaidAmount = installmentRows.reduce((sum, {pay}) => sum + pay.totalPaid, 0)
-  const installmentRemainingAmount = installmentRows.reduce((sum, {item, pay}) => sum + Math.max(0, Number(item.form.amount || 0) - pay.totalPaid), 0)
+  const installmentRemainingAmount = installmentRows.reduce((sum, {item, pay}) => sum + Math.max(0, Number(item.creditOriginalAmount || item.form.amount || 0) - pay.totalPaid), 0)
   const marketingCards = [
     {title: 'Perlu Pertemuan', value: meetingQueue.length, note: 'Selfie bersama agent belum ada', icon: Camera},
     {title: 'Siap TTD', value: marketingReadyToSign.length, note: 'Data dan selfie sudah lengkap', icon: PenLine},
@@ -565,10 +582,7 @@ export default function CreditApplicationsPage() {
   const remainingLoan = Math.max(0, totalLoan - totalPaidAmount)
   const recentManual = sortedItems.filter(item => item.source === 'marketing').slice(0, 5)
   const incompleteData = sortedItems.filter(item => !finalStatus.includes(item.status) && dataScore(item).percent < 100)
-  const paymentToday = approvedActive.filter(item => {
-    const next = firstUnpaidRow(item)
-    return next && next.due.toDateString() === new Date().toDateString()
-  })
+  const paymentToday = approvedActive.filter(item => Boolean(firstUnpaidRow(item)))
   const showCreateArea = (isMarketing || isAdmin) && view === 'input'
   // Setiap menu punya satu tujuan: daftar detail hanya muncul di Antrean Verifikasi.
   // Ringkasan, Direktori Peminjam, dan Angsuran memakai panel khusus masing-masing.
@@ -622,7 +636,7 @@ export default function CreditApplicationsPage() {
           <button type="button" className="primary" onClick={() => meetingQueue[0] && goToView('detail', meetingQueue[0].id, 'Review')}><Camera/><span><b>Jadwalkan pertemuan</b><small>{meetingQueue.length ? `${meetingQueue.length} agent perlu selfie bersama` : 'Tidak ada pertemuan tertunda'}</small></span><strong>→</strong></button>
           <button type="button" onClick={() => marketingReadyToSign[0] && goToView('detail', marketingReadyToSign[0].id, 'Review')}><PenLine/><span><b>Tanda tangan verifikasi</b><small>{marketingReadyToSign.length ? `${marketingReadyToSign.length} berkas siap ditandatangani` : 'Belum ada berkas siap TTD'}</small></span><strong>→</strong></button>
           <button type="button" onClick={() => marketingReadyToForward[0] && goToView('detail', marketingReadyToForward[0].id, 'Review')}><ArrowRight/><span><b>Kirim ke Analis</b><small>{marketingReadyToForward.length ? `${marketingReadyToForward.length} berkas siap diteruskan` : 'Belum ada berkas siap kirim'}</small></span><strong>→</strong></button>
-          <button type="button" onClick={() => goToView('angsuran')}><Banknote/><span><b>Cek angsuran</b><small>{paymentToday.length ? `${paymentToday.length} jatuh tempo hari ini` : `${approvedActive.length} pinjaman aktif`}</small></span><strong>→</strong></button>
+          <button type="button" onClick={() => goToView('angsuran')}><Banknote/><span><b>Saldo kredit aktif</b><small>{paymentToday.length ? `${paymentToday.length} kredit menunggu pelunasan` : 'Tidak ada kredit aktif'}</small></span><strong>→</strong></button>
           <button type="button" onClick={() => goToView('peminjam')}><UserCheck/><span><b>Direktori peminjam</b><small>{incompleteData.length ? `${incompleteData.length} data perlu dilengkapi` : 'Data agent sudah lengkap'}</small></span><strong>→</strong></button>
         </div>
         <div className="marketing-section-label focus-label"><span>PEKERJAAN TERDEKAT</span><small>Daftar yang membutuhkan perhatian lebih dulu</small></div>
@@ -651,7 +665,7 @@ export default function CreditApplicationsPage() {
           <article><i><ClipboardCheck/></i><span>Berkas Masuk</span><strong>{analystQueue.length}</strong><small>Kiriman verifikasi Marketing</small></article>
           <article><i><PenLine/></i><span>Perlu TTD Analis</span><strong>{analystPendingSignature.length}</strong><small>Cek kelayakan sebelum tanda tangan</small></article>
           <article><i><Stamp/></i><span>Siap Keputusan</span><strong>{analystReadyToDecide.length}</strong><small>TTD analis sudah tersimpan</small></article>
-          <article><i><CheckCircle2/></i><span>Diterima Aktif</span><strong>{analystApprovedActive.length}</strong><small>Menunggu angsuran atau pelunasan</small></article>
+          <article><i><CheckCircle2/></i><span>Diterima Aktif</span><strong>{analystApprovedActive.length}</strong><small>Menunggu pelunasan</small></article>
         </div>
         <div className="marketing-quick-actions" aria-label="Aksi cepat analis">
           <button type="button" className="primary" onClick={() => goToView('verifikasi')}><ClipboardCheck/><span><b>Buka antrean analis</b><small>{analystQueue.length ? `${analystQueue.length} berkas siap diperiksa` : 'Tidak ada berkas baru'}</small></span><strong>→</strong></button>
@@ -675,35 +689,35 @@ export default function CreditApplicationsPage() {
         <div className="directory-agent-list">
           {directoryGroups.length ? directoryGroups.map(group => <details className="directory-agent" key={group.key}>
             <summary><span><b>{group.agent}</b><small>{group.rows.length} peminjam diterima</small></span><strong>{rupiah(group.rows.reduce((sum, row) => sum + Number(row.item.form.amount || 0), 0))}</strong></summary>
-            <div className="directory-agent-borrowers">{group.rows.map(({item, pay, score}) => <article key={item.id}><span><b>{item.form.storeName || item.form.agentName || item.id}</b><small>{item.id} · {statusGroup(item) === 'Lunas' ? 'Lunas' : 'Sedang berjalan'}</small></span><em><i style={{width: `${score.percent}%`}}/></em><strong>{pay.paid}/{pay.total} cicilan</strong><small>{rupiah(item.form.amount)}</small><button type="button" onClick={() => goToView('detail', item.id, 'Semua')}><Eye/>Cek data</button></article>)}</div>
+            <div className="directory-agent-borrowers">{group.rows.map(({item, pay, score}) => <article key={item.id}><span><b>{item.form.storeName || item.form.agentName || item.id}</b><small>{item.id} · {statusGroup(item) === 'Lunas' ? 'Lunas' : 'Saldo kredit aktif'}</small></span><em><i style={{width: `${score.percent}%`}}/></em><strong>{pay.paid ? 'Lunas' : 'Belum lunas'}</strong><small>{rupiah(item.creditOutstanding || item.form.amount)}</small><button type="button" onClick={() => goToView('detail', item.id, 'Semua')}><Eye/>Cek data</button></article>)}</div>
           </details>) : <p>Data peminjam diterima belum ada.</p>}
         </div>
         <div className="directory-list">
           {directoryRows.length ? directoryRows.map(({item, pay, score}) => <button type="button" key={item.id} onClick={() => goToView('detail', item.id, 'Semua')}>
             <span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id} · {item.status}</small></span>
             <em><i style={{width: `${score.percent}%`}}/></em>
-            <strong>{pay.paid}/{pay.total} cicilan</strong>
+            <strong>{pay.paid ? 'Lunas' : 'Belum lunas'}</strong>
             <small>{rupiah(item.form.amount)}</small>
           </button>) : <p>Data peminjam tidak ditemukan.</p>}
         </div>
       </section>}
       {(isMarketing || isAdmin) && (view === 'pembayaran' || view === 'angsuran') && <section className="marketing-action-panel payment">
-        <header><Banknote/><div><span>MONITOR PEMBAYARAN</span><h2>Angsuran &amp; Lunas</h2><p>Kelola cicilan peminjam yang sudah diterima. Buka satu kartu untuk melihat jadwal dan mencatat pembayaran.</p></div></header>
-        <div className="payment-overview-stats"><article><small>Pinjaman aktif</small><strong>{installmentActive.length}</strong><span>Masih punya cicilan</span></article><article><small>Sudah lunas</small><strong>{installmentFinished.length}</strong><span>Pembayaran selesai</span></article><article><small>Total diterima</small><strong>{rupiah(installmentPaidAmount)}</strong><span>Semua cicilan tercatat</span></article><article><small>Sisa tagihan</small><strong>{rupiah(installmentRemainingAmount)}</strong><span>Perlu dipantau</span></article></div>
+        <header><Banknote/><div><span>MONITOR SALDO KREDIT</span><h2>Pelunasan Kredit Agent</h2><p>Setiap kredit dibayar satu kali penuh. Buka data untuk melihat nominal, Bank/QRIS, dan bukti transfer.</p></div></header>
+        <div className="payment-overview-stats"><article><small>Kredit aktif</small><strong>{installmentActive.length}</strong><span>Menunggu pelunasan</span></article><article><small>Sudah lunas</small><strong>{installmentFinished.length}</strong><span>Pembayaran selesai</span></article><article><small>Total dilunasi</small><strong>{rupiah(installmentPaidAmount)}</strong><span>Pembayaran tercatat</span></article><article><small>Saldo tertagih</small><strong>{rupiah(installmentRemainingAmount)}</strong><span>Perlu dipantau</span></article></div>
         <div className="quick-payment-list">
           {installmentRows.slice(0, 8).map(({item, pay, next}) => {
             return <button type="button" key={item.id} onClick={() => goToView('angsuran-detail', item.id, 'Disetujui')}>
-              <span><b>{item.form.agentName || item.userName}</b><small>{pay.paid}/{pay.total} lunas · {next ? `${next.label} ${next.due.toLocaleDateString('id-ID', {day: '2-digit', month: 'short'})}` : 'semua lunas'}</small></span>
+              <span><b>{item.form.agentName || item.userName}</b><small>{pay.paid ? 'Sudah lunas' : 'Menunggu pelunasan penuh'}</small></span>
               <strong>{next ? rupiah(next.amount) : 'Lunas'}</strong>
             </button>
           })}
-          {!installmentRows.length && <p>Belum ada pinjaman diterima yang perlu dicatat cicilannya.</p>}
+          {!installmentRows.length && <p>Belum ada kredit diterima yang perlu dipantau.</p>}
         </div>
       </section>}
       {(isMarketing || isAnalis || isAdmin) && view === 'laporan' && <>
         <section className="marketing-report-panel">
           <article><span>Total Pinjaman</span><strong>{rupiah(totalLoan)}</strong><small>Akumulasi nominal pengajuan</small></article>
-          <article><span>Pembayaran Masuk</span><strong>{rupiah(totalPaidAmount)}</strong><small>Cicilan yang sudah dicatat</small></article>
+          <article><span>Pembayaran Masuk</span><strong>{rupiah(totalPaidAmount)}</strong><small>Pelunasan yang sudah dicatat</small></article>
           <article><span>Sisa Tagihan</span><strong>{rupiah(remainingLoan)}</strong><small>Estimasi belum dibayar</small></article>
           <article><span>Rasio Lunas</span><strong>{items.length ? Math.round((summary.paid / items.length) * 100) : 0}%</strong><small>Dari seluruh peminjam</small></article>
         </section>
@@ -727,7 +741,7 @@ export default function CreditApplicationsPage() {
           <li><b>Input peminjaman</b><small>Masukkan data agent jika pengajuan dilakukan lewat marketing.</small></li>
           <li><b>Verifikasi data</b><small>Cek WA, NIK, alamat toko, kontak keluarga, dan dokumen sebelum tanda tangan.</small></li>
           <li><b>TTD marketing</b><small>Setelah yakin data layak, tanda tangan dari HP dan teruskan ke analis.</small></li>
-          <li><b>Catat cicilan</b><small>Jika pengajuan sudah diterima, marketing mencatat pembayaran cicilan yang masuk.</small></li>
+          <li><b>Catat pelunasan</b><small>Jika pengajuan sudah diterima, marketing memeriksa bukti transfer pelunasan penuh yang masuk.</small></li>
         </ol>
       </section>}
       {showMainList && <div className="panel-header">
@@ -793,7 +807,7 @@ export default function CreditApplicationsPage() {
               <span><small>Dokumen</small><strong>{Object.values(item.documents || {}).length} foto</strong></span>
             </div>}
             {!isStandaloneDetail && expanded && <div className="credit-payment-summary">
-              <div><CreditCard/><span><b>{item.paymentStatus || `${pay.paid}/${pay.total} cicilan`}</b><small>{rupiah(pay.totalPaid)} sudah dibayar</small></span></div>
+              <div><CreditCard/><span><b>{item.paymentStatus || (pay.paid ? 'Lunas' : 'Menunggu pelunasan')}</b><small>{rupiah(pay.totalPaid)} sudah dibayar</small></span></div>
               <strong>{pay.percent}%</strong>
               <em><i style={{width: `${pay.percent}%`}}/></em>
             </div>}
@@ -862,13 +876,13 @@ export default function CreditApplicationsPage() {
                 <a href={`https://wa.me/${String(item.form.whatsapp || '').replace(/\D/g, '').replace(/^0/, '62')}`} target="_blank" rel="noreferrer"><PhoneCall/>Hubungi via WhatsApp</a>
               </div>}
               {isInstallmentDetail && <div className="credit-detail-block installment-detail-block">
-                <h4>Jalur Pembayaran</h4>
+                <h4>Pelunasan Saldo Kredit</h4>
                 <div className="credit-payment-list">
                   {paymentRows(item).map(row => <article className={row.paid ? 'paid' : ''} key={row.key}>
                     <i>{row.paid ? <CheckCircle2/> : <CalendarDays/>}</i>
-                    <span><b>{row.label}</b><small>Jatuh tempo {row.due.toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'})}{row.paid ? ` · lunas ${dateTime(row.paid.paidAt)}` : ''}</small></span>
+                    <span><b>{row.label}</b><small>{row.paid ? `Lunas ${dateTime(row.paid.paidAt)}` : 'Bayar satu kali penuh sesuai saldo kredit'}</small></span>
                     <strong>{rupiah(row.amount)}</strong>
-                    {(isMarketing || isAdmin) && item.status === 'Disetujui' && <button type="button" disabled={Boolean(row.paid)} onClick={() => {setPaymentTarget({item, row}); setPaymentMethod(''); setPaymentProof(null)}}><Banknote/>{row.paid ? 'Lunas' : 'Bayar Angsuran'}</button>}
+                    {item.status === 'Disetujui' && <button type="button" disabled={Boolean(row.paid)} onClick={() => {setPaymentTarget({item, row}); setPaymentMethod(''); setPaymentProof(null)}}><Banknote/>{row.paid ? 'Lunas' : 'Bayar Kredit'}</button>}
                   </article>)}
                 </div>
               </div>}
@@ -877,16 +891,16 @@ export default function CreditApplicationsPage() {
         })}
       </div>}</>}
     </section>
-    {paymentTarget && <section className="review-payment-backdrop" aria-label="Bayar angsuran">
+    {paymentTarget && <section className="review-payment-backdrop" aria-label="Bayar kredit">
       <div className="review-payment-sheet">
-        <header><div><span>BAYAR ANGSURAN</span><h2>{paymentTarget.row.label}</h2><p>{paymentTarget.item.form.agentName || paymentTarget.item.userName}</p></div><button type="button" onClick={() => setPaymentTarget(null)} aria-label="Tutup"><X/></button></header>
+        <header><div><span>PELUNASAN KREDIT</span><h2>{paymentTarget.row.label}</h2><p>{paymentTarget.item.form.agentName || paymentTarget.item.userName}</p></div><button type="button" onClick={() => setPaymentTarget(null)} aria-label="Tutup"><X/></button></header>
         <div className="review-payment-amount"><small>Total yang harus dibayar</small><strong>{rupiah(paymentTarget.row.amount)}</strong></div>
         <div className="review-payment-methods">
           <button type="button" className={paymentMethod === 'bank' ? 'active' : ''} onClick={() => setPaymentMethod('bank')}><Landmark/><span><b>Transfer Bank</b><small>BCA · 1234567890 a.n. KuotaKita</small></span>{paymentMethod === 'bank' && <Check/>}</button>
-          <button type="button" className={paymentMethod === 'qris' ? 'active' : ''} onClick={() => setPaymentMethod('qris')}><QrCode/><span><b>QRIS / Barcode</b><small>Nominal otomatis sesuai angsuran</small></span>{paymentMethod === 'qris' && <Check/>}</button>
+          <button type="button" className={paymentMethod === 'qris' ? 'active' : ''} onClick={() => setPaymentMethod('qris')}><QrCode/><span><b>QRIS / Barcode</b><small>Nominal otomatis sesuai pelunasan</small></span>{paymentMethod === 'qris' && <Check/>}</button>
         </div>
         {paymentMethod === 'bank' && <div className="review-bank-detail"><span>Transfer tepat sebesar</span><strong>{rupiah(paymentTarget.row.amount)}</strong><small>Kode referensi: {paymentTarget.row.key.toUpperCase()}</small></div>}
-        {paymentMethod === 'qris' && <div className="review-qr-detail"><QRCodeSVG value={`https://kuotakita-app.pages.dev/pay?ref=${encodeURIComponent(paymentTarget.row.key)}&amount=${paymentTarget.row.amount}`} size={210} level="H" includeMargin/><strong>{rupiah(paymentTarget.row.amount)}</strong><small>QR dibuat khusus untuk cicilan ini.</small></div>}
+        {paymentMethod === 'qris' && <div className="review-qr-detail"><QRCodeSVG value={`${window.location.origin}/pay?ref=${encodeURIComponent(paymentTarget.row.key)}&amount=${paymentTarget.row.amount}`} size={210} level="H" includeMargin/><strong>{rupiah(paymentTarget.row.amount)}</strong><small>QR memuat referensi dan nominal pelunasan ini.</small></div>}
         <label className="review-payment-proof"><Upload/><span><b>Bukti transfer wajib</b><small>{paymentProof?.name || 'Unggah bukti transfer atau screenshot pembayaran'}</small></span><input type="file" accept="image/*,.pdf" onChange={choosePaymentProof}/></label>
         <button type="button" className="review-payment-confirm" disabled={!paymentMethod || !paymentProof} onClick={() => markPayment(paymentTarget.item, paymentTarget.row)}>Konfirmasi Pembayaran <ArrowRight/></button>
       </div>

@@ -12,7 +12,7 @@ const marketingNavigation = [
       {to: '/credit-applications?view=peminjam', label: 'Data Peminjam', icon: Users},
       {to: '/credit-applications?view=input', label: 'Input Peminjaman', icon: FilePlus2},
       {to: '/credit-applications?view=verifikasi', label: 'Antrean Verifikasi', icon: ClipboardCheck},
-      {to: '/credit-applications?view=angsuran', label: 'Angsuran & Lunas', icon: Banknote},
+      {to: '/credit-applications?view=angsuran', label: 'Saldo Kredit', icon: Banknote},
     ],
   },
 ]
@@ -43,7 +43,7 @@ export default function Sidebar({open, onClose}) {
   const active = to => current === to || (!to.includes('?') && location.pathname === to && !location.search)
   const activeLabel = visibleNavigation.flatMap(group => group.items).find(item => active(item.to))?.label || (isAnalis ? 'Meja Keputusan' : 'Ringkasan Kredit')
   const rolePanel = isMarketing
-    ? {eyebrow: 'MODE MARKETING', title: 'Kelola pengajuan agent', description: 'Validasi data, selfie pertemuan, verifikasi, lalu pantau cicilan.'}
+    ? {eyebrow: 'MODE MARKETING', title: 'Kelola pengajuan agent', description: 'Validasi data, selfie pertemuan, verifikasi, lalu pantau pelunasan kredit.'}
     : isAnalis
       ? {eyebrow: 'MODE ANALIS', title: 'Keputusan akhir kredit', description: 'Cek berkas Marketing, tanda tangan, lalu terima atau tolak dengan catatan yang jelas.'}
       : null

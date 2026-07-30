@@ -33,23 +33,17 @@ const docs = [
 
 const terms = [
   'Pengajuan hanya untuk agent terdaftar KuotaKita dan akan diverifikasi oleh tim analis.',
-  'Limit kredit saldo maksimal Rp500.000 dan dapat berubah sesuai hasil penilaian.',
-  'Pelunasan wajib dilakukan sesuai jatuh tempo agar akses kredit tetap aktif.',
+  'Nominal pengajuan boleh di bawah limit kredit agent yang aktif.',
+  'Saldo kredit agent terpisah dari saldo transaksi aplikasi dan wajib dilunasi sekaligus melalui Bank atau QRIS.',
+  'Setelah pembayaran kredit lunas dan diverifikasi, agent dapat mengajukan refill kembali.',
   'Data KTP, toko, selfie, dan tanda tangan dipakai untuk validasi permohonan.',
 ]
 
 const verificationDuration = 5 * 60 * 1000
 const rankLevels = [
-  {name: 'Agent Pemula', minApproved: 0, limit: 500000, badge: 'BRONZE'},
-  {name: 'Agent Lancar', minApproved: 3, limit: 1000000, badge: 'SILVER'},
-  {name: 'Agent Prioritas', minApproved: 6, limit: 2000000, badge: 'GOLD'},
-  {name: 'Agent Platinum', minApproved: 10, limit: 5000000, badge: 'PLATINUM'},
-]
-const paymentSteps = [
-  {label: 'Cicilan 1', day: 7, portion: 0.25},
-  {label: 'Cicilan 2', day: 14, portion: 0.25},
-  {label: 'Cicilan 3', day: 21, portion: 0.25},
-  {label: 'Pelunasan', day: 30, portion: 0.25},
+  {name: 'Agent Pemula', minPaid: 0, limit: 500000, badge: 'BRONZE', target: 3},
+  {name: 'Agent Lancar', minPaid: 3, limit: 1000000, badge: 'SILVER', target: 8},
+  {name: 'Agent Prioritas', minPaid: 8, limit: 2000000, badge: 'GOLD', target: 13},
 ]
 const finalCreditStatus = ['Disetujui', 'Ditolak']
 
@@ -262,7 +256,7 @@ export default function AgentCreditPage() {
   }, [location.state, applications.length])
 
   // Pembayaran berasal dari pengajuan yang sudah disimpan server, sehingga
-  // agent membuka dari perangkat lain tetap melihat cicilan yang sama.
+  // agent membuka dari perangkat lain tetap melihat status pelunasan yang sama.
   useEffect(() => {
     setRepayments(applications.flatMap(item => item.repayments || []))
   }, [applications])
@@ -366,11 +360,16 @@ export default function AgentCreditPage() {
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
     setSigned(false)
   }
-  const approvedBorrowerCount = applications.filter(item => item.status === 'Disetujui').length
-  const currentRank = rankLevels.reduce((rank, item) => (approvedBorrowerCount >= item.minApproved ? item : rank), rankLevels[0])
-  const nextRank = rankLevels.find(item => item.minApproved > approvedBorrowerCount)
-  const rankProgress = nextRank ? Math.min(100, Math.round((approvedBorrowerCount / nextRank.minApproved) * 100)) : 100
+  // Limit naik hanya dari siklus yang benar-benar sudah dilunasi: 3x Rp500rb,
+  // lalu 5x Rp1jt, lalu 5x Rp2jt. Saldo transaksi reguler tidak ikut dihitung.
+  const paidCycles = applications.filter(item => item.paymentStatus === 'Lunas' || item.creditStatus === 'Lunas').length
+  const currentRank = rankLevels.reduce((rank, item) => (paidCycles >= item.minPaid ? item : rank), rankLevels[0])
+  const nextRank = rankLevels.find(item => item.minPaid > paidCycles)
+  const rankProgress = nextRank ? Math.min(100, Math.round(((paidCycles - currentRank.minPaid) / (nextRank.minPaid - currentRank.minPaid)) * 100)) : 100
   const maxCredit = currentRank.limit
+  const activeCredit = applications.find(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas')
+  const creditBalance = activeCredit ? Number(activeCredit.creditBalance ?? activeCredit.form?.amount ?? 0) : 0
+  const transactionBalance = Number(user?.balance || 0)
   const pendingApplications = applications.filter(item => !finalCreditStatus.includes(item.status)).length
   const approvedApplications = applications.filter(item => item.status === 'Disetujui').length
   const rejectedApplications = applications.filter(item => item.status === 'Ditolak').length
@@ -380,23 +379,18 @@ export default function AgentCreditPage() {
     const matchesStatus = statusFilter === 'Semua' || (statusFilter === 'Menunggu' ? !finalCreditStatus.includes(item.status) : item.status === statusFilter)
     return matchesQuery && matchesStatus
   })
-  const payKey = (appId, index) => `${appId}-${index}`
-  const isPaid = (appId, index) => repayments.some(item => item.key === payKey(appId, index) && item.status === 'Lunas')
-  const paymentPlan = application ? paymentSteps.map((step, index) => ({
-    ...step,
-    index,
-    key: payKey(application.id, index),
-    amount: Math.ceil(Number(application.form.amount || 0) * step.portion),
-    due: new Date(new Date(application.createdAt).getTime() + step.day * 86400000),
-    paid: isPaid(application.id, index),
-  })) : []
-  const payInstallment = item => {
+  const paymentPlan = application && application.status === 'Disetujui' ? [{
+    key: `${application.id}-pelunasan`,
+    label: 'Pelunasan Saldo Kredit',
+    amount: Number(application.creditOriginalAmount ?? application.form?.amount ?? application.creditOutstanding ?? 0),
+    paid: application.paymentStatus === 'Lunas' || application.creditStatus === 'Lunas',
+  }] : []
+  const payCredit = item => {
     if (!paymentProof) return setMessage('Bukti transfer wajib diunggah sebelum pembayaran dikonfirmasi.')
     const next = [{key: item.key, applicationId: application.id, label: item.label, amount: item.amount, status: 'Lunas', paidAt: new Date().toISOString(), method: paymentMethod, paymentReference: item.key.toUpperCase(), proof: paymentProof}, ...repayments.filter(row => row.key !== item.key)]
     setRepayments(next)
     const appRepayments = next.filter(row => row.applicationId === application.id)
-    const paymentStatus = appRepayments.length >= paymentSteps.length ? 'Lunas' : `Terbayar ${appRepayments.length}/${paymentSteps.length}`
-    const updatedApplication = {...application, repayments: appRepayments, paymentStatus, updatedAt: new Date().toISOString()}
+    const updatedApplication = {...application, repayments: appRepayments, paymentStatus: 'Lunas', creditStatus: 'Lunas', creditBalance: 0, creditOutstanding: 0, settledAt: new Date().toISOString(), updatedAt: new Date().toISOString()}
     persistApplication(updatedApplication)
     setPaymentItem(null)
     setPaymentMethod('')
@@ -412,6 +406,7 @@ export default function AgentCreditPage() {
   }
   const submit = async event => {
     event.preventDefault()
+    if (activeCredit) return setMessage('Saldo kredit agent masih aktif. Lunasi terlebih dahulu sebelum mengajukan refill baru.')
     const amount = Math.min(maxCredit, Math.max(50000, Number(form.amount || 0)))
     // Agent hanya mengirim tiga dokumen inti. Selfie bersama marketing
     // baru diambil marketing saat pertemuan verifikasi.
@@ -438,6 +433,11 @@ export default function AgentCreditPage() {
       userId: user?.id || 'guest',
       userName: user?.name || form.agentName,
       form: {...form, amount},
+      creditLimit: maxCredit,
+      creditBalance: 0,
+      creditOutstanding: 0,
+      creditOriginalAmount: 0,
+      creditStatus: 'Menunggu keputusan',
       documents: Object.fromEntries(documentEntries),
       applicationType: refillSource ? 'Refill Kredit' : 'Pengajuan Baru',
       refillOf: refillSource?.id || '',
@@ -529,7 +529,7 @@ export default function AgentCreditPage() {
   const shouldShowForm = showForm
   const totalCreditApproved = applications.filter(item => item.status === 'Disetujui' || item.paymentStatus === 'Lunas').reduce((sum, item) => sum + Number(item.form?.amount || 0), 0)
   const totalCreditPaid = repayments.filter(item => item.status === 'Lunas').reduce((sum, item) => sum + Number(item.amount || 0), 0)
-  const canRefill = approved && paymentPlan.length > 0 && paymentPlan.every(item => item.paid)
+  const canRefill = application?.paymentStatus === 'Lunas' || application?.creditStatus === 'Lunas'
   return <main className="mobile-app agent-credit-page">
     <SubPageHeader title="Kredit Saldo Agent" description="Ajukan tanam saldo langsung dari aplikasi" back/>
     <section className="agent-credit-hero">
@@ -542,12 +542,12 @@ export default function AgentCreditPage() {
     <section className="agent-rank-card">
       <header>
         <i><Award/></i>
-        <div><span>PANGKAT AGENT</span><h2>{currentRank.name}</h2><p>{approvedBorrowerCount} peminjam disetujui · Limit {rupiah(currentRank.limit)}.</p></div>
+        <div><span>LIMIT KREDIT AGENT</span><h2>{currentRank.name}</h2><p>{paidCycles} pengajuan sudah lunas · Limit aktif {rupiah(currentRank.limit)}.</p></div>
         <b>{currentRank.badge}</b>
       </header>
       <div className="rank-meter"><span style={{width: `${rankProgress}%`}}/></div>
-      <p><TrendingUp/> Pangkat naik otomatis setiap jumlah peminjam yang kamu daftarkan sudah diterima tim verifikasi.</p>
-      <div className="agent-credit-totals"><div><small>Total kredit diterima</small><strong>{rupiah(totalCreditApproved)}</strong></div><div><small>Total sudah lunas</small><strong>{rupiah(totalCreditPaid)}</strong></div></div>
+      <p><TrendingUp/> Limit naik setelah kredit dibayar lunas: 3x di Rp500 ribu, 5x di Rp1 juta, lalu 5x di Rp2 juta.</p>
+      <div className="agent-credit-totals"><div><small>Saldo transaksi</small><strong>{rupiah(transactionBalance)}</strong></div><div><small>Saldo kredit aktif</small><strong>{rupiah(creditBalance)}</strong></div><div><small>Limit pengajuan saat ini</small><strong>{rupiah(maxCredit)}</strong></div><div><small>Riwayat sudah lunas</small><strong>{rupiah(totalCreditPaid)}</strong></div></div>
     </section>
     <div className="agent-credit-tabs" role="tablist" aria-label="Menu Kredit Agent">
       <button type="button" className={!showForm && !detailOpen ? 'active' : ''} onClick={backToApplications}><FileText/><span>Semua Peminjam<small>{applications.length} pengajuan tersimpan</small></span></button>
@@ -593,8 +593,8 @@ export default function AgentCreditPage() {
     {detailOpen && application && <section className={`agent-verification ${approved ? 'approved' : ''} ${rejected ? 'rejected' : ''}`}>
       <i>{approved ? <Stamp/> : rejected ? <X/> : <Loader2/>}</i>
       <span>{approved ? 'PENGAJUAN DISETUJUI' : rejected ? 'PENGAJUAN DITOLAK' : waitingDecision ? 'MENUNGGU KEPUTUSAN' : 'MOHON MENUNGGU'}</span>
-      <h2>{approved ? 'Kredit saldo sudah diterima' : rejected ? 'Pengajuan belum diterima' : waitingDecision ? 'Menunggu keputusan' : 'Data sedang diverifikasi'}</h2>
-      <p>{approved ? 'Pengajuan agent kamu sudah diterima. Limit kredit saldo siap diproses sesuai nominal yang diajukan.' : rejected ? 'Pengajuan ini ditolak tim verifikasi. Periksa kembali data dan dokumen sebelum membuat pengajuan baru.' : waitingDecision ? 'Pemeriksaan awal sudah selesai. Status akan berubah setelah keputusan akhir diberikan.' : 'Sistem sedang mengecek formulir, dokumen, kualitas foto, dan tanda tangan online.'}</p>
+      <h2>{approved ? 'Saldo kredit agent sudah aktif' : rejected ? 'Pengajuan belum diterima' : waitingDecision ? 'Menunggu keputusan' : 'Data sedang diverifikasi'}</h2>
+      <p>{approved ? 'Nominal yang diterima masuk ke saldo kredit agent. Saldo ini terpisah dari saldo transaksi biasa dan pelunasannya dilakukan sekaligus.' : rejected ? 'Pengajuan ini ditolak tim verifikasi. Periksa kembali data dan dokumen sebelum membuat pengajuan baru.' : waitingDecision ? 'Pemeriksaan awal sudah selesai. Status akan berubah setelah keputusan akhir diberikan.' : 'Sistem sedang mengecek formulir, dokumen, kualitas foto, dan tanda tangan online.'}</p>
       <div className="verification-meta">
         <b>{application.id}</b>
         <strong>{rupiah(application.form.amount)}</strong>
@@ -610,29 +610,29 @@ export default function AgentCreditPage() {
       {canRefill && <button type="button" className="agent-refill-button" onClick={() => startRefill(application)}><PlusCircle/> Ajukan Refill Kredit</button>}
     </section>}
     {detailOpen && approved && <section className="agent-payment-lane">
-        <header><i><CreditCard/></i><div><h2>Jalur Pembayaran Kredit</h2><p>Bayar cicilan melalui transfer bank atau QRIS. Bukti pembayaran wajib diunggah untuk diverifikasi marketing.</p></div></header>
-      <div className="payment-lane-total"><span>Total pinjaman</span><strong>{rupiah(application.form.amount)}</strong></div>
+        <header><i><CreditCard/></i><div><h2>Pelunasan Saldo Kredit</h2><p>Pembayaran dilakukan sekali sesuai total saldo kredit aktif melalui transfer bank atau QRIS. Bukti pembayaran wajib diunggah.</p></div></header>
+      <div className="payment-lane-total"><span>{application.paymentStatus === 'Lunas' ? 'Kredit sudah dilunasi' : 'Total yang harus dilunasi'}</span><strong>{rupiah(application.creditOriginalAmount ?? application.form.amount)}</strong></div>
       <div className="payment-lane-list">
         {paymentPlan.map(item => <article className={item.paid ? 'paid' : ''} key={item.key}>
           <i>{item.paid ? <CheckCircle2/> : <CalendarDays/>}</i>
-          <div><strong>{item.label}</strong><small>Jatuh tempo {item.due.toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'})}</small></div>
+          <div><strong>{item.label}</strong><small>{item.paid ? 'Pembayaran sudah tercatat' : 'Bayar penuh sesuai saldo kredit aktif'}</small></div>
           <b>{rupiah(item.amount)}</b>
-          <button type="button" disabled={item.paid} onClick={() => {setPaymentItem(item);setPaymentMethod('')}}>{item.paid ? 'Lunas' : 'Bayar Cicilan'}</button>
+          <button type="button" disabled={item.paid} onClick={() => {setPaymentItem(item);setPaymentMethod('')}}>{item.paid ? 'Lunas' : 'Bayar Sekarang'}</button>
         </article>)}
       </div>
     </section>}
     {paymentItem && <section className="agent-payment-backdrop" onClick={event => event.target === event.currentTarget && setPaymentItem(null)}>
       <div className="agent-payment-sheet">
-        <header><div><span>PEMBAYARAN CICILAN</span><h2>{paymentItem.label}</h2></div><button type="button" onClick={() => {setPaymentItem(null);setPaymentProof(null)}}><X/></button></header>
-        <div className="agent-payment-amount"><small>Total yang harus dibayar</small><strong>{rupiah(paymentItem.amount)}</strong><span>Jatuh tempo {paymentItem.due.toLocaleDateString('id-ID', {day: '2-digit', month: 'long', year: 'numeric'})}</span></div>
+        <header><div><span>PELUNASAN KREDIT</span><h2>{paymentItem.label}</h2></div><button type="button" onClick={() => {setPaymentItem(null);setPaymentProof(null)}}><X/></button></header>
+        <div className="agent-payment-amount"><small>Total yang harus dibayar</small><strong>{rupiah(paymentItem.amount)}</strong><span>Nominal penuh sesuai saldo kredit aktif</span></div>
         <div className="agent-payment-methods">
           <button type="button" className={paymentMethod === 'bank' ? 'active' : ''} onClick={() => setPaymentMethod('bank')}><i><Landmark/></i><span><b>Transfer Bank</b><small>BCA · 1234567890 · a.n. KuotaKita</small></span>{paymentMethod === 'bank' && <Check/>}</button>
-          <button type="button" className={paymentMethod === 'qris' ? 'active' : ''} onClick={() => setPaymentMethod('qris')}><i><QrCode/></i><span><b>QRIS / Barcode</b><small>Nominal otomatis sesuai cicilan</small></span>{paymentMethod === 'qris' && <Check/>}</button>
+          <button type="button" className={paymentMethod === 'qris' ? 'active' : ''} onClick={() => setPaymentMethod('qris')}><i><QrCode/></i><span><b>QRIS / Barcode</b><small>Nominal otomatis sesuai pelunasan</small></span>{paymentMethod === 'qris' && <Check/>}</button>
         </div>
         {paymentMethod === 'bank' && <div className="agent-bank-detail"><div><span>Nominal transfer</span><strong>{rupiah(paymentItem.amount)}</strong></div><div><span>Kode pembayaran</span><strong>{paymentItem.key.toUpperCase()}</strong></div><button type="button" onClick={() => copyPaymentReference(paymentItem.key.toUpperCase())}><Copy/> Salin kode</button></div>}
-        {paymentMethod === 'qris' && <div className="agent-qr-detail"><div className="agent-qr-art"><QRCodeSVG value={`https://kuotakita-app.pages.dev/pay?ref=${encodeURIComponent(paymentItem.key)}&amount=${paymentItem.amount}`} size={220} level="H" minVersion={5} includeMargin/></div><strong>{rupiah(paymentItem.amount)}</strong><small>QR dinamis untuk {paymentItem.label}. Scan dari kamera, bank, atau e-wallet.</small></div>}
+        {paymentMethod === 'qris' && <div className="agent-qr-detail"><div className="agent-qr-art"><QRCodeSVG value={`${window.location.origin}/pay?ref=${encodeURIComponent(paymentItem.key)}&amount=${paymentItem.amount}`} size={220} level="H" minVersion={5} includeMargin/></div><strong>{rupiah(paymentItem.amount)}</strong><small>QR memuat referensi dan nominal pelunasan ini.</small></div>}
         <label className="agent-payment-proof"><Upload/><span><b>Bukti transfer wajib</b><small>{paymentProof?.name || 'Unggah foto/screenshot bukti pembayaran'}</small></span><input type="file" accept="image/*" onChange={choosePaymentProof}/></label>
-        <button type="button" className="agent-payment-confirm" disabled={!paymentMethod || !paymentProof} onClick={() => payInstallment(paymentItem)}>Konfirmasi Pembayaran <ArrowRight/></button>
+        <button type="button" className="agent-payment-confirm" disabled={!paymentMethod || !paymentProof} onClick={() => payCredit(paymentItem)}>Konfirmasi Pembayaran <ArrowRight/></button>
       </div>
     </section>}
     {shouldShowForm && <>
@@ -662,8 +662,8 @@ export default function AgentCreditPage() {
         </div>
       </section>
       <section className="agent-credit-preview" aria-label="Ringkasan nominal kredit">
-        <header><div><span>RINGKASAN SEBELUM TANDA TANGAN</span><h2>Nominal yang diajukan</h2><p>Pastikan jumlah kredit dan cicilan sudah sesuai sebelum menyetujui ketentuan.</p></div><strong>{rupiah(Number(form.amount || 0))}</strong></header>
-        <div><article><small>Total kredit diajukan</small><b>{rupiah(Number(form.amount || 0))}</b></article><article><small>Per cicilan (4x)</small><b>{rupiah(Math.ceil(Number(form.amount || 0) * .25))}</b></article><article><small>Riwayat kredit diterima</small><b>{rupiah(totalCreditApproved)}</b></article><article><small>Riwayat sudah lunas</small><b>{rupiah(totalCreditPaid)}</b></article><article><small>Status</small><b>Menunggu verifikasi</b></article></div>
+        <header><div><span>RINGKASAN SEBELUM TANDA TANGAN</span><h2>Nominal kredit yang diajukan</h2><p>Pastikan nominal tidak melebihi limit dan pelunasan dilakukan sekaligus setelah kredit digunakan.</p></div><strong>{rupiah(Number(form.amount || 0))}</strong></header>
+        <div><article><small>Nominal diajukan</small><b>{rupiah(Number(form.amount || 0))}</b></article><article><small>Limit aktif</small><b>{rupiah(maxCredit)}</b></article><article><small>Saldo kredit berjalan</small><b>{rupiah(creditBalance)}</b></article><article><small>Riwayat sudah lunas</small><b>{rupiah(totalCreditPaid)}</b></article><article><small>Status</small><b>Menunggu verifikasi</b></article></div>
       </section>
       <section className="agent-card">
         <header><i><Camera/></i><div><h2>Upload Dokumen</h2><p>Sistem mengecek kualitas foto. Jika buram, kecil, atau rusak wajib upload ulang.</p></div></header>
