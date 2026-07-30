@@ -35,3 +35,46 @@
 .marketing-review .marketing-focus-grid>div{min-width:0}.marketing-review .credit-review-card{scroll-margin-top:14px}
 @media(max-width:560px){.marketing-review{gap:11px}.marketing-review .credit-review-hero{padding:17px 16px;border-radius:20px}.marketing-review .credit-review-hero>i{display:none}.marketing-review .credit-review-hero h2{font-size:22px;line-height:1.12}.marketing-review .credit-review-hero p{font-size:11px}.marketing-review .credit-review-stats{gap:8px}.marketing-review .credit-review-stats article{min-height:82px;padding:11px;border-radius:15px}.marketing-review .credit-review-stats strong{font-size:21px}.marketing-review .marketing-workspace{gap:12px;padding:14px 12px;border-radius:20px}.marketing-review .marketing-workspace header h2{font-size:18px;line-height:1.2}.marketing-review .marketing-workspace header p{font-size:10px;line-height:1.5}.marketing-review .marketing-task-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.marketing-review .marketing-task-grid article{min-height:112px;padding:10px 8px;border-radius:15px}.marketing-review .marketing-task-grid i{width:33px;height:33px;margin-bottom:7px;border-radius:11px}.marketing-review .marketing-task-grid span{font-size:9px;line-height:1.25}.marketing-review .marketing-task-grid strong{font-size:21px}.marketing-review .marketing-task-grid small{font-size:8px;line-height:1.25}.marketing-review .marketing-section-label{display:grid;gap:3px;margin:3px 2px 0}.marketing-review .marketing-quick-actions{grid-template-columns:1fr;gap:8px}.marketing-review .marketing-quick-actions button{grid-template-columns:34px minmax(0,1fr) 20px;min-height:64px;padding:11px 12px;border-radius:15px}.marketing-review .marketing-quick-actions b{font-size:11px}.marketing-review .marketing-quick-actions small{font-size:9px;white-space:normal;line-height:1.32}.marketing-review .marketing-quick-actions strong{font-size:18px;text-align:right}.marketing-review .marketing-focus-grid{grid-template-columns:1fr;gap:9px}.marketing-review .marketing-focus-grid>div{padding:12px;border-radius:16px}.marketing-review .marketing-focus-grid h3{font-size:13px}.marketing-review .marketing-focus-grid button{display:grid;grid-template-columns:minmax(0,1fr) auto;min-height:58px;padding:10px 11px}.marketing-review .marketing-focus-grid button small{white-space:normal;line-height:1.3}.marketing-review .credit-mode-panel{padding:15px;border-radius:18px}.marketing-review .credit-mode-panel h2{font-size:18px}.marketing-review .credit-mode-panel p{font-size:10px}.marketing-review .credit-review-tools{gap:8px}.marketing-review .credit-review-tools label{min-height:46px;padding:0 11px}.marketing-review .credit-review-tools>div{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.marketing-review .credit-review-tools>div>svg{display:none}.marketing-review .credit-review-tools button{width:100%;padding:9px 5px;font-size:10px}.marketing-review .credit-review-card{padding:13px;border-radius:17px}.marketing-review .credit-review-card header{grid-template-columns:minmax(0,1fr) auto;align-items:start}.marketing-review .credit-review-card header b{font-size:14px}.marketing-review .credit-review-card footer{display:grid;grid-template-columns:1fr 1fr;gap:8px}.marketing-review .credit-review-card footer span{grid-column:1/-1;width:auto;margin:0;line-height:1.35}.marketing-review .credit-review-card footer button{justify-content:center;min-height:42px;padding:10px;font-size:10px}.marketing-review .credit-review-card footer .meeting-required{grid-column:1/-1}.marketing-review .credit-borrower-detail{gap:9px;margin-top:11px;padding-top:11px}.marketing-review .credit-detail-block{padding:12px;border-radius:14px}.marketing-review .borrower-document-gallery figure img,.marketing-review .borrower-document-gallery figure>i,.marketing-review .missing-document{height:190px}.marketing-review .review-payment-sheet{padding:16px;border-radius:22px}.marketing-review .review-payment-backdrop{align-items:end;padding:0}.marketing-review .review-payment-sheet{border-radius:22px 22px 0 0}}
 @media(max-width:380px){.marketing-review .marketing-task-grid{grid-template-columns:1fr 1fr}.marketing-review .marketing-task-grid article:last-child{grid-column:1/-1;min-height:86px}.marketing-review .credit-review-tools>div{grid-template-columns:1fr 1fr}.marketing-review .credit-review-card footer{grid-template-columns:1fr}}
+
+/* Panel marketing punya tata letak khusus telepon. Layar kecil tidak perlu
+   membawa ruang kosong dan judul desktop dua kali; informasi inti tetap
+   lengkap tetapi aksi lapangan langsung mudah dijangkau dengan ibu jari. */
+@media(max-width:760px){
+  .page-content:has(.marketing-review){max-width:none;padding:12px 0 34px}
+  .page-content:has(.marketing-review)>.page-header{display:none}
+  .credit-review-panel.marketing-review{gap:10px;border:0;border-radius:0;background:transparent;box-shadow:none;padding:0 12px}
+  .marketing-review .credit-review-hero{display:block;min-height:0;padding:16px 17px 15px;border-radius:19px;box-shadow:0 11px 28px #4c39cf24}
+  .marketing-review .credit-review-hero:before{right:-72px;top:-96px;width:150px;height:150px;border-width:22px}
+  .marketing-review .credit-review-hero>i{display:none}
+  .marketing-review .credit-review-hero span{font-size:8px;letter-spacing:1.35px}
+  .marketing-review .credit-review-hero h2{margin:5px 0 6px;font-size:21px;line-height:1.12}
+  .marketing-review .credit-review-hero p{display:-webkit-box;overflow:hidden;margin:0;font-size:10px;line-height:1.45;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+  .marketing-review .credit-review-stats{gap:7px}
+  .marketing-review .credit-review-stats article{min-height:72px;padding:10px 11px;border-radius:14px;box-shadow:0 6px 16px #17203308}
+  .marketing-review .credit-review-stats span{font-size:8px}
+  .marketing-review .credit-review-stats strong{margin:4px 0;font-size:20px}
+  .marketing-review .credit-review-stats small{font-size:8px;line-height:1.2}
+  .marketing-review .marketing-workspace{gap:10px;padding:13px 11px;border-radius:19px;box-shadow:0 9px 24px #6045df10}
+  .marketing-review .marketing-workspace header h2{margin:3px 0;font-size:16px;line-height:1.2}
+  .marketing-review .marketing-workspace header p{display:-webkit-box;overflow:hidden;font-size:9px;line-height:1.4;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+  .marketing-review .marketing-task-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+  .marketing-review .marketing-task-grid article{min-height:93px;padding:9px 7px;border-radius:14px}
+  .marketing-review .marketing-task-grid i{width:30px;height:30px;margin-bottom:5px;border-radius:10px}
+  .marketing-review .marketing-task-grid i svg{width:15px}
+  .marketing-review .marketing-task-grid span{font-size:8px;line-height:1.15}
+  .marketing-review .marketing-task-grid strong{margin:3px 0;font-size:19px}
+  .marketing-review .marketing-task-grid small{font-size:7px;line-height:1.2}
+  .marketing-review .marketing-section-label{margin:3px 2px 0;gap:2px}
+  .marketing-review .marketing-section-label span{font-size:8px}
+  .marketing-review .marketing-section-label small{font-size:8px}
+  .marketing-review .marketing-quick-actions{gap:7px}
+  .marketing-review .marketing-quick-actions button{grid-template-columns:30px minmax(0,1fr) 16px;min-height:57px;padding:9px 10px;border-radius:14px}
+  .marketing-review .marketing-quick-actions button>svg{width:17px;height:17px}
+  .marketing-review .marketing-quick-actions b{font-size:10px}
+  .marketing-review .marketing-quick-actions small{font-size:8px;line-height:1.25}
+  .marketing-review .marketing-quick-actions strong{font-size:15px}
+  .marketing-review .marketing-focus-grid{gap:8px}
+  .marketing-review .marketing-focus-grid>div{padding:11px;border-radius:15px}
+  .marketing-review .marketing-focus-grid h3{margin-bottom:7px;font-size:12px}
+  .marketing-review .marketing-focus-grid button{min-height:52px;margin-top:6px;padding:8px 10px}
+}
