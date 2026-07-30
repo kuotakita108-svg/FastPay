@@ -40,9 +40,9 @@
    membawa ruang kosong dan judul desktop dua kali; informasi inti tetap
    lengkap tetapi aksi lapangan langsung mudah dijangkau dengan ibu jari. */
 @media(max-width:760px){
-  .page-content:has(.marketing-review){max-width:none;padding:12px 0 34px}
+  .page-content:has(.marketing-review){max-width:none;min-height:calc(100vh - 64px);padding:10px 0 30px;background:#f5f6fb}
   .page-content:has(.marketing-review)>.page-header{display:none}
-  .credit-review-panel.marketing-review{gap:10px;border:0;border-radius:0;background:transparent;box-shadow:none;padding:0 12px}
+  .credit-review-panel.marketing-review{width:100%;gap:10px;border:0;border-radius:0;background:transparent;box-shadow:none;padding:0 12px}
   .marketing-review .credit-review-hero{display:block;min-height:0;padding:16px 17px 15px;border-radius:19px;box-shadow:0 11px 28px #4c39cf24}
   .marketing-review .credit-review-hero:before{right:-72px;top:-96px;width:150px;height:150px;border-width:22px}
   .marketing-review .credit-review-hero>i{display:none}
