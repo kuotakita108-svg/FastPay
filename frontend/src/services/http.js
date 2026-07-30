@@ -2,7 +2,7 @@ import {env} from '../config/env'
 
 export async function request(path,options={}){
   let token=''
-  try{token=JSON.parse(localStorage.getItem('kuotakita_session'))?.token||''}catch{/* belum login */}
+  try{token=JSON.parse(sessionStorage.getItem('kuotakita_session'))?.token||''}catch{/* belum login */}
   const url=new URL(`${env.apiURL}${path}`,window.location.origin).toString()
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000)
   try{

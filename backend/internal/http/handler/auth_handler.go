@@ -201,7 +201,7 @@ func (h *AuthHandler) oauthSuccess(w http.ResponseWriter, result domain.AuthResu
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	// encoding/json escapes HTML-significant characters, so the JSON can be safely
 	// embedded as a JavaScript object while retaining Unicode names correctly.
-	_, _ = w.Write([]byte("<!doctype html><title>Masuk ke KuotaKita</title><script>localStorage.setItem('kuotakita_session',JSON.stringify(" + string(payload) + "));location.replace('/app');</script>"))
+	_, _ = w.Write([]byte("<!doctype html><title>Masuk ke KuotaKita</title><script>sessionStorage.setItem('kuotakita_session',JSON.stringify(" + string(payload) + "));location.replace('/app');</script>"))
 }
 func (h *AuthHandler) oauthError(w http.ResponseWriter, message string) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")

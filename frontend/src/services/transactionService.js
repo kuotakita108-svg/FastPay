@@ -1,5 +1,5 @@
 import {request} from './http'
-const session=()=>{try{return JSON.parse(localStorage.getItem('kuotakita_session'))}catch{return null}}
+const session=()=>{try{return JSON.parse(sessionStorage.getItem('kuotakita_session'))}catch{return null}}
 const isUser=()=>session()?.user?.role==='user'
 const path=()=>isUser()?'/me/transactions':'/transactions'
 export const getTransactions=()=>request(path())
