@@ -43,6 +43,18 @@ const manualDocumentTypes = [
 ]
 const emptyManualDocuments = {ktp: null, store: null, selfie: null, selfieMarketing: null}
 
+// Pengajuan lama yang sudah tersimpan di browser/server bisa belum memiliki
+// seluruh field terbaru. Normalisasi ini menjaga satu data lama tidak membuat
+// seluruh halaman kredit gagal dimuat.
+const normalizeApplication = item => ({
+  ...(item || {}),
+  id: item?.id || `KSA-LEGACY-${Date.now()}`,
+  form: {...manualInitial, ...(item?.form || {})},
+  documents: item?.documents && typeof item.documents === 'object' ? item.documents : {},
+  repayments: Array.isArray(item?.repayments) ? item.repayments : [],
+  status: item?.status || 'Menunggu verifikasi marketing',
+})
+
 const readAll = () => {
   const merged = new Map()
   try {
@@ -55,11 +67,11 @@ const readAll = () => {
       const userId = key.replace('kuotakita_agent_credit_', '')
       const rows = JSON.parse(localStorage.getItem(key)) || []
       rows.forEach(item => {
-        if (item?.id && !merged.has(item.id)) merged.set(item.id, {...item, userId: item.userId || userId})
+        if (item?.id && !merged.has(item.id)) merged.set(item.id, normalizeApplication({...item, userId: item.userId || userId}))
       })
     }
   } catch {/* abaikan data lokal yang rusak */}
-  const list = [...merged.values()].sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+  const list = [...merged.values()].map(normalizeApplication).sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
   if (list.length) localStorage.setItem(allKey, JSON.stringify(list.slice(0, 50)))
   return list
 }
@@ -197,7 +209,7 @@ export default function CreditApplicationsPage() {
     if (!Array.isArray(remote)) return
     // Server data wins. This prevents stale browser cache from overwriting
     // signatures, documents, status and repayments from other users.
-    setItems(remote)
+    setItems(remote.map(normalizeApplication))
   }).catch(() => setItems(readAll()))
 
   useEffect(() => {
