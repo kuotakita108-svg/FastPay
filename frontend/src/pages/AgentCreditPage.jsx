@@ -665,10 +665,6 @@ export default function AgentCreditPage() {
           <label className="wide">Alamat<textarea name="familyAddress" value={form.familyAddress} onChange={update} required placeholder="Alamat keluarga yang dapat dihubungi"/></label>
         </div>
       </section>
-      <section className="agent-credit-preview" aria-label="Ringkasan nominal kredit">
-        <header><div><span>RINGKASAN SEBELUM TANDA TANGAN</span><h2>Pengajuan saldo kredit</h2><p>Periksa nominal dan limit terlebih dahulu. Setelah diterima, kredit dibayar lunas sekali melalui Bank atau QRIS.</p></div></header>
-        <div className="agent-credit-preview-grid"><article className="requested"><small>Nominal diajukan</small><b>{rupiah(Number(form.amount || 0))}</b></article><article><small>Limit tersedia</small><b>{rupiah(maxCredit)}</b></article><article><small>Saldo kredit aktif</small><b>{rupiah(creditBalance)}</b></article><article><small>Status pengajuan</small><b>Menunggu verifikasi</b></article></div>
-      </section>
       <section className="agent-card">
         <header><i><Camera/></i><div><h2>Upload Dokumen</h2><p>Sistem mengecek kualitas foto. Jika buram, kecil, atau rusak wajib upload ulang.</p></div></header>
         <div className="agent-doc-grid">{docs.map(item => <DocUpload key={item.key} item={item} value={files[item.key]} onOpenCamera={setCameraDoc}/>)}</div>
