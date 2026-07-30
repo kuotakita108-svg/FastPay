@@ -289,3 +289,86 @@
 :root[data-theme="dark"] .contact-target-tools button.active { background:#2c255e; border-color:#8c7cff; color:#fff; }
 :root[data-theme="dark"] .contact-favorites button span { color:#dce7f5; }
 :root[data-theme="dark"] .contact-favorites button b { color:#bcb2ff; }
+
+/* Ruang kerja Marketing: satu sistem gelap navy yang kontras. Tidak ada kartu
+   putih/abu yang membuat teks hilang ketika pengguna berpindah ke dark mode. */
+:root[data-theme="dark"] .page-content:has(.marketing-review) {
+  background:
+    radial-gradient(circle at 82% -10%, rgba(57, 94, 206, .20), transparent 34rem),
+    #071222;
+}
+:root[data-theme="dark"] .marketing-review {
+  color: #f5f8ff;
+}
+:root[data-theme="dark"] .marketing-review .credit-mode-panel,
+:root[data-theme="dark"] .marketing-review .credit-create-box,
+:root[data-theme="dark"] .marketing-review .marketing-input-history,
+:root[data-theme="dark"] .marketing-review .marketing-guide-panel,
+:root[data-theme="dark"] .marketing-review .marketing-workspace,
+:root[data-theme="dark"] .marketing-review .marketing-task-grid article,
+:root[data-theme="dark"] .marketing-review .marketing-focus-grid > div,
+:root[data-theme="dark"] .marketing-review .credit-review-stats article,
+:root[data-theme="dark"] .marketing-review .credit-review-card,
+:root[data-theme="dark"] .marketing-review .credit-review-tools label,
+:root[data-theme="dark"] .marketing-review .credit-review-tools button,
+:root[data-theme="dark"] .marketing-review .marketing-input-history > div > button,
+:root[data-theme="dark"] .marketing-review .marketing-document-upload,
+:root[data-theme="dark"] .marketing-review .marketing-document-upload article {
+  background: linear-gradient(145deg, #101e35, #0a1629);
+  border-color: #263d61;
+  color: #f5f8ff;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .26);
+}
+:root[data-theme="dark"] .marketing-review .credit-mode-panel {
+  background: linear-gradient(135deg, #182c58, #0e3555 64%, #0b273e);
+  border-color: #2c6790;
+}
+:root[data-theme="dark"] .marketing-review .credit-mode-panel h2,
+:root[data-theme="dark"] .marketing-review h2,
+:root[data-theme="dark"] .marketing-review h3,
+:root[data-theme="dark"] .marketing-review h4,
+:root[data-theme="dark"] .marketing-review strong,
+:root[data-theme="dark"] .marketing-review b,
+:root[data-theme="dark"] .marketing-review label {
+  color: #f6f9ff;
+}
+:root[data-theme="dark"] .marketing-review p,
+:root[data-theme="dark"] .marketing-review small,
+:root[data-theme="dark"] .marketing-review span,
+:root[data-theme="dark"] .marketing-review .credit-review-grid small {
+  color: #b8c8df;
+}
+:root[data-theme="dark"] .marketing-review .credit-mode-panel p,
+:root[data-theme="dark"] .marketing-review .credit-mode-panel span,
+:root[data-theme="dark"] .marketing-review .marketing-workspace header span,
+:root[data-theme="dark"] .marketing-review .marketing-section-label span {
+  color: #bfc9ff;
+}
+:root[data-theme="dark"] .marketing-review input,
+:root[data-theme="dark"] .marketing-review textarea,
+:root[data-theme="dark"] .marketing-review select,
+:root[data-theme="dark"] .marketing-review .credit-review-grid span,
+:root[data-theme="dark"] .marketing-review .credit-detail-block,
+:root[data-theme="dark"] .marketing-review .credit-detail-block dl span {
+  background: #081526;
+  border-color: #2b466c;
+  color: #f7faff;
+}
+:root[data-theme="dark"] .marketing-review input::placeholder,
+:root[data-theme="dark"] .marketing-review textarea::placeholder { color: #8ca1c1; }
+:root[data-theme="dark"] .marketing-review .credit-create-toggle,
+:root[data-theme="dark"] .marketing-review button[type="submit"] {
+  background: linear-gradient(135deg, #6958ec, #117fc8 72%, #10afd1);
+  color: #fff;
+  border-color: transparent;
+}
+:root[data-theme="dark"] .marketing-topbar {
+  background: #091629;
+  border-color: #213858;
+}
+:root[data-theme="dark"] .marketing-topbar .menu-button,
+:root[data-theme="dark"] .marketing-topbar .icon-button {
+  background: #122440;
+  border-color: #2a496e;
+  color: #e9f3ff;
+}
