@@ -372,3 +372,75 @@
   border-color: #2a496e;
   color: #e9f3ff;
 }
+
+/* Jangan sisakan komponen putih pada workspace marketing. Beberapa halaman
+   kredit memakai warna latar tetap dari komponen lama; pengunci ini membuat
+   semua kartu data, saldo kredit, daftar dan area form memakai navy gelap. */
+:root[data-theme="dark"] .marketing-review :is(
+  .credit-review-stats article,
+  .marketing-task-grid article,
+  .marketing-focus-grid > div,
+  .credit-create-box,
+  .credit-create-box form,
+  .marketing-input-history,
+  .marketing-input-history > div > button,
+  .marketing-guide-panel,
+  .credit-review-card,
+  .credit-review-grid span,
+  .credit-detail-block,
+  .credit-detail-block dl span,
+  .credit-payment-summary,
+  .credit-payment-list article,
+  .borrower-directory-panel,
+  .directory-stats article,
+  .directory-list > button,
+  .agent-credit-totals div,
+  .agent-credit-preview,
+  .agent-rank-card,
+  .agent-payment-lane,
+  .agent-card,
+  .agent-registered-list,
+  .verification-meta,
+  .verification-steps li,
+  .marketing-document-upload,
+  .marketing-document-upload article
+) {
+  background: #0b182b !important;
+  border-color: #284769 !important;
+  color: #f7faff !important;
+}
+:root[data-theme="dark"] .marketing-review :is(
+  .credit-review-stats article,
+  .marketing-task-grid article,
+  .marketing-focus-grid > div,
+  .credit-create-box,
+  .marketing-input-history,
+  .credit-review-card,
+  .borrower-directory-panel,
+  .agent-credit-preview,
+  .agent-rank-card,
+  .agent-payment-lane,
+  .agent-card
+) {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .32) !important;
+}
+:root[data-theme="dark"] .marketing-review :is(
+  h1,h2,h3,h4,h5,h6,strong,b,label,dd,
+  .directory-total,.credit-payment-summary b,.credit-payment-summary strong,
+  .credit-payment-list b,.credit-payment-list strong
+) { color: #f8fbff !important; }
+:root[data-theme="dark"] .marketing-review :is(
+  p,small,span,dt,.credit-payment-summary small,.credit-payment-list small
+) { color: #b9cbe1 !important; }
+:root[data-theme="dark"] .marketing-review :is(
+  input,textarea,select,.credit-review-tools label,.directory-tools label
+) {
+  background: #061224 !important;
+  color: #f8fbff !important;
+  border-color: #31557d !important;
+}
+:root[data-theme="dark"] .marketing-review :is(input,textarea)::placeholder { color: #8fa6c3 !important; }
+:root[data-theme="dark"] .marketing-review :is(
+  .credit-review-grid svg,.credit-payment-summary svg,.credit-payment-list svg,
+  .marketing-task-grid svg,.marketing-focus-grid svg,.marketing-document-upload svg
+) { color: #72bfff !important; }
