@@ -545,9 +545,13 @@ export default function AgentCreditPage() {
         <div><span>LIMIT KREDIT AGENT</span><h2>{currentRank.name}</h2><p>{paidCycles} pengajuan sudah lunas · Limit aktif {rupiah(currentRank.limit)}.</p></div>
         <b>{currentRank.badge}</b>
       </header>
+      <div className="agent-wallet-overview">
+        <div className="agent-wallet-main"><small>Saldo kredit agent</small><strong>{rupiah(creditBalance)}</strong><span>{activeCredit ? 'Kredit sedang aktif dan wajib dilunasi penuh.' : 'Belum ada kredit aktif. Kamu bisa mengajukan sesuai limit.'}</span></div>
+        <div className="agent-wallet-limit"><small>Limit pengajuan</small><strong>{rupiah(maxCredit)}</strong><span>Nominal pengajuan bebas, maksimal sesuai limit.</span></div>
+      </div>
       <div className="rank-meter"><span style={{width: `${rankProgress}%`}}/></div>
-      <p><TrendingUp/> Limit naik setelah kredit dibayar lunas: 3x di Rp500 ribu, 5x di Rp1 juta, lalu 5x di Rp2 juta.</p>
-      <div className="agent-credit-totals"><div><small>Saldo transaksi</small><strong>{rupiah(transactionBalance)}</strong></div><div><small>Saldo kredit aktif</small><strong>{rupiah(creditBalance)}</strong></div><div><small>Limit pengajuan saat ini</small><strong>{rupiah(maxCredit)}</strong></div><div><small>Riwayat sudah lunas</small><strong>{rupiah(totalCreditPaid)}</strong></div></div>
+      <p className="rank-progress-note"><TrendingUp/> Naik limit: 3 kredit lunas ke Rp1 juta, lalu 5 kredit lunas berikutnya ke Rp2 juta.</p>
+      <div className="agent-wallet-footer"><span><small>Saldo transaksi</small><strong>{rupiah(transactionBalance)}</strong></span><span><small>Total kredit lunas</small><strong>{rupiah(totalCreditPaid)}</strong></span></div>
     </section>
     <div className="agent-credit-tabs" role="tablist" aria-label="Menu Kredit Agent">
       <button type="button" className={!showForm && !detailOpen ? 'active' : ''} onClick={backToApplications}><FileText/><span>Semua Peminjam<small>{applications.length} pengajuan tersimpan</small></span></button>
@@ -662,8 +666,8 @@ export default function AgentCreditPage() {
         </div>
       </section>
       <section className="agent-credit-preview" aria-label="Ringkasan nominal kredit">
-        <header><div><span>RINGKASAN SEBELUM TANDA TANGAN</span><h2>Nominal kredit yang diajukan</h2><p>Pastikan nominal tidak melebihi limit dan pelunasan dilakukan sekaligus setelah kredit digunakan.</p></div><strong>{rupiah(Number(form.amount || 0))}</strong></header>
-        <div><article><small>Nominal diajukan</small><b>{rupiah(Number(form.amount || 0))}</b></article><article><small>Limit aktif</small><b>{rupiah(maxCredit)}</b></article><article><small>Saldo kredit berjalan</small><b>{rupiah(creditBalance)}</b></article><article><small>Riwayat sudah lunas</small><b>{rupiah(totalCreditPaid)}</b></article><article><small>Status</small><b>Menunggu verifikasi</b></article></div>
+        <header><div><span>RINGKASAN SEBELUM TANDA TANGAN</span><h2>Pengajuan saldo kredit</h2><p>Periksa nominal dan limit terlebih dahulu. Setelah diterima, kredit dibayar lunas sekali melalui Bank atau QRIS.</p></div></header>
+        <div className="agent-credit-preview-grid"><article className="requested"><small>Nominal diajukan</small><b>{rupiah(Number(form.amount || 0))}</b></article><article><small>Limit tersedia</small><b>{rupiah(maxCredit)}</b></article><article><small>Saldo kredit aktif</small><b>{rupiah(creditBalance)}</b></article><article><small>Status pengajuan</small><b>Menunggu verifikasi</b></article></div>
       </section>
       <section className="agent-card">
         <header><i><Camera/></i><div><h2>Upload Dokumen</h2><p>Sistem mengecek kualitas foto. Jika buram, kecil, atau rusak wajib upload ulang.</p></div></header>
