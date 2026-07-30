@@ -21,9 +21,9 @@ const analisNavigation = [
   {
     section: 'Analisis Kredit',
     items: [
-      {to: '/credit-applications', label: 'Meja Analisis', icon: ShieldCheck},
-      {to: '/credit-applications?view=verifikasi', label: 'Keputusan Analis', icon: ClipboardCheck},
-      {to: '/credit-applications?view=laporan', label: 'Rekap Keputusan', icon: BarChart3},
+      {to: '/credit-applications', label: 'Meja Keputusan', icon: ShieldCheck},
+      {to: '/credit-applications?view=verifikasi', label: 'Antrean Analisis', icon: ClipboardCheck},
+      {to: '/credit-applications?view=laporan', label: 'Arsip Keputusan', icon: BarChart3},
     ],
   },
 ]
@@ -41,11 +41,11 @@ export default function Sidebar({open, onClose}) {
   const roleLabel = role === 'master' ? 'Master Account' : role === 'marketing' ? 'Marketing Kredit' : role === 'analis' ? 'Analis Kredit' : 'Panel Administrator'
   const current = `${location.pathname}${location.search}`
   const active = to => current === to || (!to.includes('?') && location.pathname === to && !location.search)
-  const activeLabel = visibleNavigation.flatMap(group => group.items).find(item => active(item.to))?.label || (isAnalis ? 'Meja Analisis' : 'Ringkasan Kredit')
+  const activeLabel = visibleNavigation.flatMap(group => group.items).find(item => active(item.to))?.label || (isAnalis ? 'Meja Keputusan' : 'Ringkasan Kredit')
   const rolePanel = isMarketing
     ? {eyebrow: 'MODE MARKETING', title: 'Kelola pengajuan agent', description: 'Validasi data, selfie pertemuan, verifikasi, lalu pantau cicilan.'}
     : isAnalis
-      ? {eyebrow: 'MODE ANALIS', title: 'Keputusan akhir kredit', description: 'Periksa hanya berkas yang sudah diverifikasi Marketing, lalu terima atau tolak.'}
+      ? {eyebrow: 'MODE ANALIS', title: 'Keputusan akhir kredit', description: 'Cek berkas Marketing, tanda tangan, lalu terima atau tolak dengan catatan yang jelas.'}
       : null
 
   return <aside className={`sidebar ${open ? 'open' : ''}`}>

@@ -179,6 +179,23 @@ const marketingReadiness = item => {
   }
 }
 
+// Analis hanya memutuskan berkas yang sudah melalui proses Marketing.
+// Checklist ini menjadi pegangan agar keputusan akhir konsisten dan jelas.
+const analystReadiness = item => {
+  const core = dataScore(item)
+  const marketing = marketingReadiness(item)
+  const amount = Number(item.form?.amount || 0)
+  const checks = [
+    {label: 'Data peminjam lengkap', ok: core.percent === 100},
+    {label: 'Selfie pertemuan marketing', ok: marketing.meetingReady},
+    {label: 'Tanda tangan marketing', ok: Boolean(item.marketingSignature)},
+    {label: 'Berkas sudah dikirim ke analis', ok: Boolean(item.forwardedAt) || ['Menunggu analis', 'Menunggu keputusan analis'].includes(item.status)},
+    {label: 'Nominal sesuai limit pengajuan', ok: amount >= 50000 && amount <= 5000000},
+  ]
+  const done = checks.filter(check => check.ok).length
+  return {checks, done, total: checks.length, percent: Math.round((done / checks.length) * 100), ready: checks.every(check => check.ok)}
+}
+
 function SignatureStep({title, note, signed, icon: Icon}) {
   return <div className={signed ? 'signed' : ''}>
     {signed?.image ? <img src={signed.image} alt={`Tanda tangan ${title}`}/> : <i>{signed ? <CheckCircle2/> : <Icon/>}</i>}
@@ -207,6 +224,7 @@ export default function CreditApplicationsPage() {
   const [paymentTarget, setPaymentTarget] = useState(null)
   const [paymentMethod, setPaymentMethod] = useState('')
   const [paymentProof, setPaymentProof] = useState(null)
+  const [decisionNote, setDecisionNote] = useState('')
   const isMarketing = user?.role === 'marketing'
   const isAnalis = user?.role === 'analis'
   const isAdmin = ['master', 'admin'].includes(user?.role)
@@ -337,8 +355,14 @@ export default function CreditApplicationsPage() {
     refresh()
   }
   const decide = (item, status) => {
-    const changes = {status, decidedAt: new Date().toISOString()}
+    if (isAnalis && (!item.analisSignature || (status === 'Ditolak' && !decisionNote.trim()))) return
+    const changes = {
+      status,
+      decidedAt: new Date().toISOString(),
+      analysisDecision: {by: reviewerName(user), at: new Date().toISOString(), note: decisionNote.trim()},
+    }
     saveApplication(item, changes)
+    setDecisionNote('')
     refresh()
   }
   const createManual = event => {
@@ -504,8 +528,10 @@ export default function CreditApplicationsPage() {
   const marketingReadyToSign = marketingQueue.filter(item => marketingReadiness(item).readyToSign)
   const marketingReadyToForward = marketingQueue.filter(item => marketingReadiness(item).readyToForward)
   const analystQueue = sortedItems.filter(item => ['Menunggu analis', 'Menunggu keputusan analis'].includes(item.status))
+  const analystPendingSignature = analystQueue.filter(item => !item.analisSignature)
   const analystReadyToDecide = analystQueue.filter(item => Boolean(item.analisSignature))
   const analystDecidedToday = sortedItems.filter(item => finalStatus.includes(item.status) && new Date(item.decidedAt || 0).toDateString() === new Date().toDateString())
+  const analystApprovedActive = sortedItems.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas')
   const approvedActive = sortedItems.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas')
   const duePayments = approvedActive.filter(item => {
     const next = firstUnpaidRow(item)
@@ -619,12 +645,13 @@ export default function CreditApplicationsPage() {
       </section>}
       {(isAnalis || isAdmin) && view === 'overview' && <section className="marketing-workspace analyst-workspace">
         <header>
-          <div><span>MEJA KERJA ANALIS</span><h2>Keputusan Akhir Kredit</h2><p>Hanya berkas yang sudah diverifikasi dan dikirim Marketing yang masuk ke sini. Analis tidak menginput peminjam atau mencatat cicilan.</p></div>
+          <div><span>MEJA KEPUTUSAN ANALIS</span><h2>Kontrol Kelayakan Kredit</h2><p>Hanya berkas yang telah diverifikasi Marketing yang masuk ke sini. Analis mengecek data, bukti pertemuan, nominal, dan tanda tangan Marketing sebelum memberi keputusan akhir.</p></div>
         </header>
         <div className="marketing-task-grid">
-          <article><i><ClipboardCheck/></i><span>Masuk dari Marketing</span><strong>{analystQueue.length}</strong><small>Menunggu pengecekan analis</small></article>
-          <article><i><Stamp/></i><span>Siap Diputuskan</span><strong>{analystReadyToDecide.length}</strong><small>TTD analis sudah tersimpan</small></article>
-          <article><i><CheckCircle2/></i><span>Keputusan Hari Ini</span><strong>{analystDecidedToday.length}</strong><small>Diterima atau ditolak hari ini</small></article>
+          <article><i><ClipboardCheck/></i><span>Berkas Masuk</span><strong>{analystQueue.length}</strong><small>Kiriman verifikasi Marketing</small></article>
+          <article><i><PenLine/></i><span>Perlu TTD Analis</span><strong>{analystPendingSignature.length}</strong><small>Cek kelayakan sebelum tanda tangan</small></article>
+          <article><i><Stamp/></i><span>Siap Keputusan</span><strong>{analystReadyToDecide.length}</strong><small>TTD analis sudah tersimpan</small></article>
+          <article><i><CheckCircle2/></i><span>Diterima Aktif</span><strong>{analystApprovedActive.length}</strong><small>Menunggu angsuran atau pelunasan</small></article>
         </div>
         <div className="marketing-quick-actions" aria-label="Aksi cepat analis">
           <button type="button" className="primary" onClick={() => goToView('verifikasi')}><ClipboardCheck/><span><b>Buka antrean analis</b><small>{analystQueue.length ? `${analystQueue.length} berkas siap diperiksa` : 'Tidak ada berkas baru'}</small></span><strong>→</strong></button>
@@ -747,12 +774,13 @@ export default function CreditApplicationsPage() {
           const pay = paymentSummary(item)
           const score = dataScore(item)
           const readiness = marketingReadiness(item)
+          const analysis = analystReadiness(item)
           const expanded = expandedId === item.id
           const meetingSelfieReady = readiness.meetingReady
           const canMarketingSign = !done && readiness.readyToSign && (isMarketing || isAdmin)
           const canAnalisSign = !done && item.status === 'Menunggu analis' && marketingSigned && !analisSigned && (isAnalis || isAdmin)
-          const canApprove = !done && marketingSigned && analisSigned && (isAnalis || isAdmin)
-          const canReject = !done && (isMarketing || isAnalis || isAdmin)
+          const canApprove = !done && marketingSigned && analisSigned && analysis.ready && (isAnalis || isAdmin)
+          const canReject = !done && (isMarketing || isAdmin || (isAnalis && analisSigned && Boolean(decisionNote.trim())))
           return <article className={`credit-review-card status-${item.status.toLowerCase().replaceAll(' ', '-')}`} key={item.id}>
             <header>
               <div><span>{item.id}</span><h3>{item.form.agentName || item.userName}</h3><p>{item.form.storeName} · {item.form.whatsapp}</p></div>
@@ -810,6 +838,17 @@ export default function CreditApplicationsPage() {
                 <div><span><small>Nominal kredit</small><b>{rupiah(item.form.amount)}</b></span><span><small>Sudah dibayar</small><b>{rupiah(pay.totalPaid)}</b></span><span><small>Sisa tagihan</small><b>{rupiah(Math.max(0, Number(item.form.amount || 0) - pay.totalPaid))}</b></span></div>
                 <p>Marketing menandatangani setelah data dan selfie pertemuan lengkap. Analis memberi keputusan akhir.</p>
               </div>}
+              {isDetail && (isAnalis || isAdmin) && (() => {
+                const analysis = analystReadiness(item)
+                const isWaitingDecision = item.status === 'Menunggu keputusan analis'
+                return <div className="credit-detail-block analyst-checklist">
+                  <header><div><span>CHECKLIST KEPUTUSAN</span><h4>Kelayakan sebelum keputusan</h4></div><strong>{analysis.percent}%</strong></header>
+                  <p>Analis memeriksa bukti verifikasi Marketing dan seluruh data pengajuan. Tidak ada dokumen yang diubah dari panel ini.</p>
+                  <ul>{analysis.checks.map(check => <li className={check.ok ? 'ok' : ''} key={check.label}>{check.ok ? <CheckCircle2/> : <AlertCircle/>}<span>{check.label}</span></li>)}</ul>
+                  {isWaitingDecision && <label className="analysis-note"><span>Catatan keputusan <small>(wajib bila ditolak)</small></span><textarea value={decisionNote} onChange={event => setDecisionNote(event.target.value)} placeholder="Contoh: data toko belum memenuhi kebijakan kredit."/></label>}
+                  {item.analysisDecision?.note && <div className="analysis-saved-note"><b>Catatan Analis</b><span>{item.analysisDecision.note}</span></div>}
+                </div>
+              })()}
               {isDetail && <div className="credit-detail-block borrower-document-gallery">
                 <h4>Dokumen Peminjam</h4>
                 <div>{manualDocumentTypes.map(doc => { const value = item.documents?.[doc.key]; const file = typeof value === 'string' ? {name: value} : value || {}; const source = file.dataUrl || file.preview || ''; const needsMeeting = doc.key === 'selfieMarketing' && !source; return <figure key={doc.key}>{source ? <img src={source} alt={doc.label}/> : needsMeeting && (isMarketing || isAdmin) ? <label className="missing-document meeting-upload"><Camera/><b>Ambil selfie dengan marketing</b><small>Wajib sebelum TTD marketing</small><input type="file" accept="image/*" capture="user" onChange={event => replaceBorrowerDocument(item, doc.key, event)}/></label> : <label className="missing-document"><Images/><b>Foto belum tersinkron</b><small>Pengajuan lama tanpa data foto</small></label>}<figcaption><b>{doc.label}</b><small>{file.name || (needsMeeting ? 'Menunggu pertemuan marketing' : 'Dokumen tersimpan')}</small></figcaption></figure> })}</div>
