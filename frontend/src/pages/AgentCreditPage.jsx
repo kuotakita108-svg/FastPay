@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from 'react'
 import {useLocation,useNavigate} from 'react-router-dom'
 import {QRCodeSVG} from 'qrcode.react'
-import {ArrowRight, Award, CalendarDays, Camera, Check, CheckCircle2, Clock3, Copy, CreditCard, FileText, Images, Landmark, Loader2, PenLine, QrCode, Search, ShieldCheck, Stamp, Store, TrendingUp, Upload, UserRound, WalletCards, X} from 'lucide-react'
+import {ArrowRight, BadgeCheck, CalendarDays, Camera, Check, CheckCircle2, Clock3, Copy, CreditCard, Crown, FileText, Images, Landmark, Loader2, Medal, PenLine, QrCode, Search, ShieldCheck, Stamp, Store, Upload, UserRound, WalletCards, X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
@@ -41,9 +41,9 @@ const terms = [
 
 const verificationDuration = 5 * 60 * 1000
 const rankLevels = [
-  {name: 'Agent Pemula', minPaid: 0, limit: 500000, badge: 'BRONZE', target: 3},
-  {name: 'Agent Lancar', minPaid: 3, limit: 1000000, badge: 'SILVER', target: 8},
-  {name: 'Agent Prioritas', minPaid: 8, limit: 2000000, badge: 'GOLD', target: 13},
+  {name: 'Agent Pemula', minPaid: 0, limit: 500000, badge: 'BRONZE', target: 3, tone: 'bronze', icon: Medal},
+  {name: 'Agent Lancar', minPaid: 3, limit: 1000000, badge: 'SILVER', target: 8, tone: 'silver', icon: BadgeCheck},
+  {name: 'Agent Prioritas', minPaid: 8, limit: 2000000, badge: 'GOLD', target: 13, tone: 'gold', icon: Crown},
 ]
 const finalCreditStatus = ['Disetujui', 'Ditolak']
 
@@ -530,6 +530,7 @@ export default function AgentCreditPage() {
   const totalCreditApproved = applications.filter(item => item.status === 'Disetujui' || item.paymentStatus === 'Lunas').reduce((sum, item) => sum + Number(item.form?.amount || 0), 0)
   const totalCreditPaid = repayments.filter(item => item.status === 'Lunas').reduce((sum, item) => sum + Number(item.amount || 0), 0)
   const canRefill = application?.paymentStatus === 'Lunas' || application?.creditStatus === 'Lunas'
+  const RankIcon = currentRank.icon
   return <main className="mobile-app agent-credit-page">
     <SubPageHeader title="Kredit Saldo Agent" description="Ajukan tanam saldo langsung dari aplikasi" back/>
     <section className="agent-credit-hero">
@@ -541,7 +542,7 @@ export default function AgentCreditPage() {
     </section>
     <section className="agent-rank-card">
       <header>
-        <i><Award/></i>
+        <i className={`rank-emblem ${currentRank.tone}`}><RankIcon/></i>
         <div><span>LIMIT KREDIT AGENT</span><h2>{currentRank.name}</h2><p>{paidCycles} pengajuan sudah lunas · Limit aktif {rupiah(currentRank.limit)}.</p></div>
         <b>{currentRank.badge}</b>
       </header>
