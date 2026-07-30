@@ -550,7 +550,6 @@ export default function AgentCreditPage() {
         <div className="agent-wallet-limit"><small>Limit pengajuan</small><strong>{rupiah(maxCredit)}</strong><span>Nominal pengajuan bebas, maksimal sesuai limit.</span></div>
       </div>
       <div className="rank-meter"><span style={{width: `${rankProgress}%`}}/></div>
-      <p className="rank-progress-note"><TrendingUp/> Naik limit: 3 kredit lunas ke Rp1 juta, lalu 5 kredit lunas berikutnya ke Rp2 juta.</p>
     </section>
     <div className="agent-credit-tabs" role="tablist" aria-label="Menu Kredit Agent">
       <button type="button" className={!showForm && !detailOpen ? 'active' : ''} onClick={backToApplications}><FileText/><span>Semua Peminjam<small>{applications.length} pengajuan tersimpan</small></span></button>
