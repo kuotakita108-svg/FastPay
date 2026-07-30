@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from 'react'
 import {useLocation,useNavigate} from 'react-router-dom'
 import {QRCodeSVG} from 'qrcode.react'
-import {ArrowRight, BadgeCheck, CalendarDays, Camera, Check, CheckCircle2, Clock3, Copy, CreditCard, Crown, FileText, Images, Landmark, Loader2, Medal, PenLine, QrCode, Search, ShieldCheck, Stamp, Store, Upload, UserRound, WalletCards, X} from 'lucide-react'
+import {ArrowRight, CalendarDays, Camera, Check, CheckCircle2, Clock3, Copy, CreditCard, Crown, FileText, Images, Landmark, Loader2, PenLine, QrCode, Rocket, Search, ShieldCheck, Sparkles, Stamp, Store, Upload, UserRound, WalletCards, X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
@@ -41,8 +41,8 @@ const terms = [
 
 const verificationDuration = 5 * 60 * 1000
 const rankLevels = [
-  {name: 'Agent Pemula', minPaid: 0, limit: 500000, badge: 'BRONZE', target: 3, tone: 'bronze', icon: Medal},
-  {name: 'Agent Lancar', minPaid: 3, limit: 1000000, badge: 'SILVER', target: 8, tone: 'silver', icon: BadgeCheck},
+  {name: 'Agent Pemula', minPaid: 0, limit: 500000, badge: 'BRONZE', target: 3, tone: 'bronze', icon: Sparkles},
+  {name: 'Agent Lancar', minPaid: 3, limit: 1000000, badge: 'SILVER', target: 8, tone: 'silver', icon: Rocket},
   {name: 'Agent Prioritas', minPaid: 8, limit: 2000000, badge: 'GOLD', target: 13, tone: 'gold', icon: Crown},
 ]
 const finalCreditStatus = ['Disetujui', 'Ditolak']
