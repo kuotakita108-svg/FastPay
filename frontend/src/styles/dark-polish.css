@@ -444,3 +444,118 @@
   .credit-review-grid svg,.credit-payment-summary svg,.credit-payment-list svg,
   .marketing-task-grid svg,.marketing-focus-grid svg,.marketing-document-upload svg
 ) { color: #72bfff !important; }
+
+/* Lapisan akhir mode gelap mobile. Semua permukaan aplikasi ikut navy gelap
+   saat tombol bulan dipilih; mode terang tidak disentuh sama sekali. */
+:root[data-theme="dark"] .mobile-app,
+:root[data-theme="dark"] .mobile-app > section,
+:root[data-theme="dark"] .mobile-app > div,
+:root[data-theme="dark"] .mobile-app > header,
+:root[data-theme="dark"] .mobile-app > footer,
+:root[data-theme="dark"] .auth-page,
+:root[data-theme="dark"] .login-page,
+:root[data-theme="dark"] .register-page {
+  background-color: #071426;
+  color: #f5f9ff;
+}
+
+:root[data-theme="dark"] :is(
+  .subpage-header,.services-head,.checkout-head,.history-tools,.history-search,
+  .payment-source,.mutation-section,.personal-info,.profile-menu,.qris-card,
+  .number-panel,.provider-panel,.provider-select,.product-stage,.purchase-body,
+  .product-catalog,.catalog-section,.mobile-products,.service-group,.service-group button,
+  .service-icon-group,.modern-all-services .service-group-grid > button,
+  .all-services-card,.checkout-card,.payment-result,.receipt-card,.wallet-insight,
+  .wallet-promo,.wallet-security,.account-feature-card,.help-contact,.policy-hero,
+  .history-list > article,.history-empty,.contact-favorites,.pln-bill-card,
+  .reference-balance,.reference-top,.reference-header,.profile-menu button,
+  .payment-source > button,.personal-info > div,.mutation-section article,
+  .agent-credit-page .agent-card,.agent-credit-page .agent-registered-list,
+  .agent-credit-page .agent-list-summary,.agent-credit-page .agent-registered-grid article,
+  .agent-credit-page .agent-payment-sheet,.agent-credit-page .agent-payment-lane,
+  .agent-credit-page .agent-wallet-overview,.agent-credit-page .agent-wallet-main,
+  .agent-credit-page .agent-wallet-limit,.agent-credit-page .agent-safe-note
+) {
+  background: #0b1a2e !important;
+  color: #f5f9ff !important;
+  border-color: #274766 !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .28);
+}
+
+:root[data-theme="dark"] :is(
+  .subpage-header,.services-head,.checkout-head,.mobile-nav,.advanced-nav,
+  .checkout-footer,.agent-credit-page .agent-credit-tabs,.agent-credit-page .agent-list-tools
+) {
+  background: #081629 !important;
+  border-color: #254460 !important;
+  color: #f5f9ff !important;
+}
+
+:root[data-theme="dark"] :is(
+  .subpage-header>button,.services-head>button,.checkout-head>button,
+  .icon-button,.menu-button,.mobile-nav a,.advanced-nav a,.profile-menu i,
+  .payment-source i,.history-list>article>i,.mutation-section article>i,
+  .account-feature-card i,.service-group button>i,.service-icon-group i,
+  .number-title>i,.service-input-emblem,.agent-credit-page .agent-credit-tabs button svg,
+  .agent-credit-page .agent-list-tools svg
+) {
+  background: #102843 !important;
+  color: #8dcaff !important;
+  border-color: #315b82 !important;
+}
+
+:root[data-theme="dark"] :is(
+  .mobile-app input,.mobile-app select,.mobile-app textarea,.mobile-app .history-search,
+  .mobile-app .customer-input > div,.mobile-app .number-panel label,
+  .mobile-app .target-field,.mobile-app .qris-amount label,.mobile-app .date-picker,
+  .mobile-app .contact-favorites button,.mobile-app .period-filters button,
+  .agent-credit-page .agent-fields input,.agent-credit-page .agent-fields textarea,
+  .agent-credit-page .agent-list-filters button,.agent-credit-page .agent-list-tools input
+) {
+  background: #061224 !important;
+  color: #f7fbff !important;
+  border-color: #315779 !important;
+}
+
+:root[data-theme="dark"] :is(
+  .mobile-app input::placeholder,.mobile-app textarea::placeholder,
+  .agent-credit-page input::placeholder,.agent-credit-page textarea::placeholder
+) { color: #93a9c5 !important; opacity: 1; }
+
+:root[data-theme="dark"] .mobile-app :is(
+  h1,h2,h3,h4,h5,h6,strong,b,label,button,.subpage-header strong,
+  .services-head strong,.checkout-head strong,.wallet-title strong,.wallet-number strong
+) { color: #f7fbff !important; }
+
+:root[data-theme="dark"] .mobile-app :is(
+  p,small,span,.subpage-header small,.services-head small,.checkout-head small,
+  .history-list small,.history-list span,.profile-menu small,.payment-source small,
+  .mutation-section small,.personal-info small,.number-panel > p,.contact-hint
+) { color: #b7c8df !important; }
+
+:root[data-theme="dark"] :is(
+  .mobile-nav a.active,.advanced-nav a.active,.period-filters button.active,
+  .agent-credit-page .agent-list-filters button.active
+) {
+  background: #253e78 !important;
+  color: #bcd7ff !important;
+  border-color: #638cff !important;
+}
+
+:root[data-theme="dark"] :is(
+  .mobile-nav a:not(.active) svg,.advanced-nav a:not(.active) svg,
+  .subpage-header svg,.services-head svg,.checkout-head svg,.history-search svg,
+  .profile-menu svg,.payment-source svg,.personal-info svg,.mutation-section svg,
+  .number-panel svg,.service-group button svg
+) { color: #9fc7ef !important; }
+
+/* Logo provider asli tidak diubah. Yang dibuat gelap hanya wadah/ikon UI. */
+:root[data-theme="dark"] :is(
+  .provider-grid button,.provider-select button,.provider-card,.service-provider,
+  .provider-logo,.provider-logo img
+) { filter: none; }
+
+@media (max-width: 720px) {
+  :root[data-theme="dark"] .mobile-app { min-height: 100dvh; }
+  :root[data-theme="dark"] .mobile-nav { box-shadow: 0 -12px 30px rgba(0,0,0,.34); }
+}
