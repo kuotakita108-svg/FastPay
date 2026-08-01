@@ -1,6 +1,6 @@
 import {NavLink, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
-import {Banknote, BarChart3, CheckCircle2, CircleHelp, ClipboardCheck, LogOut, ShieldCheck, Users, WalletCards, XCircle, Zap} from 'lucide-react'
+import {Banknote, BarChart3, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, LogOut, ShieldCheck, Users, WalletCards, XCircle, Zap} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
 
@@ -24,6 +24,7 @@ const analisNavigation = [
       {to: '/credit-applications?view=verifikasi', label: 'Antrean Analisis', icon: ClipboardCheck},
       {to: '/credit-applications?view=peminjam', label: 'Kredit Diterima', icon: CheckCircle2},
       {to: '/credit-applications?view=angsuran', label: 'Monitor Pelunasan', icon: Banknote},
+      {to: '/credit-applications?view=pelunasan', label: 'Bukti Pelunasan', icon: FileCheck2},
       {to: '/credit-applications?view=verifikasi&filter=Ditolak', label: 'Penolakan & Catatan', icon: XCircle},
       {to: '/credit-applications?view=laporan', label: 'Arsip Keputusan', icon: BarChart3},
     ],

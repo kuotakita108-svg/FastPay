@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react'
 import {useSearchParams} from 'react-router-dom'
-import {AlertCircle, ArrowRight, Banknote, BarChart3, CalendarDays, Camera, Check, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, Filter, HandCoins, Images, Landmark, PenLine, PhoneCall, PlusCircle, QrCode, Search, ShieldCheck, Stamp, Trash2, Upload, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
+import {AlertCircle, ArrowRight, Banknote, BarChart3, CalendarDays, Camera, Check, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, FileCheck2, Filter, HandCoins, Images, Landmark, PenLine, PhoneCall, PlusCircle, QrCode, Search, ShieldCheck, Stamp, Trash2, Upload, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
 import {QRCodeSVG} from 'qrcode.react'
 import PageHeader from '../components/common/PageHeader'
 import {useAuth} from '../context/AuthContext'
@@ -148,6 +148,7 @@ const viewInfo = {
   verifikasi: {label: 'Antrean Analis', title: 'Pengajuan menunggu keputusan analis', desc: 'Lihat kelengkapan data dan selfie pertemuan sebelum analis melakukan pemeriksaan akhir.'},
   pembayaran: {label: 'Pelunasan Kredit', title: 'Pelunasan saldo kredit', desc: 'Bayar satu kali penuh melalui Bank, QRIS, atau penagihan langsung oleh marketing.'},
   angsuran: {label: 'Pelunasan Kredit', title: 'Monitor pelunasan kredit', desc: 'Pantau saldo kredit aktif, pembayaran online, penagihan offline, bukti pembayaran, dan refill.'},
+  pelunasan: {label: 'Bukti Pelunasan', title: 'Arsip bukti pelunasan', desc: 'Periksa kredit yang sudah lunas beserta nominal, metode, waktu, referensi, penerima, dan bukti pembayarannya.'},
   laporan: {label: 'Laporan Kredit', title: 'Rekap kinerja kredit', desc: 'Lihat total nominal pinjaman, pembayaran masuk, sisa tagihan, dan status seluruh peminjam.'},
   panduan: {label: 'Panduan Marketing', title: 'Panduan kerja marketing', desc: 'Daftarkan agent, bantu pengajuan, ambil selfie pertemuan, dan catat pelunasan offline secara tertib.'},
   'agent-input': {label: 'Tambah Agent', title: 'Daftarkan agent baru', desc: 'Buat akun agent resmi agar agent dapat login dan menggunakan layanan Kredit Saldo Agent.'},
@@ -222,6 +223,7 @@ export default function CreditApplicationsPage() {
   const [paymentTarget, setPaymentTarget] = useState(null)
   const [paymentMethod, setPaymentMethod] = useState('')
   const [paymentProof, setPaymentProof] = useState(null)
+  const [proofPreview, setProofPreview] = useState(null)
   const [decisionNote, setDecisionNote] = useState('')
   const isMarketing = user?.role === 'marketing'
   const isAnalis = user?.role === 'analis'
@@ -304,7 +306,7 @@ export default function CreditApplicationsPage() {
       window.scrollTo({top: 0, behavior: 'smooth'})
       return
     }
-    if (view === 'pembayaran' || view === 'angsuran') {
+    if (view === 'pembayaran' || view === 'angsuran' || view === 'pelunasan') {
       setShowCreate(false)
       setFilter('Disetujui')
       setExpandedId('')
@@ -555,6 +557,10 @@ export default function CreditApplicationsPage() {
   const installmentRows = borrowerRows.filter(row => row.item.status === 'Disetujui' || row.item.paymentStatus === 'Lunas')
   const installmentActive = installmentRows.filter(({item}) => item.paymentStatus !== 'Lunas')
   const installmentFinished = installmentRows.filter(({item}) => item.paymentStatus === 'Lunas')
+  const paidProofRows = installmentFinished.map(({item, pay}) => {
+    const payment = (item.repayments || []).find(row => row.status === 'Lunas') || {}
+    return {item, pay, payment, proof: payment.proof || item.offlineCollection?.proof || null}
+  }).sort((a, b) => new Date(b.payment.paidAt || b.item.settledAt || 0) - new Date(a.payment.paidAt || a.item.settledAt || 0))
   const installmentPaidAmount = installmentRows.reduce((sum, {pay}) => sum + pay.totalPaid, 0)
   const installmentRemainingAmount = installmentRows.reduce((sum, {item, pay}) => sum + Math.max(0, Number(item.creditOriginalAmount || item.form.amount || 0) - pay.totalPaid), 0)
   const marketingCards = [
@@ -700,6 +706,30 @@ export default function CreditApplicationsPage() {
             </button>
           })}
           {!installmentRows.length && <p>Belum ada kredit diterima yang perlu dipantau.</p>}
+        </div>
+      </section>}
+      {(isAnalis || isAdmin) && view === 'pelunasan' && <section className="analyst-payment-proof-panel">
+        <header className="payment-proof-heading">
+          <i><FileCheck2/></i>
+          <div><span>ARSIP PELUNASAN</span><h2>Bukti pembayaran kredit agent</h2><p>Setiap pelunasan tersusun dari yang terbaru. Analis dapat melihat nominal, jalur pembayaran, penerima, referensi, dan bukti transfer tanpa bercampur dengan antrean aktif.</p></div>
+        </header>
+        <div className="payment-proof-summary">
+          <article><small>Kredit lunas</small><strong>{paidProofRows.length}</strong><span>Pembayaran selesai</span></article>
+          <article><small>Total diterima</small><strong>{rupiah(paidProofRows.reduce((sum, row) => sum + Number(row.payment.amount || row.pay.totalPaid || 0), 0))}</strong><span>Nominal terverifikasi</span></article>
+          <article><small>Bukti tersedia</small><strong>{paidProofRows.filter(row => row.proof?.dataUrl).length}</strong><span>File dapat diperiksa</span></article>
+        </div>
+        <div className="payment-proof-list">
+          {paidProofRows.length ? paidProofRows.map(({item, payment, proof}) => <article key={item.id} className="payment-proof-card">
+            <div className="payment-proof-identity"><i><CheckCircle2/></i><span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id} · {item.id}</small></span><em>LUNAS</em></div>
+            <dl>
+              <div><dt>Nominal</dt><dd>{rupiah(payment.amount || item.creditOriginalAmount || item.form.amount)}</dd></div>
+              <div><dt>Metode</dt><dd>{payment.method === 'bank' ? 'Transfer Bank' : payment.method === 'qris' ? 'QRIS' : payment.method === 'offline' ? 'Penagihan Offline' : 'Pembayaran'}</dd></div>
+              <div><dt>Waktu</dt><dd>{dateTime(payment.paidAt || item.settledAt)}</dd></div>
+              <div><dt>Diterima oleh</dt><dd>{payment.receivedBy || item.offlineCollection?.collectedBy || 'Sistem KuotaKita'}</dd></div>
+              <div><dt>Referensi</dt><dd>{payment.paymentReference || payment.key || item.id}</dd></div>
+            </dl>
+            {proof?.dataUrl ? <button type="button" className="payment-proof-file" onClick={() => setProofPreview({source: proof.dataUrl, name: proof.name || `Bukti ${item.id}`, item})}><img src={proof.dataUrl} alt={`Bukti pembayaran ${item.id}`}/><span><b>Lihat bukti pembayaran</b><small>{proof.name || 'Foto bukti transfer'}</small></span><Eye/></button> : <div className="payment-proof-empty"><Images/><span><b>Bukti gambar tidak tersedia</b><small>{proof?.name || 'Data lama belum menyimpan pratinjau file'}</small></span></div>}
+          </article>) : <div className="payment-proof-zero"><FileCheck2/><b>Belum ada kredit yang lunas</b><span>Bukti pembayaran akan otomatis masuk ke sini setelah pelunasan dikonfirmasi.</span></div>}
         </div>
       </section>}
       {(isMarketing || isAnalis || isAdmin) && view === 'laporan' && <>
@@ -889,6 +919,12 @@ export default function CreditApplicationsPage() {
         {paymentMethod === 'offline' && <div className="review-bank-detail"><span>Nominal yang wajib diterima marketing</span><strong>{rupiah(paymentTarget.row.amount)}</strong><small>Pelunasan harus dibayar penuh, tidak dicicil.</small></div>}
         <label className="review-payment-proof"><Upload/><span><b>{paymentMethod === 'offline' ? 'Bukti penerimaan wajib' : 'Bukti transfer wajib'}</b><small>{paymentProof?.name || (paymentMethod === 'offline' ? 'Unggah foto kuitansi atau bukti serah-terima' : 'Unggah bukti transfer atau screenshot pembayaran')}</small></span><input type="file" accept="image/*,.pdf" onChange={choosePaymentProof}/></label>
         <button type="button" className="review-payment-confirm" disabled={!paymentMethod || !paymentProof} onClick={() => markPayment(paymentTarget.item, paymentTarget.row)}>{paymentMethod === 'offline' ? 'Konfirmasi Pelunasan Offline' : 'Konfirmasi Pembayaran'} <ArrowRight/></button>
+      </div>
+    </section>}
+    {proofPreview && <section className="proof-preview-backdrop" aria-label="Pratinjau bukti pembayaran" onClick={() => setProofPreview(null)}>
+      <div className="proof-preview-sheet" onClick={event => event.stopPropagation()}>
+        <header><div><span>BUKTI PELUNASAN</span><h2>{proofPreview.item.form.agentName || proofPreview.item.userName}</h2><p>{proofPreview.name}</p></div><button type="button" onClick={() => setProofPreview(null)} aria-label="Tutup"><X/></button></header>
+        <img src={proofPreview.source} alt={proofPreview.name}/>
       </div>
     </section>}
     {signaturePad && <section className="review-signature-backdrop" aria-label="Tanda tangan reviewer">
