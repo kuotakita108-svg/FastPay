@@ -233,7 +233,14 @@ export default function CreditApplicationsPage() {
   const isInstallmentDetail = view === 'angsuran-detail'
   const isStandaloneDetail = isDetail || isInstallmentDetail
   const goToView = (nextView, id = '', nextFilter = '') => setSearchParams(nextView ? {view: nextView, ...(id ? {id} : {}), ...(nextFilter ? {filter: nextFilter} : {}), ...(nextView === 'detail' ? {from: view} : {})} : {})
-  const closeDetailView = () => goToView(isInstallmentDetail ? 'angsuran' : isDetail ? (params.get('from') || (isAnalis ? 'verifikasi' : 'peminjam')) : 'verifikasi', '', filter)
+  const closeDetailView = () => {
+    const targetView = isInstallmentDetail ? 'angsuran' : isDetail ? (params.get('from') || (isAnalis ? 'verifikasi' : 'peminjam')) : 'verifikasi'
+    setExpandedId('')
+    setSignaturePad(null)
+    setDecisionNote('')
+    setSearchParams(targetView ? {view: targetView, ...(targetView === 'verifikasi' && filter ? {filter} : {})} : {})
+    window.scrollTo({top: 0, behavior: 'smooth'})
+  }
   // Used immediately after a local UI action. The periodic server refresh below
   // replaces this short-lived cache with the saved server response.
   const refresh = () => setItems(readAll())
