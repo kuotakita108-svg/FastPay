@@ -156,6 +156,88 @@
   .directory-tools { gap: 7px; margin-bottom: 8px; }
   .directory-agent summary { padding: 9px; }
   .payment-proof-card { padding: 9px; border-radius: 13px; }
+
+  /* Antrean analis memakai pola inbox, bukan kartu detail besar. Detail lengkap
+     tetap dibuka di halaman tersendiri sehingga daftar panjang tetap cepat. */
+  .analyst-review .credit-mode-panel.view-verifikasi { display: none; }
+  .analyst-review .marketing-action-panel:not(.payment) {
+    padding: 10px 11px; border-radius: 14px;
+  }
+  .analyst-review .marketing-action-panel:not(.payment) header {
+    display: grid; grid-template-columns: 34px minmax(0,1fr); gap: 9px;
+    align-items: center;
+  }
+  .analyst-review .marketing-action-panel:not(.payment) header > svg {
+    width: 18px; height: 18px; padding: 8px; box-sizing: content-box;
+  }
+  .analyst-review .marketing-action-panel:not(.payment) header span { font-size: 8px; }
+  .analyst-review .marketing-action-panel:not(.payment) header h2 {
+    margin: 2px 0 0; font-size: 15px; line-height: 1.2;
+  }
+  .analyst-review .marketing-action-panel:not(.payment) header p { display: none; }
+  .analyst-review .panel-header { align-items: center; padding: 1px 2px; }
+  .analyst-review .panel-header h2 { font-size: 14px; }
+  .analyst-review .panel-header p { display: none; }
+  .analyst-review .credit-review-tools { gap: 7px; margin: 0; }
+  .analyst-review .credit-review-tools > label {
+    min-height: 42px; padding: 0 12px; border-radius: 13px;
+  }
+  .analyst-review .credit-review-tools > label input { font-size: 11px; }
+  .analyst-review .credit-review-tools > div {
+    display: flex; flex-wrap: nowrap; gap: 6px; overflow-x: auto;
+    padding: 1px 1px 4px; scrollbar-width: none;
+  }
+  .analyst-review .credit-review-tools > div::-webkit-scrollbar { display: none; }
+  .analyst-review .credit-review-tools > div > svg { flex: 0 0 22px; }
+  .analyst-review .credit-review-tools > div button {
+    flex: 0 0 auto; min-height: 34px; padding: 0 12px; font-size: 9px;
+  }
+  .analyst-review .credit-review-list { gap: 7px; }
+  .analyst-review .credit-review-card {
+    display: grid; grid-template-columns: minmax(0,1fr) auto;
+    gap: 7px 10px; padding: 11px 12px; border-radius: 14px;
+  }
+  .analyst-review .credit-review-card > header {
+    display: grid; grid-template-columns: minmax(0,1fr) auto;
+    grid-column: 1 / -1; gap: 8px; align-items: center;
+  }
+  .analyst-review .credit-review-card > header div { min-width: 0; }
+  .analyst-review .credit-review-card > header span { font-size: 8px; }
+  .analyst-review .credit-review-card > header h3 {
+    margin: 2px 0; overflow: hidden; font-size: 13px; line-height: 1.2;
+    text-overflow: ellipsis; white-space: nowrap;
+  }
+  .analyst-review .credit-review-card > header p {
+    overflow: hidden; margin: 0; font-size: 9px; line-height: 1.25;
+    text-overflow: ellipsis; white-space: nowrap;
+  }
+  .analyst-review .credit-review-card > header > b {
+    align-self: center; font-size: 13px; white-space: nowrap;
+  }
+  .analyst-review .credit-review-card > footer {
+    display: flex; grid-column: 1 / -1; align-items: center;
+    justify-content: space-between; gap: 8px; margin: 0; padding-top: 7px;
+  }
+  .analyst-review .credit-review-card > footer > span {
+    min-width: 0; overflow: hidden; font-size: 8px;
+    text-overflow: ellipsis; white-space: nowrap;
+  }
+  .analyst-review .credit-review-card > footer .detail {
+    flex: 0 0 auto; min-height: 32px; padding: 0 10px; font-size: 9px;
+  }
+  .credit-list-pagination {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin-top: 3px; padding: 9px 10px;
+    border: 1px solid #e4e7f2; border-radius: 13px; background: #fff;
+    color: #758097; font-size: 8px;
+  }
+  .credit-list-pagination > div { display: flex; align-items: center; gap: 7px; }
+  .credit-list-pagination button {
+    width: 31px; height: 31px; padding: 0; border: 1px solid #dedff0;
+    border-radius: 9px; background: #f7f7fd; color: #6250d7; font-size: 18px;
+  }
+  .credit-list-pagination button:disabled { opacity: .35; }
+  .credit-list-pagination strong { color: #20283a; white-space: nowrap; }
 }
 
 @media (max-width: 370px) {
