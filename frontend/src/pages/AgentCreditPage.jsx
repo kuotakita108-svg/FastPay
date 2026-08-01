@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from 'react'
 import {useLocation,useNavigate} from 'react-router-dom'
 import {QRCodeSVG} from 'qrcode.react'
-import {ArrowRight, CalendarDays, Camera, Check, CheckCircle2, Clock3, Copy, CreditCard, Crown, FileText, Images, Landmark, Loader2, PenLine, QrCode, Rocket, Search, ShieldCheck, Sparkles, Stamp, Store, Upload, UserRound, WalletCards, X} from 'lucide-react'
+import {ArrowRight, CalendarDays, Camera, Check, CheckCircle2, Clock3, Copy, CreditCard, Crown, FileText, HandCoins, Images, Landmark, Loader2, PenLine, QrCode, Rocket, Search, ShieldCheck, Sparkles, Stamp, Store, Upload, UserRound, WalletCards, X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
@@ -34,7 +34,7 @@ const docs = [
 const terms = [
   'Pengajuan hanya untuk agent terdaftar KuotaKita dan akan diverifikasi oleh tim analis.',
   'Nominal pengajuan boleh di bawah limit kredit agent yang aktif.',
-  'Saldo kredit agent terpisah dari saldo transaksi aplikasi dan wajib dilunasi sekaligus melalui Bank atau QRIS.',
+  'Saldo kredit agent terpisah dari saldo transaksi aplikasi dan wajib dilunasi sekaligus melalui Bank, QRIS, atau penagihan langsung oleh marketing.',
   'Setelah pembayaran kredit lunas dan diverifikasi, agent dapat mengajukan refill kembali.',
   'Data KTP, toko, selfie, dan tanda tangan dipakai untuk validasi permohonan.',
 ]
@@ -282,9 +282,9 @@ export default function AgentCreditPage() {
 
   useEffect(() => {
     if (!application || finalCreditStatus.includes(application.status)) return
-    if (application.marketingSignature || application.status === 'Menunggu verifikasi marketing' || application.status === 'Menunggu analis' || application.status === 'Menunggu keputusan analis') return
+    if (application.status === 'Menunggu analis' || application.status === 'Menunggu keputusan analis') return
     if (now < Number(application.verifyUntil || 0)) return
-    persistApplication({...application, status: 'Menunggu verifikasi marketing', queuedAt: application.queuedAt || new Date().toISOString(), updatedAt: new Date().toISOString()})
+    persistApplication({...application, status: 'Menunggu analis', queuedAt: application.queuedAt || new Date().toISOString(), forwardedAt: application.forwardedAt || new Date().toISOString(), updatedAt: new Date().toISOString()})
   }, [application, now])
 
   const update = event => setForm({...form, [event.target.name]: event.target.value})
@@ -386,7 +386,15 @@ export default function AgentCreditPage() {
     paid: application.paymentStatus === 'Lunas' || application.creditStatus === 'Lunas',
   }] : []
   const payCredit = item => {
-    if (!paymentProof) return setMessage('Bukti transfer wajib diunggah sebelum pembayaran dikonfirmasi.')
+    if (paymentMethod === 'offline') {
+      persistApplication({...application, paymentStatus: 'Menunggu penagihan offline', offlineCollection: {status: 'Diminta', requestedAt: new Date().toISOString(), amount: item.amount}, updatedAt: new Date().toISOString()})
+      setPaymentItem(null)
+      setPaymentMethod('')
+      setPaymentProof(null)
+      setMessage('Permintaan penagihan offline tersimpan. Marketing akan menghubungi dan datang ke lokasi agent.')
+      return
+    }
+    if (!paymentMethod || !paymentProof) return setMessage('Pilih metode dan unggah bukti pembayaran sebelum dikonfirmasi.')
     const next = [{key: item.key, applicationId: application.id, label: item.label, amount: item.amount, status: 'Lunas', paidAt: new Date().toISOString(), method: paymentMethod, paymentReference: item.key.toUpperCase(), proof: paymentProof}, ...repayments.filter(row => row.key !== item.key)]
     setRepayments(next)
     const appRepayments = next.filter(row => row.applicationId === application.id)
@@ -426,7 +434,7 @@ export default function AgentCreditPage() {
     }
     const application = {
       id: `KSA-${Date.now().toString().slice(-8)}`,
-      status: 'Menunggu verifikasi marketing',
+      status: 'Menunggu analis',
       createdAt: new Date().toISOString(),
       queuedAt: new Date().toISOString(),
       verifyUntil: Date.now() + verificationDuration,
@@ -613,7 +621,7 @@ export default function AgentCreditPage() {
       {canRefill && <button type="button" className="agent-refill-button" onClick={() => startRefill(application)}><PlusCircle/> Ajukan Refill Kredit</button>}
     </section>}
     {detailOpen && approved && <section className="agent-payment-lane">
-        <header><i><CreditCard/></i><div><h2>Pelunasan Saldo Kredit</h2><p>Pembayaran dilakukan sekali sesuai total saldo kredit aktif melalui transfer bank atau QRIS. Bukti pembayaran wajib diunggah.</p></div></header>
+        <header><i><CreditCard/></i><div><h2>Pelunasan Saldo Kredit</h2><p>Bayar satu kali penuh secara online melalui Bank/QRIS, atau minta marketing melakukan penagihan langsung ke lokasi.</p></div></header>
       <div className="payment-lane-total"><span>{application.paymentStatus === 'Lunas' ? 'Kredit sudah dilunasi' : 'Total yang harus dilunasi'}</span><strong>{rupiah(application.creditOriginalAmount ?? application.form.amount)}</strong></div>
       <div className="payment-lane-list">
         {paymentPlan.map(item => <article className={item.paid ? 'paid' : ''} key={item.key}>
@@ -631,11 +639,12 @@ export default function AgentCreditPage() {
         <div className="agent-payment-methods">
           <button type="button" className={paymentMethod === 'bank' ? 'active' : ''} onClick={() => setPaymentMethod('bank')}><i><Landmark/></i><span><b>Transfer Bank</b><small>BCA · 1234567890 · a.n. KuotaKita</small></span>{paymentMethod === 'bank' && <Check/>}</button>
           <button type="button" className={paymentMethod === 'qris' ? 'active' : ''} onClick={() => setPaymentMethod('qris')}><i><QrCode/></i><span><b>QRIS / Barcode</b><small>Nominal otomatis sesuai pelunasan</small></span>{paymentMethod === 'qris' && <Check/>}</button>
+          <button type="button" className={paymentMethod === 'offline' ? 'active' : ''} onClick={() => {setPaymentMethod('offline');setPaymentProof(null)}}><i><HandCoins/></i><span><b>Penagihan Offline</b><small>Marketing datang dan menerima pelunasan langsung</small></span>{paymentMethod === 'offline' && <Check/>}</button>
         </div>
         {paymentMethod === 'bank' && <div className="agent-bank-detail"><div><span>Nominal transfer</span><strong>{rupiah(paymentItem.amount)}</strong></div><div><span>Kode pembayaran</span><strong>{paymentItem.key.toUpperCase()}</strong></div><button type="button" onClick={() => copyPaymentReference(paymentItem.key.toUpperCase())}><Copy/> Salin kode</button></div>}
         {paymentMethod === 'qris' && <div className="agent-qr-detail"><div className="agent-qr-art"><QRCodeSVG value={`${window.location.origin}/pay?ref=${encodeURIComponent(paymentItem.key)}&amount=${paymentItem.amount}`} size={220} level="H" minVersion={5} includeMargin/></div><strong>{rupiah(paymentItem.amount)}</strong><small>QR memuat referensi dan nominal pelunasan ini.</small></div>}
-        <label className="agent-payment-proof"><Upload/><span><b>Bukti transfer wajib</b><small>{paymentProof?.name || 'Unggah foto/screenshot bukti pembayaran'}</small></span><input type="file" accept="image/*" onChange={choosePaymentProof}/></label>
-        <button type="button" className="agent-payment-confirm" disabled={!paymentMethod || !paymentProof} onClick={() => payCredit(paymentItem)}>Konfirmasi Pembayaran <ArrowRight/></button>
+        {paymentMethod === 'offline' ? <div className="agent-bank-detail"><div><span>Nominal penagihan</span><strong>{rupiah(paymentItem.amount)}</strong></div><div><span>Status</span><strong>Menunggu marketing</strong></div></div> : <label className="agent-payment-proof"><Upload/><span><b>Bukti transfer wajib</b><small>{paymentProof?.name || 'Unggah foto/screenshot bukti pembayaran'}</small></span><input type="file" accept="image/*" onChange={choosePaymentProof}/></label>}
+        <button type="button" className="agent-payment-confirm" disabled={!paymentMethod || (paymentMethod !== 'offline' && !paymentProof)} onClick={() => payCredit(paymentItem)}>{paymentMethod === 'offline' ? 'Minta Penagihan Marketing' : 'Konfirmasi Pembayaran'} <ArrowRight/></button>
       </div>
     </section>}
     {shouldShowForm && <>

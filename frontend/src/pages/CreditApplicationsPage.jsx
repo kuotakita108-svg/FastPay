@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react'
 import {useSearchParams} from 'react-router-dom'
-import {AlertCircle, ArrowRight, Banknote, BarChart3, CalendarDays, Camera, Check, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, Filter, Images, Landmark, PenLine, PhoneCall, PlusCircle, QrCode, Search, ShieldCheck, Stamp, Trash2, Upload, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
+import {AlertCircle, ArrowRight, Banknote, BarChart3, CalendarDays, Camera, Check, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, Filter, HandCoins, Images, Landmark, PenLine, PhoneCall, PlusCircle, QrCode, Search, ShieldCheck, Stamp, Trash2, Upload, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
 import {QRCodeSVG} from 'qrcode.react'
 import PageHeader from '../components/common/PageHeader'
 import {useAuth} from '../context/AuthContext'
@@ -45,6 +45,7 @@ const emptyManualDocuments = {ktp: null, store: null, selfie: null, selfieMarket
 // Pengajuan lama yang sudah tersimpan di browser/server bisa belum memiliki
 // seluruh field terbaru. Normalisasi ini menjaga satu data lama tidak membuat
 // seluruh halaman kredit gagal dimuat.
+const normalizeCreditStatus = status => ['Menunggu verifikasi marketing', 'Sedang diverifikasi marketing', 'Siap dikirim ke analis'].includes(status) ? 'Menunggu analis' : (status || 'Menunggu analis')
 const normalizeApplication = item => ({
   ...(item || {}),
   id: item?.id || `KSA-LEGACY-${Date.now()}`,
@@ -54,7 +55,7 @@ const normalizeApplication = item => ({
   creditStatus: item?.creditStatus || (item?.paymentStatus === 'Lunas' ? 'Lunas' : item?.status === 'Disetujui' ? 'Aktif' : 'Menunggu keputusan'),
   creditBalance: Number(item?.creditBalance || 0),
   creditOutstanding: Number(item?.creditOutstanding || 0),
-  status: item?.status || 'Menunggu verifikasi marketing',
+  status: normalizeCreditStatus(item?.status),
 })
 
 const readAll = () => {
@@ -141,14 +142,14 @@ const creditProfile = (items, target) => {
   return {paidCycles, ...level}
 }
 const viewInfo = {
-  overview: {label: 'Ringkasan Kredit', title: 'Dashboard kredit agent', desc: 'Pantau semua pengajuan, verifikasi, pembayaran, dan status peminjam dari satu halaman.'},
+  overview: {label: 'Ringkasan Kredit', title: 'Dashboard kredit agent', desc: 'Marketing mendaftarkan dan membimbing agent, analis memutuskan pengajuan, lalu pelunasan dicatat satu kali penuh.'},
   peminjam: {label: 'Data Peminjam', title: 'Seluruh peminjam agent', desc: 'Lihat pengajuan yang sudah diterima, nominal kredit, saldo kredit aktif, dan status pelunasannya.'},
-  input: {label: 'Input Peminjaman', title: 'Tambah peminjaman baru', desc: 'Isi data agent yang mengajukan lewat marketing. Setelah disimpan, data masuk antrean verifikasi.'},
-  verifikasi: {label: 'Antrean Verifikasi', title: 'Cek pengajuan yang belum diverifikasi', desc: 'Fokus ke data yang masih butuh cek marketing, tanda tangan, atau keputusan awal.'},
-  pembayaran: {label: 'Saldo Kredit', title: 'Pelunasan saldo kredit', desc: 'Fokus ke kredit yang sudah diterima. Pembayaran dilakukan satu kali penuh via Bank atau QRIS.'},
-  angsuran: {label: 'Saldo Kredit', title: 'Monitor pelunasan kredit', desc: 'Lihat saldo kredit aktif, nominal pelunasan, bukti pembayaran, dan pengajuan refill.'},
+  input: {label: 'Input Peminjaman', title: 'Dampingi pengajuan agent', desc: 'Marketing membantu agent melengkapi data, dokumen, dan selfie pertemuan. Keputusan tetap dilakukan analis.'},
+  verifikasi: {label: 'Antrean Analis', title: 'Pengajuan menunggu keputusan analis', desc: 'Lihat kelengkapan data dan selfie pertemuan sebelum analis melakukan pemeriksaan akhir.'},
+  pembayaran: {label: 'Pelunasan Kredit', title: 'Pelunasan saldo kredit', desc: 'Bayar satu kali penuh melalui Bank, QRIS, atau penagihan langsung oleh marketing.'},
+  angsuran: {label: 'Pelunasan Kredit', title: 'Monitor pelunasan kredit', desc: 'Pantau saldo kredit aktif, pembayaran online, penagihan offline, bukti pembayaran, dan refill.'},
   laporan: {label: 'Laporan Kredit', title: 'Rekap kinerja kredit', desc: 'Lihat total nominal pinjaman, pembayaran masuk, sisa tagihan, dan status seluruh peminjam.'},
-  panduan: {label: 'Panduan Marketing', title: 'Panduan kerja marketing', desc: 'Ikuti alur input, verifikasi, tanda tangan, dan pencatatan pelunasan supaya data rapi.'},
+  panduan: {label: 'Panduan Marketing', title: 'Panduan kerja marketing', desc: 'Daftarkan agent, bantu pengajuan, ambil selfie pertemuan, dan catat pelunasan offline secara tertib.'},
   'agent-input': {label: 'Tambah Agent', title: 'Daftarkan agent baru', desc: 'Buat akun agent resmi agar agent dapat login dan menggunakan layanan Kredit Saldo Agent.'},
 }
 const dataScore = item => {
@@ -169,18 +170,14 @@ const dataScore = item => {
 const marketingReadiness = item => {
   const score = dataScore(item)
   const meetingReady = Boolean(item.documents?.selfieMarketing?.dataUrl || item.documents?.selfieMarketing?.preview || item.documents?.selfieMarketing)
-  const marketingSigned = Boolean(item.marketingSignature)
   return {
     score,
     meetingReady,
-    marketingSigned,
-    readyToSign: score.percent === 100 && meetingReady && !marketingSigned,
-    readyToForward: marketingSigned && item.status === 'Siap dikirim ke analis',
+    readyForAnalysis: score.percent === 100 && meetingReady,
   }
 }
 
-// Analis hanya memutuskan berkas yang sudah melalui proses Marketing.
-// Checklist ini menjadi pegangan agar keputusan akhir konsisten dan jelas.
+// Analis menjadi satu-satunya pemeriksa dan pemberi keputusan akhir.
 const analystReadiness = item => {
   const core = dataScore(item)
   const marketing = marketingReadiness(item)
@@ -189,8 +186,8 @@ const analystReadiness = item => {
   const checks = [
     {label: 'Data peminjam lengkap', ok: core.percent === 100},
     {label: 'Selfie pertemuan marketing', ok: marketing.meetingReady},
-    {label: 'Tanda tangan marketing', ok: Boolean(item.marketingSignature)},
-    {label: 'Berkas sudah dikirim ke analis', ok: Boolean(item.forwardedAt) || ['Menunggu analis', 'Menunggu keputusan analis'].includes(item.status)},
+    {label: 'Persetujuan syarat agent', ok: Boolean(item.termsAcceptedAt || item.termsAccepted)},
+    {label: 'Tanda tangan agent', ok: Boolean(item.agentSignature || item.createdAt)},
     {label: 'Nominal sesuai limit agent', ok: amount >= 50000 && amount <= limit},
   ]
   const done = checks.filter(check => check.ok).length
@@ -337,20 +334,6 @@ export default function CreditApplicationsPage() {
     setQuery('')
     window.scrollTo({top: 0, behavior: 'smooth'})
   }, [view])
-  const signMarketing = (item, image) => {
-    if (!item.documents?.selfieMarketing) return
-    saveApplication(item, {
-      marketingSignature: stampPayload({...user, role: 'marketing'}, image),
-      marketingMeeting: {at: new Date().toISOString(), by: reviewerName(user), selfieName: item.documents.selfieMarketing.name || 'Selfie dengan marketing'},
-      status: 'Siap dikirim ke analis',
-    })
-    refresh()
-  }
-  const forwardToAnalis = item => {
-    if ((!isMarketing && !isAdmin) || !item.marketingSignature || item.status !== 'Siap dikirim ke analis') return
-    saveApplication(item, {status: 'Menunggu analis', forwardedAt: new Date().toISOString()})
-    refresh()
-  }
   const signAnalis = (item, image) => {
     saveApplication(item, {analisSignature: stampPayload({...user, role: 'analis'}, image), status: 'Menunggu keputusan analis'})
     refresh()
@@ -393,7 +376,7 @@ export default function CreditApplicationsPage() {
     const amount = Math.min(500000, Math.max(50000, Number(String(manualForm.amount).replace(/\D/g, '') || 0)))
     const application = {
       id: `KSA-${Date.now().toString().slice(-8)}`,
-      status: 'Sedang diverifikasi marketing',
+      status: 'Menunggu analis',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       verifyUntil: Date.now(),
@@ -409,6 +392,7 @@ export default function CreditApplicationsPage() {
       documents: Object.fromEntries(coreDocumentTypes.map(doc => [doc.key, {name: manualDocuments[doc.key].name, dataUrl: manualDocuments[doc.key].dataUrl || ''}])),
       repayments: [],
       createdBy: {role: user.role, name: reviewerName(user), at: new Date().toISOString()},
+      forwardedAt: new Date().toISOString(),
     }
     const all = readAll()
     localStorage.setItem(allKey, JSON.stringify([application, ...all].slice(0, 50)))
@@ -416,7 +400,7 @@ export default function CreditApplicationsPage() {
     request('/me/agent-credit', {method: 'POST', body: JSON.stringify(application)}).catch(() => {})
     setManualForm(manualInitial)
     setManualDocuments(emptyManualDocuments)
-    setManualMessage('Peminjam berhasil ditambahkan. Marketing bisa verifikasi dan tanda tangan.')
+    setManualMessage('Pengajuan tersimpan dan langsung masuk ke antrean pemeriksaan analis.')
     setShowCreate(false)
     setExpandedId(application.id)
     refresh()
@@ -445,9 +429,10 @@ export default function CreditApplicationsPage() {
   }
   const updateManual = event => setManualForm({...manualForm, [event.target.name]: event.target.name === 'amount' ? event.target.value.replace(/\D/g, '').slice(0, 8) : event.target.value})
   const markPayment = (item, row) => {
-    if (row.paid || item.status !== 'Disetujui' || !paymentProof) return
+    if (row.paid || item.status !== 'Disetujui' || !paymentMethod || !paymentProof) return
     const repayments = [{key: row.key, applicationId: item.id, label: row.label, amount: row.amount, status: 'Lunas', paidAt: new Date().toISOString(), receivedBy: reviewerName(user), method: paymentMethod, paymentReference: row.key.toUpperCase(), proof: paymentProof}, ...(item.repayments || []).filter(pay => pay.key !== row.key)]
-    saveApplication(item, {repayments, paymentStatus: 'Lunas', creditStatus: 'Lunas', creditBalance: 0, creditOutstanding: 0, settledAt: new Date().toISOString()})
+    const offlineCollection = paymentMethod === 'offline' ? {status: 'Lunas', collectedAt: new Date().toISOString(), collectedBy: reviewerName(user), amount: row.amount, proof: paymentProof} : item.offlineCollection
+    saveApplication(item, {repayments, offlineCollection, paymentStatus: 'Lunas', creditStatus: 'Lunas', creditBalance: 0, creditOutstanding: 0, settledAt: new Date().toISOString()})
     refresh()
     setPaymentTarget(null)
     setPaymentMethod('')
@@ -466,7 +451,8 @@ export default function CreditApplicationsPage() {
     const dataUrl = await compressDocumentPreview(file)
     if (!dataUrl) return
     const documents = {...(item.documents || {}), [key]: {name: file.name, dataUrl}}
-    saveApplication(item, {documents})
+    const meeting = key === 'selfieMarketing' ? {at: new Date().toISOString(), by: reviewerName(user), selfieName: file.name} : item.marketingMeeting
+    saveApplication(item, {documents, marketingMeeting: meeting, status: normalizeCreditStatus(item.status), forwardedAt: item.forwardedAt || new Date().toISOString()})
     refresh()
   }
   const openSignature = (item, role) => {
@@ -524,7 +510,6 @@ export default function CreditApplicationsPage() {
   const saveSignature = () => {
     if (!signaturePad || !signatureDrawn) return
     const image = canvasRef.current.toDataURL('image/png')
-    if (signaturePad.role === 'marketing') signMarketing(signaturePad.item, image)
     if (signaturePad.role === 'analis') signAnalis(signaturePad.item, image)
     closeSignature()
   }
@@ -535,7 +520,8 @@ export default function CreditApplicationsPage() {
     const matchQuery = text.includes(query.toLowerCase().trim())
     const group = statusGroup(item)
     const matchFilter = view === 'angsuran' || view === 'pembayaran' ? ['Disetujui', 'Lunas'].includes(group) : filter === 'Semua' || group === filter
-    const matchRoleQueue = !isAnalis || isStandaloneDetail || ['Menunggu analis', 'Menunggu keputusan analis'].includes(item.status)
+    const analystArchiveFilter = ['Ditolak', 'Disetujui', 'Lunas'].includes(filter)
+    const matchRoleQueue = !isAnalis || isStandaloneDetail || (analystArchiveFilter ? group === filter : ['Menunggu analis', 'Menunggu keputusan analis'].includes(item.status))
     return matchDetail && matchQuery && matchFilter && matchRoleQueue
   })
   const summary = {
@@ -544,10 +530,10 @@ export default function CreditApplicationsPage() {
     approved: items.filter(item => statusGroup(item) === 'Disetujui').length,
     paid: items.filter(item => statusGroup(item) === 'Lunas').length,
   }
-  const marketingQueue = sortedItems.filter(item => ['Menunggu verifikasi marketing', 'Sedang diverifikasi marketing', 'Siap dikirim ke analis'].includes(item.status))
+  const marketingQueue = sortedItems.filter(item => ['Menunggu analis', 'Menunggu keputusan analis'].includes(item.status))
   const meetingQueue = marketingQueue.filter(item => !marketingReadiness(item).meetingReady)
-  const marketingReadyToSign = marketingQueue.filter(item => marketingReadiness(item).readyToSign)
-  const marketingReadyToForward = marketingQueue.filter(item => marketingReadiness(item).readyToForward)
+  const marketingReadyForAnalysis = marketingQueue.filter(item => marketingReadiness(item).readyForAnalysis)
+  const offlineCollectionQueue = sortedItems.filter(item => item.status === 'Disetujui' && item.paymentStatus === 'Menunggu penagihan offline')
   const analystQueue = sortedItems.filter(item => ['Menunggu analis', 'Menunggu keputusan analis'].includes(item.status))
   const analystPendingSignature = analystQueue.filter(item => !item.analisSignature)
   const analystReadyToDecide = analystQueue.filter(item => Boolean(item.analisSignature))
@@ -572,11 +558,13 @@ export default function CreditApplicationsPage() {
   const installmentPaidAmount = installmentRows.reduce((sum, {pay}) => sum + pay.totalPaid, 0)
   const installmentRemainingAmount = installmentRows.reduce((sum, {item, pay}) => sum + Math.max(0, Number(item.creditOriginalAmount || item.form.amount || 0) - pay.totalPaid), 0)
   const marketingCards = [
-    {title: 'Perlu Pertemuan', value: meetingQueue.length, note: 'Selfie bersama agent belum ada', icon: Camera},
-    {title: 'Siap TTD', value: marketingReadyToSign.length, note: 'Data dan selfie sudah lengkap', icon: PenLine},
-    {title: 'Siap ke Analis', value: marketingReadyToForward.length, note: 'TTD marketing sudah tersimpan', icon: ArrowRight},
+    {title: 'Perlu Pendampingan', value: meetingQueue.length, note: 'Selfie bersama agent belum ada', icon: Camera},
+    {title: 'Siap Dianalisis', value: marketingReadyForAnalysis.length, note: 'Data dan pertemuan sudah lengkap', icon: ClipboardCheck},
+    {title: 'Tagihan Offline', value: offlineCollectionQueue.length, note: 'Perlu dikunjungi marketing', icon: HandCoins},
   ]
   const activeView = viewInfo[view] || viewInfo.overview
+  const isRejectedArchive = isAnalis && view === 'verifikasi' && filter === 'Ditolak'
+  const rejectedItems = sortedItems.filter(item => statusGroup(item) === 'Ditolak')
   const totalLoan = items.reduce((sum, item) => sum + Number(item.form.amount || 0), 0)
   const totalPaidAmount = items.reduce((sum, item) => sum + paymentSummary(item).totalPaid, 0)
   const remainingLoan = Math.max(0, totalLoan - totalPaidAmount)
@@ -603,7 +591,7 @@ export default function CreditApplicationsPage() {
   }
 
   return <>
-    {!isStandaloneDetail && view === 'overview' && <PageHeader eyebrow={isAnalis ? 'ANALISIS KREDIT' : 'MARKETING KREDIT'} title={isAnalis ? 'Keputusan Kredit Agent' : 'Review Kredit Saldo Agent'} description={isAnalis ? 'Analis memeriksa hasil verifikasi marketing, menandatangani, lalu memberi keputusan akhir.' : 'Marketing memeriksa data dan menandatangani pengajuan, lalu analis memberi keputusan akhir.'}/>}
+    {!isStandaloneDetail && view === 'overview' && <PageHeader eyebrow={isAnalis ? 'ANALISIS KREDIT' : 'MARKETING KREDIT'} title={isAnalis ? 'Keputusan Akhir Kredit Agent' : 'Pendampingan Kredit Agent'} description={isAnalis ? 'Analis memeriksa seluruh data, menandatangani, lalu memberi keputusan akhir.' : 'Marketing mendaftarkan agent, membimbing pengajuan, mengambil selfie pertemuan, dan menangani pelunasan offline.'}/>}
     <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''} ${(isMarketing || isAdmin) ? 'marketing-review' : ''} ${isAnalis ? 'analyst-review' : ''}`}>
       {view === 'overview' && <div className="credit-review-hero">
         <div>
@@ -627,15 +615,15 @@ export default function CreditApplicationsPage() {
       {(isMarketing || isAdmin) && view === 'agent-input' && <AgentAccountForm onClose={() => goToView('overview')}/>}
       {(isMarketing || isAdmin) && view === 'overview' && <section className="marketing-workspace">
         <header>
-          <div><span>MEJA KERJA MARKETING</span><h2>Verifikasi lapangan &amp; pengajuan</h2><p>Marketing bertemu agent, cek data inti, ambil selfie bersama, lalu tanda tangan dan meneruskan berkas ke Analis. Pembayaran dikelola terpisah agar pekerjaan tidak tercampur.</p></div>
+          <div><span>MEJA KERJA MARKETING</span><h2>Pendampingan agent &amp; penagihan</h2><p>Marketing menawarkan layanan, mendaftarkan akun agent, mengarahkan pengajuan, mengambil selfie pertemuan, dan menangani pelunasan offline. Keputusan kredit sepenuhnya dilakukan Analis.</p></div>
         </header>
         <div className="marketing-task-grid">
           {marketingCards.map(({title, value, note, icon: Icon}) => <article key={title}><i><Icon/></i><span>{title}</span><strong>{value}</strong><small>{note}</small></article>)}
         </div>
         <div className="marketing-quick-actions" aria-label="Aksi cepat marketing">
           <button type="button" className="primary" onClick={() => meetingQueue[0] && goToView('detail', meetingQueue[0].id, 'Review')}><Camera/><span><b>Jadwalkan pertemuan</b><small>{meetingQueue.length ? `${meetingQueue.length} agent perlu selfie bersama` : 'Tidak ada pertemuan tertunda'}</small></span><strong>→</strong></button>
-          <button type="button" onClick={() => marketingReadyToSign[0] && goToView('detail', marketingReadyToSign[0].id, 'Review')}><PenLine/><span><b>Tanda tangan verifikasi</b><small>{marketingReadyToSign.length ? `${marketingReadyToSign.length} berkas siap ditandatangani` : 'Belum ada berkas siap TTD'}</small></span><strong>→</strong></button>
-          <button type="button" onClick={() => marketingReadyToForward[0] && goToView('detail', marketingReadyToForward[0].id, 'Review')}><ArrowRight/><span><b>Kirim ke Analis</b><small>{marketingReadyToForward.length ? `${marketingReadyToForward.length} berkas siap diteruskan` : 'Belum ada berkas siap kirim'}</small></span><strong>→</strong></button>
+          <button type="button" onClick={() => marketingReadyForAnalysis[0] && goToView('detail', marketingReadyForAnalysis[0].id, 'Review')}><UserCheck/><span><b>Siap diperiksa Analis</b><small>{marketingReadyForAnalysis.length ? `${marketingReadyForAnalysis.length} berkas pendampingan lengkap` : 'Belum ada berkas lengkap'}</small></span><strong>→</strong></button>
+          <button type="button" onClick={() => offlineCollectionQueue[0] ? goToView('angsuran-detail', offlineCollectionQueue[0].id, 'Disetujui') : goToView('angsuran')}><HandCoins/><span><b>Penagihan offline</b><small>{offlineCollectionQueue.length ? `${offlineCollectionQueue.length} agent meminta penagihan` : 'Tidak ada permintaan penagihan'}</small></span><strong>→</strong></button>
           <button type="button" onClick={() => goToView('angsuran')}><Banknote/><span><b>Saldo kredit aktif</b><small>{paymentToday.length ? `${paymentToday.length} kredit menunggu pelunasan` : 'Tidak ada kredit aktif'}</small></span><strong>→</strong></button>
           <button type="button" onClick={() => goToView('peminjam')}><UserCheck/><span><b>Direktori peminjam</b><small>{incompleteData.length ? `${incompleteData.length} data perlu dilengkapi` : 'Data agent sudah lengkap'}</small></span><strong>→</strong></button>
         </div>
@@ -649,20 +637,20 @@ export default function CreditApplicationsPage() {
             </button>) : <p>Tidak ada agent yang menunggu pertemuan.</p>}
           </div>
           <div>
-            <h3>Siap diteruskan ke Analis</h3>
-            {marketingReadyToForward.slice(0, 4).length ? marketingReadyToForward.slice(0, 4).map(item => <button type="button" key={item.id} onClick={() => goToView('detail', item.id, 'Review')}>
-              <span><b>{item.form.agentName || item.userName}</b><small>TTD marketing sudah tersimpan</small></span>
+            <h3>Siap diperiksa Analis</h3>
+            {marketingReadyForAnalysis.slice(0, 4).length ? marketingReadyForAnalysis.slice(0, 4).map(item => <button type="button" key={item.id} onClick={() => goToView('detail', item.id, 'Review')}>
+              <span><b>{item.form.agentName || item.userName}</b><small>Data dan selfie pertemuan lengkap</small></span>
               <strong>{rupiah(item.form.amount)}</strong>
-            </button>) : <p>Belum ada berkas yang siap diteruskan.</p>}
+            </button>) : <p>Belum ada berkas pendampingan yang lengkap.</p>}
           </div>
         </div>
       </section>}
       {(isAnalis || isAdmin) && view === 'overview' && <section className="marketing-workspace analyst-workspace">
         <header>
-          <div><span>MEJA KEPUTUSAN ANALIS</span><h2>Kontrol Kelayakan Kredit</h2><p>Hanya berkas yang telah diverifikasi Marketing yang masuk ke sini. Analis mengecek data, bukti pertemuan, nominal, dan tanda tangan Marketing sebelum memberi keputusan akhir.</p></div>
+          <div><span>MEJA KEPUTUSAN ANALIS</span><h2>Kontrol Kelayakan &amp; Keputusan Akhir</h2><p>Semua pengajuan masuk ke Analis. Periksa identitas, dokumen inti, selfie pertemuan marketing, persetujuan ketentuan, tanda tangan agent, dan nominal sebelum menerima atau menolak.</p></div>
         </header>
         <div className="marketing-task-grid">
-          <article><i><ClipboardCheck/></i><span>Berkas Masuk</span><strong>{analystQueue.length}</strong><small>Kiriman verifikasi Marketing</small></article>
+          <article><i><ClipboardCheck/></i><span>Berkas Masuk</span><strong>{analystQueue.length}</strong><small>Menunggu pemeriksaan akhir</small></article>
           <article><i><PenLine/></i><span>Perlu TTD Analis</span><strong>{analystPendingSignature.length}</strong><small>Cek kelayakan sebelum tanda tangan</small></article>
           <article><i><Stamp/></i><span>Siap Keputusan</span><strong>{analystReadyToDecide.length}</strong><small>TTD analis sudah tersimpan</small></article>
           <article><i><CheckCircle2/></i><span>Diterima Aktif</span><strong>{analystApprovedActive.length}</strong><small>Menunggu pelunasan</small></article>
@@ -678,9 +666,9 @@ export default function CreditApplicationsPage() {
         </div>
       </section>}
       {(isMarketing || isAnalis || isAdmin) && view === 'verifikasi' && <section className="marketing-action-panel">
-        <header><ClipboardCheck/><div><span>{isAnalis ? 'FOKUS ANALISIS' : 'FOKUS VERIFIKASI LAPANGAN'}</span><h2>{isAnalis ? analystQueue.length : marketingQueue.length} pengajuan perlu dicek</h2><p>{isAnalis ? 'Hanya berkas yang sudah dikirim Marketing tampil di bawah. Cek nominal, sisa tagihan, data dan dokumen, lalu tanda tangan sebelum menerima atau menolak.' : 'Buka detail pengajuan. Marketing mengecek data inti, mengambil selfie bersama agent, lalu tanda tangan dan mengirimkan berkas ke Analis.'}</p></div></header>
+        <header>{isRejectedArchive ? <XCircle/> : <ClipboardCheck/>}<div><span>{isRejectedArchive ? 'ARSIP PENOLAKAN' : isAnalis ? 'FOKUS ANALISIS' : 'FOKUS PENDAMPINGAN'}</span><h2>{isRejectedArchive ? `${rejectedItems.length} keputusan ditolak` : `${isAnalis ? analystQueue.length : marketingQueue.length} pengajuan perlu ditangani`}</h2><p>{isRejectedArchive ? 'Buka detail untuk membaca alasan keputusan dan jejak pemeriksaan analis. Data di halaman ini hanya arsip, bukan antrean aktif.' : isAnalis ? 'Cek nominal, batas kredit, data, dokumen, selfie pertemuan, ketentuan, dan tanda tangan agent. Setelah lengkap, tanda tangani lalu terima atau tolak.' : 'Buka detail pengajuan untuk membantu melengkapi data dan mengambil selfie bersama agent. Keputusan akhir dilakukan Analis.'}</p></div></header>
       </section>}
-      {(isMarketing || isAdmin) && view === 'peminjam' && <section className="borrower-directory-panel">
+      {(isMarketing || isAnalis || isAdmin) && view === 'peminjam' && <section className="borrower-directory-panel">
         <header><div><span>DIREKTORI PEMINJAM</span><h2>Data peminjam diterima</h2><p>Hanya pengajuan yang sudah diterima dan sedang berjalan atau lunas. Data review dan ditolak tidak ditampilkan di sini.</p></div><strong className="directory-total">{approvedBorrowerRows.length}<small>Data diterima</small></strong></header>
         <div className="directory-stats">
           <article><b>{approvedBorrowerRows.length}</b><span>Total Diterima</span></article><article><b>{summary.approved}</b><span>Aktif dipantau</span></article><article><b>{summary.paid}</b><span>Sudah lunas</span></article><article><b>{approvedBorrowerRows.filter(row => row.score.percent < 100).length}</b><span>Data perlu dilengkapi</span></article>
@@ -701,7 +689,7 @@ export default function CreditApplicationsPage() {
           </button>) : <p>Data peminjam tidak ditemukan.</p>}
         </div>
       </section>}
-      {(isMarketing || isAdmin) && (view === 'pembayaran' || view === 'angsuran') && <section className="marketing-action-panel payment">
+      {(isMarketing || isAnalis || isAdmin) && (view === 'pembayaran' || view === 'angsuran') && <section className="marketing-action-panel payment">
         <header><Banknote/><div><span>MONITOR SALDO KREDIT</span><h2>Pelunasan Kredit Agent</h2><p>Setiap kredit dibayar satu kali penuh. Buka data untuk melihat nominal, Bank/QRIS, dan bukti transfer.</p></div></header>
         <div className="payment-overview-stats"><article><small>Kredit aktif</small><strong>{installmentActive.length}</strong><span>Menunggu pelunasan</span></article><article><small>Sudah lunas</small><strong>{installmentFinished.length}</strong><span>Pembayaran selesai</span></article><article><small>Total dilunasi</small><strong>{rupiah(installmentPaidAmount)}</strong><span>Pembayaran tercatat</span></article><article><small>Saldo tertagih</small><strong>{rupiah(installmentRemainingAmount)}</strong><span>Perlu dipantau</span></article></div>
         <div className="quick-payment-list">
@@ -739,13 +727,13 @@ export default function CreditApplicationsPage() {
         <header><CircleHelp/><div><span>PANDUAN MARKETING</span><h2>Alur kerja yang benar</h2></div></header>
         <ol>
           <li><b>Input peminjaman</b><small>Masukkan data agent jika pengajuan dilakukan lewat marketing.</small></li>
-          <li><b>Verifikasi data</b><small>Cek WA, NIK, alamat toko, kontak keluarga, dan dokumen sebelum tanda tangan.</small></li>
-          <li><b>TTD marketing</b><small>Setelah yakin data layak, tanda tangan dari HP dan teruskan ke analis.</small></li>
-          <li><b>Catat pelunasan</b><small>Jika pengajuan sudah diterima, marketing memeriksa bukti transfer pelunasan penuh yang masuk.</small></li>
+          <li><b>Dampingi pengajuan</b><small>Cek WA, NIK, alamat toko, kontak keluarga, dan bantu agent memahami proses kredit.</small></li>
+          <li><b>Selfie pertemuan</b><small>Ambil bukti selfie bersama agent. Berkas otomatis tersedia untuk pemeriksaan Analis.</small></li>
+          <li><b>Catat pelunasan</b><small>Untuk online, periksa bukti Bank/QRIS. Untuk offline, datang menagih dan unggah bukti penerimaan penuh.</small></li>
         </ol>
       </section>}
       {showMainList && <div className="panel-header">
-        <div><h2>{isAnalis ? 'Berkas Siap Dianalisis' : 'Pengajuan Masuk'}</h2><p>{isMarketing ? 'Tugas marketing: cek data agent, tanda tangan, atau tolak jika data tidak layak.' : isAnalis ? 'Tugas analis: cek hasil marketing, tanda tangan, lalu terima atau tolak.' : 'Pantau seluruh alur pengajuan kredit agent dari satu panel.'}</p></div>
+        <div><h2>{isRejectedArchive ? 'Riwayat Pengajuan Ditolak' : isAnalis ? 'Berkas Siap Dianalisis' : 'Pengajuan Masuk'}</h2><p>{isRejectedArchive ? 'Setiap keputusan menyimpan alasan penolakan agar mudah ditinjau kembali dan dijelaskan kepada agent.' : isMarketing ? 'Tugas marketing: daftarkan dan dampingi agent, lengkapi selfie pertemuan, serta tangani penagihan offline.' : isAnalis ? 'Tugas analis: cek seluruh data, tanda tangan, lalu terima atau tolak.' : 'Pantau seluruh alur pengajuan kredit agent dari satu panel.'}</p></div>
         <span className="review-role-badge">{isMarketing ? 'MARKETING' : isAnalis ? 'ANALIS' : 'ADMIN'}</span>
       </div>}
       {showCreateArea && <section className={`credit-create-box ${view === 'input' ? 'focus' : ''}`}>
@@ -783,7 +771,6 @@ export default function CreditApplicationsPage() {
       {items.length === 0 ? <div className="credit-review-empty"><ShieldCheck/><strong>Belum ada pengajuan</strong><span>Pengajuan kredit saldo dari aplikasi agent akan tampil di sini.</span></div> : visibleItems.length === 0 ? <div className="credit-review-empty"><Search/><strong>Data tidak ditemukan</strong><span>Coba ubah kata pencarian atau filter status.</span></div> : <div className="credit-review-list">
         {visibleItems.map(item => {
           const done = finalStatus.includes(item.status)
-          const marketingSigned = Boolean(item.marketingSignature)
           const analisSigned = Boolean(item.analisSignature)
           const pay = paymentSummary(item)
           const score = dataScore(item)
@@ -791,10 +778,9 @@ export default function CreditApplicationsPage() {
           const analysis = analystReadiness(item)
           const expanded = expandedId === item.id
           const meetingSelfieReady = readiness.meetingReady
-          const canMarketingSign = !done && readiness.readyToSign && (isMarketing || isAdmin)
-          const canAnalisSign = !done && item.status === 'Menunggu analis' && marketingSigned && !analisSigned && (isAnalis || isAdmin)
-          const canApprove = !done && marketingSigned && analisSigned && analysis.ready && (isAnalis || isAdmin)
-          const canReject = !done && (isMarketing || isAdmin || (isAnalis && analisSigned && Boolean(decisionNote.trim())))
+          const canAnalisSign = !done && ['Menunggu analis', 'Menunggu keputusan analis'].includes(item.status) && analysis.ready && !analisSigned && (isAnalis || isAdmin)
+          const canApprove = !done && analisSigned && analysis.ready && (isAnalis || isAdmin)
+          const canReject = !done && (isAdmin || (isAnalis && analisSigned && Boolean(decisionNote.trim())))
           return <article className={`credit-review-card status-${item.status.toLowerCase().replaceAll(' ', '-')}`} key={item.id}>
             <header>
               <div><span>{item.id}</span><h3>{item.form.agentName || item.userName}</h3><p>{item.form.storeName} · {item.form.whatsapp}</p></div>
@@ -814,17 +800,15 @@ export default function CreditApplicationsPage() {
             {!isStandaloneDetail && expanded && <p className="credit-review-address">{item.form.homeAddress}</p>}
             {!isStandaloneDetail && expanded && <div className="credit-review-signatures">
               <SignatureStep title="Agent" note="Ditandatangani saat pengajuan dikirim" signed={item.agentSignature || {name: item.form.agentName || item.userName || 'Agent', at: item.createdAt}} icon={PenLine}/>
-              <SignatureStep title="Marketing" note="Menunggu tanda tangan marketing" signed={item.marketingSignature} icon={UserCheck}/>
+              <SignatureStep title="Pertemuan Marketing" note="Menunggu selfie pertemuan" signed={item.marketingMeeting ? {name: item.marketingMeeting.by || 'Marketing KuotaKita', at: item.marketingMeeting.at} : null} icon={UserCheck}/>
               <SignatureStep title="Analis" note="Menunggu tanda tangan analis" signed={item.analisSignature} icon={Stamp}/>
             </div>}
             <footer>
               {item.status === 'Disetujui' ? <><span className="approved"><CheckCircle2/>Sudah Diterima analis</span><button type="button" className="detail" onClick={() => expanded ? closeDetailView() : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : item.status === 'Ditolak' ? <><span className="rejected"><XCircle/>Ditolak</span><button type="button" className="detail" onClick={() => expanded ? closeDetailView() : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : <>
-                <span><Clock3/>{item.status === 'Siap dikirim ke analis' ? 'Sudah TTD, siap dikirim ke analis' : marketingSigned ? 'Menunggu keputusan analis' : 'Menunggu verifikasi marketing'}</span>
+                <span><Clock3/>{meetingSelfieReady ? 'Menunggu keputusan analis' : 'Menunggu pendampingan marketing'}</span>
                 <button type="button" className="detail" onClick={() => expanded ? closeDetailView() : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button>
-                {expanded && !marketingSigned && (isMarketing || isAdmin) && score.percent < 100 && <span className="meeting-required"><AlertCircle/>Data agent atau 3 dokumen inti belum lengkap</span>}
-                {expanded && !marketingSigned && (isMarketing || isAdmin) && score.percent === 100 && !meetingSelfieReady && <span className="meeting-required"><Camera/>Selfie pertemuan dengan marketing wajib</span>}
-                {expanded && canMarketingSign && <button type="button" className="sign" onClick={() => openSignature(item, 'marketing')}><PenLine/>TTD Marketing</button>}
-                {expanded && marketingSigned && item.status === 'Siap dikirim ke analis' && (isMarketing || isAdmin) && <button type="button" className="approve" onClick={() => forwardToAnalis(item)}><CheckCircle2/>Verifikasi &amp; Kirim ke Analis</button>}
+                {expanded && (isMarketing || isAdmin) && score.percent < 100 && <span className="meeting-required"><AlertCircle/>Data agent atau 3 dokumen inti belum lengkap</span>}
+                {expanded && (isMarketing || isAdmin) && score.percent === 100 && !meetingSelfieReady && <span className="meeting-required"><Camera/>Ambil selfie pertemuan dengan agent</span>}
                 {expanded && canAnalisSign && <button type="button" className="sign" onClick={() => openSignature(item, 'analis')}><PenLine/>TTD Analis</button>}
                 {expanded && canReject && <button type="button" className="reject" onClick={() => decide(item, 'Ditolak')}><XCircle/>Tolak</button>}
                 {expanded && canApprove && <button type="button" className="approve" onClick={() => decide(item, 'Disetujui')}><CheckCircle2/>Terima Pengajuan</button>}
@@ -850,14 +834,14 @@ export default function CreditApplicationsPage() {
               {isDetail && <div className="credit-detail-block credit-finance-summary">
                 <h4>Ringkasan Kredit Sebelum Keputusan</h4>
                 <div><span><small>Nominal kredit</small><b>{rupiah(item.form.amount)}</b></span><span><small>Sudah dibayar</small><b>{rupiah(pay.totalPaid)}</b></span><span><small>Sisa tagihan</small><b>{rupiah(Math.max(0, Number(item.form.amount || 0) - pay.totalPaid))}</b></span></div>
-                <p>Marketing menandatangani setelah data dan selfie pertemuan lengkap. Analis memberi keputusan akhir.</p>
+                <p>Marketing mendampingi dan mengambil selfie pertemuan. Seluruh pemeriksaan serta keputusan akhir dilakukan oleh analis.</p>
               </div>}
               {isDetail && (isAnalis || isAdmin) && (() => {
                 const analysis = analystReadiness(item)
                 const isWaitingDecision = item.status === 'Menunggu keputusan analis'
                 return <div className="credit-detail-block analyst-checklist">
                   <header><div><span>CHECKLIST KEPUTUSAN</span><h4>Kelayakan sebelum keputusan</h4></div><strong>{analysis.percent}%</strong></header>
-                  <p>Analis memeriksa bukti verifikasi Marketing dan seluruh data pengajuan. Tidak ada dokumen yang diubah dari panel ini.</p>
+                  <p>Analis memeriksa data, tiga dokumen inti, selfie pertemuan, persetujuan syarat, nominal, dan tanda tangan agent sebelum memberi keputusan akhir.</p>
                   <ul>{analysis.checks.map(check => <li className={check.ok ? 'ok' : ''} key={check.label}>{check.ok ? <CheckCircle2/> : <AlertCircle/>}<span>{check.label}</span></li>)}</ul>
                   {isWaitingDecision && <label className="analysis-note"><span>Catatan keputusan <small>(wajib bila ditolak)</small></span><textarea value={decisionNote} onChange={event => setDecisionNote(event.target.value)} placeholder="Contoh: data toko belum memenuhi kebijakan kredit."/></label>}
                   {item.analysisDecision?.note && <div className="analysis-saved-note"><b>Catatan Analis</b><span>{item.analysisDecision.note}</span></div>}
@@ -865,10 +849,10 @@ export default function CreditApplicationsPage() {
               })()}
               {isDetail && <div className="credit-detail-block borrower-document-gallery">
                 <h4>Dokumen Peminjam</h4>
-                <div>{manualDocumentTypes.map(doc => { const value = item.documents?.[doc.key]; const file = typeof value === 'string' ? {name: value} : value || {}; const source = file.dataUrl || file.preview || ''; const needsMeeting = doc.key === 'selfieMarketing' && !source; return <figure key={doc.key}>{source ? <img src={source} alt={doc.label}/> : needsMeeting && (isMarketing || isAdmin) ? <label className="missing-document meeting-upload"><Camera/><b>Ambil selfie dengan marketing</b><small>Wajib sebelum TTD marketing</small><input type="file" accept="image/*" capture="user" onChange={event => replaceBorrowerDocument(item, doc.key, event)}/></label> : <label className="missing-document"><Images/><b>Foto belum tersinkron</b><small>Pengajuan lama tanpa data foto</small></label>}<figcaption><b>{doc.label}</b><small>{file.name || (needsMeeting ? 'Menunggu pertemuan marketing' : 'Dokumen tersimpan')}</small></figcaption></figure> })}</div>
+                <div>{manualDocumentTypes.map(doc => { const value = item.documents?.[doc.key]; const file = typeof value === 'string' ? {name: value} : value || {}; const source = file.dataUrl || file.preview || ''; const needsMeeting = doc.key === 'selfieMarketing' && !source; return <figure key={doc.key}>{source ? <img src={source} alt={doc.label}/> : needsMeeting && (isMarketing || isAdmin) ? <label className="missing-document meeting-upload"><Camera/><b>Ambil selfie bersama agent</b><small>Wajib sebagai bukti pendampingan marketing</small><input type="file" accept="image/*" capture="user" onChange={event => replaceBorrowerDocument(item, doc.key, event)}/></label> : <label className="missing-document"><Images/><b>Foto belum tersinkron</b><small>Pengajuan lama tanpa data foto</small></label>}<figcaption><b>{doc.label}</b><small>{file.name || (needsMeeting ? 'Menunggu pertemuan marketing' : 'Dokumen tersimpan')}</small></figcaption></figure> })}</div>
               </div>}
               {!isStandaloneDetail && <div className="credit-detail-block marketing-checklist">
-                <h4>Checklist Marketing</h4>
+                <h4>Kelengkapan Pendampingan</h4>
                 <div className="data-score"><strong>{score.percent}%</strong><span><i style={{width: `${score.percent}%`}}/></span></div>
                 <ul>
                   {score.checks.map(check => <li className={check.ok ? 'ok' : ''} key={check.label}>{check.ok ? <CheckCircle2/> : <AlertCircle/>}<span>{check.label}</span></li>)}
@@ -882,7 +866,7 @@ export default function CreditApplicationsPage() {
                     <i>{row.paid ? <CheckCircle2/> : <CalendarDays/>}</i>
                     <span><b>{row.label}</b><small>{row.paid ? `Lunas ${dateTime(row.paid.paidAt)}` : 'Bayar satu kali penuh sesuai saldo kredit'}</small></span>
                     <strong>{rupiah(row.amount)}</strong>
-                    {item.status === 'Disetujui' && <button type="button" disabled={Boolean(row.paid)} onClick={() => {setPaymentTarget({item, row}); setPaymentMethod(''); setPaymentProof(null)}}><Banknote/>{row.paid ? 'Lunas' : 'Bayar Kredit'}</button>}
+                    {item.status === 'Disetujui' && (isMarketing || isAdmin) && <button type="button" disabled={Boolean(row.paid)} onClick={() => {setPaymentTarget({item, row}); setPaymentMethod(''); setPaymentProof(null)}}><Banknote/>{row.paid ? 'Lunas' : 'Bayar Kredit'}</button>}
                   </article>)}
                 </div>
               </div>}
@@ -898,19 +882,21 @@ export default function CreditApplicationsPage() {
         <div className="review-payment-methods">
           <button type="button" className={paymentMethod === 'bank' ? 'active' : ''} onClick={() => setPaymentMethod('bank')}><Landmark/><span><b>Transfer Bank</b><small>BCA · 1234567890 a.n. KuotaKita</small></span>{paymentMethod === 'bank' && <Check/>}</button>
           <button type="button" className={paymentMethod === 'qris' ? 'active' : ''} onClick={() => setPaymentMethod('qris')}><QrCode/><span><b>QRIS / Barcode</b><small>Nominal otomatis sesuai pelunasan</small></span>{paymentMethod === 'qris' && <Check/>}</button>
+          <button type="button" className={paymentMethod === 'offline' ? 'active' : ''} onClick={() => setPaymentMethod('offline')}><HandCoins/><span><b>Penagihan Offline</b><small>Marketing menerima pembayaran langsung dari agent</small></span>{paymentMethod === 'offline' && <Check/>}</button>
         </div>
         {paymentMethod === 'bank' && <div className="review-bank-detail"><span>Transfer tepat sebesar</span><strong>{rupiah(paymentTarget.row.amount)}</strong><small>Kode referensi: {paymentTarget.row.key.toUpperCase()}</small></div>}
         {paymentMethod === 'qris' && <div className="review-qr-detail"><QRCodeSVG value={`${window.location.origin}/pay?ref=${encodeURIComponent(paymentTarget.row.key)}&amount=${paymentTarget.row.amount}`} size={210} level="H" includeMargin/><strong>{rupiah(paymentTarget.row.amount)}</strong><small>QR memuat referensi dan nominal pelunasan ini.</small></div>}
-        <label className="review-payment-proof"><Upload/><span><b>Bukti transfer wajib</b><small>{paymentProof?.name || 'Unggah bukti transfer atau screenshot pembayaran'}</small></span><input type="file" accept="image/*,.pdf" onChange={choosePaymentProof}/></label>
-        <button type="button" className="review-payment-confirm" disabled={!paymentMethod || !paymentProof} onClick={() => markPayment(paymentTarget.item, paymentTarget.row)}>Konfirmasi Pembayaran <ArrowRight/></button>
+        {paymentMethod === 'offline' && <div className="review-bank-detail"><span>Nominal yang wajib diterima marketing</span><strong>{rupiah(paymentTarget.row.amount)}</strong><small>Pelunasan harus dibayar penuh, tidak dicicil.</small></div>}
+        <label className="review-payment-proof"><Upload/><span><b>{paymentMethod === 'offline' ? 'Bukti penerimaan wajib' : 'Bukti transfer wajib'}</b><small>{paymentProof?.name || (paymentMethod === 'offline' ? 'Unggah foto kuitansi atau bukti serah-terima' : 'Unggah bukti transfer atau screenshot pembayaran')}</small></span><input type="file" accept="image/*,.pdf" onChange={choosePaymentProof}/></label>
+        <button type="button" className="review-payment-confirm" disabled={!paymentMethod || !paymentProof} onClick={() => markPayment(paymentTarget.item, paymentTarget.row)}>{paymentMethod === 'offline' ? 'Konfirmasi Pelunasan Offline' : 'Konfirmasi Pembayaran'} <ArrowRight/></button>
       </div>
     </section>}
     {signaturePad && <section className="review-signature-backdrop" aria-label="Tanda tangan reviewer">
       <div className="review-signature-sheet">
         <header>
           <button type="button" onClick={closeSignature} aria-label="Tutup"><X/></button>
-          <div><span>{signaturePad.role === 'marketing' ? 'Tanda Tangan Marketing' : 'Tanda Tangan Analis'}</span><strong>{signaturePad.item.form.agentName || signaturePad.item.userName}</strong></div>
-          <b>{signaturePad.role === 'marketing' ? 'MARKETING' : 'ANALIS'}</b>
+          <div><span>Tanda Tangan Analis</span><strong>{signaturePad.item.form.agentName || signaturePad.item.userName}</strong></div>
+          <b>ANALIS</b>
         </header>
         <div className="review-signature-pad">
           <canvas ref={canvasRef} width="760" height="330" onPointerDown={startSignature} onPointerMove={moveSignature} onPointerUp={stopSignature} onPointerCancel={stopSignature} onPointerLeave={stopSignature}/>

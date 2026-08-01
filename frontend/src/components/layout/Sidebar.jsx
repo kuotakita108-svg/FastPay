@@ -1,6 +1,6 @@
 import {NavLink, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
-import {Banknote, BarChart3, CircleHelp, ClipboardCheck, FilePlus2, LogOut, ShieldCheck, Users, WalletCards, Zap} from 'lucide-react'
+import {Banknote, BarChart3, CheckCircle2, CircleHelp, ClipboardCheck, LogOut, ShieldCheck, Users, WalletCards, XCircle, Zap} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
 
@@ -10,8 +10,7 @@ const marketingNavigation = [
     items: [
       {to: '/credit-applications', label: 'Ringkasan Kredit', icon: WalletCards},
       {to: '/credit-applications?view=peminjam', label: 'Data Peminjam', icon: Users},
-      {to: '/credit-applications?view=input', label: 'Input Peminjaman', icon: FilePlus2},
-      {to: '/credit-applications?view=verifikasi', label: 'Antrean Verifikasi', icon: ClipboardCheck},
+      {to: '/credit-applications?view=verifikasi', label: 'Pendampingan Agent', icon: ClipboardCheck},
       {to: '/credit-applications?view=angsuran', label: 'Saldo Kredit', icon: Banknote},
     ],
   },
@@ -23,6 +22,9 @@ const analisNavigation = [
     items: [
       {to: '/credit-applications', label: 'Meja Keputusan', icon: ShieldCheck},
       {to: '/credit-applications?view=verifikasi', label: 'Antrean Analisis', icon: ClipboardCheck},
+      {to: '/credit-applications?view=peminjam', label: 'Kredit Diterima', icon: CheckCircle2},
+      {to: '/credit-applications?view=angsuran', label: 'Monitor Pelunasan', icon: Banknote},
+      {to: '/credit-applications?view=verifikasi&filter=Ditolak', label: 'Penolakan & Catatan', icon: XCircle},
       {to: '/credit-applications?view=laporan', label: 'Arsip Keputusan', icon: BarChart3},
     ],
   },
@@ -43,9 +45,9 @@ export default function Sidebar({open, onClose}) {
   const active = to => current === to || (!to.includes('?') && location.pathname === to && !location.search)
   const activeLabel = visibleNavigation.flatMap(group => group.items).find(item => active(item.to))?.label || (isAnalis ? 'Meja Keputusan' : 'Ringkasan Kredit')
   const rolePanel = isMarketing
-    ? {eyebrow: 'MODE MARKETING', title: 'Kelola pengajuan agent', description: 'Validasi data, selfie pertemuan, verifikasi, lalu pantau pelunasan kredit.'}
+    ? {eyebrow: 'MODE MARKETING', title: 'Dampingi agent', description: 'Daftarkan akun, arahkan pengajuan, ambil selfie pertemuan, lalu pantau pelunasan.'}
     : isAnalis
-      ? {eyebrow: 'MODE ANALIS', title: 'Keputusan akhir kredit', description: 'Cek berkas Marketing, tanda tangan, lalu terima atau tolak dengan catatan yang jelas.'}
+      ? {eyebrow: 'MODE ANALIS', title: 'Keputusan akhir kredit', description: 'Cek seluruh berkas, tanda tangan, lalu terima atau tolak dengan catatan yang jelas.'}
       : null
 
   return <aside className={`sidebar ${open ? 'open' : ''}`}>

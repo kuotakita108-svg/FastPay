@@ -22,7 +22,7 @@ export default function Topbar({onMenu}) {
   const isCreditPanel = isCreditTeam && location.pathname === '/credit-applications'
   const isMarketingPanel = isCreditPanel
   const notices = isCreditTeam
-    ? [{title: isAnalis ? 'Berkas analisis siap' : 'Ruang kerja kredit siap', desc: isAnalis ? 'Periksa berkas dari marketing lalu beri keputusan akhir.' : 'Cek antrean verifikasi dan data agent terbaru.', action: () => navigate('/credit-applications?view=verifikasi'), icon: ClipboardCheck}]
+    ? [{title: isAnalis ? 'Berkas analisis siap' : 'Ruang pendampingan siap', desc: isAnalis ? 'Periksa seluruh berkas lalu beri keputusan akhir.' : 'Dampingi agent dan cek permintaan penagihan terbaru.', action: () => navigate('/credit-applications?view=verifikasi'), icon: ClipboardCheck}]
     : [{title: 'Transaksi KuotaKita', desc: 'Pantau transaksi dan status pembayaran terbaru.', action: () => navigate('/transactions'), icon: Bell}]
   const submit = event => {
     event.preventDefault()
