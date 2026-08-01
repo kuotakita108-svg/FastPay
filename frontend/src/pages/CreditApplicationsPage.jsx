@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react'
 import {useSearchParams} from 'react-router-dom'
-import {AlertCircle, ArrowRight, Banknote, BarChart3, CalendarDays, Camera, Check, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, FileCheck2, Filter, HandCoins, Images, Landmark, PenLine, PhoneCall, PlusCircle, QrCode, Search, ShieldCheck, Stamp, Trash2, Upload, UserCheck, WalletCards, X, XCircle} from 'lucide-react'
+import {AlertCircle, ArrowRight, Banknote, BarChart3, CalendarDays, Camera, Check, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, FileCheck2, Filter, HandCoins, Images, Landmark, PenLine, PhoneCall, PlusCircle, QrCode, Search, ShieldCheck, Stamp, Trash2, Upload, UserCheck, UserPlus, WalletCards, X, XCircle} from 'lucide-react'
 import {QRCodeSVG} from 'qrcode.react'
 import PageHeader from '../components/common/PageHeader'
 import {useAuth} from '../context/AuthContext'
@@ -142,12 +142,12 @@ const creditProfile = (items, target) => {
   return {paidCycles, ...level}
 }
 const viewInfo = {
-  overview: {label: 'Ringkasan Kredit', title: 'Dashboard kredit agent', desc: 'Marketing mendaftarkan dan membimbing agent, analis memutuskan pengajuan, lalu pelunasan dicatat satu kali penuh.'},
-  peminjam: {label: 'Data Peminjam', title: 'Seluruh peminjam agent', desc: 'Lihat pengajuan yang sudah diterima, nominal kredit, saldo kredit aktif, dan status pelunasannya.'},
-  input: {label: 'Input Peminjaman', title: 'Dampingi pengajuan agent', desc: 'Marketing membantu agent melengkapi data, dokumen, dan selfie pertemuan. Keputusan tetap dilakukan analis.'},
-  verifikasi: {label: 'Antrean Analis', title: 'Pengajuan menunggu keputusan analis', desc: 'Lihat kelengkapan data dan selfie pertemuan sebelum analis melakukan pemeriksaan akhir.'},
+  overview: {label: 'Ringkasan Kerja', title: 'Prioritas marketing hari ini', desc: 'Daftarkan agent, dampingi pengajuan, lengkapi bukti pertemuan, dan pantau pelunasan penuh.'},
+  peminjam: {label: 'Kredit Aktif', title: 'Agent dengan kredit diterima', desc: 'Hanya menampilkan kredit yang sudah diterima, masih aktif, atau sudah lunas.'},
+  input: {label: 'Bantu Pengajuan', title: 'Dampingi pengajuan agent', desc: 'Bantu agent mengisi data dan tiga dokumen inti. Selfie pertemuan dibuat pada menu Pertemuan & Selfie.'},
+  verifikasi: {label: 'Pertemuan & Selfie', title: 'Pendampingan lapangan marketing', desc: 'Lengkapi selfie bersama agent lalu kirim berkas yang lengkap kepada analis untuk keputusan akhir.'},
   pembayaran: {label: 'Pelunasan Kredit', title: 'Pelunasan saldo kredit', desc: 'Bayar satu kali penuh melalui Bank, QRIS, atau penagihan langsung oleh marketing.'},
-  angsuran: {label: 'Pelunasan Kredit', title: 'Monitor pelunasan kredit', desc: 'Pantau saldo kredit aktif, pembayaran online, penagihan offline, bukti pembayaran, dan refill.'},
+  angsuran: {label: 'Pelunasan Kredit', title: 'Monitor pelunasan penuh', desc: 'Pantau transfer Bank, QRIS, penagihan offline, bukti pembayaran, dan hak refill setelah lunas.'},
   pelunasan: {label: 'Bukti Pelunasan', title: 'Arsip bukti pelunasan', desc: 'Periksa kredit yang sudah lunas beserta nominal, metode, waktu, referensi, penerima, dan bukti pembayarannya.'},
   laporan: {label: 'Laporan Kredit', title: 'Rekap kinerja kredit', desc: 'Lihat total nominal pinjaman, pembayaran masuk, sisa tagihan, dan status seluruh peminjam.'},
   panduan: {label: 'Panduan Marketing', title: 'Panduan kerja marketing', desc: 'Daftarkan agent, bantu pengajuan, ambil selfie pertemuan, dan catat pelunasan offline secara tertib.'},
@@ -214,6 +214,7 @@ export default function CreditApplicationsPage() {
   const [borrowerQuery, setBorrowerQuery] = useState('')
   const [borrowerFilter, setBorrowerFilter] = useState('Semua')
   const [filter, setFilter] = useState('Semua')
+  const [listPage, setListPage] = useState(1)
   const [expandedId, setExpandedId] = useState('')
   const [showCreate, setShowCreate] = useState(false)
   const [manualForm, setManualForm] = useState(manualInitial)
@@ -533,6 +534,11 @@ export default function CreditApplicationsPage() {
     const matchRoleQueue = !isAnalis || isStandaloneDetail || (analystArchiveFilter ? group === filter : ['Menunggu analis', 'Menunggu keputusan analis'].includes(item.status))
     return matchDetail && matchQuery && matchFilter && matchRoleQueue
   })
+  const listPageSize = 20
+  const listPageCount = Math.max(1, Math.ceil(visibleItems.length / listPageSize))
+  const safeListPage = Math.min(listPage, listPageCount)
+  const listStart = (safeListPage - 1) * listPageSize
+  const pagedItems = isStandaloneDetail ? visibleItems : visibleItems.slice(listStart, listStart + listPageSize)
   const summary = {
     total: items.length,
     review: items.filter(item => statusGroup(item) === 'Review').length,
@@ -574,6 +580,7 @@ export default function CreditApplicationsPage() {
     {title: 'Perlu Pendampingan', value: meetingQueue.length, note: 'Selfie bersama agent belum ada', icon: Camera},
     {title: 'Siap Dianalisis', value: marketingReadyForAnalysis.length, note: 'Data dan pertemuan sudah lengkap', icon: ClipboardCheck},
     {title: 'Tagihan Offline', value: offlineCollectionQueue.length, note: 'Perlu dikunjungi marketing', icon: HandCoins},
+    {title: 'Kredit Aktif', value: approvedActive.length, note: 'Sudah diterima, belum lunas', icon: Banknote},
   ]
   const activeView = viewInfo[view] || viewInfo.overview
   const isRejectedArchive = isAnalis && view === 'verifikasi' && filter === 'Ditolak'
@@ -582,7 +589,6 @@ export default function CreditApplicationsPage() {
   const totalPaidAmount = items.reduce((sum, item) => sum + paymentSummary(item).totalPaid, 0)
   const remainingLoan = Math.max(0, totalLoan - totalPaidAmount)
   const recentManual = sortedItems.filter(item => item.source === 'marketing').slice(0, 5)
-  const incompleteData = sortedItems.filter(item => !finalStatus.includes(item.status) && dataScore(item).percent < 100)
   const paymentToday = approvedActive.filter(item => Boolean(firstUnpaidRow(item)))
   const showCreateArea = (isMarketing || isAdmin) && view === 'input'
   // Setiap menu punya satu tujuan: daftar detail hanya muncul di Antrean Verifikasi.
@@ -628,17 +634,16 @@ export default function CreditApplicationsPage() {
       {(isMarketing || isAdmin) && view === 'agent-input' && <AgentAccountForm onClose={() => goToView('overview')}/>}
       {(isMarketing || isAdmin) && view === 'overview' && <section className="marketing-workspace">
         <header>
-          <div><span>MEJA KERJA MARKETING</span><h2>Pendampingan agent &amp; penagihan</h2><p>Marketing menawarkan layanan, mendaftarkan akun agent, mengarahkan pengajuan, mengambil selfie pertemuan, dan menangani pelunasan offline. Keputusan kredit sepenuhnya dilakukan Analis.</p></div>
+          <div><span>MEJA KERJA MARKETING</span><h2>Kerjakan yang paling penting</h2><p>Daftarkan agent, bantu pengajuan, ambil selfie pertemuan, lalu pantau pelunasan. Keputusan kredit tetap dilakukan Analis.</p></div>
         </header>
         <div className="marketing-task-grid">
           {marketingCards.map(({title, value, note, icon: Icon}) => <article key={title}><i><Icon/></i><span>{title}</span><strong>{value}</strong><small>{note}</small></article>)}
         </div>
         <div className="marketing-quick-actions" aria-label="Aksi cepat marketing">
-          <button type="button" className="primary" onClick={() => meetingQueue[0] && goToView('detail', meetingQueue[0].id, 'Review')}><Camera/><span><b>Jadwalkan pertemuan</b><small>{meetingQueue.length ? `${meetingQueue.length} agent perlu selfie bersama` : 'Tidak ada pertemuan tertunda'}</small></span><strong>→</strong></button>
-          <button type="button" onClick={() => marketingReadyForAnalysis[0] && goToView('detail', marketingReadyForAnalysis[0].id, 'Review')}><UserCheck/><span><b>Siap diperiksa Analis</b><small>{marketingReadyForAnalysis.length ? `${marketingReadyForAnalysis.length} berkas pendampingan lengkap` : 'Belum ada berkas lengkap'}</small></span><strong>→</strong></button>
-          <button type="button" onClick={() => offlineCollectionQueue[0] ? goToView('angsuran-detail', offlineCollectionQueue[0].id, 'Disetujui') : goToView('angsuran')}><HandCoins/><span><b>Penagihan offline</b><small>{offlineCollectionQueue.length ? `${offlineCollectionQueue.length} agent meminta penagihan` : 'Tidak ada permintaan penagihan'}</small></span><strong>→</strong></button>
-          <button type="button" onClick={() => goToView('angsuran')}><Banknote/><span><b>Saldo kredit aktif</b><small>{paymentToday.length ? `${paymentToday.length} kredit menunggu pelunasan` : 'Tidak ada kredit aktif'}</small></span><strong>→</strong></button>
-          <button type="button" onClick={() => goToView('peminjam')}><UserCheck/><span><b>Direktori peminjam</b><small>{incompleteData.length ? `${incompleteData.length} data perlu dilengkapi` : 'Data agent sudah lengkap'}</small></span><strong>→</strong></button>
+          <button type="button" className="primary" onClick={() => goToView('agent-input')}><UserPlus/><span><b>Daftar agent baru</b><small>Buat akun login agent resmi</small></span><strong>→</strong></button>
+          <button type="button" onClick={() => meetingQueue[0] ? goToView('detail', meetingQueue[0].id, 'Review') : goToView('verifikasi')}><Camera/><span><b>Pertemuan &amp; selfie</b><small>{meetingQueue.length ? `${meetingQueue.length} agent perlu didampingi` : 'Tidak ada pertemuan tertunda'}</small></span><strong>→</strong></button>
+          <button type="button" onClick={() => offlineCollectionQueue[0] ? goToView('angsuran-detail', offlineCollectionQueue[0].id, 'Disetujui') : goToView('angsuran')}><HandCoins/><span><b>Pelunasan offline</b><small>{offlineCollectionQueue.length ? `${offlineCollectionQueue.length} agent perlu dikunjungi` : 'Tidak ada penagihan tertunda'}</small></span><strong>→</strong></button>
+          <button type="button" onClick={() => goToView('peminjam')}><Banknote/><span><b>Kredit aktif</b><small>{paymentToday.length ? `${paymentToday.length} kredit menunggu lunas` : 'Tidak ada kredit aktif'}</small></span><strong>→</strong></button>
         </div>
         <div className="marketing-section-label focus-label"><span>PEKERJAAN TERDEKAT</span><small>Daftar yang membutuhkan perhatian lebih dulu</small></div>
         <div className="marketing-focus-grid">
@@ -802,11 +807,11 @@ export default function CreditApplicationsPage() {
         </button>) : <p>Belum ada input peminjaman dari marketing.</p>}</div>
       </section>}
       {showMainList && <>{view === 'verifikasi' && <div className="credit-review-tools">
-        <label><Search/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Cari nama agent, toko, WA, NIK, atau ID pengajuan"/></label>
-        <div><Filter/>{filters.map(name => <button type="button" className={filter === name ? 'active' : ''} onClick={() => setFilter(name)} key={name}>{name}</button>)}</div>
+        <label><Search/><input value={query} onChange={event => {setQuery(event.target.value); setListPage(1)}} placeholder="Cari nama agent, toko, WA, NIK, atau ID pengajuan"/></label>
+        <div><Filter/>{filters.map(name => <button type="button" className={filter === name ? 'active' : ''} onClick={() => {setFilter(name); setListPage(1)}} key={name}>{name}</button>)}</div>
       </div>}
       {items.length === 0 ? <div className="credit-review-empty"><ShieldCheck/><strong>Belum ada pengajuan</strong><span>Pengajuan kredit saldo dari aplikasi agent akan tampil di sini.</span></div> : visibleItems.length === 0 ? <div className="credit-review-empty"><Search/><strong>Data tidak ditemukan</strong><span>Coba ubah kata pencarian atau filter status.</span></div> : <div className="credit-review-list">
-        {visibleItems.map(item => {
+        {pagedItems.map(item => {
           const done = finalStatus.includes(item.status)
           const analisSigned = Boolean(item.analisSignature)
           const pay = paymentSummary(item)
@@ -910,6 +915,14 @@ export default function CreditApplicationsPage() {
             </section>}
           </article>
         })}
+        {!isStandaloneDetail && visibleItems.length > listPageSize && <nav className="credit-list-pagination" aria-label="Halaman antrean">
+          <span>Menampilkan <b>{listStart + 1}-{Math.min(listStart + listPageSize, visibleItems.length)}</b> dari <b>{visibleItems.length}</b> pengajuan</span>
+          <div>
+            <button type="button" disabled={safeListPage === 1} onClick={() => {setListPage(page => Math.max(1, page - 1)); window.scrollTo({top: 0, behavior: 'smooth'})}} aria-label="Halaman sebelumnya">‹</button>
+            <strong>{safeListPage} / {listPageCount}</strong>
+            <button type="button" disabled={safeListPage === listPageCount} onClick={() => {setListPage(page => Math.min(listPageCount, page + 1)); window.scrollTo({top: 0, behavior: 'smooth'})}} aria-label="Halaman berikutnya">›</button>
+          </div>
+        </nav>}
       </div>}</>}
     </section>
     {paymentTarget && <section className="review-payment-backdrop" aria-label="Bayar kredit">

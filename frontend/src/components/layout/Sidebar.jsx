@@ -1,6 +1,6 @@
 import {NavLink, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
-import {Banknote, BarChart3, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, LogOut, ShieldCheck, Users, WalletCards, XCircle, Zap} from 'lucide-react'
+import {Banknote, BarChart3, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, LogOut, ShieldCheck, UserPlus, Users, WalletCards, XCircle, Zap} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
 
@@ -8,10 +8,12 @@ const marketingNavigation = [
   {
     section: 'Marketing Kredit',
     items: [
-      {to: '/credit-applications', label: 'Ringkasan Kredit', icon: WalletCards},
-      {to: '/credit-applications?view=peminjam', label: 'Data Peminjam', icon: Users},
-      {to: '/credit-applications?view=verifikasi', label: 'Pendampingan Agent', icon: ClipboardCheck},
-      {to: '/credit-applications?view=angsuran', label: 'Saldo Kredit', icon: Banknote},
+      {to: '/credit-applications', label: 'Ringkasan Kerja', icon: WalletCards},
+      {to: '/credit-applications?view=agent-input', label: 'Daftar Agent', icon: UserPlus},
+      {to: '/credit-applications?view=input', label: 'Bantu Pengajuan', icon: ClipboardCheck},
+      {to: '/credit-applications?view=verifikasi', label: 'Pertemuan & Selfie', icon: Camera},
+      {to: '/credit-applications?view=peminjam', label: 'Kredit Aktif', icon: Users},
+      {to: '/credit-applications?view=angsuran', label: 'Pelunasan Kredit', icon: Banknote},
     ],
   },
 ]
@@ -44,7 +46,7 @@ export default function Sidebar({open, onClose}) {
   const roleLabel = role === 'master' ? 'Master Account' : role === 'marketing' ? 'Marketing Kredit' : role === 'analis' ? 'Analis Kredit' : 'Panel Administrator'
   const current = `${location.pathname}${location.search}`
   const active = to => current === to || (!to.includes('?') && location.pathname === to && !location.search)
-  const activeLabel = visibleNavigation.flatMap(group => group.items).find(item => active(item.to))?.label || (isAnalis ? 'Meja Keputusan' : 'Ringkasan Kredit')
+  const activeLabel = visibleNavigation.flatMap(group => group.items).find(item => active(item.to))?.label || (isAnalis ? 'Meja Keputusan' : 'Ringkasan Kerja')
   const rolePanel = isMarketing
     ? {eyebrow: 'MODE MARKETING', title: 'Dampingi agent', description: 'Daftarkan akun, arahkan pengajuan, ambil selfie pertemuan, lalu pantau pelunasan.'}
     : isAnalis
@@ -62,7 +64,7 @@ export default function Sidebar({open, onClose}) {
     <nav>{visibleNavigation.map(group => <div key={group.section}>
       <p className="nav-label">{group.section}</p>
       {group.items.map(({to, label, icon: Icon, badge}) => <NavLink className={`nav-item nav-${label.toLowerCase().replace(/[^a-z]+/g, '-')} ${active(to) ? 'active' : ''}`} to={to} key={to} onClick={onClose}>
-        <Icon size={18}/><span>{label}</span>{active(to) && label === 'Ringkasan Kredit' && <b className="nav-current">AKTIF</b>}{badge && <b>{badge}</b>}
+        <Icon size={18}/><span>{label}</span>{active(to) && label === 'Ringkasan Kerja' && <b className="nav-current">AKTIF</b>}{badge && <b>{badge}</b>}
       </NavLink>)}
     </div>)}</nav>
     <div className="sidebar-bottom">
