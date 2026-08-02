@@ -1,1 +1,3 @@
-import {request} from './http';export const getProducts=()=>request('/products');
+import {request} from './http'
+
+export const getProducts=service=>request(`/products${service?`?service=${encodeURIComponent(service)}`:''}`)

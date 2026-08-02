@@ -74,7 +74,7 @@ export default function LoginPage() {
   return <main className="mobile-auth-page auth-premium">
     <section className="auth-phone">
       <header className="auth-welcome">
-        <img className="auth-hero-person" src={loginHero} alt="" aria-hidden="true"/>
+        <img className="auth-hero-person" src={loginHero} alt="" aria-hidden="true" decoding="async" fetchPriority="high"/>
         <div className="auth-hero-shade"/>
         <div className="auth-light-trail trail-one"/>
         <div className="auth-light-trail trail-two"/>

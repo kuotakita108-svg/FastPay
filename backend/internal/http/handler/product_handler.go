@@ -9,6 +9,6 @@ import (
 type ProductHandler struct{ service *service.ProductService }
 
 func NewProductHandler(s *service.ProductService) *ProductHandler { return &ProductHandler{service: s} }
-func (h *ProductHandler) List(w http.ResponseWriter, _ *http.Request) {
-	response.JSON(w, http.StatusOK, h.service.List())
+func (h *ProductHandler) List(w http.ResponseWriter, r *http.Request) {
+	response.JSON(w, http.StatusOK, h.service.ListByService(r.URL.Query().Get("service")))
 }

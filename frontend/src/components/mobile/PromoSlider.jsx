@@ -49,6 +49,8 @@ export default function PromoSlider() {
             src={promo.image}
             alt=""
             aria-hidden="true"
+            loading="lazy"
+            decoding="async"
             style={{ objectPosition: `${promo.position} center` }}
           />
           <div className="promo-photo-shade" />

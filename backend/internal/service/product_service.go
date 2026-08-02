@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"kuotakita/backend/internal/domain"
+	"strings"
 	"sync"
 )
 
@@ -37,6 +38,21 @@ func (s *ProductService) List() []domain.Product {
 		}
 		seen[product.ID] = struct{}{}
 		result = append(result, product)
+	}
+	return result
+}
+
+func (s *ProductService) ListByService(serviceName string) []domain.Product {
+	serviceName = strings.TrimSpace(strings.ToLower(serviceName))
+	if serviceName == "" {
+		return s.List()
+	}
+	all := s.List()
+	result := make([]domain.Product, 0, len(all)/8)
+	for _, product := range all {
+		if strings.EqualFold(product.Service, serviceName) {
+			result = append(result, product)
+		}
 	}
 	return result
 }

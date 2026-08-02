@@ -143,7 +143,7 @@ function ProviderSvgLogo({spec}){
 export default function ProviderLogo({name,className=''}){
   const clean=normalize(name)
   const image=findLogoMatch(clean,imageLogos)?.[1]
-  if(image)return <i className={`${className} provider-logo-rendered provider-logo-image`} data-brand={slug(clean)}><img src={image} alt={`Logo ${name}`}/></i>
+  if(image)return <i className={`${className} provider-logo-rendered provider-logo-image`} data-brand={slug(clean)}><img src={image} alt={`Logo ${name}`} loading="lazy" decoding="async"/></i>
   const spec=findLogoMatch(clean,svgLogos)?.[1]
   if(spec)return <i className={`${className} provider-logo-rendered provider-logo-vector`} data-brand={slug(clean)} role="img" aria-label={`Logo ${name}`}><ProviderSvgLogo spec={spec}/></i>
   return <i className={`${className} provider-logo-rendered provider-wordmark`} data-brand={slug(clean)} role="img" aria-label={`Logo ${name}`}><ProviderSymbol name={clean}/></i>

@@ -1,4 +1,4 @@
-import {useEffect,useMemo,useState} from 'react'
+import {useCallback,useEffect,useMemo,useState} from 'react'
 import {useParams,useNavigate,useLocation} from 'react-router-dom'
 import {ArrowLeft,ShieldCheck,CheckCircle2,ChevronRight,Zap,LockKeyhole,Clock3,ReceiptText,BadgeCheck,ContactRound,Star,Search} from 'lucide-react'
 import {useAsync} from '../hooks/useAsync'
@@ -82,7 +82,9 @@ const makePlnBill=id=>{
 }
 
 export default function ServicePurchasePage(){
- const {type}=useParams(),navigate=useNavigate(),location=useLocation(),config=serviceConfig[type]||serviceConfig.pulsa,{data=[]}=useAsync(getProducts)
+ const {type}=useParams(),navigate=useNavigate(),location=useLocation(),config=serviceConfig[type]||serviceConfig.pulsa
+ const loadProducts=useCallback(()=>getProducts(type),[type])
+ const {data=[]}=useAsync(loadProducts)
  const {user}=useAuth(),{show}=useToast()
  const [target,setTarget]=useState(''),[provider,setProvider]=useState(type==='pln'?'PLN':''),[catalog,setCatalog]=useState(false),[mode,setMode]=useState('product'),[selected,setSelected]=useState(null),[freeAmount,setFreeAmount]=useState('')
  const [plnMode,setPlnMode]=useState('token'),[plnBill,setPlnBill]=useState(null)
@@ -141,7 +143,7 @@ export default function ServicePurchasePage(){
  </main>
  return <main className={`mobile-app modern-purchase service-${type}`}>
   <header className="purchase-head modern"><button onClick={()=>navigate(-1)}><ArrowLeft/></button><div><strong>{config.title}</strong><small>Layanan resmi KuotaKita</small></div><i><ShieldCheck/></i></header>
-  <section className="service-intro service-person-hero"><img src={serviceHeroes[type]||communicationHero} alt="" aria-hidden="true"/><div className="service-person-shade"/><div className="service-intro-copy"><span>{config.title}</span><h1>Transaksi lebih praktis dan aman</h1><p>Masukkan data tujuan, pilih penyedia, lalu tentukan produk yang kamu inginkan.</p></div></section>
+  <section className="service-intro service-person-hero"><img src={serviceHeroes[type]||communicationHero} alt="" aria-hidden="true" decoding="async" fetchPriority="high"/><div className="service-person-shade"/><div className="service-intro-copy"><span>{config.title}</span><h1>Transaksi lebih praktis dan aman</h1><p>Masukkan data tujuan, pilih penyedia, lalu tentukan produk yang kamu inginkan.</p></div></section>
   <section className="modern-purchase-body">
    {type==='pln'&&<section className="pln-mode-panel"><button type="button" className={plnMode==='token'?'active':''} onClick={()=>changePlnMode('token')}><Zap/><span><b>Beli Token Listrik</b><small>Isi token prabayar PLN</small></span></button><button type="button" className={plnMode==='bill'?'active':''} onClick={()=>changePlnMode('bill')}><ReceiptText/><span><b>Bayar Tagihan PLN</b><small>Cek tagihan pascabayar</small></span></button></section>}
    <section className="number-panel"><div className="number-title"><i className="service-input-emblem"><ServiceEmblem type={type} label={config.title}/></i><div><strong>{type==='pln'&&plnMode==='bill'?'ID Pelanggan / Nomor Meter':config.input}</strong><small>{type==='pln'&&plnMode==='bill'?'Masukkan ID PLN untuk cek tagihan otomatis':'Pastikan data tujuan sudah benar'}</small></div><span className="verified-service"><ShieldCheck/> Resmi</span></div><label><span className="target-prefix">{type==='pln'&&plnMode==='bill'?'IDPEL':inputPrefix}</span><input value={target} onChange={event=>changeTarget(event.target.value)} placeholder={type==='pln'&&plnMode==='bill'?'Contoh: 535123456789':inputPlaceholder} inputMode={inputMode}/>{provider&&automatic.includes(type)&&<CheckCircle2/>}</label>{supportsContacts&&<><div className="contact-target-tools"><button type="button" onClick={pickContact}><ContactRound/> Pilih dari kontak</button><button type="button" className={favorite?'active':''} onClick={toggleFavorite} aria-pressed={favorite}><Star fill={favorite?'currentColor':'none'}/> {favorite?'Tersimpan':'Simpan favorit'}</button></div>{matchingFavorites.length>0&&<div className="contact-favorites"><small>Nomor favorit</small><div>{matchingFavorites.map(item=><button type="button" key={item.id} onClick={()=>changeTarget(item.number)}><span>{item.label}</span><b>{item.number}</b></button>)}</div></div>}{contactHint&&<p className="contact-hint">{contactHint}</p>}</>}{automatic.includes(type)&&<p>{provider?<>Nomor terdeteksi sebagai <b>{provider}</b></>:'Operator terpilih otomatis berdasarkan nomor.'}</p>}{type==='pln'&&plnMode==='bill'&&<button type="button" className="pln-check-button" onClick={checkPlnBill} disabled={target.replace(/\D/g,'').length<6}><ReceiptText/> Cek Tagihan PLN</button>}</section>

@@ -1,69 +1,70 @@
-import {Navigate, Route, Routes} from 'react-router-dom'
-import AppLayout from './components/layout/AppLayout'
+import {lazy,Suspense} from 'react'
+import {Navigate,Route,Routes} from 'react-router-dom'
 import ProtectedRoute from './components/auth/ProtectedRoute'
-import LoginPage from './pages/LoginPage'
-import UserHomePage from './pages/UserHomePage'
-import ServicePurchasePage from './pages/ServicePurchasePage'
-import CheckoutPage from './pages/CheckoutPage'
-import AllServicesPage from './pages/AllServicesPage'
-import HistoryPage from './pages/HistoryPage'
-import BalancePage from './pages/BalancePage'
-import WalletTopUpPage from './pages/WalletTopUpPage'
-import TransferPage from './pages/TransferPage'
-import ProfilePage from './pages/ProfilePage'
-import DashboardPage from './pages/DashboardPage'
-import TopUpPage from './pages/TopUpPage'
-import ProductsPage from './pages/ProductsPage'
-import TransactionsPage from './pages/TransactionsPage'
-import CustomersPage from './pages/CustomersPage'
-import AnalyticsPage from './pages/AnalyticsPage'
-import PaymentMethodsPage from './pages/PaymentMethodsPage'
-import InvoicesPage from './pages/InvoicesPage'
-import SettingsPage from './pages/SettingsPage'
-import NotFoundPage from './pages/NotFoundPage'
-import SecurityPage from './pages/SecurityPage'
-import AccountFeaturePage from './pages/AccountFeaturePage'
-import AgentCreditPage from './pages/AgentCreditPage'
-import CreditApplicationsPage from './pages/CreditApplicationsPage'
 
-const Panel = () => <ProtectedRoute roles={['master', 'admin', 'marketing', 'analis']}><AppLayout/></ProtectedRoute>
-const User = ({children}) => <ProtectedRoute roles={['user', 'agent']}>{children}</ProtectedRoute>
-const Agent = ({children}) => <ProtectedRoute roles={['agent']}>{children}</ProtectedRoute>
-const AdminOnly = ({children}) => <ProtectedRoute roles={['master', 'admin']}>{children}</ProtectedRoute>
-const ReviewOnly = ({children}) => <ProtectedRoute roles={['master', 'admin', 'marketing', 'analis']}>{children}</ProtectedRoute>
+const AppLayout=lazy(()=>import('./components/layout/AppLayout'))
+const LoginPage=lazy(()=>import('./pages/LoginPage'))
+const UserHomePage=lazy(()=>import('./pages/UserHomePage'))
+const ServicePurchasePage=lazy(()=>import('./pages/ServicePurchasePage'))
+const CheckoutPage=lazy(()=>import('./pages/CheckoutPage'))
+const AllServicesPage=lazy(()=>import('./pages/AllServicesPage'))
+const HistoryPage=lazy(()=>import('./pages/HistoryPage'))
+const BalancePage=lazy(()=>import('./pages/BalancePage'))
+const WalletTopUpPage=lazy(()=>import('./pages/WalletTopUpPage'))
+const TransferPage=lazy(()=>import('./pages/TransferPage'))
+const ProfilePage=lazy(()=>import('./pages/ProfilePage'))
+const DashboardPage=lazy(()=>import('./pages/DashboardPage'))
+const TopUpPage=lazy(()=>import('./pages/TopUpPage'))
+const ProductsPage=lazy(()=>import('./pages/ProductsPage'))
+const TransactionsPage=lazy(()=>import('./pages/TransactionsPage'))
+const CustomersPage=lazy(()=>import('./pages/CustomersPage'))
+const AnalyticsPage=lazy(()=>import('./pages/AnalyticsPage'))
+const PaymentMethodsPage=lazy(()=>import('./pages/PaymentMethodsPage'))
+const InvoicesPage=lazy(()=>import('./pages/InvoicesPage'))
+const SettingsPage=lazy(()=>import('./pages/SettingsPage'))
+const NotFoundPage=lazy(()=>import('./pages/NotFoundPage'))
+const SecurityPage=lazy(()=>import('./pages/SecurityPage'))
+const AccountFeaturePage=lazy(()=>import('./pages/AccountFeaturePage'))
+const AgentCreditPage=lazy(()=>import('./pages/AgentCreditPage'))
+const CreditApplicationsPage=lazy(()=>import('./pages/CreditApplicationsPage'))
 
-export default function App() {
-  return <Routes>
-    <Route path="/login" element={<LoginPage/>}/>
-    <Route path="/app" element={<User><UserHomePage/></User>}/>
-    <Route path="/app/buy/:type" element={<User><ServicePurchasePage/></User>}/>
-    <Route path="/app/checkout" element={<User><CheckoutPage/></User>}/>
-    <Route path="/app/services" element={<User><AllServicesPage/></User>}/>
-    <Route path="/app/history" element={<User><HistoryPage/></User>}/>
-    <Route path="/app/scan" element={<Navigate to="/app" replace/>}/>
-    <Route path="/app/balance" element={<User><BalancePage/></User>}/>
-    <Route path="/app/balance/topup" element={<User><WalletTopUpPage/></User>}/>
-    <Route path="/app/balance/credit" element={<Agent><AgentCreditPage/></Agent>}/>
-    <Route path="/app/balance/send" element={<User><TransferPage/></User>}/>
-    <Route path="/app/balance/withdraw" element={<User><TransferPage/></User>}/>
-    <Route path="/app/profile" element={<User><ProfilePage/></User>}/>
-    <Route path="/app/profile/security" element={<User><SecurityPage/></User>}/>
-    <Route path="/app/profile/notifications" element={<User><AccountFeaturePage/></User>}/>
-    <Route path="/app/profile/help" element={<User><AccountFeaturePage/></User>}/>
-    <Route path="/app/profile/policies" element={<User><AccountFeaturePage/></User>}/>
-    <Route element={<Panel/>}>
-      <Route path="dashboard" element={<AdminOnly><DashboardPage/></AdminOnly>}/>
-      <Route path="topup" element={<AdminOnly><TopUpPage/></AdminOnly>}/>
-      <Route path="products" element={<AdminOnly><ProductsPage/></AdminOnly>}/>
-      <Route path="transactions" element={<AdminOnly><TransactionsPage/></AdminOnly>}/>
-      <Route path="credit-applications" element={<ReviewOnly><CreditApplicationsPage/></ReviewOnly>}/>
-      <Route path="customers" element={<AdminOnly><CustomersPage/></AdminOnly>}/>
-      <Route path="analytics" element={<AdminOnly><AnalyticsPage/></AdminOnly>}/>
-      <Route path="payment-methods" element={<AdminOnly><PaymentMethodsPage/></AdminOnly>}/>
-      <Route path="invoices" element={<AdminOnly><InvoicesPage/></AdminOnly>}/>
-      <Route path="settings" element={<AdminOnly><SettingsPage/></AdminOnly>}/>
-    </Route>
-    <Route path="/" element={<Navigate to="/login" replace/>}/>
-    <Route path="*" element={<NotFoundPage/>}/>
-  </Routes>
-}
+const LoadingScreen=()=> <div className="app-loading" role="status" aria-label="Memuat KuotaKita"><i/><strong>KuotaKita</strong></div>
+const Panel=()=> <ProtectedRoute roles={['master','admin','marketing','analis']}><AppLayout/></ProtectedRoute>
+const User=({children})=> <ProtectedRoute roles={['user','agent']}>{children}</ProtectedRoute>
+const Agent=({children})=> <ProtectedRoute roles={['agent']}>{children}</ProtectedRoute>
+const AdminOnly=({children})=> <ProtectedRoute roles={['master','admin']}>{children}</ProtectedRoute>
+const ReviewOnly=({children})=> <ProtectedRoute roles={['master','admin','marketing','analis']}>{children}</ProtectedRoute>
+
+export default function App(){return <Suspense fallback={<LoadingScreen/>}><Routes>
+ <Route path="/login" element={<LoginPage/>}/>
+ <Route path="/app" element={<User><UserHomePage/></User>}/>
+ <Route path="/app/buy/:type" element={<User><ServicePurchasePage/></User>}/>
+ <Route path="/app/checkout" element={<User><CheckoutPage/></User>}/>
+ <Route path="/app/services" element={<User><AllServicesPage/></User>}/>
+ <Route path="/app/history" element={<User><HistoryPage/></User>}/>
+ <Route path="/app/scan" element={<Navigate to="/app" replace/>}/>
+ <Route path="/app/balance" element={<User><BalancePage/></User>}/>
+ <Route path="/app/balance/topup" element={<User><WalletTopUpPage/></User>}/>
+ <Route path="/app/balance/credit" element={<Agent><AgentCreditPage/></Agent>}/>
+ <Route path="/app/balance/send" element={<User><TransferPage/></User>}/>
+ <Route path="/app/balance/withdraw" element={<User><TransferPage/></User>}/>
+ <Route path="/app/profile" element={<User><ProfilePage/></User>}/>
+ <Route path="/app/profile/security" element={<User><SecurityPage/></User>}/>
+ <Route path="/app/profile/notifications" element={<User><AccountFeaturePage/></User>}/>
+ <Route path="/app/profile/help" element={<User><AccountFeaturePage/></User>}/>
+ <Route path="/app/profile/policies" element={<User><AccountFeaturePage/></User>}/>
+ <Route element={<Panel/>}>
+  <Route path="dashboard" element={<AdminOnly><DashboardPage/></AdminOnly>}/>
+  <Route path="topup" element={<AdminOnly><TopUpPage/></AdminOnly>}/>
+  <Route path="products" element={<AdminOnly><ProductsPage/></AdminOnly>}/>
+  <Route path="transactions" element={<AdminOnly><TransactionsPage/></AdminOnly>}/>
+  <Route path="credit-applications" element={<ReviewOnly><CreditApplicationsPage/></ReviewOnly>}/>
+  <Route path="customers" element={<AdminOnly><CustomersPage/></AdminOnly>}/>
+  <Route path="analytics" element={<AdminOnly><AnalyticsPage/></AdminOnly>}/>
+  <Route path="payment-methods" element={<AdminOnly><PaymentMethodsPage/></AdminOnly>}/>
+  <Route path="invoices" element={<AdminOnly><InvoicesPage/></AdminOnly>}/>
+  <Route path="settings" element={<AdminOnly><SettingsPage/></AdminOnly>}/>
+ </Route>
+ <Route path="/" element={<Navigate to="/login" replace/>}/>
+ <Route path="*" element={<NotFoundPage/>}/>
+</Routes></Suspense>}
