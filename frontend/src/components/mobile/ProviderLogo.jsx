@@ -82,7 +82,11 @@ const slug=name=>String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-')
 const findLogoMatch=(name,source)=>Object.entries(source).find(([key])=>name.startsWith(key))
 // Aset provider tambahan disimpan per nama provider. Dengan ini provider baru
 // tetap memakai logo brand asli tanpa perlu kembali ke ikon placeholder.
-const automaticLogos=import.meta.glob(['../../assets/providers/official/auto/*.png','../../assets/providers/official/auto/*.svg'],{eager:true,query:'?url',import:'default'})
+const automaticLogos=import.meta.glob([
+  '../../assets/providers/official/auto/*.png',
+  '../../assets/providers/official/auto/*.svg',
+  '../../assets/providers/official/auto/*.ico',
+],{eager:true,query:'?url',import:'default'})
 const findAutomaticLogo=name=>Object.entries(automaticLogos).find(([path])=>path.includes(`/${slug(name)}.`))?.[1]
 
 function ProviderSymbol({name}){
