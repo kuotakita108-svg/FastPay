@@ -86,6 +86,7 @@ const automaticLogos=import.meta.glob([
   '../../assets/providers/official/auto/*.png',
   '../../assets/providers/official/auto/*.svg',
   '../../assets/providers/official/auto/*.ico',
+  '../../assets/providers/official/auto/*.webp',
 ],{eager:true,query:'?url',import:'default'})
 const findAutomaticLogo=name=>Object.entries(automaticLogos).find(([path])=>path.includes(`/${slug(name)}.`))?.[1]
 
