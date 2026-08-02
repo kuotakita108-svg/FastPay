@@ -1,5 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 92" role="img" aria-labelledby="title">
-  <title id="title">smartfren</title>
-  <text x="12" y="67" fill="#20242a" font-family="Arial Rounded MT Bold, Arial, sans-serif" font-size="62" font-weight="700" letter-spacing="-3">smartfren</text>
-  <rect x="332" y="55" width="17" height="17" rx="2" fill="#e20074"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Ikon aplikasi Smartfren</title>
+  <defs>
+    <linearGradient id="sfbg" x1="17" y1="9" x2="112" y2="119" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff4ba8"/>
+      <stop offset=".52" stop-color="#e5007d"/>
+      <stop offset="1" stop-color="#a90068"/>
+    </linearGradient>
+    <filter id="sfshadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#76003f" flood-opacity=".3"/>
+    </filter>
+  </defs>
+  <rect x="5" y="5" width="118" height="118" rx="30" fill="url(#sfbg)"/>
+  <path d="M32 52c8-10 19-16 32-16s24 6 32 16" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" opacity=".7"/>
+  <path d="M42 66c6-7 13-10 22-10s16 3 22 10" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" opacity=".86"/>
+  <path d="M51 79c4-4 8-6 13-6s9 2 13 6" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="64" cy="92" r="8" fill="#fff" filter="url(#sfshadow)"/>
 </svg>
