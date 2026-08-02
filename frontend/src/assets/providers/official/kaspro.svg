@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 96" role="img" aria-label="KasPro">
+  <defs><linearGradient id="kaspro-gradient" x1="15" y1="14" x2="93" y2="82" gradientUnits="userSpaceOnUse"><stop stop-color="#A557FF"/><stop offset="1" stop-color="#5622B5"/></linearGradient></defs>
+  <path fill="url(#kaspro-gradient)" d="M56 8c27 0 44 17 44 44S83 88 56 88 12 79 12 52 29 8 56 8Z"/>
+  <path fill="#fff" d="M30 27h13v17l17-17h17L55 49l24 21H61L43 54v16H30V27Z"/>
+  <path fill="#fff" fill-opacity=".35" d="M75 23c11 7 16 17 16 29 0 16-10 28-25 32 10-8 15-18 15-30 0-12-2-22-6-31Z"/>
+</svg>
