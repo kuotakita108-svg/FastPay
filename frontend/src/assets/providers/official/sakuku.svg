@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 96" role="img" aria-label="Sakuku">
-  <defs><linearGradient id="sakuku-gradient" x1="17" y1="10" x2="94" y2="87" gradientUnits="userSpaceOnUse"><stop stop-color="#198BDF"/><stop offset="1" stop-color="#0056A6"/></linearGradient></defs>
-  <rect x="11" y="8" width="90" height="80" rx="23" fill="url(#sakuku-gradient)"/>
-  <path fill="#fff" d="M34 31h44c4 0 7 3 7 7v26c0 7-6 13-13 13H40c-7 0-13-6-13-13V38c0-4 3-7 7-7Zm5 10v23c0 1 1 2 2 2h31c1 0 2-1 2-2V41H39Z"/>
-  <path fill="#BDEBFF" d="M47 22h18c5 0 9 4 9 9H38c0-5 4-9 9-9Z"/>
-  <circle cx="65" cy="53" r="5" fill="#198BDF"/>
-</svg>
