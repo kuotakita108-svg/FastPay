@@ -32,7 +32,7 @@ const docs = [
 ]
 
 const terms = [
-  'Pengajuan hanya untuk agent terdaftar KuotaKita dan akan diverifikasi oleh tim analis.',
+  'Pengajuan hanya untuk agent terdaftar KuotaKita dan akan diverifikasi oleh tim operator.',
   'Nominal pengajuan boleh di bawah limit kredit agent yang aktif.',
   'Saldo kredit agent terpisah dari saldo transaksi aplikasi dan wajib dilunasi sekaligus melalui Bank, QRIS, atau penagihan langsung oleh marketing.',
   'Setelah pembayaran kredit lunas dan diverifikasi, agent dapat mengajukan refill kembali.',
@@ -545,7 +545,7 @@ export default function AgentCreditPage() {
       <img className="agent-credit-person" src={financeHero} alt="" aria-hidden="true"/>
       <div className="agent-credit-hero-shade"/>
       <i><WalletCards/></i>
-      <div><span>MODAL AGENT RESMI</span><h1>Ajukan Kredit Saldo Lebih Cepat</h1><p>Upload dokumen jelas, isi formulir agent, lalu tanda tangan online. Tim analis tinggal verifikasi dari data yang kamu kirim.</p></div>
+      <div><span>MODAL AGENT RESMI</span><h1>Ajukan Kredit Saldo Lebih Cepat</h1><p>Upload dokumen jelas, isi formulir agent, lalu tanda tangan online. Tim operator tinggal verifikasi dari data yang kamu kirim.</p></div>
       <b>{rupiah(Math.min(maxCredit, Math.max(0, Number(form.amount || 0))))}</b>
     </section>
     <section className="agent-rank-card">
@@ -616,7 +616,7 @@ export default function AgentCreditPage() {
         <li className="done"><CheckCircle2/>Formulir agent diterima</li>
         <li className={progress >= 25 || approved ? 'done' : 'active'}>{progress >= 25 || approved ? <CheckCircle2/> : <Loader2/>}Validasi foto KTP, toko, dan selfie</li>
         <li className={progress >= 55 || approved ? 'done' : ''}>{progress >= 55 || approved ? <CheckCircle2/> : <Clock3/>}Pengecekan tanda tangan online</li>
-        <li className={approved ? 'done' : rejected ? 'rejected' : ''}>{approved ? <CheckCircle2/> : rejected ? <X/> : <Clock3/>}Keputusan analis</li>
+        <li className={approved ? 'done' : rejected ? 'rejected' : ''}>{approved ? <CheckCircle2/> : rejected ? <X/> : <Clock3/>}Keputusan operator</li>
       </ul>
       {canRefill && <button type="button" className="agent-refill-button" onClick={() => startRefill(application)}><PlusCircle/> Ajukan Refill Kredit</button>}
     </section>}
@@ -683,7 +683,7 @@ export default function AgentCreditPage() {
         <label className="agent-check"><input type="checkbox" checked={accepted} onChange={event => setAccepted(event.target.checked)}/><span>Saya menyatakan data benar dan bersedia mengikuti ketentuan kredit saldo KuotaKita.</span></label>
       </section>
       <section className="agent-card">
-        <header><i><PenLine/></i><div><h2>Tanda Tangan Agent</h2><p>Cukup tanda tangan agent di sini. Marketing dan analis akan memeriksa lalu menandatangani dari panel verifikasi.</p></div></header>
+        <header><i><PenLine/></i><div><h2>Tanda Tangan Agent</h2><p>Cukup tanda tangan agent di sini. Marketing dan operator akan memeriksa lalu menandatangani dari panel verifikasi.</p></div></header>
         <div className="signature-approval-grid">
           <div className="signature-party active">
             <strong>AGENT</strong>

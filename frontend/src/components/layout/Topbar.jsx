@@ -22,7 +22,7 @@ export default function Topbar({onMenu}) {
   const isCreditPanel = isCreditTeam && location.pathname === '/credit-applications'
   const isMarketingPanel = isCreditPanel
   const notices = isCreditTeam
-    ? [{title: isAnalis ? 'Berkas analisis siap' : 'Ruang pendampingan siap', desc: isAnalis ? 'Periksa seluruh berkas lalu beri keputusan akhir.' : 'Dampingi agent dan cek permintaan penagihan terbaru.', action: () => navigate('/credit-applications?view=verifikasi'), icon: ClipboardCheck}]
+    ? [{title: isAnalis ? 'Berkas operator siap' : 'Ruang pendampingan siap', desc: isAnalis ? 'Periksa seluruh berkas lalu beri keputusan akhir.' : 'Dampingi agent dan cek permintaan penagihan terbaru.', action: () => navigate('/credit-applications?view=verifikasi'), icon: ClipboardCheck}]
     : [{title: 'Transaksi KuotaKita', desc: 'Pantau transaksi dan status pembayaran terbaru.', action: () => navigate('/transactions'), icon: Bell}]
   const submit = event => {
     event.preventDefault()
@@ -41,7 +41,7 @@ export default function Topbar({onMenu}) {
       {canCreateAgent
         ? <button className="primary-button add-agent-action" onClick={() => navigate('/credit-applications?view=agent-input')}><Plus size={17}/><span className="agent-label-wide">Tambah Agent</span><span className="agent-label-mobile">Agent Baru</span></button>
         : isAnalis
-          ? <button className="primary-button" onClick={() => navigate('/credit-applications?view=verifikasi')}><ClipboardCheck size={17}/>Buka Analisis</button>
+          ? <button className="primary-button" onClick={() => navigate('/credit-applications?view=verifikasi')}><ClipboardCheck size={17}/>Buka Operator</button>
           : <button className="primary-button" onClick={() => navigate('/topup')}><Plus size={17}/>Transaksi Pulsa</button>}
     </div>
   </header>

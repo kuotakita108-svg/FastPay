@@ -20,10 +20,10 @@ const marketingNavigation = [
 
 const analisNavigation = [
   {
-    section: 'Analisis Kredit',
+    section: 'Operator Kredit',
     items: [
       {to: '/credit-applications', label: 'Meja Keputusan', icon: ShieldCheck},
-      {to: '/credit-applications?view=verifikasi', label: 'Antrean Analisis', icon: ClipboardCheck},
+      {to: '/credit-applications?view=verifikasi', label: 'Antrean Operator', icon: ClipboardCheck},
       {to: '/credit-applications?view=peminjam', label: 'Kredit Diterima', icon: CheckCircle2},
       {to: '/credit-applications?view=angsuran', label: 'Monitor Pelunasan', icon: Banknote},
       {to: '/credit-applications?view=pelunasan', label: 'Bukti Pelunasan', icon: FileCheck2},
@@ -43,14 +43,14 @@ export default function Sidebar({open, onClose}) {
   const isAnalis = role === 'analis'
   const visibleNavigation = isMarketing ? marketingNavigation : isAnalis ? analisNavigation : navigation
   const home = isMarketing || isAnalis ? '/credit-applications' : '/dashboard'
-  const roleLabel = role === 'master' ? 'Master Account' : role === 'marketing' ? 'Marketing Kredit' : role === 'analis' ? 'Analis Kredit' : 'Panel Administrator'
+  const roleLabel = role === 'master' ? 'Master Account' : role === 'marketing' ? 'Marketing Kredit' : role === 'analis' ? 'Operator Kredit' : 'Panel Administrator'
   const current = `${location.pathname}${location.search}`
   const active = to => current === to || (!to.includes('?') && location.pathname === to && !location.search)
   const activeLabel = visibleNavigation.flatMap(group => group.items).find(item => active(item.to))?.label || (isAnalis ? 'Meja Keputusan' : 'Ringkasan Kerja')
   const rolePanel = isMarketing
     ? {eyebrow: 'MODE MARKETING', title: 'Dampingi agent', description: 'Daftarkan akun, arahkan pengajuan, ambil selfie pertemuan, lalu pantau pelunasan.'}
     : isAnalis
-      ? {eyebrow: 'MODE ANALIS', title: 'Keputusan akhir kredit', description: 'Cek seluruh berkas, tanda tangan, lalu terima atau tolak dengan catatan yang jelas.'}
+      ? {eyebrow: 'MODE OPERATOR', title: 'Keputusan akhir kredit', description: 'Cek seluruh berkas, tanda tangan, lalu terima atau tolak dengan catatan yang jelas.'}
       : null
 
   return <aside className={`sidebar ${open ? 'open' : ''}`}>
