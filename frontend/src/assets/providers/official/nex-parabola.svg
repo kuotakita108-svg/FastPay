@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 84" role="img" aria-labelledby="title">
+  <title id="title">Nex Parabola</title>
+  <g fill="#123b93">
+    <path d="M16 20h16l22 28V20h17v44H55L33 36v28H16z"/>
+    <path d="M76 20h44v13H93v4h24v11H93v4h28v12H76z"/>
+  </g>
+  <path d="M126 20h18l10 12 10-12h18l-19 22 21 22h-18l-12-14-12 14h-18l21-22z" fill="#f58220"/>
+  <text x="108" y="79" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="700" letter-spacing="2" fill="#123b93">PARABOLA</text>
+</svg>
