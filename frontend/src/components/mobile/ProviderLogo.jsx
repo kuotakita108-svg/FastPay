@@ -92,7 +92,6 @@ const findLogoMatch=(name,source)=>Object.entries(source)
 const automaticLogos=import.meta.glob([
   '../../assets/providers/official/auto/*.png',
   '../../assets/providers/official/auto/*.svg',
-  '../../assets/providers/official/auto/*.ico',
   '../../assets/providers/official/auto/*.webp',
 ],{eager:true,query:'?url',import:'default'})
 // Nama di layanan tidak selalu sama dengan nama file aset resmi. Alias ini
