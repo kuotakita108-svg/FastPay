@@ -113,6 +113,21 @@
   border: 1px solid #e5e7ef;
   box-shadow: 0 4px 12px #252b4510;
 }
+.transfer-providers > button > i.provider-logo.transfer-provider-brand {
+  display:grid;
+  place-items:center;
+  padding:0;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+}
+.transfer-providers > button > i.provider-logo.transfer-provider-brand img {
+  width:100%;
+  height:100%;
+  max-width:42px;
+  max-height:30px;
+  object-fit:contain;
+}
 .provider-logo img {
   display: block;
   width: auto;

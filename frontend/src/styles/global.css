@@ -13,8 +13,8 @@
 @import './staged-purchase.css';
 @import './modern-purchase.css';
 @import './service-vibrance.css';
-@import './provider-logos.css';
-@import './provider-logo-fixes.css';
+/* Logo provider lama berbasis urutan kartu dinonaktifkan. Semua layanan kini
+   memakai ProviderLogo agar gambar brand tidak saling menimpa. */
 @import './mobile-pages.css';
 @import './device-support.css';
 @import './empty-states.css';

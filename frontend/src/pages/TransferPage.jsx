@@ -23,24 +23,7 @@ import {
 } from "../services/transactionService";
 import { rupiah } from "../utils/currency";
 import { request } from "../services/http";
-import bcaLogo from "../assets/providers/official/bca.png";
-import briLogo from "../assets/providers/official/bri.png";
-import bniLogo from "../assets/providers/official/bni.png";
-import mandiriLogo from "../assets/providers/official/mandiri.png";
-import bsiLogo from "../assets/providers/official/bsi.png";
-import danaLogo from "../assets/providers/dana.png";
-import gopayLogo from "../assets/providers/gopay.png";
-import ovoLogo from "../assets/providers/ovo.svg";
-import shopeepayLogo from "../assets/providers/shopeepay.png";
-import linkajaLogo from "../assets/providers/linkaja.svg";
-import kuotakitaLogo from "../assets/images/kuotakita-logo-header.svg";
-import cimbLogo from "../assets/providers/official/cimb-niaga.svg";
-import permataLogo from "../assets/providers/official/permatabank.svg";
-import jagoLogo from "../assets/providers/official/jago.svg";
-import seabankLogo from "../assets/providers/official/seabank.svg";
-import danamonLogo from "../assets/providers/official/danamon.svg";
-import isakuLogo from "../assets/providers/official/isaku.svg";
-import astrapayLogo from "../assets/providers/official/astrapay.svg";
+import BrandProviderLogo from "../components/mobile/ProviderLogo";
 
 const channels = [
   {
@@ -98,41 +81,8 @@ const providers = {
     "Mandiri Virtual Account",
   ],
 };
-const logoMap = {
-  BCA: bcaLogo,
-  BRI: briLogo,
-  BNI: bniLogo,
-  Mandiri: mandiriLogo,
-  "Bank Syariah Indonesia": bsiLogo,
-  DANA: danaLogo,
-  GoPay: gopayLogo,
-  OVO: ovoLogo,
-  ShopeePay: shopeepayLogo,
-  LinkAja: linkajaLogo,
-  "KuotaKita ID": kuotakitaLogo,
-  "CIMB Niaga": cimbLogo,
-  PermataBank: permataLogo,
-  "Bank Jago": jagoLogo,
-  SeaBank: seabankLogo,
-  "Bank Danamon": danamonLogo,
-  "i.saku": isakuLogo,
-  AstraPay: astrapayLogo,
-};
-const providerLogo = (name) =>
-  Object.entries(logoMap).find(([key]) => name.startsWith(key))?.[1];
-function ProviderLogo({ name, index }) {
-  const logo = providerLogo(name);
-  const initials = name
-    .replace("Bank ", "")
-    .split(" ")
-    .map((word) => word[0])
-    .join("")
-    .slice(0, 3);
-  return (
-    <i className={`provider-logo tone-${index % 4}`}>
-      {logo ? <img src={logo} alt={`Logo ${name}`} /> : <b>{initials}</b>}
-    </i>
-  );
+function TransferProviderLogo({ name }) {
+  return <BrandProviderLogo name={name} className="provider-logo transfer-provider-brand" />;
 }
 export default function TransferPage() {
   const location = useLocation(),
@@ -345,7 +295,7 @@ export default function TransferPage() {
                     }}
                     key={name}
                   >
-                    <ProviderLogo name={name} index={index} />
+                    <TransferProviderLogo name={name} />
                     <span>{name}</span>
                     {provider === name && <Check />}
                   </button>

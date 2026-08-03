@@ -27,6 +27,7 @@ import pubgPremium from '../../assets/providers/pubg-premium.png'
 import valorantPremium from '../../assets/providers/valorant-premium.svg'
 import genshinPremium from '../../assets/providers/genshin-premium.svg'
 import pointblank from '../../assets/providers/pointblank.png'
+import freefire from '../../assets/providers/freefire.png'
 import robloxPremium from '../../assets/providers/roblox-premium.svg'
 import steamPremium from '../../assets/providers/steam-premium.svg'
 import aovPremium from '../../assets/providers/aov-premium.svg'
@@ -65,7 +66,7 @@ import jneOfficial from '../../assets/providers/official/auto/jne-official.svg'
 import anterajaOfficial from '../../assets/providers/official/auto/anteraja-official.png'
 import { BadgeCheck, Banknote, BookOpenCheck, Building2, Bus, Car, CircleParking, Clapperboard, CreditCard, Cross, Droplets, Earth, Flame, Gamepad2, GraduationCap, HandHeart, HeartPulse, Landmark, MapPin, MonitorPlay, Plane, QrCode, Radio, ReceiptText, ShieldCheck, Smartphone, Store, TrainFront, Truck, Wallet, Wifi, Zap } from 'lucide-react'
 
-const imageLogos={BCA:bca,BRI:bri,BNI:bni,Mandiri:mandiri,'CIMB Niaga':cimb,'Bank Syariah Indonesia':bsi,'Syariah Indonesia':bsi,BSI:bsi,Danamon:danamon,PermataBank:permatabank,Permata:permatabank,SeaBank:seabank,'Sea Bank':seabank,'Bank Jago':jago,Jago:jago,AstraPay:astrapay,'i.saku':isaku,Grab:grab,KasPro:kaspro,Maxim:maxim,Sakuku:sakuku,'FIF Group':fif,Spotify:spotify,Vidio:vidio,Telkomsel:telkomsel,'by.U':byu,byU:byu,Smartfren:smartfren,BRIZZI:bri,'BNI TapCash':bni,'BCA Flazz':bca,'Mandiri e-Money':mandiri,'Internet Pascabayar':indihome,Indosat:indosat,XL:xl,Tri:tri,AXIS:axis,DANA:dana,GoPay:gopay,OVO:ovo,ShopeePay:shopeepay,LinkAja:linkaja,'Mobile Legends':mobilelegendsPremium,'PUBG Mobile':pubgPremium,Roblox:robloxPremium,Valorant:valorantPremium,'Valorant Points':valorantPremium,'Genshin Impact':genshinPremium,'Genshin Impact Genesis Crystals':genshinPremium,'Steam Wallet ID':steamPremium,'Arena of Valor Voucher':aovPremium,'Point Blank':pointblank,Minecraft:minecraft,'Magic Chess: Go Go':magicChessGoGo,'FC Mobile':fcMobile,'League of Legends: Wild Rift':wildRift,'Call of Duty Mobile':callOfDutyMobile,'Honkai Impact 3':honkaiImpact3,'Honor of Kings':honorOfKings,'BPJS Kesehatan':bpjs,Biznet:biznet,Prudential:prudential,Allianz:allianz,Manulife:manulife,MyRepublic:myrepublic,CBN:cbn,IndiHome:indihome,'MNC Vision':mncvisionOfficial,'K-Vision':kvisionOfficial,Transvision:transvision,'JNE':jneOfficial,AnterAja:anterajaOfficial,'Google Play':googleplay,'Apple Gift Card':apple,Pesawat:garuda,Sekolah:kemendikbud,Universitas:kemendikbud,Bimbel:kemendikbud,'PBB Kota/Kabupaten':pajak,'DJP Online':pajak}
+const imageLogos={BCA:bca,'Bank BCA':bca,BRI:bri,'Bank BRI':bri,BNI:bni,'Bank BNI':bni,Mandiri:mandiri,'Bank Mandiri':mandiri,'CIMB Niaga':cimb,'Bank Syariah Indonesia':bsi,'Syariah Indonesia':bsi,BSI:bsi,Danamon:danamon,'Bank Danamon':danamon,PermataBank:permatabank,'Bank Permata':permatabank,Permata:permatabank,SeaBank:seabank,'Sea Bank':seabank,'Bank Jago':jago,Jago:jago,AstraPay:astrapay,'i.saku':isaku,Grab:grab,KasPro:kaspro,Maxim:maxim,Sakuku:sakuku,'FIF Group':fif,Spotify:spotify,Vidio:vidio,Telkomsel:telkomsel,'by.U':byu,byU:byu,Smartfren:smartfren,BRIZZI:bri,'BNI TapCash':bni,'BCA Flazz':bca,'Mandiri e-Money':mandiri,'Internet Pascabayar':indihome,Indosat:indosat,XL:xl,Tri:tri,AXIS:axis,DANA:dana,GoPay:gopay,OVO:ovo,ShopeePay:shopeepay,LinkAja:linkaja,'Free Fire':freefire,'Mobile Legends':mobilelegendsPremium,'PUBG Mobile':pubgPremium,Roblox:robloxPremium,Valorant:valorantPremium,'Valorant Points':valorantPremium,'Genshin Impact':genshinPremium,'Genshin Impact Genesis Crystals':genshinPremium,'Steam Wallet ID':steamPremium,'Arena of Valor Voucher':aovPremium,'Point Blank':pointblank,Minecraft:minecraft,'Magic Chess: Go Go':magicChessGoGo,'FC Mobile':fcMobile,'League of Legends: Wild Rift':wildRift,'Call of Duty Mobile':callOfDutyMobile,'Honkai Impact 3':honkaiImpact3,'Honor of Kings':honorOfKings,'BPJS Kesehatan':bpjs,Biznet:biznet,Prudential:prudential,Allianz:allianz,Manulife:manulife,MyRepublic:myrepublic,CBN:cbn,IndiHome:indihome,'MNC Vision':mncvisionOfficial,'K-Vision':kvisionOfficial,Transvision:transvision,'JNE':jneOfficial,AnterAja:anterajaOfficial,'Google Play':googleplay,'Apple Gift Card':apple,Pesawat:garuda,Sekolah:kemendikbud,Universitas:kemendikbud,Bimbel:kemendikbud,'PBB Kota/Kabupaten':pajak,'DJP Online':pajak}
 
 const svgLogos={
   'Mobile Legends':{type:'mlbb'},'Free Fire':{type:'freefire'},Roblox:{type:'roblox'},'Genshin Impact':{type:'genshin'},'Genshin Impact Genesis Crystals':{type:'genshin'},Valorant:{type:'valorant'},'Valorant Points':{type:'valorant'},'Steam Wallet ID':{type:'steam'},'Arena of Valor Voucher':{type:'aov'},
@@ -83,7 +84,9 @@ const svgLogos={
 
 const normalize=name=>String(name||'').replace(/ Card$/,'')
 const slug=name=>String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-')
-const findLogoMatch=(name,source)=>Object.entries(source).find(([key])=>name.startsWith(key))
+const findLogoMatch=(name,source)=>Object.entries(source)
+  .sort(([left],[right])=>right.length-left.length)
+  .find(([key])=>name===key||name.startsWith(`${key} `)||name.startsWith(`${key} -`))
 // Aset provider tambahan disimpan per nama provider. Dengan ini provider baru
 // tetap memakai logo brand asli tanpa perlu kembali ke ikon placeholder.
 const automaticLogos=import.meta.glob([
@@ -92,7 +95,22 @@ const automaticLogos=import.meta.glob([
   '../../assets/providers/official/auto/*.ico',
   '../../assets/providers/official/auto/*.webp',
 ],{eager:true,query:'?url',import:'default'})
-const findAutomaticLogo=name=>Object.entries(automaticLogos).find(([path])=>path.includes(`/${slug(name)}.`))?.[1]
+// Nama di layanan tidak selalu sama dengan nama file aset resmi. Alias ini
+// memastikan provider tersebut tetap mengambil gambar brand, bukan ikon teks.
+const automaticAliases={
+  PLN:'pln-pascabayar',
+  'PDAM Jakarta':'pdam-indonesia','PDAM Bandung':'pdam-indonesia','PDAM Surabaya':'pdam-indonesia',
+  'WOM Finance':'wom-finance','J&T Express':'j-t-express','SIGNAL Samsat':'signal-samsat',
+  'Pajak Daerah':'pajak-daerah','Penerimaan Negara':'penerimaan-negara',
+  'CentrePark':'centrepark','Sky Parking':'sky-parking','Secure Parking':'secure-parking',
+  'Pos Indonesia':'pos-indonesia','Canva Pro':'canva-pro','Apple Gift Card':'apple',
+  'YouTube Premium':'youtube','Disney+ Hotstar':'disney-hotstar',
+  'Telkomsel Halo':'telkomsel','Indosat Postpaid':'indosat','XL Prioritas':'xl',
+}
+const findAutomaticLogo=name=>{
+  const key=automaticAliases[name]||slug(name)
+  return Object.entries(automaticLogos).find(([path])=>path.includes(`/${key}.`))?.[1]
+}
 
 function ProviderSymbol({name}){
   const value=name.toLowerCase()
