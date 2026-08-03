@@ -39,8 +39,6 @@ import manulife from '../../assets/providers/official/manulife.png'
 import myrepublic from '../../assets/providers/official/myrepublic.png'
 import cbn from '../../assets/providers/official/cbn.png'
 import indihome from '../../assets/providers/official/indihome.png'
-import mncvision from '../../assets/providers/official/mncvision.png'
-import transvision from '../../assets/providers/official/transvision.png'
 import googleplay from '../../assets/providers/official/googleplay.png'
 import apple from '../../assets/providers/official/apple.png'
 import garuda from '../../assets/providers/official/garuda.png'
@@ -60,18 +58,19 @@ import wildRift from '../../assets/providers/official/wild-rift.png'
 import callOfDutyMobile from '../../assets/providers/official/call-of-duty-mobile.png'
 import honkaiImpact3 from '../../assets/providers/official/honkai-impact-3.png'
 import honorOfKings from '../../assets/providers/official/honor-of-kings.png'
-import kvisionLogo from '../../assets/providers/official/auto/k-vision.svg'
-import nexParabola from '../../assets/providers/official/nex-parabola.svg'
 import mncvisionOfficial from '../../assets/providers/official/auto/mnc-vision-official.png'
+import kvisionBrand from '../../assets/providers/official/auto/k-vision-brand.png'
+import nexParabolaBrand from '../../assets/providers/official/auto/nex-parabola-brand.webp'
+import transvisionBrand from '../../assets/providers/official/auto/transvision-brand.png'
 import jneOfficial from '../../assets/providers/official/auto/jne-official.svg'
 import anterajaOfficial from '../../assets/providers/official/auto/anteraja-official.png'
 import { BadgeCheck, Banknote, BookOpenCheck, Building2, Bus, Car, CircleParking, Clapperboard, CreditCard, Cross, Droplets, Earth, Flame, Gamepad2, GraduationCap, HandHeart, HeartPulse, Landmark, MapPin, MonitorPlay, Plane, QrCode, Radio, ReceiptText, ShieldCheck, Smartphone, Store, TrainFront, Truck, Wallet, Wifi, Zap } from 'lucide-react'
 
-const imageLogos={BCA:bca,'Bank BCA':bca,BRI:bri,'Bank BRI':bri,BNI:bni,'Bank BNI':bni,Mandiri:mandiri,'Bank Mandiri':mandiri,'CIMB Niaga':cimb,'Bank Syariah Indonesia':bsi,'Syariah Indonesia':bsi,BSI:bsi,Danamon:danamon,'Bank Danamon':danamon,PermataBank:permatabank,'Bank Permata':permatabank,Permata:permatabank,SeaBank:seabank,'Sea Bank':seabank,'Bank Jago':jago,Jago:jago,AstraPay:astrapay,'i.saku':isaku,Grab:grab,KasPro:kaspro,Maxim:maxim,Sakuku:sakuku,'FIF Group':fif,Spotify:spotify,Vidio:vidio,Telkomsel:telkomsel,'by.U':byu,byU:byu,Smartfren:smartfren,BRIZZI:bri,'BNI TapCash':bni,'BCA Flazz':bca,'Mandiri e-Money':mandiri,'Internet Pascabayar':indihome,Indosat:indosat,XL:xl,Tri:tri,AXIS:axis,DANA:dana,GoPay:gopay,OVO:ovo,ShopeePay:shopeepay,LinkAja:linkaja,'Free Fire':freefire,'Mobile Legends':mobilelegendsPremium,'PUBG Mobile':pubgPremium,Roblox:robloxPremium,Valorant:valorantPremium,'Valorant Points':valorantPremium,'Genshin Impact':genshinPremium,'Genshin Impact Genesis Crystals':genshinPremium,'Steam Wallet ID':steamPremium,'Arena of Valor Voucher':aovPremium,'Point Blank':pointblank,Minecraft:minecraft,'Magic Chess: Go Go':magicChessGoGo,'FC Mobile':fcMobile,'League of Legends: Wild Rift':wildRift,'Call of Duty Mobile':callOfDutyMobile,'Honkai Impact 3':honkaiImpact3,'Honor of Kings':honorOfKings,'BPJS Kesehatan':bpjs,Biznet:biznet,Prudential:prudential,Allianz:allianz,Manulife:manulife,MyRepublic:myrepublic,CBN:cbn,IndiHome:indihome,'MNC Vision':mncvisionOfficial,'K-Vision':kvisionLogo,'Nex Parabola':nexParabola,Transvision:transvision,'JNE':jneOfficial,AnterAja:anterajaOfficial,'Google Play':googleplay,'Apple Gift Card':apple,Pesawat:garuda,Sekolah:kemendikbud,Universitas:kemendikbud,Bimbel:kemendikbud,'PBB Kota/Kabupaten':pajak,'DJP Online':pajak}
+const imageLogos={BCA:bca,'Bank BCA':bca,BRI:bri,'Bank BRI':bri,BNI:bni,'Bank BNI':bni,Mandiri:mandiri,'Bank Mandiri':mandiri,'CIMB Niaga':cimb,'Bank Syariah Indonesia':bsi,'Syariah Indonesia':bsi,BSI:bsi,Danamon:danamon,'Bank Danamon':danamon,PermataBank:permatabank,'Bank Permata':permatabank,Permata:permatabank,SeaBank:seabank,'Sea Bank':seabank,'Bank Jago':jago,Jago:jago,AstraPay:astrapay,'i.saku':isaku,Grab:grab,KasPro:kaspro,Maxim:maxim,Sakuku:sakuku,'FIF Group':fif,Spotify:spotify,Vidio:vidio,Telkomsel:telkomsel,'by.U':byu,byU:byu,Smartfren:smartfren,BRIZZI:bri,'BNI TapCash':bni,'BCA Flazz':bca,'Mandiri e-Money':mandiri,'Internet Pascabayar':indihome,Indosat:indosat,XL:xl,Tri:tri,AXIS:axis,DANA:dana,GoPay:gopay,OVO:ovo,ShopeePay:shopeepay,LinkAja:linkaja,'Free Fire':freefire,'Mobile Legends':mobilelegendsPremium,'PUBG Mobile':pubgPremium,Roblox:robloxPremium,Valorant:valorantPremium,'Valorant Points':valorantPremium,'Genshin Impact':genshinPremium,'Genshin Impact Genesis Crystals':genshinPremium,'Steam Wallet ID':steamPremium,'Arena of Valor Voucher':aovPremium,'Point Blank':pointblank,Minecraft:minecraft,'Magic Chess: Go Go':magicChessGoGo,'FC Mobile':fcMobile,'League of Legends: Wild Rift':wildRift,'Call of Duty Mobile':callOfDutyMobile,'Honkai Impact 3':honkaiImpact3,'Honor of Kings':honorOfKings,'BPJS Kesehatan':bpjs,Biznet:biznet,Prudential:prudential,Allianz:allianz,Manulife:manulife,MyRepublic:myrepublic,CBN:cbn,IndiHome:indihome,'MNC Vision':mncvisionOfficial,'K-Vision':kvisionBrand,'Nex Parabola':nexParabolaBrand,Transvision:transvisionBrand,'JNE':jneOfficial,AnterAja:anterajaOfficial,'Google Play':googleplay,'Apple Gift Card':apple,Pesawat:garuda,Sekolah:kemendikbud,Universitas:kemendikbud,Bimbel:kemendikbud,'PBB Kota/Kabupaten':pajak,'DJP Online':pajak}
 
 const svgLogos={
   'Mobile Legends':{type:'mlbb'},'Free Fire':{type:'freefire'},Roblox:{type:'roblox'},'Genshin Impact':{type:'genshin'},'Genshin Impact Genesis Crystals':{type:'genshin'},Valorant:{type:'valorant'},'Valorant Points':{type:'valorant'},'Steam Wallet ID':{type:'steam'},'Arena of Valor Voucher':{type:'aov'},
-  Netflix:{type:'netflix'},'YouTube Premium':{type:'youtube'},'Disney+ Hotstar':{type:'disney'},'K-Vision':{type:'tv'},
+  Netflix:{type:'netflix'},'YouTube Premium':{type:'youtube'},'Disney+ Hotstar':{type:'disney'},
   PLN:{type:'pln'},PGN:{type:'gas'},PDAM:{type:'water'},Telkom:{type:'telkom'},
   'QRIS Nasional':{type:'qris'},'QRIS UMKM':{type:'qris'},'QRIS Dinamis':{type:'qris'},
   'Mandiri e-Money':{type:'card'},'BCA Flazz':{type:'card'},'BNI TapCash':{type:'card'},BRIZZI:{type:'card'},'Mandiri e-Toll':{type:'card'},

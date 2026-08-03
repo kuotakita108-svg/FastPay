@@ -88,3 +88,13 @@
 .service-tv .modern-provider-grid button{grid-template-rows:50px auto!important;min-height:98px!important;gap:7px!important}
 .service-tv .modern-provider-grid button>i.provider-logo-image{width:96px!important;height:48px!important;max-width:96px!important;max-height:48px!important}
 .service-tv .modern-provider-grid button>i.provider-logo-image img{width:96px!important;height:48px!important;max-width:96px!important;max-height:48px!important;object-fit:contain!important;object-position:center!important}
+
+/* TV berlangganan memakai wordmark resmi. Ruang logo dipusatkan dan cukup
+   lebar supaya tidak ada yang terpotong atau muncul seperti ikon buatan. */
+.service-tv .modern-provider-grid button{grid-template-rows:58px auto!important;min-height:124px!important;align-content:center!important;justify-items:center!important;gap:8px!important;padding:13px 8px!important;overflow:hidden!important}
+.service-tv .modern-provider-grid button>i.provider-logo-image{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:58px!important;max-width:122px!important;max-height:58px!important;min-width:0!important;margin:0 auto!important;overflow:visible!important}
+.service-tv .modern-provider-grid button>i.provider-logo-image img{display:block!important;width:100%!important;height:100%!important;max-width:116px!important;max-height:50px!important;object-fit:contain!important;object-position:center!important}
+.service-tv .modern-provider-grid button>i.provider-logo-image[data-brand="mnc-vision"] img{max-width:118px!important;max-height:36px!important}
+.service-tv .modern-provider-grid button>i.provider-logo-image[data-brand="k-vision"] img{max-width:112px!important;max-height:42px!important}
+.service-tv .modern-provider-grid button>i.provider-logo-image[data-brand="nex-parabola"] img{max-width:76px!important;max-height:50px!important}
+.service-tv .modern-provider-grid button>i.provider-logo-image[data-brand="transvision"] img{max-width:112px!important;max-height:42px!important}
