@@ -98,3 +98,12 @@
 .service-tv .modern-provider-grid button>i.provider-logo-image[data-brand="k-vision"] img{max-width:112px!important;max-height:42px!important}
 .service-tv .modern-provider-grid button>i.provider-logo-image[data-brand="nex-parabola"] img{max-width:76px!important;max-height:50px!important}
 .service-tv .modern-provider-grid button>i.provider-logo-image[data-brand="transvision"] img{max-width:112px!important;max-height:42px!important}
+
+/* Transfer bank: gunakan ruang brand yang lebar dan bersih. Bank daerah dan
+   bank digital banyak berupa wordmark horizontal; aturan ini menghindari
+   logo blur, terpotong, atau tertimpa dekorasi CSS lama. */
+.service-bank .modern-provider-grid button{grid-template-rows:52px auto!important;min-height:108px!important;gap:7px!important;padding:12px 8px!important;overflow:hidden!important}
+.service-bank .modern-provider-grid button>i.provider-logo-image{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:52px!important;max-width:118px!important;max-height:52px!important;min-width:0!important;margin:0 auto!important;padding:0!important;overflow:visible!important;background:transparent!important;background-image:none!important;border:0!important;box-shadow:none!important}
+.service-bank .modern-provider-grid button>i.provider-logo-image:before,.service-bank .modern-provider-grid button>i.provider-logo-image:after{content:none!important;display:none!important}
+.service-bank .modern-provider-grid button>i.provider-logo-image img{display:block!important;width:100%!important;height:100%!important;max-width:108px!important;max-height:44px!important;object-fit:contain!important;object-position:center!important;filter:none!important;opacity:1!important;transform:none!important;image-rendering:auto!important}
+.service-bank .modern-provider-grid button>span{font-size:10px!important;line-height:1.18!important;min-height:20px!important;color:#536074!important}
