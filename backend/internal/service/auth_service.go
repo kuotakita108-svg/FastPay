@@ -127,6 +127,13 @@ func (s *AuthService) Login(identity, password string) (domain.AuthResult, error
 	if account.ID == "" || account.PasswordHash == "" || bcrypt.CompareHashAndPassword([]byte(account.PasswordHash), []byte(password)) != nil {
 		return domain.AuthResult{}, errors.New("username atau password salah")
 	}
+	if account.Role == "agent" && account.AccessStatus == "suspended" {
+		message := "akses agent sedang dinonaktifkan Operator"
+		if account.AccessReason != "" {
+			message += ": " + account.AccessReason
+		}
+		return domain.AuthResult{}, errors.New(message)
+	}
 	return s.result(account.User), nil
 }
 
@@ -270,10 +277,56 @@ func (s *AuthService) CurrentUser(token string) (domain.User, error) {
 	defer s.mu.RUnlock()
 	for _, item := range s.users {
 		if item.ID == id {
+			if item.Role == "agent" && item.AccessStatus == "suspended" {
+				return domain.User{}, errors.New("akses agent sedang dinonaktifkan Operator")
+			}
 			return item.User, nil
 		}
 	}
 	return domain.User{}, errors.New("akun tidak ditemukan")
+}
+
+// SetAgentAccess is an Operator action. It persists the decision centrally so
+// a suspended agent cannot keep using an old browser session on another device.
+func (s *AuthService) SetAgentAccess(token, agentID string, suspended bool, reason string) (domain.User, error) {
+	_, role, err := s.session(token)
+	if err != nil {
+		return domain.User{}, err
+	}
+	if role != "analis" && role != "admin" && role != "master" {
+		return domain.User{}, errors.New("hanya Operator yang dapat mengubah akses agent")
+	}
+	agentID = strings.TrimSpace(agentID)
+	if agentID == "" {
+		return domain.User{}, errors.New("akun agent tidak ditemukan")
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for key, item := range s.users {
+		if item.ID != agentID {
+			continue
+		}
+		if item.Role != "agent" {
+			return domain.User{}, errors.New("akun ini bukan agent")
+		}
+		if suspended {
+			item.AccessStatus = "suspended"
+			item.AccessReason = strings.TrimSpace(reason)
+			if item.AccessReason == "" {
+				item.AccessReason = "Perlu peninjauan Operator"
+			}
+		} else {
+			item.AccessStatus = "active"
+			item.AccessReason = ""
+		}
+		item.AccessUpdatedAt = time.Now().UTC().Format(time.RFC3339)
+		s.users[key] = item
+		if err := s.saveLocked(); err != nil {
+			return domain.User{}, errors.New("status akses belum dapat disimpan ke server")
+		}
+		return item.User, nil
+	}
+	return domain.User{}, errors.New("akun agent tidak ditemukan")
 }
 
 // ChangeBalance keeps wallet balance on the server. Positive values are top

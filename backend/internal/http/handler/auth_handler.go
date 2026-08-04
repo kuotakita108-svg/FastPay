@@ -69,6 +69,23 @@ func (h *AuthHandler) CreateAgent(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusCreated, user)
 }
 
+func (h *AuthHandler) SetAgentAccess(w http.ResponseWriter, r *http.Request) {
+	var in struct {
+		Suspended bool   `json:"suspended"`
+		Reason    string `json:"reason"`
+	}
+	if json.NewDecoder(r.Body).Decode(&in) != nil {
+		response.Error(w, http.StatusBadRequest, "data akses agent tidak valid")
+		return
+	}
+	user, err := h.service.SetAgentAccess(r.Header.Get("Authorization"), r.PathValue("id"), in.Suspended, in.Reason)
+	if err != nil {
+		response.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+	response.JSON(w, http.StatusOK, user)
+}
+
 func (h *AuthHandler) Google(w http.ResponseWriter, r *http.Request) {
 	if !h.googleReady() {
 		response.Error(w, http.StatusServiceUnavailable, "Login Google belum diaktifkan pengelola. Lengkapi GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, dan GOOGLE_REDIRECT_URL di server.")

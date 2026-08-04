@@ -12,13 +12,16 @@ type RegisterInput struct {
 	Password string `json:"password"`
 }
 type User struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	Name     string `json:"name"`
-	Role     string `json:"role"`
-	Balance  int64  `json:"balance"`
-	Phone    string `json:"phone"`
-	Email    string `json:"email"`
+	ID              string `json:"id"`
+	Username        string `json:"username"`
+	Name            string `json:"name"`
+	Role            string `json:"role"`
+	Balance         int64  `json:"balance"`
+	Phone           string `json:"phone"`
+	Email           string `json:"email"`
+	AccessStatus    string `json:"access_status,omitempty"`
+	AccessReason    string `json:"access_reason,omitempty"`
+	AccessUpdatedAt string `json:"access_updated_at,omitempty"`
 }
 type AuthResult struct {
 	Token string `json:"token"`

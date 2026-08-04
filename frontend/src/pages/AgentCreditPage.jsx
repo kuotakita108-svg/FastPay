@@ -36,15 +36,13 @@ const terms = [
   'Nominal pengajuan boleh di bawah limit kredit agent yang aktif.',
   'Saldo kredit agent terpisah dari saldo transaksi aplikasi dan wajib dilunasi sekaligus melalui Bank, QRIS, atau penagihan langsung oleh marketing.',
   'Setelah pembayaran kredit lunas dan diverifikasi, agent dapat mengajukan refill kembali.',
-  'Data KTP, toko, selfie, dan tanda tangan dipakai untuk validasi permohonan.',
+  'Dokumen KTP, foto toko, selfie pegang KTP, dan selfie bersama marketing diambil oleh marketing saat pendampingan.',
 ]
 
 const verificationDuration = 5 * 60 * 1000
-const rankLevels = [
-  {name: 'Agent Pemula', minPaid: 0, limit: 500000, badge: 'BRONZE', target: 3, tone: 'bronze', icon: Sparkles},
-  {name: 'Agent Lancar', minPaid: 3, limit: 1000000, badge: 'SILVER', target: 8, tone: 'silver', icon: Rocket},
-  {name: 'Agent Prioritas', minPaid: 8, limit: 2000000, badge: 'GOLD', target: 13, tone: 'gold', icon: Crown},
-]
+// Peringkat dan limit ditetapkan manual oleh Operator. Angka awal hanya
+// dipakai sebelum Operator memberi keputusan pertama untuk agent tersebut.
+const defaultRank = {name: 'Agent Pemula', limit: 500000, badge: 'BRONZE', tone: 'bronze', icon: Sparkles}
 const finalCreditStatus = ['Disetujui', 'Ditolak']
 
 const readJSON = (key, fallback = []) => {
@@ -360,12 +358,13 @@ export default function AgentCreditPage() {
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
     setSigned(false)
   }
-  // Limit naik hanya dari siklus yang benar-benar sudah dilunasi: 3x Rp500rb,
-  // lalu 5x Rp1jt, lalu 5x Rp2jt. Saldo transaksi reguler tidak ikut dihitung.
-  const paidCycles = applications.filter(item => item.paymentStatus === 'Lunas' || item.creditStatus === 'Lunas').length
-  const currentRank = rankLevels.reduce((rank, item) => (paidCycles >= item.minPaid ? item : rank), rankLevels[0])
-  const nextRank = rankLevels.find(item => item.minPaid > paidCycles)
-  const rankProgress = nextRank ? Math.min(100, Math.round(((paidCycles - currentRank.minPaid) / (nextRank.minPaid - currentRank.minPaid)) * 100)) : 100
+  const latestProfile = [...applications].sort((a,b) => new Date(b.decidedAt || b.updatedAt || b.createdAt) - new Date(a.decidedAt || a.updatedAt || a.createdAt)).find(item => item.creditTier || item.creditLimit)
+  const currentRank = {
+    ...defaultRank,
+    name: latestProfile?.creditTier || defaultRank.name,
+    limit: Number(latestProfile?.creditLimit || defaultRank.limit),
+    badge: latestProfile?.creditBadge || defaultRank.badge,
+  }
   const maxCredit = currentRank.limit
   const activeCredit = applications.find(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas')
   const creditBalance = activeCredit ? Number(activeCredit.creditBalance ?? activeCredit.form?.amount ?? 0) : 0
@@ -416,25 +415,11 @@ export default function AgentCreditPage() {
     event.preventDefault()
     if (activeCredit) return setMessage('Saldo kredit agent masih aktif. Lunasi terlebih dahulu sebelum mengajukan refill baru.')
     const amount = Math.min(maxCredit, Math.max(50000, Number(form.amount || 0)))
-    // Agent hanya mengirim tiga dokumen inti. Selfie bersama marketing
-    // baru diambil marketing saat pertemuan verifikasi.
-    const requiredDocuments = docs
-    const documentValues = requiredDocuments.map(item => files[item.key])
-    if (documentValues.some(file => !file?.file)) return setMessage('Lengkapi Foto KTP, Foto toko, dan selfie pegang KTP dulu bro.')
-    const badDocument = documentValues.find(file => file.status !== 'ok')
-    if (badDocument) return setMessage(`${badDocument.name}: ${badDocument.error || 'Foto belum lolos pengecekan kualitas. Upload ulang dulu.'}`)
     if (!accepted) return setMessage('Centang persetujuan ketentuan pengajuan dulu.')
     if (!signed) return setMessage('Tanda tangan online wajib diisi.')
-    const documentEntries = await Promise.all(requiredDocuments.map(async item => {
-      const file = files[item.key]
-      return [item.key, {name: file.file.name, dataUrl: await filePreviewData(file.file)}]
-    }))
-    if (documentEntries.some(([, document]) => !document.dataUrl)) {
-      return setMessage('Foto belum berhasil disimpan. Pilih ulang atau ambil ulang tiga foto agar langsung terlihat saat dicek Marketing.')
-    }
     const application = {
       id: `KSA-${Date.now().toString().slice(-8)}`,
-      status: 'Menunggu analis',
+      status: 'Menunggu verifikasi marketing',
       createdAt: new Date().toISOString(),
       queuedAt: new Date().toISOString(),
       verifyUntil: Date.now() + verificationDuration,
@@ -446,7 +431,7 @@ export default function AgentCreditPage() {
       creditOutstanding: 0,
       creditOriginalAmount: 0,
       creditStatus: 'Menunggu keputusan',
-      documents: Object.fromEntries(documentEntries),
+      documents: {},
       applicationType: refillSource ? 'Refill Kredit' : 'Pengajuan Baru',
       refillOf: refillSource?.id || '',
       termsAcceptedAt: new Date().toISOString(),
@@ -551,14 +536,14 @@ export default function AgentCreditPage() {
     <section className="agent-rank-card">
       <header>
         <i className={`rank-emblem ${currentRank.tone}`}><RankIcon/></i>
-        <div><span>LIMIT KREDIT AGENT</span><h2>{currentRank.name}</h2><p>{paidCycles} pengajuan sudah lunas · Limit aktif {rupiah(currentRank.limit)}.</p></div>
+        <div><span>LIMIT KREDIT AGENT</span><h2>{currentRank.name}</h2><p>Limit aktif {rupiah(currentRank.limit)} · ditetapkan manual oleh Operator.</p></div>
         <b>{currentRank.badge}</b>
       </header>
       <div className="agent-wallet-overview">
         <div className="agent-wallet-main"><small>Saldo kredit agent</small><strong>{rupiah(creditBalance)}</strong><span>{activeCredit ? 'Kredit sedang aktif dan wajib dilunasi penuh.' : 'Belum ada kredit aktif. Kamu bisa mengajukan sesuai limit.'}</span></div>
         <div className="agent-wallet-limit"><small>Limit pengajuan</small><strong>{rupiah(maxCredit)}</strong><span>Nominal pengajuan bebas, maksimal sesuai limit.</span></div>
       </div>
-      <div className="rank-meter"><span style={{width: `${rankProgress}%`}}/></div>
+      <div className="rank-meter"><span style={{width: '100%'}}/></div>
     </section>
     <div className="agent-credit-tabs" role="tablist" aria-label="Menu Kredit Agent">
       <button type="button" className={!showForm && !detailOpen ? 'active' : ''} onClick={backToApplications}><FileText/><span>Semua Peminjam<small>{applications.length} pengajuan tersimpan</small></span></button>
@@ -673,9 +658,8 @@ export default function AgentCreditPage() {
           <label className="wide">Alamat<textarea name="familyAddress" value={form.familyAddress} onChange={update} required placeholder="Alamat keluarga yang dapat dihubungi"/></label>
         </div>
       </section>
-      <section className="agent-card">
-        <header><i><Camera/></i><div><h2>Upload Dokumen</h2><p>Sistem mengecek kualitas foto. Jika buram, kecil, atau rusak wajib upload ulang.</p></div></header>
-        <div className="agent-doc-grid">{docs.map(item => <DocUpload key={item.key} item={item} value={files[item.key]} onOpenCamera={setCameraDoc}/>)}</div>
+      <section className="agent-card agent-marketing-document-note">
+        <header><i><Camera/></i><div><h2>Dokumen oleh Marketing</h2><p>Setelah pengajuan dikirim, marketing akan mengambil Foto KTP, Foto Toko, Selfie Pegang KTP, dan Selfie Bersama Marketing saat pendampingan. Agent tidak perlu unggah foto dari halaman ini.</p></div></header>
       </section>
       <section className="agent-card">
         <header><i><FileText/></i><div><h2>Ketentuan Umum</h2><p>Baca dan setujui sebelum mengajukan.</p></div></header>
@@ -699,7 +683,7 @@ export default function AgentCreditPage() {
       {message && <div className="agent-message">{message}</div>}
       <button className="agent-submit">Ajukan Kredit Saldo <ArrowRight/></button>
     </form>
-    <section className="agent-safe-note"><ShieldCheck/><span>Dokumen hanya digunakan untuk verifikasi pengajuan agent KuotaKita.</span></section>
+    <section className="agent-safe-note"><ShieldCheck/><span>Data dan dokumen hanya digunakan untuk verifikasi pengajuan agent KuotaKita.</span></section>
     </>}
     {cameraDoc && <section className="agent-camera-backdrop" aria-label={`Ambil ${cameraDoc.title}`}>
       <div className="agent-camera-shell">
