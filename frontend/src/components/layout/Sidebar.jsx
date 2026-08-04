@@ -22,7 +22,7 @@ const analisNavigation = [
   {
     section: 'Operator Kredit',
     items: [
-      {to: '/credit-applications', label: 'Meja Keputusan', icon: ShieldCheck},
+      {to: '/credit-applications', label: 'Daftar Kredit Agent', icon: ShieldCheck},
       {to: '/credit-applications?view=verifikasi', label: 'Antrean Operator', icon: ClipboardCheck},
       {to: '/credit-applications?view=peminjam', label: 'Kredit Diterima', icon: CheckCircle2},
       {to: '/credit-applications?view=angsuran', label: 'Monitor Pelunasan', icon: Banknote},

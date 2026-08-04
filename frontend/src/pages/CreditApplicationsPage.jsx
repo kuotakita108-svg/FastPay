@@ -617,6 +617,10 @@ export default function CreditApplicationsPage() {
     closeSignature()
   }
   const sortedItems = [...items].sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+  // Halaman utama Operator adalah daftar kerja yang bisa menampung banyak
+  // pengajuan. Semua status tetap berada di satu tabel; filter hanya dipakai
+  // saat Operator ingin mempersempit pencarian.
+  const operatorTableMode = isAnalis && !isStandaloneDetail && (view === 'overview' || view === 'verifikasi')
   const visibleItems = sortedItems.filter(item => {
     const matchDetail = !isStandaloneDetail || item.id === params.get('id')
     const text = `${item.id} ${item.form.agentName} ${item.userName} ${item.form.storeName} ${item.form.whatsapp} ${item.form.nik}`.toLowerCase()
@@ -624,7 +628,7 @@ export default function CreditApplicationsPage() {
     const group = statusGroup(item)
     const matchFilter = view === 'angsuran' || view === 'pembayaran' ? ['Disetujui', 'Lunas'].includes(group) : filter === 'Semua' || group === filter
     const analystArchiveFilter = ['Ditolak', 'Disetujui', 'Lunas'].includes(filter)
-    const matchRoleQueue = !isAnalis || isStandaloneDetail || (analystArchiveFilter ? group === filter : item.status === 'Menunggu keputusan operator')
+    const matchRoleQueue = !isAnalis || isStandaloneDetail || operatorTableMode || (analystArchiveFilter ? group === filter : item.status === 'Menunggu keputusan operator')
     return matchDetail && matchQuery && matchFilter && matchRoleQueue
   })
   const listPageSize = 20
@@ -689,10 +693,7 @@ export default function CreditApplicationsPage() {
   const showCreateArea = (isMarketing || isAdmin) && view === 'input'
   // Setiap menu punya satu tujuan: daftar detail hanya muncul di Antrean Verifikasi.
   // Ringkasan, Direktori Peminjam, dan Angsuran memakai panel khusus masing-masing.
-  const showMainList = view === 'verifikasi' || isStandaloneDetail
-  // Operator menangani antrean yang dapat bertambah banyak. Jangan tampilkan sebagai
-  // kartu besar; cukup satu baris kerja dan buka berkas lengkap hanya saat Detail.
-  const operatorTableMode = isAnalis && view === 'verifikasi' && !isStandaloneDetail
+  const showMainList = view === 'verifikasi' || isStandaloneDetail || operatorTableMode
   const exportReport = () => {
     const header = ['ID', 'Agent', 'Toko', 'WA', 'Status', 'Nominal', 'Terbayar', 'Sisa']
     const rows = sortedItems.map(item => {
@@ -711,7 +712,7 @@ export default function CreditApplicationsPage() {
   return <>
     {!isStandaloneDetail && view === 'overview' && <PageHeader eyebrow={isAnalis ? 'OPERATOR KREDIT' : 'MARKETING KREDIT'} title={isAnalis ? 'Keputusan Akhir Kredit Agent' : 'Pendampingan Kredit Agent'} description={isAnalis ? 'Operator memeriksa seluruh data, menandatangani, lalu memberi keputusan akhir.' : 'Marketing mendaftarkan agent, membimbing pengajuan, mengambil selfie pertemuan, dan menangani pelunasan offline.'}/>}
     <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''} ${(isMarketing || isAdmin) ? 'marketing-review' : ''} ${isAnalis ? 'analyst-review' : ''}`}>
-      {view === 'overview' && <div className="credit-review-hero">
+      {view === 'overview' && !operatorTableMode && <div className="credit-review-hero">
         <div>
           <span>{isAnalis ? 'RUANG KEPUTUSAN OPERATOR' : 'RUANG DATA PEMINJAM'}</span>
           <h2>{isAnalis ? 'Kontrol Keputusan Kredit' : 'Monitoring Kredit Agent'}</h2>
@@ -719,7 +720,7 @@ export default function CreditApplicationsPage() {
         </div>
         <i><WalletCards/></i>
       </div>}
-      {view === 'overview' && <div className="credit-review-stats">
+      {view === 'overview' && !operatorTableMode && <div className="credit-review-stats">
         <article><span>Total Peminjam</span><strong>{summary.total}</strong><small>Seluruh pengajuan</small></article>
         <article><span>Butuh Review</span><strong>{summary.review}</strong><small>Menunggu keputusan</small></article>
         <article><span>Sudah Diterima</span><strong>{summary.approved}</strong><small>Aktif dipantau</small></article>
@@ -762,7 +763,7 @@ export default function CreditApplicationsPage() {
           </div>
         </div>
       </section>}
-      {(isAnalis || isAdmin) && view === 'overview' && <section className="marketing-workspace analyst-workspace operator-workspace">
+      {(isAnalis || isAdmin) && view === 'overview' && !operatorTableMode && <section className="marketing-workspace analyst-workspace operator-workspace">
         <header>
           <div><span>MEJA KERJA OPERATOR</span><h2>Kontrol limit, akses, dan keputusan</h2><p>Daftar dibuat ringkas untuk banyak agent. Buka detail hanya saat perlu memeriksa berkas, mengubah limit, menghentikan akses, atau mencetak pengajuan.</p></div>
         </header>
@@ -784,7 +785,7 @@ export default function CreditApplicationsPage() {
           <div><h3>Siap diberi keputusan</h3>{analystReadyToDecide.slice(0, 4).map(item => <button type="button" key={item.id} onClick={() => goToView('verifikasi', item.id, 'Review')}><span><b>{item.form.agentName || item.userName}</b><small>TTD operator sudah tersimpan</small></span><strong>{rupiah(item.form.amount)}</strong></button>)}{!analystReadyToDecide.length && <p>Belum ada berkas yang siap diberi keputusan.</p>}</div>
         </div>
       </section>}
-      {(isMarketing || isAnalis || isAdmin) && view === 'verifikasi' && <section className="marketing-action-panel">
+      {(isMarketing || isAnalis || isAdmin) && view === 'verifikasi' && !operatorTableMode && <section className="marketing-action-panel">
         <header>{isRejectedArchive ? <XCircle/> : <ClipboardCheck/>}<div><span>{isRejectedArchive ? 'ARSIP PENOLAKAN' : isAnalis ? 'FOKUS OPERATOR' : 'FOKUS PENDAMPINGAN'}</span><h2>{isRejectedArchive ? `${rejectedItems.length} keputusan ditolak` : `${isAnalis ? analystQueue.length : marketingQueue.length} pengajuan perlu ditangani`}</h2><p>{isRejectedArchive ? 'Buka detail untuk membaca alasan keputusan dan jejak pemeriksaan operator. Data di halaman ini hanya arsip, bukan antrean aktif.' : isAnalis ? 'Cek nominal, batas kredit, data, dokumen, selfie pertemuan, ketentuan, dan tanda tangan agent. Setelah lengkap, tanda tangani lalu terima atau tolak.' : 'Buka detail pengajuan untuk membantu melengkapi data dan mengambil selfie bersama agent. Keputusan akhir dilakukan Operator.'}</p></div></header>
       </section>}
       {(isMarketing || isAnalis || isAdmin) && view === 'peminjam' && <section className="borrower-directory-panel">
@@ -907,7 +908,7 @@ export default function CreditApplicationsPage() {
           <strong>{rupiah(item.form.amount)}</strong>
         </button>) : <p>Belum ada input peminjaman dari marketing.</p>}</div>
       </section>}
-      {showMainList && <>{view === 'verifikasi' && <div className="credit-review-tools">
+      {showMainList && <>{(view === 'verifikasi' || operatorTableMode) && <div className="credit-review-tools">
         <label><Search/><input value={query} onChange={event => {setQuery(event.target.value); setListPage(1)}} placeholder="Cari nama agent, toko, WA, NIK, atau ID pengajuan"/></label>
         <div><Filter/>{filters.map(name => <button type="button" className={filter === name ? 'active' : ''} onClick={() => {setFilter(name); setListPage(1)}} key={name}>{name}</button>)}</div>
       </div>}
