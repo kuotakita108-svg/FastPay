@@ -690,6 +690,9 @@ export default function CreditApplicationsPage() {
   // Setiap menu punya satu tujuan: daftar detail hanya muncul di Antrean Verifikasi.
   // Ringkasan, Direktori Peminjam, dan Angsuran memakai panel khusus masing-masing.
   const showMainList = view === 'verifikasi' || isStandaloneDetail
+  // Operator menangani antrean yang dapat bertambah banyak. Jangan tampilkan sebagai
+  // kartu besar; cukup satu baris kerja dan buka berkas lengkap hanya saat Detail.
+  const operatorTableMode = isAnalis && view === 'verifikasi' && !isStandaloneDetail
   const exportReport = () => {
     const header = ['ID', 'Agent', 'Toko', 'WA', 'Status', 'Nominal', 'Terbayar', 'Sisa']
     const rows = sortedItems.map(item => {
@@ -908,7 +911,38 @@ export default function CreditApplicationsPage() {
         <label><Search/><input value={query} onChange={event => {setQuery(event.target.value); setListPage(1)}} placeholder="Cari nama agent, toko, WA, NIK, atau ID pengajuan"/></label>
         <div><Filter/>{filters.map(name => <button type="button" className={filter === name ? 'active' : ''} onClick={() => {setFilter(name); setListPage(1)}} key={name}>{name}</button>)}</div>
       </div>}
-      {items.length === 0 ? <div className="credit-review-empty"><ShieldCheck/><strong>Belum ada pengajuan</strong><span>Pengajuan kredit saldo dari aplikasi agent akan tampil di sini.</span></div> : visibleItems.length === 0 ? <div className="credit-review-empty"><Search/><strong>Data tidak ditemukan</strong><span>Coba ubah kata pencarian atau filter status.</span></div> : <div className="credit-review-list">
+      {items.length === 0 ? <div className="credit-review-empty"><ShieldCheck/><strong>Belum ada pengajuan</strong><span>Pengajuan kredit saldo dari aplikasi agent akan tampil di sini.</span></div> : visibleItems.length === 0 ? <div className="credit-review-empty"><Search/><strong>Data tidak ditemukan</strong><span>Coba ubah kata pencarian atau filter status.</span></div> : operatorTableMode ? <section className="operator-queue-table">
+        <header>
+          <div><span>ANTREAN KERJA OPERATOR</span><h3>Daftar pengajuan kredit agent</h3><p>Gunakan filter, lalu buka detail hanya untuk berkas yang akan diperiksa.</p></div>
+          <b>{visibleItems.length} data</b>
+        </header>
+        <div className="operator-table-scroll">
+          <table>
+            <thead><tr><th>No</th><th>Waktu</th><th>Agent / Toko</th><th>Nominal</th><th>Limit</th><th>Sisa kredit</th><th>Status</th><th>Aksi</th></tr></thead>
+            <tbody>{pagedItems.map((item, index) => {
+              const profile = creditProfile(items, item)
+              const requestedAmount = Number(item.creditOriginalAmount || item.form.amount || 0)
+              const outstandingAmount = Number(item.creditOutstanding ?? item.creditBalance ?? requestedAmount)
+              const signed = Boolean(item.analisSignature)
+              const statusLabel = item.status === 'Menunggu keputusan operator' ? (signed ? 'Siap diputuskan' : 'Menunggu TTD') : item.status
+              return <tr key={item.id}>
+                <td>{listStart + index + 1}</td>
+                <td><small>{dateTime(item.updatedAt || item.createdAt)}</small></td>
+                <td><b>{item.form.agentName || item.userName || 'Agent KuotaKita'}</b><small>{item.form.storeName || '-'} · {item.form.whatsapp || '-'}</small></td>
+                <td><strong>{rupiah(requestedAmount)}</strong></td>
+                <td>{rupiah(profile.limit)}</td>
+                <td>{rupiah(outstandingAmount)}</td>
+                <td><span className={`operator-status ${signed ? 'ready' : 'waiting'}`}>{statusLabel}</span></td>
+                <td><button type="button" onClick={() => goToView('detail', item.id, filter)}><Eye/>Detail</button></td>
+              </tr>
+            })}</tbody>
+          </table>
+        </div>
+        {visibleItems.length > listPageSize && <nav className="credit-list-pagination" aria-label="Halaman antrean operator">
+          <span>Menampilkan <b>{listStart + 1}-{Math.min(listStart + listPageSize, visibleItems.length)}</b> dari <b>{visibleItems.length}</b> pengajuan</span>
+          <div><button type="button" disabled={safeListPage === 1} onClick={() => {setListPage(page => Math.max(1, page - 1)); window.scrollTo({top: 0, behavior: 'smooth'})}} aria-label="Halaman sebelumnya">‹</button><strong>{safeListPage} / {listPageCount}</strong><button type="button" disabled={safeListPage === listPageCount} onClick={() => {setListPage(page => Math.min(listPageCount, page + 1)); window.scrollTo({top: 0, behavior: 'smooth'})}} aria-label="Halaman berikutnya">›</button></div>
+        </nav>}
+      </section> : <div className="credit-review-list">
         {pagedItems.map(item => {
           const done = finalStatus.includes(item.status)
           const analisSigned = Boolean(item.analisSignature)
