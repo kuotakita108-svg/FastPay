@@ -781,7 +781,7 @@ export default function CreditApplicationsPage() {
 
   return <>
     {!isStandaloneDetail && view === 'overview' && <PageHeader eyebrow={isOperator ? 'OPERATOR KREDIT' : 'MARKETING KREDIT'} title={isOperator ? 'Keputusan Akhir Kredit Agent' : 'Pendampingan Kredit Agent'} description={isOperator ? 'Operator memeriksa seluruh data, menandatangani, lalu memberi keputusan akhir.' : 'Marketing mendaftarkan agent, membimbing pengajuan, mengambil selfie pertemuan, dan menangani pelunasan offline.'}/>}
-    <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''} ${(isMarketing || isAdmin) ? 'marketing-review' : ''} ${isOperator ? 'analyst-review' : ''}`}>
+    <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''} ${(isMarketing || isAdmin) ? 'marketing-review' : ''} ${isOperator ? 'analyst-review operator-review' : ''}`}>
       {view === 'overview' && !operatorTableMode && <div className="credit-review-hero">
         <div>
           <span>{isOperator ? 'RUANG KEPUTUSAN OPERATOR' : 'RUANG DATA PEMINJAM'}</span>
@@ -1036,7 +1036,13 @@ export default function CreditApplicationsPage() {
                 <td>{rupiah(profile.limit)}</td>
                 <td>{rupiah(outstandingAmount)}</td>
                 <td><span className={`operator-status ${signed ? 'ready' : 'waiting'}`}>{statusLabel}</span></td>
-                <td><button type="button" onClick={() => goToView('detail', item.id, filter)}><Eye/>Detail</button></td>
+                <td>
+                  <div className="operator-row-actions">
+                    <button type="button" className="detail" onClick={() => goToView('detail', item.id, filter)}><Eye/>Cek detail</button>
+                    <button type="button" className="print" onClick={() => printApplication(item)}><Printer/>Cetak</button>
+                    {(item.status === 'Disetujui' || item.agentAccessStatus === 'suspended') && <button type="button" className={item.agentAccessStatus === 'suspended' ? 'restore' : 'suspend'} onClick={() => setAgentAccess(item, item.agentAccessStatus !== 'suspended')}><Ban/>{item.agentAccessStatus === 'suspended' ? 'Aktifkan' : 'Hentikan'}</button>}
+                  </div>
+                </td>
               </tr>
             })}</tbody>
           </table>
@@ -1121,7 +1127,6 @@ export default function CreditApplicationsPage() {
                 <header><div><span>KONTROL OPERATOR</span><h4>Limit dan akses agent</h4></div><b className={item.agentAccessStatus === 'suspended' ? 'suspended' : 'active'}>{item.agentAccessStatus === 'suspended' ? 'AKSES DIHENTIKAN' : 'AKSES AKTIF'}</b></header>
                 <div className="operator-credit-snapshot"><span><small>Limit otomatis</small><b>{rupiah(profile.automatic.limit)}</b><em>{profile.automatic.name}</em></span><span><small>Limit efektif</small><b>{rupiah(profile.limit)}</b><em>{profile.source}</em></span><span><small>Sisa saldo kredit</small><b>{rupiah(outstandingAmount)}</b><em>{item.paymentStatus === 'Lunas' ? 'Lunas' : 'Berjalan'}</em></span></div>
                 <div className="operator-limit-editor"><label><span>Limit manual</span><input inputMode="numeric" value={operatorDrafts[item.id] ?? String(profile.limit)} onChange={event => setOperatorDrafts(current => ({...current, [item.id]: event.target.value.replace(/\D/g, '')}))}/></label><button type="button" onClick={() => saveOperatorLimit(item)}><CheckCircle2/>Simpan limit</button></div>
-                <div className="operator-control-actions"><button type="button" onClick={() => printApplication(item)}><Printer/>Cetak pengajuan</button><button type="button" className={item.agentAccessStatus === 'suspended' ? 'activate' : 'suspend'} onClick={() => setAgentAccess(item, item.agentAccessStatus !== 'suspended')}><Ban/>{item.agentAccessStatus === 'suspended' ? 'Aktifkan akses' : 'Hentikan akses'}</button></div>
                 <p>Limit otomatis tetap mengikuti riwayat pelunasan. Penyesuaian manual operator tidak menghapus riwayat tersebut.</p>
                 {operatorMessage && <output className="operator-feedback" aria-live="polite">{operatorMessage}</output>}
               </div>}
