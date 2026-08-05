@@ -1,0 +1,173 @@
+/* Dark workspace shared by Marketing, Operator, and Admin credit panels. */
+:where(.marketing-review, .operator-review) {
+  color: #eef6ff;
+}
+
+.page-content:has(.marketing-review),
+.page-content:has(.operator-review) {
+  max-width: none;
+  min-height: calc(100vh - 64px);
+  padding: 16px;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(66, 86, 192, .18), transparent 29rem),
+    radial-gradient(circle at 5% 100%, rgba(10, 173, 205, .10), transparent 26rem),
+    #050b15;
+}
+
+.credit-review-panel.marketing-review,
+.credit-review-panel.operator-review {
+  width: 100%;
+  gap: 14px;
+  padding: 18px !important;
+  border: 1px solid #1a314a;
+  border-radius: 24px;
+  background: linear-gradient(145deg, #0a1525 0%, #070e1a 100%) !important;
+  box-shadow: 0 20px 56px rgba(0, 0, 0, .45);
+}
+
+:where(.marketing-review, .operator-review) :is(h1, h2, h3, h4, strong, b, dt) {
+  color: #f4f8ff;
+}
+
+:where(.marketing-review, .operator-review) :is(p, small, span, dd, .muted) {
+  color: #aebfd4;
+}
+
+:where(.marketing-review, .operator-review) :is(
+  .panel-header,
+  .credit-review-hero,
+  .marketing-workspace,
+  .credit-mode-panel,
+  .credit-review-card,
+  .credit-detail-block,
+  .operator-control-block,
+  .operator-feedback,
+  .operator-credit-snapshot,
+  .operator-limit-editor,
+  .marketing-task-grid > *,
+  .marketing-focus-grid > *,
+  .marketing-quick-actions > *,
+  .credit-review-grid > *,
+  .credit-review-address,
+  .credit-review-signatures > *,
+  .credit-review-tools,
+  .empty-state
+) {
+  border-color: #203d5d !important;
+  background: linear-gradient(145deg, #0d1b2d, #091423) !important;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .28) !important;
+}
+
+:where(.marketing-review, .operator-review) .credit-review-hero {
+  background:
+    radial-gradient(circle at 90% 5%, rgba(95, 95, 255, .30), transparent 32%),
+    linear-gradient(135deg, #17116c 0%, #143b88 56%, #075c76 100%) !important;
+  border-color: #4265d5 !important;
+}
+
+:where(.marketing-review, .operator-review) .credit-review-hero :is(h1, h2, h3, p, small, span) {
+  color: #f7fbff;
+}
+
+:where(.marketing-review, .operator-review) :is(input, textarea, select) {
+  color: #f3f8ff !important;
+  border-color: #294967 !important;
+  background: #081525 !important;
+}
+
+:where(.marketing-review, .operator-review) :is(input, textarea)::placeholder {
+  color: #8294ad !important;
+  opacity: 1;
+}
+
+:where(.marketing-review, .operator-review) :is(.credit-review-tools label, .filter-chip, .filter-button) {
+  color: #dceaff !important;
+  border-color: #2c4b6c !important;
+  background: #0b192a !important;
+}
+
+:where(.marketing-review, .operator-review) :is(.filter-chip.active, .filter-button.active) {
+  color: #fff !important;
+  border-color: #7b61ff !important;
+  background: linear-gradient(135deg, #5144d4, #246ac8) !important;
+}
+
+:where(.marketing-review, .operator-review) :is(.operator-queue-table, .credit-review-table) {
+  overflow: hidden;
+  color: #dce9f8;
+  border-color: #234461 !important;
+  background: #081322 !important;
+  box-shadow: none !important;
+}
+
+:where(.marketing-review, .operator-review) :is(.operator-queue-table, .credit-review-table) :is(th, td) {
+  color: #dce9f8 !important;
+  border-color: #18324d !important;
+  background: transparent !important;
+}
+
+:where(.marketing-review, .operator-review) :is(.operator-queue-table, .credit-review-table) th {
+  color: #bfeaff !important;
+  background: #0b3046 !important;
+}
+
+:where(.marketing-review, .operator-review) :is(.operator-queue-table, .credit-review-table) tr:nth-child(even) td {
+  background: #0a1829 !important;
+}
+
+:where(.marketing-review, .operator-review) :is(.operator-row-actions button, .credit-action-button, .secondary-button) {
+  color: #e8f3ff !important;
+  border-color: #335a81 !important;
+  background: #10243b !important;
+}
+
+:where(.marketing-review, .operator-review) :is(.operator-row-actions button, .credit-action-button, .secondary-button):hover {
+  border-color: #68b7ff !important;
+  background: #183a5c !important;
+}
+
+:where(.marketing-review, .operator-review) :is(.status-badge, .badge, .credit-status) {
+  color: #eff8ff !important;
+  border-color: rgba(101, 204, 255, .3) !important;
+  background: #10344b !important;
+}
+
+:where(.marketing-review, .operator-review) :is(.danger, .status-rejected) {
+  color: #ffd9df !important;
+  background: #491d2a !important;
+  border-color: #863348 !important;
+}
+
+:where(.marketing-review, .operator-review) :is(.success, .status-approved, .status-paid) {
+  color: #d9ffec !important;
+  background: #103c35 !important;
+  border-color: #277761 !important;
+}
+
+:where(.marketing-review, .operator-review) svg {
+  color: #9ecfff;
+}
+
+@media (max-width: 760px) {
+  .page-content:has(.marketing-review),
+  .page-content:has(.operator-review) {
+    min-height: 100vh;
+    padding: 0;
+    background: #060d18;
+  }
+
+  .credit-review-panel.marketing-review,
+  .credit-review-panel.operator-review {
+    gap: 12px;
+    min-height: 100vh;
+    padding: 12px !important;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  :where(.marketing-review, .operator-review) .credit-review-hero {
+    padding: 18px;
+    border-radius: 18px;
+  }
+}
