@@ -12,9 +12,9 @@ export default function Topbar({onMenu}) {
   const [query, setQuery] = useState('')
   const [noticeOpen, setNoticeOpen] = useState(false)
   const isMarketing = user?.role === 'marketing'
-  const isAnalis = user?.role === 'analis'
+  const isOperator = ['operator', 'analis'].includes(user?.role)
   const canCreateAgent = ['marketing', 'admin', 'master'].includes(user?.role)
-  const isCreditTeam = isMarketing || isAnalis || ['admin', 'master'].includes(user?.role)
+  const isCreditTeam = isMarketing || isOperator || ['admin', 'master'].includes(user?.role)
   // Admin/master memakai ruang kerja marketing juga. Semua role yang dapat
   // menambah agent perlu topbar kredit yang ringkas ketika dibuka dari HP.
   // Halaman kredit adalah ruang kerja khusus. Jangan tampilkan pencarian
@@ -22,7 +22,7 @@ export default function Topbar({onMenu}) {
   const isCreditPanel = isCreditTeam && location.pathname === '/credit-applications'
   const isMarketingPanel = isCreditPanel
   const notices = isCreditTeam
-    ? [{title: isAnalis ? 'Berkas operator siap' : 'Ruang pendampingan siap', desc: isAnalis ? 'Periksa seluruh berkas lalu beri keputusan akhir.' : 'Dampingi agent dan cek permintaan penagihan terbaru.', action: () => navigate('/credit-applications?view=verifikasi'), icon: ClipboardCheck}]
+    ? [{title: isOperator ? 'Berkas operator siap' : 'Ruang pendampingan siap', desc: isOperator ? 'Periksa seluruh berkas lalu beri keputusan akhir.' : 'Dampingi agent dan cek permintaan penagihan terbaru.', action: () => navigate('/credit-applications?view=verifikasi'), icon: ClipboardCheck}]
     : [{title: 'Transaksi KuotaKita', desc: 'Pantau transaksi dan status pembayaran terbaru.', action: () => navigate('/transactions'), icon: Bell}]
   const submit = event => {
     event.preventDefault()
@@ -40,7 +40,7 @@ export default function Topbar({onMenu}) {
       </div>
       {canCreateAgent
         ? <button className="primary-button add-agent-action" onClick={() => navigate('/credit-applications?view=agent-input')}><Plus size={17}/><span className="agent-label-wide">Tambah Agent</span><span className="agent-label-mobile">Agent Baru</span></button>
-        : isAnalis
+        : isOperator
           ? <button className="primary-button" onClick={() => navigate('/credit-applications?view=verifikasi')}><ClipboardCheck size={17}/>Buka Operator</button>
           : <button className="primary-button" onClick={() => navigate('/topup')}><Plus size={17}/>Transaksi Pulsa</button>}
     </div>

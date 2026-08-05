@@ -474,7 +474,7 @@
   .agent-credit-page .agent-list-summary,.agent-credit-page .agent-registered-grid article,
   .agent-credit-page .agent-payment-sheet,.agent-credit-page .agent-payment-lane,
   .agent-credit-page .agent-wallet-overview,.agent-credit-page .agent-wallet-main,
-  .agent-credit-page .agent-wallet-limit,.agent-credit-page .agent-safe-note
+  .agent-credit-page .agent-wallet-credit,.agent-credit-page .agent-wallet-limit,.agent-credit-page .agent-safe-note
 ) {
   background: #0b1a2e !important;
   color: #f5f9ff !important;

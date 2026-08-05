@@ -36,12 +36,12 @@ const terms = [
   'Nominal pengajuan boleh di bawah limit kredit agent yang aktif.',
   'Saldo kredit agent terpisah dari saldo transaksi aplikasi dan wajib dilunasi sekaligus melalui Bank, QRIS, atau penagihan langsung oleh marketing.',
   'Setelah pembayaran kredit lunas dan diverifikasi, agent dapat mengajukan refill kembali.',
-  'Dokumen KTP, foto toko, selfie pegang KTP, dan selfie bersama marketing diambil oleh marketing saat pendampingan.',
+  'Marketing mengambil langsung Foto KTP, Foto Toko, dan Selfie Pegang KTP saat survei. Selfie pertemuan diambil marketing sebelum berkas dikirim ke Operator.',
 ]
 
 const verificationDuration = 5 * 60 * 1000
-// Peringkat dan limit ditetapkan manual oleh Operator. Angka awal hanya
-// dipakai sebelum Operator memberi keputusan pertama untuk agent tersebut.
+// Limit dapat naik otomatis dari riwayat pelunasan tepat waktu atau secara
+// manual oleh Operator. Angka awal dipakai sebelum keputusan pertama.
 const defaultRank = {name: 'Agent Pemula', limit: 500000, badge: 'BRONZE', tone: 'bronze', icon: Sparkles}
 const finalCreditStatus = ['Disetujui', 'Ditolak']
 
@@ -367,7 +367,10 @@ export default function AgentCreditPage() {
   }
   const maxCredit = currentRank.limit
   const activeCredit = applications.find(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas')
-  const creditBalance = activeCredit ? Number(activeCredit.creditBalance ?? activeCredit.form?.amount ?? 0) : 0
+  // creditBalance is the remaining credit capacity; creditOutstanding is the
+  // debt that must be settled in one payment. They must never be confused.
+  const creditBalance = activeCredit ? Number(activeCredit.creditBalance ?? activeCredit.creditLimit ?? 0) : 0
+  const creditOutstanding = activeCredit ? Number(activeCredit.creditOutstanding ?? 0) : 0
   const transactionBalance = Number(user?.balance || 0)
   const pendingApplications = applications.filter(item => !finalCreditStatus.includes(item.status)).length
   const approvedApplications = applications.filter(item => item.status === 'Disetujui').length
@@ -381,12 +384,15 @@ export default function AgentCreditPage() {
   const paymentPlan = application && application.status === 'Disetujui' ? [{
     key: `${application.id}-pelunasan`,
     label: 'Pelunasan Saldo Kredit',
-    amount: Number(application.creditOriginalAmount ?? application.form?.amount ?? application.creditOutstanding ?? 0),
+    amount: Number(application.creditOutstanding ?? 0),
     paid: application.paymentStatus === 'Lunas' || application.creditStatus === 'Lunas',
+    dueAt: application.dueAt || '',
   }] : []
   const payCredit = item => {
+    if (!item.amount) return setMessage('Belum ada saldo kredit yang dipakai. Tagihan akan muncul setelah saldo kredit digunakan untuk transaksi.')
+    const submittedAt = new Date().toISOString()
     if (paymentMethod === 'offline') {
-      persistApplication({...application, paymentStatus: 'Menunggu penagihan offline', offlineCollection: {status: 'Diminta', requestedAt: new Date().toISOString(), amount: item.amount}, updatedAt: new Date().toISOString()})
+      persistApplication({...application, paymentStatus: 'Menunggu verifikasi pembayaran', creditStatus: 'Menunggu pelunasan', repayments: [{key: item.key, applicationId: application.id, label: item.label, amount: item.amount, status: 'Menunggu verifikasi', submittedAt, submittedBy: user?.name || 'Agent KuotaKita', method: 'offline', paymentReference: item.key.toUpperCase()}], offlineCollection: {status: 'Menunggu verifikasi', requestedAt: submittedAt, amount: item.amount}, updatedAt: submittedAt})
       setPaymentItem(null)
       setPaymentMethod('')
       setPaymentProof(null)
@@ -394,10 +400,10 @@ export default function AgentCreditPage() {
       return
     }
     if (!paymentMethod || !paymentProof) return setMessage('Pilih metode dan unggah bukti pembayaran sebelum dikonfirmasi.')
-    const next = [{key: item.key, applicationId: application.id, label: item.label, amount: item.amount, status: 'Lunas', paidAt: new Date().toISOString(), method: paymentMethod, paymentReference: item.key.toUpperCase(), proof: paymentProof}, ...repayments.filter(row => row.key !== item.key)]
+    const next = [{key: item.key, applicationId: application.id, label: item.label, amount: item.amount, status: 'Menunggu verifikasi', submittedAt, submittedBy: user?.name || 'Agent KuotaKita', method: paymentMethod, paymentReference: item.key.toUpperCase(), proof: paymentProof}, ...repayments.filter(row => row.key !== item.key)]
     setRepayments(next)
     const appRepayments = next.filter(row => row.applicationId === application.id)
-    const updatedApplication = {...application, repayments: appRepayments, paymentStatus: 'Lunas', creditStatus: 'Lunas', creditBalance: 0, creditOutstanding: 0, settledAt: new Date().toISOString(), updatedAt: new Date().toISOString()}
+    const updatedApplication = {...application, repayments: appRepayments, paymentStatus: 'Menunggu verifikasi pembayaran', creditStatus: 'Menunggu pelunasan', updatedAt: submittedAt}
     persistApplication(updatedApplication)
     setPaymentItem(null)
     setPaymentMethod('')
@@ -530,31 +536,32 @@ export default function AgentCreditPage() {
       <img className="agent-credit-person" src={financeHero} alt="" aria-hidden="true"/>
       <div className="agent-credit-hero-shade"/>
       <i><WalletCards/></i>
-      <div><span>MODAL AGENT RESMI</span><h1>Ajukan Kredit Saldo Lebih Cepat</h1><p>Upload dokumen jelas, isi formulir agent, lalu tanda tangan online. Tim operator tinggal verifikasi dari data yang kamu kirim.</p></div>
+      <div><span>MODAL AGENT RESMI</span><h1>Ajukan Kredit Saldo Lebih Cepat</h1><p>Marketing mengambil dokumen survei di lokasi. Isi pengajuan, baca ketentuan, lalu tanda tangan sebelum Operator memberi keputusan.</p></div>
       <b>{rupiah(Math.min(maxCredit, Math.max(0, Number(form.amount || 0))))}</b>
     </section>
     <section className="agent-rank-card">
       <header>
         <i className={`rank-emblem ${currentRank.tone}`}><RankIcon/></i>
-        <div><span>LIMIT KREDIT AGENT</span><h2>{currentRank.name}</h2><p>Limit aktif {rupiah(currentRank.limit)} · ditetapkan manual oleh Operator.</p></div>
+        <div><span>LIMIT KREDIT AGENT</span><h2>{currentRank.name}</h2><p>Limit aktif {rupiah(currentRank.limit)} · naik dari pelunasan tepat waktu atau keputusan Operator.</p></div>
         <b>{currentRank.badge}</b>
       </header>
       <div className="agent-wallet-overview">
-        <div className="agent-wallet-main"><small>Saldo kredit agent</small><strong>{rupiah(creditBalance)}</strong><span>{activeCredit ? 'Kredit sedang aktif dan wajib dilunasi penuh.' : 'Belum ada kredit aktif. Kamu bisa mengajukan sesuai limit.'}</span></div>
-        <div className="agent-wallet-limit"><small>Limit pengajuan</small><strong>{rupiah(maxCredit)}</strong><span>Nominal pengajuan bebas, maksimal sesuai limit.</span></div>
+        <div className="agent-wallet-main"><small>Saldo utama</small><strong>{rupiah(transactionBalance)}</strong><span>Dipakai lebih dulu untuk transaksi harian.</span></div>
+        <div className="agent-wallet-credit"><small>Saldo kredit tersedia</small><strong>{rupiah(creditBalance)}</strong><span>{activeCredit ? `${rupiah(creditOutstanding)} sudah dipakai dan wajib dilunasi penuh.` : 'Belum ada kredit yang berjalan.'}</span></div>
+        <div className="agent-wallet-limit"><small>Limit pengajuan</small><strong>{rupiah(maxCredit)}</strong><span>Pengajuan boleh di bawah limit aktif.</span></div>
       </div>
       <div className="rank-meter"><span style={{width: '100%'}}/></div>
     </section>
     <div className="agent-credit-tabs" role="tablist" aria-label="Menu Kredit Agent">
-      <button type="button" className={!showForm && !detailOpen ? 'active' : ''} onClick={backToApplications}><FileText/><span>Semua Peminjam<small>{applications.length} pengajuan tersimpan</small></span></button>
-      <button type="button" className={showForm ? 'active' : ''} onClick={startNewApplication}><UserRound/><span>Daftar Baru<small>Tambah orang yang ingin meminjam</small></span></button>
+      <button type="button" className={!showForm && !detailOpen ? 'active' : ''} onClick={backToApplications}><FileText/><span>Pengajuan Saya<small>{applications.length} pengajuan tersimpan</small></span></button>
+      <button type="button" className={showForm ? 'active' : ''} onClick={startNewApplication}><UserRound/><span>Ajukan Kredit<small>Isi nominal di bawah limit aktif</small></span></button>
     </div>
     {!showForm && !detailOpen && <section className="agent-registered-list">
       <header>
         <div>
           <span>DATA PENGAJUAN AGENT</span>
-          <h2>Orang yang didaftarkan</h2>
-          <p>Semua pengajuan tersimpan rapi di sini. Pilih salah satu untuk melihat detail dan progres verifikasinya.</p>
+          <h2>Riwayat Pengajuan Kredit</h2>
+          <p>Semua pengajuan kredit milikmu tersimpan rapi di sini. Pilih salah satu untuk melihat detail dan progres verifikasinya.</p>
         </div>
       </header>
       <div className="agent-list-summary" aria-label="Ringkasan pengajuan">
@@ -584,7 +591,7 @@ export default function AgentCreditPage() {
             <button type="button" onClick={() => selectApplication(item)}>Lihat Status</button>
           </article>
         })}
-      </div> : <div className="agent-registered-empty"><FileText/><strong>{applications.length ? 'Pengajuan tidak ditemukan' : 'Belum ada yang didaftarkan'}</strong><small>{applications.length ? 'Coba ubah kata pencarian atau filter status.' : 'Isi formulir pertama, nanti status pengajuan muncul otomatis di sini.'}</small></div>}
+      </div> : <div className="agent-registered-empty"><FileText/><strong>{applications.length ? 'Pengajuan tidak ditemukan' : 'Belum ada pengajuan kredit'}</strong><small>{applications.length ? 'Coba ubah kata pencarian atau filter status.' : 'Ajukan kredit pertama, lalu statusnya muncul otomatis di sini.'}</small></div>}
     </section>}
     {detailOpen && application && <section className={`agent-verification ${approved ? 'approved' : ''} ${rejected ? 'rejected' : ''}`}>
       <i>{approved ? <Stamp/> : rejected ? <X/> : <Loader2/>}</i>
@@ -607,11 +614,11 @@ export default function AgentCreditPage() {
     </section>}
     {detailOpen && approved && <section className="agent-payment-lane">
         <header><i><CreditCard/></i><div><h2>Pelunasan Saldo Kredit</h2><p>Bayar satu kali penuh secara online melalui Bank/QRIS, atau minta marketing melakukan penagihan langsung ke lokasi.</p></div></header>
-      <div className="payment-lane-total"><span>{application.paymentStatus === 'Lunas' ? 'Kredit sudah dilunasi' : 'Total yang harus dilunasi'}</span><strong>{rupiah(application.creditOriginalAmount ?? application.form.amount)}</strong></div>
+      <div className="payment-lane-total"><span>{application.paymentStatus === 'Lunas' ? 'Kredit sudah dilunasi' : application.paymentStatus?.includes('verifikasi') ? 'Bukti pembayaran sedang diperiksa' : 'Total yang harus dilunasi'}</span><strong>{rupiah(application.creditOutstanding ?? 0)}</strong></div>
       <div className="payment-lane-list">
         {paymentPlan.map(item => <article className={item.paid ? 'paid' : ''} key={item.key}>
           <i>{item.paid ? <CheckCircle2/> : <CalendarDays/>}</i>
-          <div><strong>{item.label}</strong><small>{item.paid ? 'Pembayaran sudah tercatat' : 'Bayar penuh sesuai saldo kredit aktif'}</small></div>
+          <div><strong>{item.label}</strong><small>{item.paid ? 'Pembayaran sudah tercatat' : item.dueAt ? `Bayar penuh sebelum ${new Date(item.dueAt).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'})}` : 'Bayar penuh sesuai saldo kredit aktif'}</small></div>
           <b>{rupiah(item.amount)}</b>
           <button type="button" disabled={item.paid} onClick={() => {setPaymentItem(item);setPaymentMethod('')}}>{item.paid ? 'Lunas' : 'Bayar Sekarang'}</button>
         </article>)}
@@ -659,7 +666,7 @@ export default function AgentCreditPage() {
         </div>
       </section>
       <section className="agent-card agent-marketing-document-note">
-        <header><i><Camera/></i><div><h2>Dokumen oleh Marketing</h2><p>Setelah pengajuan dikirim, marketing akan mengambil Foto KTP, Foto Toko, Selfie Pegang KTP, dan Selfie Bersama Marketing saat pendampingan. Agent tidak perlu unggah foto dari halaman ini.</p></div></header>
+        <header><i><Camera/></i><div><h2>Dokumen Survei Marketing</h2><p>Marketing mengambil langsung Foto KTP, Foto Toko, dan Selfie Pegang KTP saat survei. Selfie bersama marketing diambil saat pendampingan kredit. Agent tidak perlu unggah foto dari halaman ini.</p></div></header>
       </section>
       <section className="agent-card">
         <header><i><FileText/></i><div><h2>Ketentuan Umum</h2><p>Baca dan setujui sebelum mengajukan.</p></div></header>

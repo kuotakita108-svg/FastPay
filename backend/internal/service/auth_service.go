@@ -150,8 +150,8 @@ func (s *AuthService) CreateAgent(token string, in domain.RegisterInput) (domain
 	if err != nil {
 		return domain.User{}, err
 	}
-	if role != "marketing" && role != "admin" && role != "master" {
-		return domain.User{}, errors.New("hanya marketing atau admin yang dapat membuat akun agent")
+	if role != "marketing" && role != "operator" && role != "analis" && role != "admin" && role != "master" {
+		return domain.User{}, errors.New("hanya marketing atau operator/admin yang dapat membuat akun agent")
 	}
 	return s.createAccount(in, "agent")
 }
@@ -293,7 +293,7 @@ func (s *AuthService) SetAgentAccess(token, agentID string, suspended bool, reas
 	if err != nil {
 		return domain.User{}, err
 	}
-	if role != "analis" && role != "admin" && role != "master" {
+	if role != "operator" && role != "analis" && role != "admin" && role != "master" {
 		return domain.User{}, errors.New("hanya Operator yang dapat mengubah akses agent")
 	}
 	agentID = strings.TrimSpace(agentID)

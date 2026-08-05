@@ -29,11 +29,11 @@ const AgentCreditPage=lazy(()=>import('./pages/AgentCreditPage'))
 const CreditApplicationsPage=lazy(()=>import('./pages/CreditApplicationsPage'))
 
 const LoadingScreen=()=> <div className="app-loading" role="status" aria-label="Memuat KuotaKita"><i/><strong>KuotaKita</strong></div>
-const Panel=()=> <ProtectedRoute roles={['master','admin','marketing','analis']}><AppLayout/></ProtectedRoute>
+const Panel=()=> <ProtectedRoute roles={['master','admin','marketing','operator','analis']}><AppLayout/></ProtectedRoute>
 const User=({children})=> <ProtectedRoute roles={['user','agent']}>{children}</ProtectedRoute>
 const Agent=({children})=> <ProtectedRoute roles={['agent']}>{children}</ProtectedRoute>
 const AdminOnly=({children})=> <ProtectedRoute roles={['master','admin']}>{children}</ProtectedRoute>
-const ReviewOnly=({children})=> <ProtectedRoute roles={['master','admin','marketing','analis']}>{children}</ProtectedRoute>
+const ReviewOnly=({children})=> <ProtectedRoute roles={['master','admin','marketing','operator','analis']}>{children}</ProtectedRoute>
 
 export default function App(){return <Suspense fallback={<LoadingScreen/>}><Routes>
  <Route path="/login" element={<LoginPage/>}/>

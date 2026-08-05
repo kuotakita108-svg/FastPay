@@ -23,6 +23,7 @@ type UserTransactionHandler struct {
 	auth     *service.AuthService
 	dataFile string
 	state    *database.StateStore
+	credit   *service.CreditService
 }
 
 type transactionFile struct {
@@ -46,7 +47,11 @@ func NewUserTransactionHandler(auth *service.AuthService, dataFile string) *User
 }
 
 func NewDatabaseUserTransactionHandler(auth *service.AuthService, dataFile string, state *database.StateStore) *UserTransactionHandler {
-	h := &UserTransactionHandler{items: make(map[string][]domain.Transaction), auth: auth, dataFile: dataFile, state: state}
+	return NewDatabaseUserTransactionHandlerWithCredit(auth, dataFile, state, nil)
+}
+
+func NewDatabaseUserTransactionHandlerWithCredit(auth *service.AuthService, dataFile string, state *database.StateStore, credit *service.CreditService) *UserTransactionHandler {
+	h := &UserTransactionHandler{items: make(map[string][]domain.Transaction), auth: auth, dataFile: dataFile, state: state, credit: credit}
 	_ = h.load()
 	return h
 }
@@ -101,16 +106,49 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 		response.Error(w, 400, "data pembayaran tidak valid")
 		return
 	}
-	user, err := h.auth.ChangeBalance(r.Header.Get("Authorization"), -in.Amount)
+	token := r.Header.Get("Authorization")
+	current, err := h.auth.CurrentUser(token)
 	if err != nil {
-		response.Error(w, 422, err.Error())
+		response.Error(w, http.StatusUnauthorized, err.Error())
 		return
+	}
+	mainUsed := in.Amount
+	if current.Balance < mainUsed {
+		mainUsed = current.Balance
+	}
+	if mainUsed < 0 {
+		mainUsed = 0
+	}
+	creditUsed := in.Amount - mainUsed
+	if creditUsed > 0 {
+		if h.credit == nil {
+			response.Error(w, 422, "saldo utama tidak mencukupi")
+			return
+		}
+		if _, err := h.credit.SpendAvailableCredit(token, creditUsed); err != nil {
+			response.Error(w, 422, err.Error())
+			return
+		}
+	}
+	user := current
+	if mainUsed > 0 {
+		user, err = h.auth.ChangeBalance(token, -mainUsed)
+		if err != nil {
+			response.Error(w, 422, err.Error())
+			return
+		}
 	}
 	method := strings.TrimSpace(strings.TrimSpace(in.Provider) + " · " + strings.TrimSpace(in.Title))
 	now := time.Now()
 	tx := domain.Transaction{ID: fmt.Sprintf("PP-%d", now.UnixMilli()), Customer: in.Target, Email: in.Email, Method: method, Amount: in.Amount, Status: "Berhasil", Target: in.Target, Provider: in.Provider, Title: in.Title, Product: in.Product, OrderNumber: fmt.Sprintf("ORD-%d", now.UnixMilli()), SN: fmt.Sprintf("SN-%d", now.UnixNano()%100000000), CreatedAt: now}
 	h.append(id, tx)
-	response.JSON(w, http.StatusCreated, map[string]any{"transaction": tx, "balance": user.Balance})
+	funding := "Saldo Utama"
+	if creditUsed > 0 && mainUsed > 0 {
+		funding = "Saldo Utama + Saldo Kredit"
+	} else if creditUsed > 0 {
+		funding = "Saldo Kredit"
+	}
+	response.JSON(w, http.StatusCreated, map[string]any{"transaction": tx, "balance": user.Balance, "main_used": mainUsed, "credit_used": creditUsed, "funding_source": funding})
 }
 
 func (h *UserTransactionHandler) TopUp(w http.ResponseWriter, r *http.Request) {
