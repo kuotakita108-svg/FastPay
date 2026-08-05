@@ -1,6 +1,6 @@
 import {NavLink, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
-import {Banknote, BarChart3, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, LogOut, ShieldCheck, UserPlus, Users, WalletCards, XCircle, Zap} from 'lucide-react'
+import {Banknote, BarChart3, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, Landmark, LockKeyhole, LogOut, ShieldCheck, TrendingUp, UserPlus, Users, WalletCards, XCircle, Zap} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
 
@@ -11,8 +11,9 @@ const marketingNavigation = [
       {to: '/credit-applications', label: 'Ringkasan Kerja', icon: WalletCards},
       {to: '/credit-applications?view=agent-input', label: 'Daftar & Survei Agent', icon: UserPlus},
       {to: '/credit-applications?view=verifikasi', label: 'Survei & Selfie Lapangan', icon: Camera},
-      {to: '/credit-applications?view=peminjam', label: 'Kredit Aktif', icon: Users},
-      {to: '/credit-applications?view=angsuran', label: 'Pelunasan Kredit', icon: Banknote},
+      {to: '/credit-applications?view=peminjam', label: 'Agen Binaan', icon: Users},
+      {to: '/credit-applications?view=rekomendasi', label: 'Rekomendasi Limit', icon: TrendingUp},
+      {to: '/credit-applications?view=komisi', label: 'Kantong Komisi', icon: Banknote},
     ],
   },
 ]
@@ -21,12 +22,13 @@ const operatorNavigation = [
   {
     section: 'Operator Kredit',
     items: [
-      {to: '/credit-applications', label: 'Daftar Kredit Agent', icon: ShieldCheck},
-      {to: '/credit-applications?view=verifikasi', label: 'Antrean Operator', icon: ClipboardCheck},
-      {to: '/credit-applications?view=peminjam', label: 'Kredit Diterima', icon: CheckCircle2},
-      {to: '/credit-applications?view=angsuran', label: 'Monitor Pelunasan', icon: Banknote},
-      {to: '/credit-applications?view=pelunasan', label: 'Bukti Pelunasan', icon: FileCheck2},
-      {to: '/credit-applications?view=verifikasi&filter=Ditolak', label: 'Penolakan & Catatan', icon: XCircle},
+      {to: '/credit-applications', label: 'Dashboard Operator', icon: ShieldCheck},
+      {to: '/credit-applications?view=verifikasi', label: 'Ruang Verifikasi', icon: ClipboardCheck},
+      {to: '/credit-applications?view=limit', label: 'Tier & Limit Agent', icon: Gauge},
+      {to: '/credit-applications?view=peminjam', label: 'Kredit Aktif', icon: CheckCircle2},
+      {to: '/credit-applications?view=pelunasan', label: 'Pelunasan & Bukti', icon: FileCheck2},
+      {to: '/credit-applications?view=suspend', label: 'Suspend & Tunggakan', icon: LockKeyhole},
+      {to: '/credit-applications?view=h2h', label: 'Monitor Saldo H2H', icon: Landmark},
       {to: '/credit-applications?view=laporan', label: 'Arsip Keputusan', icon: BarChart3},
     ],
   },
@@ -48,11 +50,11 @@ export default function Sidebar({open, onClose}) {
   const roleLabel = role === 'master' ? 'Admin Pusat Kredit' : role === 'marketing' ? 'Marketing Kredit' : isOperator ? 'Operator Kredit' : 'Panel Administrator'
   const current = `${location.pathname}${location.search}`
   const active = to => current === to || (!to.includes('?') && location.pathname === to && !location.search)
-  const activeLabel = visibleNavigation.flatMap(group => group.items).find(item => active(item.to))?.label || (isCreditAdmin ? 'Meja Keputusan' : 'Ringkasan Kerja')
+  const activeLabel = visibleNavigation.flatMap(group => group.items).find(item => active(item.to))?.label || (isCreditAdmin ? 'Dashboard Operator' : 'Ringkasan Kerja')
   const rolePanel = isMarketing
-    ? {eyebrow: 'MODE MARKETING', title: 'Dampingi agent', description: 'Daftarkan akun, arahkan pengajuan, ambil selfie pertemuan, lalu pantau pelunasan.'}
+    ? {eyebrow: 'MODE MARKETING', title: 'Validasi lapangan', description: 'Daftarkan agent, ambil tiga foto langsung, pantau agen binaan, dan kirim rekomendasi limit.'}
     : isCreditAdmin
-      ? {eyebrow: isOperator ? 'MODE OPERATOR' : 'MODE ADMIN PUSAT', title: 'Keputusan akhir kredit', description: 'Cek seluruh berkas, tanda tangan, lalu terima atau tolak dengan catatan yang jelas.'}
+      ? {eyebrow: isOperator ? 'MODE OPERATOR' : 'MODE ADMIN PUSAT', title: 'Kontrol modal & kredit', description: 'Verifikasi berkas, atur limit, pantau pelunasan, suspend akses, dan cek kesiapan H2H.'}
       : null
 
   return <aside className={`sidebar ${open ? 'open' : ''}`}>

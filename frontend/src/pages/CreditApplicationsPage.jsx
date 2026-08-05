@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react'
 import {useSearchParams} from 'react-router-dom'
-import {AlertCircle, ArrowRight, Ban, Banknote, BarChart3, CalendarDays, Camera, Check, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, FileCheck2, Filter, HandCoins, Images, Landmark, PenLine, PhoneCall, PlusCircle, Printer, QrCode, Search, ShieldCheck, Stamp, Trash2, Upload, UserCheck, UserPlus, WalletCards, X, XCircle} from 'lucide-react'
+import {AlertCircle, ArrowRight, Ban, Banknote, BarChart3, CalendarDays, Camera, Check, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, FileCheck2, Filter, Gauge, HandCoins, Images, Landmark, LockKeyhole, PenLine, PhoneCall, PlusCircle, Printer, QrCode, Search, ShieldCheck, Stamp, Trash2, TrendingUp, Upload, UserCheck, UserPlus, WalletCards, X, XCircle} from 'lucide-react'
 import {QRCodeSVG} from 'qrcode.react'
 import PageHeader from '../components/common/PageHeader'
 import {useAuth} from '../context/AuthContext'
@@ -190,6 +190,11 @@ const viewInfo = {
   angsuran: {label: 'Pelunasan Kredit', title: 'Monitor pelunasan penuh', desc: 'Pantau transfer Bank, QRIS, penagihan offline, bukti pembayaran, dan hak refill setelah lunas.'},
   pelunasan: {label: 'Bukti Pelunasan', title: 'Arsip bukti pelunasan', desc: 'Periksa kredit yang sudah lunas beserta nominal, metode, waktu, referensi, penerima, dan bukti pembayarannya.'},
   laporan: {label: 'Laporan Kredit', title: 'Rekap kinerja kredit', desc: 'Lihat total nominal pinjaman, pembayaran masuk, sisa tagihan, dan status seluruh peminjam.'},
+  rekomendasi: {label: 'Rekomendasi Limit', title: 'Rekomendasikan kenaikan limit', desc: 'Marketing memberi catatan lapangan untuk agent binaan. Keputusan limit tetap di tangan Operator.'},
+  komisi: {label: 'Kantong Komisi', title: 'Insentif marketing', desc: 'Komisi hanya tercatat dari transaksi H2H sukses yang sudah dikirim oleh sistem pusat.'},
+  limit: {label: 'Tier & Limit Agent', title: 'Manajemen tier dan limit', desc: 'Operator dapat melihat rekomendasi marketing dan menyesuaikan limit secara manual tanpa menghapus aturan otomatis.'},
+  suspend: {label: 'Suspend & Tunggakan', title: 'Kontrol akses agent', desc: 'Akses agent yang menunggak atau tokonya tutup dapat dihentikan sementara sampai diselesaikan.'},
+  h2h: {label: 'Monitor Saldo H2H', title: 'Kesiapan bridge Pulsa24Jam', desc: 'Pantau kesiapan saldo induk sebelum transaksi agent diteruskan ke API H2H Pulsa24Jam.'},
   panduan: {label: 'Panduan Marketing', title: 'Panduan kerja marketing', desc: 'Daftarkan agent, bantu pengajuan, ambil selfie pertemuan, dan catat pelunasan offline secara tertib.'},
   'agent-input': {label: 'Tambah Agent', title: 'Daftarkan agent baru', desc: 'Buat akun agent resmi agar agent dapat login dan menggunakan layanan Kredit Saldo Agent.'},
 }
@@ -375,7 +380,7 @@ export default function CreditApplicationsPage() {
       window.scrollTo({top: 0, behavior: 'smooth'})
       return
     }
-    if (view === 'panduan') {
+    if (['panduan', 'rekomendasi', 'komisi', 'limit', 'suspend', 'h2h'].includes(view)) {
       setShowCreate(false)
       setFilter('Semua')
       setExpandedId('')
@@ -458,6 +463,8 @@ export default function CreditApplicationsPage() {
       documents: Object.fromEntries(coreDocumentTypes.map(doc => [doc.key, {name: manualDocuments[doc.key].name, dataUrl: manualDocuments[doc.key].dataUrl || ''}])),
       repayments: [],
       createdBy: {role: user.role, name: reviewerName(user), at: new Date().toISOString()},
+      marketingOwnerId: user?.id || '',
+      marketingOwnerName: reviewerName(user),
     }
     // Gunakan satu jalur simpan agar data tidak berbeda antar panel dan tab.
     saveApplication(application, {})
@@ -527,7 +534,7 @@ export default function CreditApplicationsPage() {
     if (!dataUrl) return
     const documents = {...(item.documents || {}), [key]: {name: file.name, dataUrl}}
     const meeting = key === 'selfieMarketing' ? {at: new Date().toISOString(), by: reviewerName(user), selfieName: file.name} : item.marketingMeeting
-    saveApplication(item, {documents, marketingMeeting: meeting, status: item.status === 'Menunggu verifikasi marketing' ? 'Sedang diverifikasi marketing' : normalizeCreditStatus(item.status)})
+    saveApplication(item, {documents, marketingMeeting: meeting, marketingOwnerId: user?.id || item.marketingOwnerId || '', marketingOwnerName: reviewerName(user), status: item.status === 'Menunggu verifikasi marketing' ? 'Sedang diverifikasi marketing' : normalizeCreditStatus(item.status)})
     refresh()
   }
   const forwardToOperator = item => {
@@ -536,6 +543,8 @@ export default function CreditApplicationsPage() {
     saveApplication(item, {
       status: 'Menunggu keputusan operator',
       forwardedAt: new Date().toISOString(),
+      marketingOwnerId: user?.id || item.marketingOwnerId || '',
+      marketingOwnerName: reviewerName(user),
       marketingVerification: {by: reviewerName(user), at: new Date().toISOString()},
     })
     refresh()
@@ -581,6 +590,22 @@ export default function CreditApplicationsPage() {
       setOperatorMessage(suspended ? 'Akses agent dihentikan. Agent tidak dapat login sampai diaktifkan kembali.' : 'Akses agent sudah diaktifkan kembali.')
       refresh()
     } catch (error) { setOperatorMessage(error.message || 'Status akses agent gagal diubah.') }
+  }
+  const saveMarketingRecommendation = item => {
+    if (!isMarketing && !isAdmin) return
+    const note = window.prompt('Catatan rekomendasi marketing untuk Operator:', item.marketingRecommendation?.note || '')
+    if (note === null) return
+    saveApplication(item, {
+      marketingOwnerId: user?.id || item.marketingOwnerId || '',
+      marketingOwnerName: reviewerName(user),
+      marketingRecommendation: {
+        by: reviewerName(user),
+        at: new Date().toISOString(),
+        note: note.trim() || 'Marketing merekomendasikan peninjauan limit berdasarkan aktivitas konter.',
+      },
+    })
+    setOperatorMessage('Rekomendasi marketing tersimpan dan dapat dilihat Operator.')
+    refresh()
   }
   const printApplication = item => {
     const profile = creditProfile(items, item)
@@ -676,7 +701,8 @@ export default function CreditApplicationsPage() {
     approved: items.filter(item => statusGroup(item) === 'Disetujui').length,
     paid: items.filter(item => statusGroup(item) === 'Lunas').length,
   }
-  const marketingQueue = sortedItems.filter(item => ['Menunggu verifikasi marketing', 'Sedang diverifikasi marketing'].includes(item.status))
+  const marketingOwnedItems = sortedItems.filter(item => !isMarketing || !item.marketingOwnerId || item.marketingOwnerId === user?.id)
+  const marketingQueue = marketingOwnedItems.filter(item => ['Menunggu verifikasi marketing', 'Sedang diverifikasi marketing'].includes(item.status))
   const meetingQueue = marketingQueue.filter(item => !marketingReadiness(item).meetingReady)
   const marketingReadyForAnalysis = marketingQueue.filter(item => marketingReadiness(item).readyForAnalysis)
   const offlineCollectionQueue = sortedItems.filter(item => item.status === 'Disetujui' && item.paymentStatus === 'Menunggu penagihan offline')
@@ -688,6 +714,12 @@ export default function CreditApplicationsPage() {
   const operatorIssuedAmount = analystApprovedActive.reduce((sum, item) => sum + Number(item.creditOriginalAmount || item.form.amount || 0), 0)
   const operatorRemainingAmount = analystApprovedActive.reduce((sum, item) => sum + Number(item.creditOutstanding ?? item.creditBalance ?? item.creditOriginalAmount ?? item.form.amount ?? 0), 0)
   const operatorSuspended = [...new Map(sortedItems.filter(item => item.agentAccessStatus === 'suspended').map(item => [agentIdentity(item), item])).values()]
+  const overdueItems = sortedItems.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas' && item.dueAt && new Date(item.dueAt).getTime() < Date.now())
+  const operatorLimitRows = sortedItems.filter(item => ['Disetujui', 'Lunas'].includes(statusGroup(item)))
+  const marketingRecommendations = marketingOwnedItems.filter(item => item.marketingRecommendation)
+  const marketingCommission = marketingOwnedItems.reduce((sum, item) => sum + Number(item.marketingCommission || 0), 0)
+  const marketingActiveAgents = marketingOwnedItems.filter(item => item.status === 'Disetujui')
+  const operatorSuspendRows = [...new Map([...overdueItems, ...operatorSuspended].map(item => [item.id, item])).values()]
   const approvedActive = sortedItems.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas')
   const borrowerRows = sortedItems.map(item => ({item, pay: paymentSummary(item), next: firstUnpaidRow(item), score: dataScore(item)}))
   const approvedBorrowerRows = borrowerRows.filter(({item}) => ['Disetujui', 'Lunas'].includes(statusGroup(item)))
@@ -920,6 +952,31 @@ export default function CreditApplicationsPage() {
           <li><b>Selfie pertemuan</b><small>Ambil bukti selfie bersama agent. Berkas otomatis tersedia untuk pemeriksaan Operator.</small></li>
           <li><b>Catat pelunasan</b><small>Untuk online, periksa bukti Bank/QRIS. Untuk offline, datang menagih dan unggah bukti penerimaan penuh.</small></li>
         </ol>
+      </section>}
+      {(isMarketing || isAdmin) && view === 'rekomendasi' && <section className="credit-command-panel marketing-command-panel">
+        <header><div><span>REKOMENDASI LAPANGAN</span><h2>Usulkan kenaikan limit agent binaan</h2><p>Marketing hanya memberi catatan kondisi toko dan aktivitas lapangan. Operator tetap memutuskan limit akhir secara manual atau melalui aturan otomatis.</p></div><TrendingUp/></header>
+        <div className="command-summary"><article><small>Agent kredit aktif</small><strong>{marketingActiveAgents.length}</strong><span>Siap dipantau</span></article><article><small>Rekomendasi terkirim</small><strong>{marketingRecommendations.length}</strong><span>Tercatat ke Operator</span></article><article><small>Menunggu keputusan</small><strong>{marketingRecommendations.filter(item => !item.operatorLimit?.updatedAt).length}</strong><span>Belum diatur Operator</span></article></div>
+        <div className="command-list">{marketingActiveAgents.length ? marketingActiveAgents.map(item => { const profile = creditProfile(items, item); return <article key={item.id}><div><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id} · limit saat ini {rupiah(profile.limit)}</small>{item.marketingRecommendation?.note && <em>Catatan: {item.marketingRecommendation.note}</em>}</div><button type="button" onClick={() => saveMarketingRecommendation(item)}><TrendingUp/>{item.marketingRecommendation ? 'Ubah rekomendasi' : 'Beri rekomendasi'}</button></article> }) : <p>Belum ada agent binaan dengan kredit aktif.</p>}</div>
+      </section>}
+      {(isMarketing || isAdmin) && view === 'komisi' && <section className="credit-command-panel marketing-command-panel">
+        <header><div><span>KANTONG KOMISI</span><h2>Insentif dari agent binaan</h2><p>Komisi hanya bertambah dari transaksi H2H yang sukses dan telah dikirim oleh server pusat. Tidak ada komisi contoh atau saldo palsu di halaman ini.</p></div><WalletCards/></header>
+        <div className="command-summary"><article><small>Komisi tercatat</small><strong>{rupiah(marketingCommission)}</strong><span>Transaksi H2H sukses</span></article><article><small>Agent binaan aktif</small><strong>{marketingActiveAgents.length}</strong><span>Bisa menghasilkan komisi</span></article><article><small>Status sinkronisasi</small><strong>Belum aktif</strong><span>Butuh API H2H Pulsa24Jam</span></article></div>
+        <div className="command-empty"><WalletCards/><b>Komisi akan masuk otomatis setelah bridge H2H aktif</b><span>Setelah API Pulsa24Jam terhubung, setiap transaksi sukses agent binaan dapat dihitung sesuai aturan komisi pusat.</span></div>
+      </section>}
+      {(isOperator || isAdmin) && view === 'limit' && <section className="credit-command-panel operator-command-panel">
+        <header><div><span>MANAJEMEN TIER & LIMIT</span><h2>Atur plafon kredit tanpa menghapus aturan otomatis</h2><p>Operator dapat menaikkan, menurunkan, atau mempertahankan limit tiap agent. Riwayat pelunasan tetap dipakai sistem untuk rekomendasi tier otomatis.</p></div><Gauge/></header>
+        <div className="command-list">{operatorLimitRows.length ? operatorLimitRows.map(item => { const profile = creditProfile(items, item); const outstanding = Number(item.creditOutstanding ?? item.creditBalance ?? item.creditOriginalAmount ?? item.form.amount ?? 0); return <article className="limit-row" key={item.id}><div><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id} · {profile.automatic.name} · kredit berjalan {rupiah(outstanding)}</small>{item.marketingRecommendation?.note && <em>Rekomendasi Marketing: {item.marketingRecommendation.note}</em>}</div><label><span>Limit manual</span><input inputMode="numeric" value={operatorDrafts[item.id] ?? String(profile.limit)} onChange={event => setOperatorDrafts(current => ({...current, [item.id]: event.target.value.replace(/\D/g, '')}))}/></label><button type="button" onClick={() => saveOperatorLimit(item)}><CheckCircle2/>Simpan</button></article> }) : <p>Belum ada agent yang sudah diterima untuk diatur limitnya.</p>}</div>
+      </section>}
+      {(isOperator || isAdmin) && view === 'suspend' && <section className="credit-command-panel operator-command-panel">
+        <header><div><span>PENGAMANAN AKSES</span><h2>Suspend agent menunggak atau toko tidak aktif</h2><p>Akses transaksi dapat dihentikan sementara. Sebelum suspend, pastikan ada catatan lapangan atau tagihan yang benar agar agent tidak salah diblokir.</p></div><LockKeyhole/></header>
+        <div className="command-summary"><article><small>Lewat jatuh tempo</small><strong>{overdueItems.length}</strong><span>Butuh tindak lanjut</span></article><article><small>Akses dihentikan</small><strong>{operatorSuspended.length}</strong><span>Menunggu aktivasi</span></article><article><small>Kredit berjalan</small><strong>{rupiah(operatorRemainingAmount)}</strong><span>Total belum lunas</span></article></div>
+        <div className="command-list">{operatorSuspendRows.length ? operatorSuspendRows.map(item => <article key={item.id}><div><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id} · {item.agentAccessStatus === 'suspended' ? 'Akses sedang dihentikan' : 'Lewat jatuh tempo'}</small><em>Sisa tagihan {rupiah(Number(item.creditOutstanding ?? item.creditBalance ?? item.form.amount ?? 0))}</em></div><button type="button" className={item.agentAccessStatus === 'suspended' ? 'safe' : 'danger'} onClick={() => setAgentAccess(item, item.agentAccessStatus === 'suspended')}><Ban/>{item.agentAccessStatus === 'suspended' ? 'Aktifkan akses' : 'Suspend akses'}</button></article>) : <p>Tidak ada agent menunggak atau akses yang sedang dihentikan.</p>}</div>
+        {operatorMessage && <output className="operator-feedback" aria-live="polite">{operatorMessage}</output>}
+      </section>}
+      {(isOperator || isAdmin) && view === 'h2h' && <section className="credit-command-panel operator-command-panel">
+        <header><div><span>PULSA24JAM BRIDGE</span><h2>Monitor modal kredit dan saldo induk H2H</h2><p>Nilai kredit di bawah berasal dari data KuotaKita. Saldo deposit Pulsa24Jam baru dapat tampil real-time setelah API key H2H resmi dimasukkan ke backend.</p></div><Landmark/></header>
+        <div className="command-summary"><article><small>Kredit diterima</small><strong>{rupiah(operatorIssuedAmount)}</strong><span>Modal yang sudah diberikan</span></article><article><small>Tagihan berjalan</small><strong>{rupiah(operatorRemainingAmount)}</strong><span>Belum dibayar lunas</span></article><article><small>Saldo induk H2H</small><strong>Belum tersinkron</strong><span>API Pulsa24Jam diperlukan</span></article></div>
+        <div className="command-empty"><Landmark/><b>Bridge H2H belum diaktifkan</b><span>Hubungkan endpoint saldo dan transaksi Pulsa24Jam di backend. Setelah itu sistem dapat mengecek saldo induk sebelum memotong Saldo Utama atau Saldo Kredit agent.</span></div>
       </section>}
       {showMainList && <div className="panel-header">
         <div><h2>{isRejectedArchive ? 'Riwayat Pengajuan Ditolak' : isOperator ? 'Berkas Siap Diperiksa' : 'Pengajuan Masuk'}</h2><p>{isRejectedArchive ? 'Setiap keputusan menyimpan alasan penolakan agar mudah ditinjau kembali dan dijelaskan kepada agent.' : isMarketing ? 'Tugas marketing: daftarkan dan dampingi agent, lengkapi selfie pertemuan, serta tangani pelunasan offline.' : isOperator ? 'Tugas operator: cek seluruh data, tanda tangan, lalu terima atau tolak.' : 'Pantau seluruh alur pengajuan kredit agent dari satu panel.'}</p></div>
