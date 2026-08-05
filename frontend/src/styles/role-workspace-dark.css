@@ -242,6 +242,48 @@
   background: linear-gradient(90deg, #6b5cff, #15b7d1) !important;
 }
 
+/* Status is information, not a button: use clean coloured text with no pills. */
+:where(.marketing-review, .operator-review) :is(.operator-status, .status-badge, .credit-status) {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-weight: 800;
+}
+
+:where(.marketing-review, .operator-review) :is(
+  .approved, .success, .status-approved, .status-paid,
+  .operator-status.ready, .status-badge.disetujui, .status-badge.berhasil,
+  .status-badge.lunas
+) {
+  color: #39d98a !important;
+}
+
+:where(.marketing-review, .operator-review) :is(
+  .rejected, .danger, .status-rejected, .status-badge.ditolak,
+  .status-badge.gagal
+) {
+  color: #ff6d7a !important;
+}
+
+:where(.marketing-review, .operator-review) :is(
+  .operator-status.waiting, .waiting, .pending, .status-pending,
+  .status-badge.menunggu, .status-badge.diproses
+) {
+  color: #f7c95f !important;
+}
+
+:where(.marketing-review, .operator-review) .credit-review-card footer > span:not(.meeting-required):not(.approved):not(.rejected) {
+  color: #f7c95f !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
 @media (max-width: 760px) {
   .page-content:has(.marketing-review),
   .page-content:has(.operator-review) {
