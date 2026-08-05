@@ -1,10 +1,10 @@
 import {lazy,Suspense} from 'react'
 import {Navigate,Route,Routes} from 'react-router-dom'
 import ProtectedRoute from './components/auth/ProtectedRoute'
+import LoginPage from './pages/LoginPage'
+import UserHomePage from './pages/UserHomePage'
 
 const AppLayout=lazy(()=>import('./components/layout/AppLayout'))
-const LoginPage=lazy(()=>import('./pages/LoginPage'))
-const UserHomePage=lazy(()=>import('./pages/UserHomePage'))
 const ServicePurchasePage=lazy(()=>import('./pages/ServicePurchasePage'))
 const CheckoutPage=lazy(()=>import('./pages/CheckoutPage'))
 const AllServicesPage=lazy(()=>import('./pages/AllServicesPage'))
@@ -28,14 +28,15 @@ const AccountFeaturePage=lazy(()=>import('./pages/AccountFeaturePage'))
 const AgentCreditPage=lazy(()=>import('./pages/AgentCreditPage'))
 const CreditApplicationsPage=lazy(()=>import('./pages/CreditApplicationsPage'))
 
-const LoadingScreen=()=> <div className="app-loading" role="status" aria-label="Memuat KuotaKita"><i/><strong>KuotaKita</strong></div>
+// Halaman awal dibuat langsung tersedia. Jangan menahan pengguna di splash screen.
+const RouteLoading=()=> <div className="route-loading" role="status" aria-label="Memuat halaman"/>
 const Panel=()=> <ProtectedRoute roles={['master','admin','marketing','operator','analis']}><AppLayout/></ProtectedRoute>
 const User=({children})=> <ProtectedRoute roles={['user','agent']}>{children}</ProtectedRoute>
 const Agent=({children})=> <ProtectedRoute roles={['agent']}>{children}</ProtectedRoute>
 const AdminOnly=({children})=> <ProtectedRoute roles={['master','admin']}>{children}</ProtectedRoute>
 const ReviewOnly=({children})=> <ProtectedRoute roles={['master','admin','marketing','operator','analis']}>{children}</ProtectedRoute>
 
-export default function App(){return <Suspense fallback={<LoadingScreen/>}><Routes>
+export default function App(){return <Suspense fallback={<RouteLoading/>}><Routes>
  <Route path="/login" element={<LoginPage/>}/>
  <Route path="/app" element={<User><UserHomePage/></User>}/>
  <Route path="/app/buy/:type" element={<User><ServicePurchasePage/></User>}/>
