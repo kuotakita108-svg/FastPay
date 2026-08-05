@@ -148,6 +148,100 @@
   color: #9ecfff;
 }
 
+/* Components that have their own white surface in the credit workflow. */
+:where(.marketing-review, .operator-review) :is(
+  .borrower-directory-panel,
+  .directory-stats article,
+  .directory-tools label,
+  .directory-tools button,
+  .directory-agent,
+  .directory-agent summary,
+  .directory-agent-borrowers article,
+  .borrower-directory-panel .directory-list > button,
+  .credit-review-stats article,
+  .credit-payment-summary,
+  .credit-payment-list article,
+  .credit-create-box,
+  .marketing-action-panel,
+  .quick-payment-list button,
+  .quick-payment-list p,
+  .marketing-report-panel article,
+  .marketing-input-history,
+  .marketing-report-table,
+  .marketing-input-history button,
+  .marketing-report-table article,
+  .marketing-document-upload,
+  .marketing-document-upload article
+) {
+  color: #eaf3ff !important;
+  border-color: #234462 !important;
+  background: #0b192a !important;
+  box-shadow: none !important;
+}
+
+:where(.marketing-review, .operator-review) :is(
+  .borrower-directory-panel,
+  .credit-create-box,
+  .marketing-action-panel,
+  .marketing-input-history,
+  .marketing-report-table
+) > header,
+:where(.marketing-review, .operator-review) .directory-agent summary {
+  background: linear-gradient(135deg, #102440, #0c1a2d) !important;
+}
+
+:where(.marketing-review, .operator-review) :is(
+  .borrower-directory-panel,
+  .credit-create-box,
+  .marketing-action-panel,
+  .marketing-report-panel,
+  .marketing-input-history,
+  .marketing-report-table,
+  .directory-agent,
+  .directory-agent-borrowers,
+  .credit-payment-summary,
+  .credit-payment-list,
+  .marketing-document-upload
+) :is(h2, h3, h4, b, strong, i, legend) {
+  color: #f4f8ff !important;
+}
+
+:where(.marketing-review, .operator-review) :is(
+  .borrower-directory-panel,
+  .credit-create-box,
+  .marketing-action-panel,
+  .marketing-report-panel,
+  .marketing-input-history,
+  .marketing-report-table,
+  .directory-agent,
+  .directory-agent-borrowers,
+  .credit-payment-summary,
+  .credit-payment-list,
+  .marketing-document-upload
+) :is(p, small, span, dd) {
+  color: #aebfd4 !important;
+}
+
+:where(.marketing-review, .operator-review) .directory-total {
+  color: #eef6ff !important;
+  border: 1px solid #4b5da6;
+  background: linear-gradient(145deg, #302a76, #172b55) !important;
+}
+
+:where(.marketing-review, .operator-review) :is(.directory-tools button.active, .directory-agent-borrowers button) {
+  color: #fff !important;
+  border-color: #6f66ff !important;
+  background: linear-gradient(135deg, #4b42ca, #176fc5) !important;
+}
+
+:where(.marketing-review, .operator-review) .directory-agent-borrowers em {
+  background: #172a41 !important;
+}
+
+:where(.marketing-review, .operator-review) .directory-agent-borrowers em i {
+  background: linear-gradient(90deg, #6b5cff, #15b7d1) !important;
+}
+
 @media (max-width: 760px) {
   .page-content:has(.marketing-review),
   .page-content:has(.operator-review) {
