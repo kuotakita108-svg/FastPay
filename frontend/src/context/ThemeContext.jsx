@@ -9,7 +9,9 @@ const isPanelPath=pathname=>!pathname.startsWith('/app')&&pathname!=='/login'
 
 export function ThemeProvider({children}){
   const location=useLocation()
-  const [dark,setDark]=useState(()=>localStorage.getItem('panel-theme')==='dark')
+  // Panel operasional memakai mode malam sebagai tampilan awal. Pilihan "terang"
+  // tetap tersedia lewat tombol bulan, sementara aplikasi agen selalu terang.
+  const [dark,setDark]=useState(()=>localStorage.getItem('panel-theme')!=='light')
   const panelActive=isPanelPath(location.pathname)
 
   useLayoutEffect(()=>{

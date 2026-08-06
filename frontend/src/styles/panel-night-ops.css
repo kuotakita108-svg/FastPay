@@ -1,0 +1,65 @@
+/* Final visual layer for marketing/operator workspaces. It is deliberately
+   scoped so the customer/agent application at /app never inherits this theme. */
+:root[data-theme="dark"] .panel-workspace-shell,
+:root[data-theme="dark"] .panel-workspace-shell .app-main,
+:root[data-theme="dark"] .panel-workspace-shell .page-content{
+  background:#050a14!important;color:#eef6ff!important;
+}
+:root[data-theme="dark"] .panel-workspace-shell .topbar{
+  background:linear-gradient(180deg,#0b1527,#081121)!important;
+  border-color:#1b3151!important;box-shadow:0 1px 0 #233f63;
+}
+:root[data-theme="dark"] .panel-workspace-shell .global-search{display:none!important}
+:root[data-theme="dark"] .panel-workspace-shell .icon-button,
+:root[data-theme="dark"] .panel-workspace-shell .menu-button{
+  background:#101d31!important;color:#d9e8ff!important;border-color:#284464!important;
+}
+:root[data-theme="dark"] .panel-workspace-shell .sidebar{
+  background:linear-gradient(180deg,#081324 0%,#07101f 100%)!important;border-right:1px solid #1b3353;
+}
+:root[data-theme="dark"] .panel-workspace-shell .nav-item{color:#bfd0e6!important;border:1px solid transparent}
+:root[data-theme="dark"] .panel-workspace-shell .nav-item:hover,
+:root[data-theme="dark"] .panel-workspace-shell .nav-item.active{
+  color:#fff!important;background:linear-gradient(100deg,#243454,#182842)!important;border-color:#466795!important;
+  box-shadow:inset 3px 0 #8d76ff;
+}
+:root[data-theme="dark"] .panel-workspace-shell :is(.marketing-review,.operator-review){color:#eef6ff!important}
+:root[data-theme="dark"] .panel-workspace-shell :is(.marketing-review,.operator-review) :is(
+  .panel-header,.credit-review-hero,.marketing-workspace,.credit-mode-panel,.credit-review-card,
+  .credit-detail-block,.operator-control-block,.operator-feedback,.operator-credit-snapshot,
+  .operator-limit-editor,.marketing-task-grid>*,.marketing-focus-grid>*,.marketing-quick-actions>*,
+  .credit-review-grid>*,.credit-review-address,.credit-review-signatures>*,.credit-review-tools,
+  .empty-state,.borrower-directory-panel,.directory-stats article,.directory-tools label,
+  .directory-tools button,.directory-agent,.directory-agent summary,.directory-agent-borrowers article,
+  .borrower-directory-panel .directory-list>button,.credit-review-stats article,.credit-payment-summary,
+  .credit-payment-list article,.credit-create-box,.marketing-action-panel,.quick-payment-list button,
+  .marketing-report-panel article,.marketing-input-history,.marketing-report-table,.marketing-document-upload,
+  .marketing-document-upload article,.operator-queue-table,.credit-review-table,.review-detail-card,
+  .detail-card,.detail-section,.document-card,.application-detail,.application-summary,article,section){
+  background:#0b1526!important;color:#edf6ff!important;border-color:#213b5b!important;
+  box-shadow:0 10px 30px rgba(0,0,0,.16)!important;
+}
+:root[data-theme="dark"] .panel-workspace-shell :is(.marketing-review,.operator-review) :is(h1,h2,h3,h4,h5,h6,strong,b,label,legend,dt,th,td){color:#f5f9ff!important}
+:root[data-theme="dark"] .panel-workspace-shell :is(.marketing-review,.operator-review) :is(p,small,span,dd,.muted,.subtitle){color:#aebfd5!important}
+:root[data-theme="dark"] .panel-workspace-shell :is(.marketing-review,.operator-review) :is(input,select,textarea){
+  background:#07101e!important;color:#f1f7ff!important;border-color:#294767!important;box-shadow:none!important;
+}
+:root[data-theme="dark"] .panel-workspace-shell :is(.marketing-review,.operator-review) :is(input,select,textarea)::placeholder{color:#7f94af!important}
+:root[data-theme="dark"] .panel-workspace-shell :is(.marketing-review,.operator-review) :is(table,thead,tbody,tr){background:#091323!important;color:#eaf3ff!important;border-color:#213d5f!important}
+:root[data-theme="dark"] .panel-workspace-shell :is(.marketing-review,.operator-review) thead :is(th,td){background:#08283d!important;color:#b7ddf6!important}
+:root[data-theme="dark"] .panel-workspace-shell :is(.marketing-review,.operator-review) :is(button,.primary-button,.secondary-button,.action-button){
+  color:#fff!important;border-color:#355b87!important;
+}
+:root[data-theme="dark"] .panel-workspace-shell :is(.marketing-review,.operator-review) .primary-button,
+:root[data-theme="dark"] .panel-workspace-shell :is(.marketing-review,.operator-review) .action-button.primary{
+  background:linear-gradient(135deg,#7258ed,#18b9d8)!important;
+}
+:root[data-theme="dark"] .panel-workspace-shell :is(.marketing-review,.operator-review) :is(.status-approved,.status-accepted,.accepted,.success){color:#47e4a6!important;background:transparent!important;border-color:transparent!important}
+:root[data-theme="dark"] .panel-workspace-shell :is(.marketing-review,.operator-review) :is(.status-rejected,.rejected,.danger){color:#ff747c!important;background:transparent!important;border-color:transparent!important}
+:root[data-theme="dark"] .panel-workspace-shell :is(.marketing-review,.operator-review) :is(.status-pending,.pending,.review){color:#ffc45d!important;background:transparent!important;border-color:transparent!important}
+:root[data-theme="dark"] .panel-workspace-shell :is(.marketing-review,.operator-review) :is(svg){color:inherit}
+@media(max-width:760px){
+  :root[data-theme="dark"] .panel-workspace-shell .page-content{padding:16px 14px 38px!important;min-height:calc(100dvh - 65px)}
+  :root[data-theme="dark"] .panel-workspace-shell :is(.marketing-review,.operator-review) :is(.credit-review-hero,.panel-header){padding:18px!important;border-radius:18px!important}
+  :root[data-theme="dark"] .panel-workspace-shell :is(.marketing-review,.operator-review) :is(h1){font-size:24px!important;line-height:1.16!important}
+}
