@@ -255,3 +255,65 @@
   .panel-workspace-shell :is(.marketing-review,.operator-review) .credit-review-tools{gap:8px!important;padding:10px!important}
   .panel-workspace-shell :is(.marketing-review,.operator-review) :is(.operator-queue-table,.credit-review-table) table{min-width:760px!important}
 }
+
+/* Normalisasi akhir: marketing dan operator memakai satu konsol navy gelap. */
+.panel-workspace-shell :is(.marketing-review,.operator-review){background:#050b14!important;color:#edf7ff!important}
+.panel-workspace-shell :is(.marketing-review,.operator-review) :is(
+  .marketing-workspace,.operator-workspace,.marketing-action-panel,.credit-command-panel,.credit-mode-panel,
+  .credit-create-box,.credit-review-card,.credit-detail-block,.detail-card,.detail-section,.application-detail,
+  .application-summary,.review-detail-card,.document-card,.marketing-document-upload,.marketing-report-panel,
+  .marketing-input-history,.marketing-guide-panel,.borrower-directory-panel,.credit-payment-summary,
+  .credit-payment-list,.operator-control-block,.operator-credit-snapshot,.operator-limit-editor,.operator-feedback,
+  .analyst-payment-proof-panel
+){background:#091827!important;background-image:none!important;color:#edf7ff!important;border:1px solid #193a56!important;box-shadow:none!important}
+.panel-workspace-shell :is(.marketing-review,.operator-review) :is(
+  .marketing-workspace>header,.operator-workspace>header,.marketing-action-panel>header,.credit-command-panel>header,
+  .credit-mode-panel>header,.marketing-guide-panel>header,.marketing-report-panel>header,.borrower-directory-panel>header,
+  .panel-header,.credit-review-hero
+){background:#0a1a2a!important;background-image:none!important;border-color:#1b425f!important}
+.panel-workspace-shell :is(.marketing-review,.operator-review) :is(
+  .marketing-task-grid>article,.marketing-focus-grid>*,.marketing-quick-actions>*,.credit-review-stats article,
+  .credit-review-grid>*,.directory-stats article,.directory-agent,.directory-agent summary,.directory-agent-borrowers article,
+  .borrower-directory-panel .directory-list>button,.marketing-document-upload article,.marketing-document-choice>*,
+  .payment-overview-stats article,.payment-proof-summary article,.payment-proof-card,.quick-payment-list button,.credit-payment-list article
+){background:#0b1d2f!important;background-image:none!important;border:1px solid #1a3b59!important;color:#eef7ff!important;box-shadow:none!important}
+.panel-workspace-shell :is(.marketing-review,.operator-review) :is(.marketing-workspace,.operator-workspace,.marketing-action-panel,.credit-command-panel,.credit-mode-panel)::before,
+.panel-workspace-shell :is(.marketing-review,.operator-review) :is(.marketing-workspace,.operator-workspace,.marketing-action-panel,.credit-command-panel,.credit-mode-panel)::after{display:none!important}
+
+/* Sidebar sama pada kedua panel: menu biasa teks, aktif saja ada penanda navy/cyan. */
+.panel-workspace-shell .sidebar.credit-sidebar{background:#071321!important;background-image:none!important;border-right:1px solid #18344c!important}
+.panel-workspace-shell .credit-sidebar :is(.sidebar-role-panel,.help-card,.credit-sidebar-intro,.sidebar-intro,.sidebar-help){display:none!important}
+.panel-workspace-shell .credit-sidebar .workspace-nav{padding:17px 0!important}
+.panel-workspace-shell .credit-sidebar .nav-item,.panel-workspace-shell .credit-sidebar .nav-item:hover{
+  min-height:31px!important;margin:7px 0!important;padding:0 11px!important;background:transparent!important;
+  border:0!important;border-radius:0!important;box-shadow:none!important;color:#b9c9d9!important
+}
+.panel-workspace-shell .credit-sidebar .nav-item.active,.panel-workspace-shell .credit-sidebar .nav-item[aria-current="page"]{
+  background:#092b45!important;border:1px solid #17678c!important;border-radius:7px!important;color:#f5fbff!important;
+  box-shadow:0 0 12px rgba(45,209,239,.15)!important
+}
+.panel-workspace-shell .credit-sidebar .nav-item.active::after,.panel-workspace-shell .credit-sidebar .nav-item[aria-current="page"]::after{right:10px!important;background:#42d7ef!important}
+
+/* Marketing ringkas: aksi dan pekerjaan tidak menumpuk, tetap mudah dipindai saat data banyak. */
+.panel-workspace-shell .marketing-workspace,.panel-workspace-shell .operator-workspace{padding:16px!important;gap:14px!important}
+.panel-workspace-shell .marketing-workspace>header,.panel-workspace-shell .operator-workspace>header{padding:14px 16px!important}
+.panel-workspace-shell .marketing-task-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px!important}
+.panel-workspace-shell .marketing-task-grid>article{min-height:92px!important;padding:12px!important}
+.panel-workspace-shell .marketing-quick-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+.panel-workspace-shell .marketing-quick-actions>button{min-height:72px!important;padding:12px!important}
+.panel-workspace-shell .marketing-focus-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+.panel-workspace-shell .marketing-focus-grid>div{min-height:0!important;padding:13px!important}
+.panel-workspace-shell .marketing-focus-grid button{min-height:44px!important;padding:8px 10px!important;background:#071827!important;border-color:#1a3b59!important}
+@media(max-width:760px){
+  .panel-workspace-shell .marketing-workspace,.panel-workspace-shell .operator-workspace{padding:12px!important;gap:10px!important}
+  .panel-workspace-shell .marketing-workspace>header,.panel-workspace-shell .operator-workspace>header{padding:12px!important}
+  .panel-workspace-shell .marketing-task-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .panel-workspace-shell .marketing-task-grid>article{min-height:76px!important;padding:10px!important}
+  .panel-workspace-shell .marketing-task-grid>article i{width:28px!important;height:28px!important}
+  .panel-workspace-shell .marketing-task-grid>article strong{font-size:18px!important}
+  .panel-workspace-shell .marketing-quick-actions{grid-template-columns:1fr!important;gap:8px!important}
+  .panel-workspace-shell .marketing-quick-actions>button{min-height:58px!important;padding:10px 12px!important}
+  .panel-workspace-shell .marketing-quick-actions>button small{display:none!important}
+  .panel-workspace-shell .marketing-focus-grid{grid-template-columns:1fr!important;gap:8px!important}
+  .panel-workspace-shell .marketing-focus-grid>div{padding:11px!important}
+}
