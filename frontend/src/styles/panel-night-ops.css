@@ -1,117 +1,158 @@
-/* Operations workspace only. The customer/agent app remains on its own theme. */
+/*
+ * Console staf KuotaKita.  Ini sengaja dipisahkan dari aplikasi agen/pelanggan
+ * supaya tombol tema di panel tidak pernah mengubah tampilan aplikasi utama.
+ */
 .panel-workspace-shell{
-  --ops-bg:#050b15;--ops-surface:#091525;--ops-surface-2:#0d1c30;--ops-line:#1b3552;
-  --ops-text:#f4f8ff;--ops-muted:#9eb2ca;--ops-cyan:#1bd0e8;--ops-purple:#886dff;
-  background:var(--ops-bg)!important;color:var(--ops-text)!important;
+  --ops-page:#050a12;--ops-sidebar:#071323;--ops-card:#091522;--ops-card-2:#0c1b2b;
+  --ops-line:#17314a;--ops-line-soft:#10263c;--ops-text:#f5f8fc;--ops-muted:#91a6bd;
+  --ops-cyan:#39d7ee;--ops-blue:#147caa;--ops-green:#35d49c;--ops-red:#ff7884;--ops-gold:#f6c15a;
+  background:var(--ops-page)!important;color:var(--ops-text)!important;
 }
 .panel-workspace-shell .app-main,.panel-workspace-shell .page-content{
-  background:radial-gradient(900px 420px at 77% -180px,#102c4a 0%,transparent 60%),var(--ops-bg)!important;
-  color:var(--ops-text)!important;
+  background:var(--ops-page)!important;color:var(--ops-text)!important;
 }
-.panel-workspace-shell .page-content{min-height:100vh;padding:28px 32px 52px!important}
+.panel-workspace-shell .page-content{max-width:none!important;min-height:calc(100vh - 72px);padding:28px 32px 52px!important}
 
-/* Header and compact operator sidebar */
+/* Sidebar: datar, padat, dan berstruktur seperti panel referensi. */
+.panel-workspace-shell .sidebar.credit-sidebar{
+  width:190px!important;padding:0 10px 12px!important;background:var(--ops-sidebar)!important;
+  border-right:1px solid var(--ops-line)!important;box-shadow:none!important;
+}
+@media(min-width:761px){.panel-workspace-shell .app-main{margin-left:190px!important}}
+.panel-workspace-shell .credit-sidebar .brand{
+  height:72px;padding:0 12px!important;gap:9px!important;font-size:19px!important;
+  color:var(--ops-text)!important;border-bottom:1px solid var(--ops-line)!important;
+}
+.panel-workspace-shell .credit-sidebar .brand>span{
+  display:none!important;
+}
+.panel-workspace-shell .credit-sidebar .sidebar-role-panel,.panel-workspace-shell .credit-sidebar .help-card{display:none!important}
+.panel-workspace-shell .credit-sidebar .workspace-nav{display:block!important;overflow-y:auto;padding:13px 0!important;gap:0!important}
+.panel-workspace-shell .credit-sidebar .workspace-nav>div{display:block!important}
+.panel-workspace-shell .credit-sidebar .workspace-nav .nav-label{
+  margin:10px 8px 7px!important;color:#66819d!important;font-size:9px!important;letter-spacing:1px!important;
+}
+.panel-workspace-shell .credit-sidebar .nav-item{
+  min-height:35px!important;margin:2px 0!important;padding:0 10px!important;gap:9px!important;
+  border:0!important;border-radius:6px!important;background:transparent!important;color:#b5c4d5!important;
+  font-size:11px!important;font-weight:700!important;box-shadow:none!important;transform:none!important;
+}
+.panel-workspace-shell .credit-sidebar .nav-item:hover{background:#0a263d!important;color:#fff!important}
+.panel-workspace-shell .credit-sidebar .nav-item.active{
+  background:#0b3a57!important;color:#fff!important;border:1px solid #1b5776!important;
+  box-shadow:inset 2px 0 var(--ops-cyan)!important;
+}
+.panel-workspace-shell .credit-sidebar .nav-item:before{display:none!important}
+.panel-workspace-shell .credit-sidebar .nav-item svg{color:#8bc6e7!important;filter:none!important}
+.panel-workspace-shell .credit-sidebar .nav-item.active svg{color:var(--ops-cyan)!important}
+.panel-workspace-shell .credit-sidebar .nav-current{padding:0!important;background:transparent!important;color:var(--ops-cyan)!important;font-size:8px!important;box-shadow:none!important}
+.panel-workspace-shell .credit-sidebar .sidebar-bottom{margin-top:auto!important;padding:0!important}
+.panel-workspace-shell .credit-sidebar .user-card{
+  margin:0!important;padding:12px 7px 2px!important;border-top:1px solid var(--ops-line)!important;
+  border-radius:0!important;background:transparent!important;color:var(--ops-text)!important;box-shadow:none!important;
+}
+.panel-workspace-shell .credit-sidebar .user-card small{color:#7790ab!important}
+.panel-workspace-shell .credit-sidebar .user-card button{background:#10253a!important;color:#d8ecff!important;border:1px solid #24435d!important}
+
+/* Header tetap satu garis dan tidak mengambang di atas konten. */
 .panel-workspace-shell .topbar{
-  min-height:72px;background:#081424!important;border-bottom:1px solid #1a3653!important;
-  box-shadow:0 1px 0 rgba(68,194,255,.1)!important;
+  height:72px;min-height:72px;background:#081422!important;border-bottom:1px solid var(--ops-line)!important;
+  padding:0 28px!important;box-shadow:none!important;
 }
 .panel-workspace-shell .global-search{display:none!important}
 .panel-workspace-shell .menu-button,.panel-workspace-shell .icon-button{
-  width:40px;height:40px;background:#0c1b2e!important;color:#d8ecff!important;border:1px solid #254766!important;
-  box-shadow:none!important;
+  width:39px;height:39px;border-radius:7px;background:#0b1b2b!important;color:#a9c5db!important;
+  border:1px solid #193850!important;box-shadow:none!important;
 }
-.panel-workspace-shell .notification i{background:#ff6275!important}
+.panel-workspace-shell .notification i{background:#ff6473!important;border-color:#0b1b2b!important}
 .panel-workspace-shell .add-agent-action,.panel-workspace-shell .primary-button{
-  min-height:40px;padding:0 16px;background:linear-gradient(135deg,#7259eb,#179dd5)!important;
-  border:1px solid #806cff!important;color:#fff!important;box-shadow:0 8px 20px rgba(83,61,218,.24)!important;
+  min-height:40px;border-radius:7px!important;padding:0 14px!important;background:#176de3!important;
+  border:1px solid #2788f1!important;color:#fff!important;box-shadow:none!important;
 }
-.panel-workspace-shell .sidebar{
-  background:linear-gradient(180deg,#081426 0%,#071120 100%)!important;border-right:1px solid #1b3655!important;
-}
-.panel-workspace-shell .credit-sidebar .brand{height:74px;color:#fff!important;border-bottom:1px solid #17324f!important}
-.panel-workspace-shell .credit-sidebar .brand>span{background:linear-gradient(135deg,#775cf4,#18bddd)!important;color:#fff!important}
-.panel-workspace-shell .sidebar-role-panel{
-  margin:14px 14px 10px!important;padding:13px 14px!important;min-height:0!important;
-  background:linear-gradient(135deg,#102a48,#192a59)!important;border:1px solid #244b71!important;border-radius:14px!important;
+.panel-workspace-shell .add-agent-action:hover,.panel-workspace-shell .primary-button:hover{background:#2584ef!important}
+
+/* Semua halaman staff memakai permukaan gelap yang sama, tanpa kartu putih. */
+.panel-workspace-shell :is(.marketing-review,.operator-review){color:var(--ops-text)!important;background:transparent!important}
+.panel-workspace-shell :is(.marketing-review,.operator-review) :is(
+  .panel-header,.credit-review-hero,.credit-mode-panel,.marketing-workspace,.operator-workspace,
+  .marketing-task-grid>*,.marketing-focus-grid>*,.marketing-quick-actions>*,.marketing-action-panel,
+  .credit-review-card,.credit-review-grid>*,.credit-review-stats article,.credit-detail-block,
+  .operator-control-block,.operator-feedback,.operator-credit-snapshot,.operator-limit-editor,
+  .credit-review-address,.credit-review-signatures>*,.credit-payment-summary,.credit-payment-list article,
+  .credit-create-box,.marketing-document-upload,.marketing-document-upload article,.borrower-directory-panel,
+  .directory-stats article,.directory-tools label,.directory-tools button,.directory-agent,
+  .directory-agent summary,.directory-agent-borrowers article,.borrower-directory-panel .directory-list>button,
+  .quick-payment-list button,.marketing-report-panel,.marketing-report-panel article,.marketing-input-history,
+  .marketing-report-table,.operator-queue-table,.credit-review-table,.review-detail-card,.detail-card,
+  .detail-section,.document-card,.application-detail,.application-summary,.credit-review-empty,.empty-state){
+  background:var(--ops-card)!important;color:var(--ops-text)!important;border-color:var(--ops-line)!important;
   box-shadow:none!important;
 }
-.panel-workspace-shell .sidebar-role-panel span{display:block;color:#73dff4!important;font-size:9px!important;letter-spacing:.14em!important;font-weight:800!important}
-.panel-workspace-shell .sidebar-role-panel strong{display:block;margin:5px 0 2px;color:#fff!important;font-size:14px!important;line-height:1.25!important}
-.panel-workspace-shell .sidebar-role-panel small{display:block;color:#a5b9ce!important;font-size:11px!important;line-height:1.35!important}
-.panel-workspace-shell .sidebar-role-panel em{display:none!important}
-.panel-workspace-shell .workspace-nav{padding:0 10px!important}
-.panel-workspace-shell .workspace-nav .nav-label{margin:14px 8px 7px!important;color:#6f92b4!important;font-size:9px!important;letter-spacing:.13em!important}
-.panel-workspace-shell .nav-item{
-  min-height:40px;margin:4px 0!important;padding:0 11px!important;color:#bccce0!important;
-  border:1px solid transparent!important;border-radius:9px!important;background:transparent!important;
-}
-.panel-workspace-shell .nav-item:hover{background:#10233b!important;color:#fff!important}
-.panel-workspace-shell .nav-item.active{
-  color:#fff!important;background:linear-gradient(90deg,#273a62,#172b48)!important;border-color:#526ba5!important;
-  box-shadow:inset 3px 0 #8c72ff!important;
-}
-.panel-workspace-shell .nav-item svg{color:#a792ff!important}
-.panel-workspace-shell .nav-current{margin-left:auto;padding:3px 6px;border-radius:999px;background:#765cf4!important;color:#fff!important;font-size:8px!important}
-.panel-workspace-shell .help-card,.panel-workspace-shell .user-card{background:#102039!important;border-color:#1d3858!important;color:#f2f7ff!important;box-shadow:none!important}
-.panel-workspace-shell .help-card small,.panel-workspace-shell .user-card small{color:#9eb2ca!important}
-.panel-workspace-shell .help-card button{background:#fff!important;color:#14223a!important}
+.panel-workspace-shell :is(.marketing-review,.operator-review) :is(h1,h2,h3,h4,h5,h6,strong,b,label,legend,dt,th,td){color:var(--ops-text)!important}
+.panel-workspace-shell :is(.marketing-review,.operator-review) :is(p,small,dd,.muted,.subtitle){color:var(--ops-muted)!important}
+.panel-workspace-shell :is(.marketing-review,.operator-review) :is(.eyebrow,.section-kicker,.panel-kicker){color:var(--ops-cyan)!important}
+.panel-workspace-shell :is(.marketing-review,.operator-review) :is(input,select,textarea){background:#06101d!important;color:#edf7ff!important;border-color:#24445f!important;box-shadow:none!important}
+.panel-workspace-shell :is(.marketing-review,.operator-review) :is(input,select,textarea)::placeholder{color:#7790ab!important}
 
-/* Main panel language: navy surfaces, bright headings, readable muted copy. */
-.panel-workspace-shell :is(.marketing-review,.operator-review){color:var(--ops-text)!important}
-.panel-workspace-shell :is(.marketing-review,.operator-review) :is(
-  .panel-header,.credit-review-hero,.marketing-workspace,.credit-mode-panel,.credit-review-card,
-  .credit-detail-block,.operator-control-block,.operator-feedback,.operator-credit-snapshot,
-  .operator-limit-editor,.marketing-task-grid>*,.marketing-focus-grid>*,.marketing-quick-actions>*,
-  .credit-review-grid>*,.credit-review-address,.credit-review-signatures>*,.credit-review-tools,
-  .empty-state,.borrower-directory-panel,.directory-stats article,.directory-tools label,
-  .directory-tools button,.directory-agent,.directory-agent summary,.directory-agent-borrowers article,
-  .borrower-directory-panel .directory-list>button,.credit-review-stats article,.credit-payment-summary,
-  .credit-payment-list article,.credit-create-box,.marketing-action-panel,.quick-payment-list button,
-  .marketing-report-panel article,.marketing-input-history,.marketing-report-table,.marketing-document-upload,
-  .marketing-document-upload article,.operator-queue-table,.credit-review-table,.review-detail-card,
-  .detail-card,.detail-section,.document-card,.application-detail,.application-summary,article,section){
-  background:var(--ops-surface)!important;color:var(--ops-text)!important;border-color:var(--ops-line)!important;
-  box-shadow:0 12px 28px rgba(0,0,0,.22)!important;
+/* Ringkasan hanya memakai blok rendah/kompak, bukan gradient atau lingkaran dekoratif. */
+.panel-workspace-shell :is(.credit-review-hero,.panel-header){
+  position:relative;padding:18px 20px!important;border:1px solid var(--ops-line)!important;border-radius:11px!important;
+  background:#081523!important;color:var(--ops-text)!important;overflow:hidden;
 }
-.panel-workspace-shell :is(.marketing-review,.operator-review) :is(h1,h2,h3,h4,h5,h6,strong,b,label,legend,dt,th,td){color:#f7faff!important}
-.panel-workspace-shell :is(.marketing-review,.operator-review) :is(p,small,span,dd,.muted,.subtitle){color:var(--ops-muted)!important}
-.panel-workspace-shell :is(.marketing-review,.operator-review) :is(.eyebrow,.section-kicker,.panel-kicker){color:#67d8f2!important}
-.panel-workspace-shell :is(.marketing-review,.operator-review) :is(input,select,textarea){
-  background:#06101e!important;color:#f2f8ff!important;border-color:#294968!important;box-shadow:none!important;
+.panel-workspace-shell :is(.credit-review-hero,.panel-header):before,.panel-workspace-shell :is(.credit-review-hero,.panel-header):after{display:none!important}
+.panel-workspace-shell .credit-review-stats{gap:10px!important;margin:12px 0!important}
+.panel-workspace-shell .credit-review-stats article{
+  min-height:68px!important;padding:12px!important;border:1px solid var(--ops-line-soft)!important;border-radius:8px!important;
+  background:#0a1827!important;
 }
-.panel-workspace-shell :is(.marketing-review,.operator-review) :is(input,select,textarea)::placeholder{color:#7f96b1!important}
-.panel-workspace-shell :is(.marketing-review,.operator-review) :is(table,thead,tbody,tr){background:#081220!important;color:#eaf4ff!important;border-color:#193653!important}
-.panel-workspace-shell :is(.marketing-review,.operator-review) thead :is(th,td){background:#073047!important;color:#c1eaff!important}
-.panel-workspace-shell :is(.marketing-review,.operator-review) tbody tr:nth-child(even){background:#0a1829!important}
-.panel-workspace-shell :is(.marketing-review,.operator-review) :is(button,.primary-button,.secondary-button,.action-button){color:#fff!important;border-color:#355d87!important}
-.panel-workspace-shell :is(.marketing-review,.operator-review) :is(.secondary-button,.ghost-button,.filter-button){background:#10213a!important}
-.panel-workspace-shell :is(.marketing-review,.operator-review) .primary-button,
-.panel-workspace-shell :is(.marketing-review,.operator-review) .action-button.primary{background:linear-gradient(135deg,#7258ed,#14b5d2)!important}
+.panel-workspace-shell .marketing-workspace,.panel-workspace-shell .operator-workspace,.panel-workspace-shell .credit-mode-panel{
+  padding:18px!important;border:1px solid var(--ops-line)!important;border-radius:11px!important;
+}
+.panel-workspace-shell .marketing-task-grid,.panel-workspace-shell .marketing-focus-grid,.panel-workspace-shell .marketing-quick-actions{gap:10px!important}
+.panel-workspace-shell .marketing-task-grid>*,.panel-workspace-shell .marketing-focus-grid>*,.panel-workspace-shell .marketing-quick-actions>*{padding:13px!important;border-radius:8px!important}
 
-/* Status is direct readable text, never a white pill. */
-.panel-workspace-shell :is(.marketing-review,.operator-review) :is(.status-approved,.status-accepted,.accepted,.success){color:#52e9af!important;background:transparent!important;border-color:transparent!important;box-shadow:none!important}
-.panel-workspace-shell :is(.marketing-review,.operator-review) :is(.status-rejected,.rejected,.danger){color:#ff7d87!important;background:transparent!important;border-color:transparent!important;box-shadow:none!important}
-.panel-workspace-shell :is(.marketing-review,.operator-review) :is(.status-pending,.pending,.review){color:#ffc762!important;background:transparent!important;border-color:transparent!important;box-shadow:none!important}
-.panel-workspace-shell :is(.marketing-review,.operator-review) :is(.credit-review-hero,.panel-header){
-  background:linear-gradient(110deg,#101f3d,#0b2843)!important;border-color:#245078!important;
+/* Tabel operator seperti referensi: header cyan gelap, baris ringkas, scroll horizontal sadar. */
+.panel-workspace-shell .operator-queue-table,.panel-workspace-shell .credit-review-table{
+  border:1px solid var(--ops-line)!important;border-radius:11px!important;overflow:hidden!important;background:#07121f!important;
 }
-.panel-workspace-shell :is(.marketing-review,.operator-review) :is(.credit-review-hero *, .panel-header *){color:inherit!important}
-.panel-workspace-shell :is(.marketing-review,.operator-review) :is(svg){color:inherit!important}
+.panel-workspace-shell .operator-table-scroll{overflow:auto!important;background:#07121f!important}
+.panel-workspace-shell :is(.operator-queue-table,.credit-review-table) table{min-width:920px!important;width:100%!important;border-collapse:collapse!important;background:#07121f!important}
+.panel-workspace-shell :is(.operator-queue-table,.credit-review-table) :is(thead,tr,tbody){background:#07121f!important}
+.panel-workspace-shell :is(.operator-queue-table,.credit-review-table) th{
+  height:38px;padding:0 12px!important;background:#073a52!important;color:#c5ecfb!important;
+  border:0!important;font-size:9px!important;letter-spacing:.06em!important;text-transform:uppercase!important;
+}
+.panel-workspace-shell :is(.operator-queue-table,.credit-review-table) td{
+  padding:13px 12px!important;border:0!important;border-bottom:1px solid #102840!important;background:#07121f!important;
+  color:#dceafa!important;font-size:11px!important;
+}
+.panel-workspace-shell :is(.operator-queue-table,.credit-review-table) tbody tr:hover td{background:#0a1a2b!important}
+.panel-workspace-shell .operator-row-actions{display:flex!important;gap:6px!important;white-space:nowrap!important}
+.panel-workspace-shell .operator-row-actions button{min-height:32px!important;border-radius:6px!important;padding:0 10px!important;box-shadow:none!important}
+
+/* Tombol/filter/status: status adalah tulisan berwarna, bukan pil putih. */
+.panel-workspace-shell :is(.secondary-button,.ghost-button,.filter-button,.directory-tools button){background:#0b1d2f!important;color:#c6dcf0!important;border:1px solid #254561!important;box-shadow:none!important}
+.panel-workspace-shell :is(.status-approved,.status-accepted,.accepted,.success,.approved){color:var(--ops-green)!important;background:transparent!important;border:0!important;box-shadow:none!important}
+.panel-workspace-shell :is(.status-rejected,.rejected,.danger){color:var(--ops-red)!important;background:transparent!important;border:0!important;box-shadow:none!important}
+.panel-workspace-shell :is(.status-pending,.pending,.review){color:var(--ops-gold)!important;background:transparent!important;border:0!important;box-shadow:none!important}
+.panel-workspace-shell :is(.credit-review-card,.credit-detail-block,.operator-control-block,.borrower-directory-panel,.credit-create-box){border-radius:10px!important}
+.panel-workspace-shell :is(.review-payment-sheet,.review-signature-sheet,.proof-preview-sheet,.modal-content){background:#081523!important;color:var(--ops-text)!important;border-color:var(--ops-line)!important}
 
 @media(max-width:760px){
-  .panel-workspace-shell .topbar{min-height:64px;padding:0 13px!important;background:#081424!important}
-  .panel-workspace-shell .top-actions{gap:7px!important}
-  .panel-workspace-shell .menu-button,.panel-workspace-shell .icon-button{width:38px;height:38px}
-  .panel-workspace-shell .add-agent-action{width:42px!important;min-width:42px!important;padding:0!important;border-radius:12px!important}
-  .panel-workspace-shell .add-agent-action span{display:none!important}
-  .panel-workspace-shell .add-agent-action svg{margin:0!important}
-  .panel-workspace-shell .page-content{padding:14px 13px 34px!important;min-height:calc(100dvh - 64px)}
-  .panel-workspace-shell :is(.marketing-review,.operator-review){max-width:100%!important}
-  .panel-workspace-shell :is(.marketing-review,.operator-review) :is(.credit-review-hero,.panel-header){padding:16px!important;border-radius:16px!important;margin-bottom:12px!important}
-  .panel-workspace-shell :is(.marketing-review,.operator-review) h1{font-size:23px!important;line-height:1.16!important}
-  .panel-workspace-shell :is(.marketing-review,.operator-review) h2{font-size:19px!important;line-height:1.2!important}
-  .panel-workspace-shell :is(.marketing-review,.operator-review) :is(.credit-review-card,.marketing-workspace,.operator-control-block,.borrower-directory-panel){padding:14px!important;border-radius:16px!important}
-  .panel-workspace-shell :is(.marketing-review,.operator-review) :is(.credit-review-table,.operator-queue-table){overflow-x:auto!important;border-radius:13px!important}
-  .panel-workspace-shell :is(.marketing-review,.operator-review) table{min-width:620px!important;font-size:12px!important}
-  .panel-workspace-shell :is(.marketing-review,.operator-review) :is(.directory-tools,.credit-review-tools){gap:8px!important}
+  .panel-workspace-shell .topbar{height:62px;min-height:62px;padding:0 12px!important}
+  .panel-workspace-shell .top-actions{gap:6px!important}.panel-workspace-shell .menu-button{display:grid!important}
+  .panel-workspace-shell .menu-button,.panel-workspace-shell .icon-button{width:37px;height:37px}
+  .panel-workspace-shell .add-agent-action{width:42px!important;min-width:42px!important;padding:0!important}
+  .panel-workspace-shell .add-agent-action span{display:none!important}.panel-workspace-shell .add-agent-action svg{margin:0!important}
+  .panel-workspace-shell .page-content{min-height:calc(100dvh - 62px);padding:14px 12px 32px!important}
+  .panel-workspace-shell .sidebar.credit-sidebar{width:238px!important;padding:0 8px 10px!important}
+  .panel-workspace-shell .credit-sidebar .nav-item{min-height:40px!important;font-size:12px!important}
+  .panel-workspace-shell :is(.credit-review-hero,.panel-header){padding:15px!important;border-radius:9px!important}
+  .panel-workspace-shell :is(.marketing-workspace,.operator-workspace,.credit-mode-panel){padding:13px!important;border-radius:9px!important}
+  .panel-workspace-shell :is(.marketing-review,.operator-review) h1{font-size:22px!important;line-height:1.18!important}
+  .panel-workspace-shell :is(.marketing-review,.operator-review) h2{font-size:18px!important;line-height:1.2!important}
+  .panel-workspace-shell .credit-review-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .panel-workspace-shell .credit-review-stats article{min-height:64px!important;padding:10px!important}
+  .panel-workspace-shell :is(.marketing-task-grid,.marketing-focus-grid,.marketing-quick-actions){grid-template-columns:1fr!important;gap:8px!important}
+  .panel-workspace-shell :is(.operator-queue-table,.credit-review-table){border-radius:9px!important}
 }
