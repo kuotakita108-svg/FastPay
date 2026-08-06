@@ -57,15 +57,14 @@ export default function Sidebar({open, onClose}) {
       ? {eyebrow: isOperator ? 'MODE OPERATOR' : 'MODE ADMIN PUSAT', title: 'Kontrol modal & kredit', description: 'Verifikasi berkas, atur limit, pantau pelunasan, suspend akses, dan cek kesiapan H2H.'}
       : null
 
-  return <aside className={`sidebar ${open ? 'open' : ''}`}>
+  return <aside className={`sidebar ${open ? 'open' : ''}${rolePanel ? ' credit-sidebar' : ''}`}>
     <NavLink className="brand" to={home} onClick={onClose}><span><Zap size={20}/></span>KuotaKita</NavLink>
     {rolePanel && <div className={`sidebar-role-panel ${isCreditAdmin ? 'analis-role-panel' : ''}`}>
       <span>{rolePanel.eyebrow}</span>
       <strong>{rolePanel.title}</strong>
-      <small>{rolePanel.description}</small>
-      <em>Bagian aktif: {activeLabel}</em>
+      <small>Bagian aktif: {activeLabel}</small>
     </div>}
-    <nav>{visibleNavigation.map(group => <div key={group.section}>
+    <nav className={rolePanel ? 'workspace-nav' : ''}>{visibleNavigation.map(group => <div key={group.section}>
       <p className="nav-label">{group.section}</p>
       {group.items.map(({to, label, icon: Icon, badge}) => <NavLink className={`nav-item nav-${label.toLowerCase().replace(/[^a-z]+/g, '-')} ${active(to) ? 'active' : ''}`} to={to} key={to} onClick={onClose}>
         <Icon size={18}/><span>{label}</span>{active(to) && label === 'Ringkasan Kerja' && <b className="nav-current">AKTIF</b>}{badge && <b>{badge}</b>}
