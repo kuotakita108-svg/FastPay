@@ -1,4 +1,4 @@
-import {NavLink, useLocation, useNavigate} from 'react-router-dom'
+import {Link, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
 import {Banknote, BarChart3, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, Landmark, LockKeyhole, LogOut, ShieldCheck, TrendingUp, UserPlus, Users, WalletCards, XCircle, Zap} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
@@ -58,7 +58,7 @@ export default function Sidebar({open, onClose}) {
       : null
 
   return <aside className={`sidebar ${open ? 'open' : ''}${rolePanel ? ' credit-sidebar' : ''}`}>
-    <NavLink className="brand" to={home} onClick={onClose}><span><Zap size={20}/></span>KuotaKita</NavLink>
+    <Link className="brand" to={home} onClick={onClose}><span><Zap size={20}/></span>KuotaKita</Link>
     {rolePanel && <div className={`sidebar-role-panel ${isCreditAdmin ? 'analis-role-panel' : ''}`}>
       <span>{rolePanel.eyebrow}</span>
       <strong>{rolePanel.title}</strong>
@@ -66,9 +66,9 @@ export default function Sidebar({open, onClose}) {
     </div>}
     <nav className={rolePanel ? 'workspace-nav' : ''}>{visibleNavigation.map(group => <div key={group.section}>
       <p className="nav-label">{group.section}</p>
-      {group.items.map(({to, label, icon: Icon, badge}) => <NavLink className={`nav-item nav-${label.toLowerCase().replace(/[^a-z]+/g, '-')} ${active(to) ? 'active' : ''}`} to={to} key={to} onClick={onClose}>
+      {group.items.map(({to, label, icon: Icon, badge}) => <Link className={`nav-item nav-${label.toLowerCase().replace(/[^a-z]+/g, '-')} ${active(to) ? 'active' : ''}`} to={to} key={to} onClick={onClose}>
         <Icon size={18}/><span>{label}</span>{active(to) && label === 'Ringkasan Kerja' && <b className="nav-current">AKTIF</b>}{badge && <b>{badge}</b>}
-      </NavLink>)}
+      </Link>)}
     </div>)}</nav>
     <div className="sidebar-bottom">
       <div className="help-card"><CircleHelp/><strong>Pusat Bantuan</strong><small>Tim KuotaKita siap membantu 24/7</small><button>Hubungi Support</button></div>
