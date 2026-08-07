@@ -156,6 +156,7 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 			h.writeFailedPaymentResponse(w, token, tx, mainUsed, creditUsed, current.H2HDirect, result.Message)
 			return
 		}
+		go h.reconcilePulsa24(refID)
 		h.writePaymentResponseStatus(w, http.StatusAccepted, tx, user.Balance, mainUsed, creditUsed, current.H2HDirect)
 		return
 	}
@@ -166,9 +167,32 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 	}
 	if result.Status == "success" {
 		tx = h.finalizePulsa24(refID, result)
+	} else {
+		go h.reconcilePulsa24(refID)
 	}
 	h.writePaymentResponseStatus(w, http.StatusAccepted, tx, user.Balance, mainUsed, creditUsed, current.H2HDirect)
 	return
+}
+
+// reconcilePulsa24 keeps pending orders moving after the browser leaves the
+// checkout page. Callback payloads are acknowledged but never trusted as the
+// authority; every final state still comes from STATUS-PAY.
+func (h *UserTransactionHandler) reconcilePulsa24(refID string) {
+	for attempt := 0; attempt < 12; attempt++ {
+		time.Sleep(5 * time.Second)
+		order, found := h.pulsa24.Order(refID)
+		if !found || order.Status == "success" || order.Status == "failed" {
+			return
+		}
+		result, err := h.pulsa24.Verify(order)
+		if err != nil {
+			continue
+		}
+		if result.Status == "success" || result.Status == "failed" {
+			h.finalizePulsa24(refID, result)
+			return
+		}
+	}
 }
 
 // PendingPayment records an unpaid checkout without debiting wallet funds or
