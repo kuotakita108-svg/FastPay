@@ -1,4 +1,4 @@
-import {useMemo, useState} from 'react'
+import {useEffect, useMemo, useState} from 'react'
 import {CalendarDays, ChevronRight, Eye, Printer, ReceiptText, Search, X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import StatusBadge from '../components/common/StatusBadge'
@@ -23,8 +23,6 @@ export default function HistoryPage() {
   const [receipt, setReceipt] = useState(null)
   const [printMode, setPrintMode] = useState(false)
   const [updates, setUpdates] = useState({})
-  const [checkingStatus, setCheckingStatus] = useState(false)
-  const [statusError, setStatusError] = useState('')
 
   const items = useMemo(() => {
     const now = new Date()
@@ -53,15 +51,28 @@ export default function HistoryPage() {
 
   const enriched = item => getReceipt(item.id) || item
   const openDetail = item => setSelected(enriched(item))
-  const checkStatus = async item => {
-    const refid=item.order_number||item.orderNumber
-    if(!refid)return
-    setCheckingStatus(true);setStatusError('')
-    try{
-      const result=await getPulsa24Status(refid)
-      if(result.transaction?.id){setUpdates(current=>({...current,[result.transaction.id]:result.transaction}));setSelected(result.transaction)}
-    }catch(error){setStatusError(error.message)}finally{setCheckingStatus(false)}
-  }
+  useEffect(()=>{
+    const pending=data.filter(item=>item.status==='Diproses'&&(item.order_number||item.orderNumber))
+    if(!pending.length)return
+    let active=true,timer
+    const remaining=new Map(pending.map(item=>[item.id,item]))
+    const synchronize=async()=>{
+      for(const item of remaining.values()){
+        try{
+          const result=await getPulsa24Status(item.order_number||item.orderNumber)
+          if(active&&result.transaction?.id){
+            setUpdates(current=>({...current,[result.transaction.id]:result.transaction}))
+            setSelected(current=>current?.id===result.transaction.id?result.transaction:current)
+            if(result.status==='success'||result.status==='failed')remaining.delete(item.id)
+          }
+        }catch{/* backend tetap melanjutkan rekonsiliasi; UI mencoba lagi berikutnya */}
+      }
+      if(!remaining.size&&timer)clearInterval(timer)
+    }
+    synchronize()
+    timer=setInterval(synchronize,5000)
+    return()=>{active=false;clearInterval(timer)}
+  },[data])
   const openReceipt = (item, printer = false) => {
     setReceipt(enriched(item))
     setPrintMode(printer)
@@ -105,9 +116,7 @@ export default function HistoryPage() {
           <div><dt>SN / Ref</dt><dd>{safe(selected.sn || selected.serial)}</dd></div>
           <div><dt>Tanggal</dt><dd>{formatDate(selected.created_at)}</dd></div>
         </dl>
-        {statusError&&<p className="checkout-error">{statusError}</p>}
         <footer>
-          {selected.status==='Diproses'&&<button type="button" className="history-detail-view" disabled={checkingStatus} onClick={()=>checkStatus(selected)}>{checkingStatus?'Memeriksa...':'Cek Status P24'}</button>}
           <button type="button" className="history-detail-print" onClick={() => openReceipt(selected, true)}><Printer/>Cetak Struk</button>
           <button type="button" className="history-detail-view" onClick={() => openReceipt(selected, false)}><Eye/>Lihat Struk</button>
         </footer>
