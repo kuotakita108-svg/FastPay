@@ -18,13 +18,15 @@ import (
 // UserTransactionHandler persists wallet history in the same server volume as
 // accounts and credit data. Browser history is only a receipt cache.
 type UserTransactionHandler struct {
-	mu       sync.RWMutex
-	items    map[string][]domain.Transaction
-	auth     *service.AuthService
-	dataFile string
-	state    *database.StateStore
-	credit   *service.CreditService
-	pulsa24  *service.Pulsa24Service
+	mu          sync.RWMutex
+	items       map[string][]domain.Transaction
+	auth        *service.AuthService
+	dataFile    string
+	state       *database.StateStore
+	credit      *service.CreditService
+	pulsa24     *service.Pulsa24Service
+	reconcileMu sync.Mutex
+	reconciling map[string]bool
 }
 
 type transactionFile struct {
@@ -66,7 +68,7 @@ func NewDatabaseUserTransactionHandlerWithCredit(auth *service.AuthService, data
 }
 
 func NewDatabaseUserTransactionHandlerWithCreditAndP24(auth *service.AuthService, dataFile string, state *database.StateStore, credit *service.CreditService, pulsa24 *service.Pulsa24Service) *UserTransactionHandler {
-	h := &UserTransactionHandler{items: make(map[string][]domain.Transaction), auth: auth, dataFile: dataFile, state: state, credit: credit, pulsa24: pulsa24}
+	h := &UserTransactionHandler{items: make(map[string][]domain.Transaction), auth: auth, dataFile: dataFile, state: state, credit: credit, pulsa24: pulsa24, reconciling: make(map[string]bool)}
 	_ = h.load()
 	return h
 }
@@ -203,8 +205,24 @@ func (h *UserTransactionHandler) removeTransaction(userID, transactionID string)
 // checkout page. Callback payloads are acknowledged but never trusted as the
 // authority; every final state still comes from STATUS-PAY.
 func (h *UserTransactionHandler) reconcilePulsa24(refID string) {
-	for attempt := 0; attempt < 12; attempt++ {
-		time.Sleep(5 * time.Second)
+	h.reconcileMu.Lock()
+	if h.reconciling[refID] {
+		h.reconcileMu.Unlock()
+		return
+	}
+	h.reconciling[refID] = true
+	h.reconcileMu.Unlock()
+	defer func() {
+		h.reconcileMu.Lock()
+		delete(h.reconciling, refID)
+		h.reconcileMu.Unlock()
+	}()
+	for attempt := 0; attempt < 120; attempt++ {
+		if attempt == 0 {
+			time.Sleep(5 * time.Second)
+		} else {
+			time.Sleep(30 * time.Second)
+		}
 		order, found := h.pulsa24.Order(refID)
 		if !found || order.Status == "success" || order.Status == "failed" {
 			return
@@ -425,6 +443,8 @@ func (h *UserTransactionHandler) Pulsa24Status(w http.ResponseWriter, r *http.Re
 	transaction, _ := h.transaction(order.UserID, order.TransactionID)
 	if result.Status == "success" || result.Status == "failed" {
 		transaction = h.finalizePulsa24(refID, result)
+	} else {
+		go h.reconcilePulsa24(refID)
 	}
 	settledOrder, _ := h.pulsa24.Order(refID)
 	balance := int64(0)
