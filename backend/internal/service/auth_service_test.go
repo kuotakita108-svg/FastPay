@@ -1,6 +1,9 @@
 package service
 
-import "testing"
+import (
+	"path/filepath"
+	"testing"
+)
 
 func TestLoginRoles(t *testing.T) {
 	service := newAuthService("test-secret", "", nil, []AccountSeed{
@@ -30,5 +33,25 @@ func TestLoginRejected(t *testing.T) {
 	service := NewAuthService("test-secret")
 	if _, err := service.Login("akun-tidak-ada", "salah"); err == nil {
 		t.Fatal("password salah seharusnya ditolak")
+	}
+}
+
+func TestH2HTesterPasswordFollowsEnvironmentSeed(t *testing.T) {
+	dataFile := filepath.Join(t.TempDir(), "accounts.json")
+	initial := NewPersistentAuthService("test-secret", dataFile, []AccountSeed{
+		{Username: "owner-tester", Password: "password-lama", Name: "Owner Test H2H", Role: "user", SyncPassword: true},
+	})
+	if _, err := initial.Login("owner-tester", "password-lama"); err != nil {
+		t.Fatalf("login awal gagal: %v", err)
+	}
+
+	restarted := NewPersistentAuthService("test-secret", dataFile, []AccountSeed{
+		{Username: "owner-tester", Password: "password-baru", Name: "Owner Test H2H", Role: "user", SyncPassword: true},
+	})
+	if _, err := restarted.Login("owner-tester", "password-baru"); err != nil {
+		t.Fatalf("password dari environment baru tidak tersinkron: %v", err)
+	}
+	if _, err := restarted.Login("owner-tester", "password-lama"); err == nil {
+		t.Fatal("password lama seharusnya sudah ditolak")
 	}
 }
