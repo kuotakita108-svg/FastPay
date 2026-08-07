@@ -132,7 +132,9 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 	now := time.Now()
 	qty := in.Qty
 	if qty < 1 {
-		qty = in.Amount
+		// Fixed-denomination products are purchased as one unit. Open-amount
+		// products explicitly send their nominal as qty from the catalogue UI.
+		qty = 1
 	}
 	refID := h.pulsa24.NewRefID()
 	tx := domain.Transaction{ID: fmt.Sprintf("PP-%d", now.UnixMilli()), Customer: in.Target, Email: in.Email, Method: method, Amount: in.Amount, Status: "Diproses", Target: in.Target, Provider: in.Provider, Title: in.Title, Product: in.Product, OrderNumber: refID, CreatedAt: now}
