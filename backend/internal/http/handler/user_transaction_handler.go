@@ -145,16 +145,21 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 	}
 	result, requestErr := h.pulsa24.Pay(in.SKU, in.Target, qty, refID)
 	if requestErr != nil {
+		// A parsed rejection from P24 is definitive even when its HTTP status is
+		// non-2xx. Network/time-out errors remain pending because retrying PAY
+		// could create a duplicate order; STATUS-PAY/callback will settle them.
+		if result.Status == "failed" || result.Message != "" {
+			result.Status = "failed"
+			tx = h.finalizePulsa24(refID, result)
+			h.writeFailedPaymentResponse(w, token, tx, mainUsed, creditUsed, result.Message)
+			return
+		}
 		h.writePaymentResponseStatus(w, http.StatusAccepted, tx, user.Balance, mainUsed, creditUsed)
 		return
 	}
 	if result.Status == "failed" {
 		tx = h.finalizePulsa24(refID, result)
-		message := "transaksi H2H ditolak"
-		if result.Message != "" {
-			message = result.Message
-		}
-		response.Error(w, 422, message)
+		h.writeFailedPaymentResponse(w, token, tx, mainUsed, creditUsed, result.Message)
 		return
 	}
 	if result.Status == "success" {
@@ -162,6 +167,27 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 	}
 	h.writePaymentResponseStatus(w, http.StatusAccepted, tx, user.Balance, mainUsed, creditUsed)
 	return
+}
+
+func (h *UserTransactionHandler) writeFailedPaymentResponse(w http.ResponseWriter, token string, tx domain.Transaction, mainUsed, creditUsed int64, message string) {
+	if strings.TrimSpace(message) == "" {
+		message = "transaksi ditolak provider"
+	}
+	balance := int64(0)
+	if current, err := h.auth.CurrentUser(token); err == nil {
+		balance = current.Balance
+	}
+	funding := "Saldo Utama"
+	if creditUsed > 0 && mainUsed > 0 {
+		funding = "Saldo Utama + Saldo Kredit"
+	} else if creditUsed > 0 {
+		funding = "Saldo Kredit"
+	}
+	response.JSON(w, http.StatusOK, map[string]any{
+		"transaction": tx, "balance": balance, "main_used": mainUsed,
+		"credit_used": creditUsed, "funding_source": funding,
+		"refunded": true, "message": message,
+	})
 }
 
 func (h *UserTransactionHandler) chargeFunds(token string, current domain.User, amount int64) (domain.User, int64, int64, error) {
@@ -294,7 +320,23 @@ func (h *UserTransactionHandler) Pulsa24Status(w http.ResponseWriter, r *http.Re
 	if result.Status == "success" || result.Status == "failed" {
 		transaction = h.finalizePulsa24(refID, result)
 	}
-	response.JSON(w, http.StatusOK, map[string]any{"transaction": transaction, "status": result.Status, "refid": refID})
+	settledOrder, _ := h.pulsa24.Order(refID)
+	balance := int64(0)
+	if current, currentErr := h.auth.CurrentUser(r.Header.Get("Authorization")); currentErr == nil {
+		balance = current.Balance
+	}
+	funding := "Saldo Utama"
+	if settledOrder.CreditUsed > 0 && settledOrder.MainUsed > 0 {
+		funding = "Saldo Utama + Saldo Kredit"
+	} else if settledOrder.CreditUsed > 0 {
+		funding = "Saldo Kredit"
+	}
+	response.JSON(w, http.StatusOK, map[string]any{
+		"transaction": transaction, "status": result.Status, "refid": refID,
+		"balance": balance, "main_used": settledOrder.MainUsed,
+		"credit_used": settledOrder.CreditUsed, "funding_source": funding,
+		"refunded": settledOrder.Refunded, "message": result.Message,
+	})
 }
 
 // Pulsa24Products lets logged-in users view the provider catalogue through

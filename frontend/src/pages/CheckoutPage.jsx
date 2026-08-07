@@ -1,8 +1,8 @@
-import {useEffect,useState} from 'react'
+import {useCallback,useEffect,useState} from 'react'
 import {Navigate, useLocation, useNavigate} from 'react-router-dom'
-import {ArrowLeft, Check, ChevronRight, Clock3, ReceiptText, ShieldCheck, WalletCards, XCircle} from 'lucide-react'
+import {Check, Clock3, Download, QrCode, RotateCcw, ShieldCheck, WalletCards, X, XCircle} from 'lucide-react'
 import {useAuth} from '../context/AuthContext'
-import {payWithBalance, saveReceipt} from '../services/transactionService'
+import {getPulsa24Status, payWithBalance, saveReceipt} from '../services/transactionService'
 import {getSecurity,loadSecurity} from '../services/securityService'
 import PaymentSecurityModal from '../components/mobile/PaymentSecurityModal'
 import TransactionReceipt from '../components/mobile/TransactionReceipt'
@@ -19,12 +19,10 @@ export default function CheckoutPage() {
   const [verifyOpen, setVerifyOpen] = useState(false)
   const [receiptOpen, setReceiptOpen] = useState(false)
 
-  if (!state?.amount || !state?.sku) return <Navigate to="/app/services" replace/>
-
   const [security,setSecurity] = useState(()=>getSecurity(user.id))
   useEffect(()=>{loadSecurity(user.id).then(setSecurity).catch(()=>{})},[user.id])
   const protectedPayment = Boolean(security.pinHash || security.biometricEnabled)
-  const enrichTransaction = transaction => ({
+  const enrichTransaction = useCallback(transaction => ({
     ...transaction,
     id: transaction.id,
     customer: transaction.customer || state.target,
@@ -37,7 +35,7 @@ export default function CheckoutPage() {
     payment_method: 'Saldo KuotaKita',
     order_number: transaction.order_number || '-',
     sn: transaction.sn || '',
-  })
+  }),[state])
   const pay = async () => {
     setVerifyOpen(false)
     setProcessing(true)
@@ -65,48 +63,64 @@ export default function CheckoutPage() {
   }
   const requestPay = () => protectedPayment ? setVerifyOpen(true) : pay()
 
-  if (result) return <main className="mobile-app checkout-page">
-    <section className="payment-result">
-      <i>{result.transaction.status === 'Berhasil' ? <Check/> : <Clock3/>}</i>
-      <span>{result.transaction.status === 'Berhasil' ? 'PEMBAYARAN BERHASIL' : 'PESANAN SEDANG DIPROSES'}</span>
-      <h1>{rupiah(state.amount)}</h1>
-      <p>{result.transaction.status === 'Berhasil' ? `${state.product} untuk ${state.target} berhasil diproses.` : `Pesanan ${state.product} sudah dikirim ke Pulsa24Jam. Status final akan diperbarui melalui callback.`}</p>
-      <div><small>ID Transaksi</small><strong>{result.transaction.id}</strong></div>
-      <button onClick={() => setReceiptOpen(true)}>Cetak / Lihat Struk</button>
-      <button className="ghost" onClick={() => navigate('/app/history')}>Lihat Riwayat</button>
+  const pendingOrder=result?.transaction?.order_number
+  const pendingStatus=result?.transaction?.status
+  useEffect(()=>{
+    if(pendingStatus!=='Diproses'||!pendingOrder)return
+    let active=true,attempts=0
+    const check=async()=>{
+      try{
+        const next=await getPulsa24Status(pendingOrder)
+        if(!active)return
+        if(Number.isFinite(Number(next.balance)))setBalance(next.balance)
+        setResult(current=>({...current,...next,transaction:enrichTransaction(next.transaction)}))
+        if(next.status==='success'||next.status==='failed')return
+      }catch{/* status tetap pending; percobaan berikutnya aman memakai STATUS-PAY */}
+      attempts+=1
+      if(active&&attempts<12)timer=setTimeout(check,5000)
+    }
+    let timer=setTimeout(check,3000)
+    return()=>{active=false;clearTimeout(timer)}
+  },[pendingOrder,pendingStatus,enrichTransaction,setBalance])
+
+  if (!state?.amount || !state?.sku) return <Navigate to="/app/services" replace/>
+
+  if (result) {
+    const failed=result.transaction.status==='Gagal',success=result.transaction.status==='Berhasil'
+    return <main className="mobile-app checkout-page checkout-overlay">
+    <section className={`checkout-sheet checkout-result-sheet ${failed?'is-refunded':success?'is-success':'is-pending'}`}>
+      <header className="sheet-heading"><div><small>CHECKOUT</small><h1>{state.product}</h1></div><button onClick={() => navigate(-1)} aria-label="Tutup"><X/></button></header>
+      <div className="checkout-result-notice"><i>{failed?<QrCode/>:success?<Check/>:<Clock3/>}</i><strong>{failed?'Dana dikembalikan ke saldo':success?'Pembayaran berhasil':'Transaksi sedang diproses'}</strong><p>{failed?(result.message||'Transaksi gagal di provider dan dana sudah dikembalikan ke saldo akun Anda.'):success?`${state.product} untuk ${state.target} berhasil diproses.`:'Pesanan sudah diterima Pulsa24Jam. Status final diperbarui melalui callback resmi.'}</p></div>
+      <dl className="checkout-result-details">
+        <div><dt>Invoice</dt><dd>{result.transaction.order_number||result.transaction.id}</dd></div>
+        <div><dt>Tujuan</dt><dd>{state.target}</dd></div>
+        <div><dt>Status</dt><dd className={failed?'refund-text':''}>{failed?'Dana dikembalikan':result.transaction.status}</dd></div>
+        <div><dt>Pakai saldo utama</dt><dd>{rupiah(result.main_used||0)}</dd></div>
+        <div><dt>Pakai saldo kredit</dt><dd>{rupiah(result.credit_used||0)}</dd></div>
+        <div><dt>Total bayar</dt><dd className="money-text">{rupiah(state.amount)}</dd></div>
+        <div><dt>Metode bayar</dt><dd>{result.funding_source||'Saldo KuotaKita'}</dd></div>
+      </dl>
+      <button className="checkout-proof-button" onClick={() => setReceiptOpen(true)}><Download/> Lihat / Download Bukti Pembayaran</button>
+      {failed&&<button className="checkout-retry-button" onClick={() => navigate(-1)}><RotateCcw/> Pilih produk lain</button>}
     </section>
     {receiptOpen && <TransactionReceipt transaction={result.transaction} order={state} user={user} onClose={() => setReceiptOpen(false)}/>}
-  </main>
+  </main>}
 
-  return <main className="mobile-app checkout-page">
-    <header className="checkout-head">
-      <button onClick={() => navigate(-1)}><ArrowLeft/></button>
-      <div><strong>Konfirmasi Pembayaran</strong><small>Periksa kembali sebelum membayar</small></div>
-      <i><ShieldCheck/></i>
-    </header>
-    <section className="checkout-status"><Clock3/>Pesananmu siap dibayar</section>
-    {protectedPayment && <section className="checkout-security-active"><ShieldCheck/><div><strong>Verifikasi pembayaran aktif</strong><small>PIN atau sidik jari akan diminta saat membayar.</small></div></section>}
-    <section className="checkout-card order">
-      <header><ReceiptText/><div><small>Produk</small><strong>{state.product}</strong></div></header>
-      <dl>
-        <div><dt>Layanan</dt><dd>{state.title}</dd></div>
-        <div><dt>Penyedia</dt><dd>{state.provider}</dd></div>
-        <div><dt>Tujuan</dt><dd>{state.target}</dd></div>
+  return <main className="mobile-app checkout-page checkout-overlay">
+    <section className="checkout-sheet">
+      <header className="sheet-heading"><div><small>CHECKOUT</small><h1>{state.product}</h1></div><button onClick={() => navigate(-1)} aria-label="Tutup"><X/></button></header>
+      <dl className="checkout-price-box">
+        <div><dt>Nominal produk</dt><dd>{rupiah(state.qty||state.amount)}</dd></div>
+        <div><dt>Harga</dt><dd>{rupiah(state.amount)}</dd></div>
+        <div><dt>Saldo tersedia</dt><dd>{rupiah(user.balance)}</dd></div>
+        <div><dt>Total bayar</dt><dd>{rupiah(state.amount)}</dd></div>
       </dl>
-    </section>
-    <section className="checkout-card">
-      <h2>Metode Pembayaran</h2>
-      <button className="payment-method selected"><i><WalletCards/></i><div><strong>Saldo KuotaKita</strong><small>Saldo tersedia {rupiah(user.balance)}</small></div><Check/></button>
-      <button className="payment-method disabled" disabled><i><ShieldCheck/></i><div><strong>QRIS & Virtual Account</strong><small>Aktif setelah gateway pembayaran terhubung</small></div><ChevronRight/></button>
-    </section>
-    <section className="checkout-card summary">
-      <h2>Rincian Pembayaran</h2>
-      <div><span>Harga produk</span><b>{rupiah(state.amount)}</b></div>
-      <div><span>Biaya layanan</span><b>Gratis</b></div>
-      <div className="total"><span>Total pembayaran</span><strong>{rupiah(state.amount)}</strong></div>
-    </section>
+      <label className="checkout-target"><span>Nomor Tujuan</span><input value={state.target} readOnly/></label>
+      {protectedPayment&&<div className="checkout-protected"><ShieldCheck/> PIN atau biometrik akan diminta sebelum pembayaran.</div>}
     {error && <div className="checkout-error"><XCircle/><span>{error}</span>{/saldo/i.test(error) && <button onClick={() => navigate('/app/balance/topup')}>Isi Saldo</button>}</div>}
-    <footer className="checkout-footer"><div><span>Total</span><strong>{rupiah(state.amount)}</strong></div><button disabled={processing} onClick={requestPay}>{processing ? 'Memproses...' : protectedPayment ? 'Verifikasi & Bayar' : 'Bayar Sekarang'}</button></footer>
+      <button className="checkout-pay-button" disabled={processing} onClick={requestPay}><WalletCards/>{processing?'Memproses ke P24...':protectedPayment?'Verifikasi & Bayar':'Bayar'}</button>
+      <small className="checkout-provider-note"><ShieldCheck/> Diproses resmi melalui Pulsa24Jam. PAY tidak diulang otomatis agar transaksi tidak ganda.</small>
+    </section>
     <PaymentSecurityModal open={verifyOpen} user={user} settings={security} onClose={() => setVerifyOpen(false)} onVerified={pay}/>
   </main>
 }
