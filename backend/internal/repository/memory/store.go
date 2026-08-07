@@ -1,8 +1,8 @@
 package memory
 
 import (
-	"kuotakita/backend/internal/domain"
 	"fmt"
+	"kuotakita/backend/internal/domain"
 	"sync"
 	"time"
 )
@@ -14,8 +14,9 @@ type Store struct {
 }
 
 func New() *Store {
-	now := time.Now()
-	return &Store{transactions: []domain.Transaction{{ID: "PP-1048", Customer: "Nadia Putri", Email: "nadia.putri@kuotakita.id", Method: "QRIS", Amount: 1250000, Status: "Berhasil", CreatedAt: now.Add(-18 * time.Minute)}, {ID: "PP-1047", Customer: "Rizky Pratama", Email: "rizky.pratama@kuotakita.id", Method: "Virtual Account", Amount: 875000, Status: "Berhasil", CreatedAt: now.Add(-43 * time.Minute)}, {ID: "PP-1046", Customer: "Dimas Saputra", Email: "dimas.saputra@kuotakita.id", Method: "E-Wallet", Amount: 420000, Status: "Diproses", CreatedAt: now.Add(-75 * time.Minute)}, {ID: "PP-1045", Customer: "Siti Rahma", Email: "siti.rahma@kuotakita.id", Method: "Kartu Kredit", Amount: 2100000, Status: "Berhasil", CreatedAt: now.Add(-2 * time.Hour)}, {ID: "PP-1044", Customer: "Budi Santoso", Email: "budi.santoso@kuotakita.id", Method: "QRIS", Amount: 350000, Status: "Gagal", CreatedAt: now.Add(-3 * time.Hour)}}, customers: []domain.Customer{{ID: "CUS-1001", Name: "Nadia Putri", Email: "nadia.putri@kuotakita.id", Transactions: 18, TotalSpent: 12850000, JoinedAt: now.AddDate(0, -5, 0)}, {ID: "CUS-1002", Name: "Rizky Pratama", Email: "rizky.pratama@kuotakita.id", Transactions: 12, TotalSpent: 8300000, JoinedAt: now.AddDate(0, -4, 0)}, {ID: "CUS-1003", Name: "Dimas Saputra", Email: "dimas.saputra@kuotakita.id", Transactions: 9, TotalSpent: 4750000, JoinedAt: now.AddDate(0, -2, 0)}, {ID: "CUS-1004", Name: "Siti Rahma", Email: "siti.rahma@kuotakita.id", Transactions: 25, TotalSpent: 19300000, JoinedAt: now.AddDate(0, -8, 0)}}}
+	// Penyimpanan memory hanya dipakai saat pengembangan. Jangan isi data
+	// transaksi atau pelanggan contoh agar perilakunya sama dengan produksi.
+	return &Store{transactions: make([]domain.Transaction, 0), customers: make([]domain.Customer, 0)}
 }
 func (s *Store) FindAll() []domain.Transaction {
 	s.mu.RLock()

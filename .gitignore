@@ -10,6 +10,7 @@ node_modules/
 dist/
 **/dist/
 .cache/
+.tmp-go-cache/
 
 # Editors and operating systems
 .vscode/
