@@ -201,7 +201,7 @@ func (h *UserTransactionHandler) chargeFunds(token string, current domain.User, 
 	creditUsed := amount - mainUsed
 	if creditUsed > 0 {
 		if current.Role != "agent" {
-			return current, 0, 0, fmt.Errorf("saldo utama tidak mencukupi. Gunakan pembayaran QRIS setelah gateway resmi tersedia")
+			return current, 0, 0, fmt.Errorf("saldo utama tidak mencukupi")
 		}
 		if h.credit == nil {
 			return current, 0, 0, fmt.Errorf("saldo utama tidak mencukupi")

@@ -125,8 +125,8 @@ export default function CheckoutPage() {
       <label className="checkout-target"><span>Nomor Tujuan</span><input value={state.target} readOnly/></label>
       {protectedPayment&&<div className="checkout-protected"><ShieldCheck/> PIN atau biometrik akan diminta sebelum pembayaran.</div>}
     {error && <div className="checkout-error"><XCircle/><span>{error}</span>{/saldo/i.test(error) && <button onClick={() => navigate('/app/balance/topup')}>Isi Saldo</button>}</div>}
-      <button className="checkout-pay-button" disabled={processing||!balanceEnough} onClick={requestPay}><WalletCards/>{processing?'Memproses ke P24...':!balanceEnough?'QRIS belum terhubung':protectedPayment?'Verifikasi & Bayar':'Bayar'}</button>
-      {!balanceEnough&&<div className="checkout-qris-unavailable"><QrCode/><span><b>Saldo tidak mencukupi</b><small>QRIS akan aktif setelah gateway merchant resmi dan webhook pembayaran dihubungkan.</small></span></div>}
+      <button className="checkout-pay-button" disabled={processing||!balanceEnough} onClick={requestPay}><WalletCards/>{processing?'Memproses ke P24...':!balanceEnough?'Saldo Tidak Cukup':protectedPayment?'Verifikasi & Bayar':'Bayar'}</button>
+      {!balanceEnough&&<div className="checkout-balance-warning"><WalletCards/><span><b>Saldo utama tidak mencukupi</b><small>Isi saldo terlebih dahulu agar pembelian dapat diproses.</small></span><button type="button" onClick={()=>navigate('/app/balance/topup')}>Isi Saldo</button></div>}
       <small className="checkout-provider-note"><ShieldCheck/> Diproses resmi melalui Pulsa24Jam. PAY tidak diulang otomatis agar transaksi tidak ganda.</small>
     </section>
     <PaymentSecurityModal open={verifyOpen} user={user} settings={security} onClose={() => setVerifyOpen(false)} onVerified={pay}/>
