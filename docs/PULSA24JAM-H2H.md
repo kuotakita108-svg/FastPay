@@ -20,12 +20,19 @@ KuotaKita mengirim semua transaksi H2H dari backend. Browser atau aplikasi agen 
    P24_REQUEST_TIMEOUT_SECONDS=15
    ```
 
-4. Restart backend setelah mengubah environment:
+4. `docker-compose.yml` meneruskan `backend/.env` ke container backend. Restart
+   backend setelah mengubah environment:
 
    ```bash
    cd /root/web
    docker compose up -d --force-recreate backend
    docker compose logs --tail=50 backend
+   ```
+
+   Verifikasi aman tanpa mencetak API key atau PIN:
+
+   ```bash
+   docker compose exec backend sh -lc 'test -n "$P24_API_KEY" && test -n "$P24_PIN" && echo "P24 aktif" || echo "P24 belum terpasang"'
    ```
 
 ## Alur transaksi yang dipakai aplikasi
