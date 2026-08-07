@@ -19,6 +19,7 @@ export default function CheckoutPage() {
   const [error, setError] = useState('')
   const [verifyOpen, setVerifyOpen] = useState(false)
   const [receiptOpen, setReceiptOpen] = useState(false)
+  const [requestId] = useState(()=>crypto.randomUUID())
 
   const [security,setSecurity] = useState(()=>getSecurity(user.id))
   useEffect(()=>{loadSecurity(user.id).then(setSecurity).catch(()=>{})},[user.id])
@@ -51,6 +52,7 @@ export default function CheckoutPage() {
       // Tidak ada transaksi lokal, nama penerima buatan, atau saldo browser.
       const response = await payWithBalance({
         ...state,
+        request_id:requestId,
         qty: state.qty || state.amount,
         email: user.email || `${user.id}@kuotakita.id`,
       })

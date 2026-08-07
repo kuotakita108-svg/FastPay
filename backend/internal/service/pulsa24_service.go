@@ -30,11 +30,11 @@ type Pulsa24Service struct {
 }
 
 type Pulsa24Order struct {
-	RefID, UserID, Product, Destination, TransactionID string
-	Qty, Amount, MainUsed, CreditUsed                  int64
-	Status, SN, Message, CustomerName                  string
-	Debited, Refunded, DirectH2H                       bool
-	CreatedAt, UpdatedAt                               time.Time
+	RefID, UserID, ClientRequestID, Product, Destination, TransactionID string
+	Qty, Amount, MainUsed, CreditUsed                                   int64
+	Status, SN, Message, CustomerName                                   string
+	Debited, Refunded, DirectH2H                                        bool
+	CreatedAt, UpdatedAt                                                time.Time
 }
 
 type pulsa24OrderFile struct {
@@ -174,14 +174,32 @@ func (s *Pulsa24Service) request(command string, payload map[string]any) (Pulsa2
 }
 
 func (s *Pulsa24Service) Record(order Pulsa24Order) error {
+	_, _, err := s.RecordUnique(order)
+	return err
+}
+
+// RecordUnique atomically reserves a browser checkout request. Repeated HTTP
+// submissions return the first order and can never result in a second PAY.
+func (s *Pulsa24Service) RecordUnique(order Pulsa24Order) (Pulsa24Order, bool, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	if order.ClientRequestID != "" {
+		for _, existing := range s.orders {
+			if existing.UserID == order.UserID && existing.ClientRequestID == order.ClientRequestID {
+				return existing, false, nil
+			}
+		}
+	}
 	if order.CreatedAt.IsZero() {
 		order.CreatedAt = time.Now().UTC()
 	}
 	order.UpdatedAt = time.Now().UTC()
 	s.orders[order.RefID] = order
-	return s.saveLocked()
+	if err := s.saveLocked(); err != nil {
+		delete(s.orders, order.RefID)
+		return Pulsa24Order{}, false, err
+	}
+	return order, true, nil
 }
 func (s *Pulsa24Service) Order(refID string) (Pulsa24Order, bool) {
 	s.mu.RLock()

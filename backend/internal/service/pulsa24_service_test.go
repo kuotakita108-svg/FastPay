@@ -10,3 +10,19 @@ func TestNormalizePulsa24NumericStatus(t *testing.T) {
 		}
 	}
 }
+
+func TestRecordUniqueReturnsOriginalCheckoutOrder(t *testing.T) {
+	service := &Pulsa24Service{orders: map[string]Pulsa24Order{}}
+	first := Pulsa24Order{RefID: "REF-1", UserID: "USER-1", ClientRequestID: "CHECKOUT-1"}
+	if _, created, err := service.RecordUnique(first); err != nil || !created {
+		t.Fatalf("order pertama gagal disimpan: created=%v err=%v", created, err)
+	}
+	duplicate := Pulsa24Order{RefID: "REF-2", UserID: "USER-1", ClientRequestID: "CHECKOUT-1"}
+	existing, created, err := service.RecordUnique(duplicate)
+	if err != nil || created {
+		t.Fatalf("order duplikat tidak ditahan: created=%v err=%v", created, err)
+	}
+	if existing.RefID != first.RefID || len(service.orders) != 1 {
+		t.Fatalf("order asli tidak dipertahankan: existing=%s total=%d", existing.RefID, len(service.orders))
+	}
+}

@@ -31,14 +31,15 @@ type transactionFile struct {
 	Items map[string][]domain.Transaction `json:"items"`
 }
 type paymentInput struct {
-	Title    string `json:"title"`
-	Target   string `json:"target"`
-	Provider string `json:"provider"`
-	Product  string `json:"product"`
-	Email    string `json:"email"`
-	Amount   int64  `json:"amount"`
-	SKU      string `json:"sku"`
-	Qty      int64  `json:"qty"`
+	Title     string `json:"title"`
+	Target    string `json:"target"`
+	Provider  string `json:"provider"`
+	Product   string `json:"product"`
+	Email     string `json:"email"`
+	Amount    int64  `json:"amount"`
+	SKU       string `json:"sku"`
+	Qty       int64  `json:"qty"`
+	RequestID string `json:"request_id"`
 }
 
 // Kept for backwards-compatible request decoding. Top-up is intentionally
@@ -139,10 +140,21 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 	refID := h.pulsa24.NewRefID()
 	tx := domain.Transaction{ID: fmt.Sprintf("PP-%d", now.UnixMilli()), Customer: in.Target, Email: in.Email, Method: method, Amount: in.Amount, Status: "Diproses", Target: in.Target, Provider: in.Provider, Title: in.Title, Product: in.Product, OrderNumber: refID, CreatedAt: now}
 	h.append(id, tx)
-	if err := h.pulsa24.Record(service.Pulsa24Order{RefID: refID, UserID: id, Product: in.SKU, Destination: in.Target, TransactionID: tx.ID, Qty: qty, Amount: in.Amount, MainUsed: mainUsed, CreditUsed: creditUsed, Status: "pending", Debited: !current.H2HDirect, DirectH2H: current.H2HDirect, CreatedAt: now}); err != nil {
+	existing, created, recordErr := h.pulsa24.RecordUnique(service.Pulsa24Order{RefID: refID, UserID: id, ClientRequestID: strings.TrimSpace(in.RequestID), Product: in.SKU, Destination: in.Target, TransactionID: tx.ID, Qty: qty, Amount: in.Amount, MainUsed: mainUsed, CreditUsed: creditUsed, Status: "pending", Debited: !current.H2HDirect, DirectH2H: current.H2HDirect, CreatedAt: now})
+	if recordErr != nil {
 		h.restoreFunds(id, mainUsed, creditUsed)
 		h.updateTransaction(id, tx.ID, "Gagal", "", "")
 		response.Error(w, http.StatusServiceUnavailable, "order H2H tidak dapat disimpan")
+		return
+	}
+	if !created {
+		h.restoreFunds(id, mainUsed, creditUsed)
+		// The duplicate local transaction was never sent to P24 and must not
+		// remain visible. Return the original server transaction instead.
+		h.removeTransaction(id, tx.ID)
+		original, _ := h.transaction(existing.UserID, existing.TransactionID)
+		latest, _ := h.auth.CurrentUser(token)
+		h.writePaymentResponseStatus(w, http.StatusAccepted, original, latest.Balance, existing.MainUsed, existing.CreditUsed, existing.DirectH2H)
 		return
 	}
 	result, requestErr := h.pulsa24.Pay(in.SKU, in.Target, qty, refID)
@@ -174,6 +186,19 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 	return
 }
 
+func (h *UserTransactionHandler) removeTransaction(userID, transactionID string) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	items := h.items[userID]
+	for index := range items {
+		if items[index].ID == transactionID {
+			h.items[userID] = append(items[:index], items[index+1:]...)
+			_ = h.saveLocked()
+			return
+		}
+	}
+}
+
 // reconcilePulsa24 keeps pending orders moving after the browser leaves the
 // checkout page. Callback payloads are acknowledged but never trusted as the
 // authority; every final state still comes from STATUS-PAY.
@@ -199,7 +224,9 @@ func (h *UserTransactionHandler) reconcilePulsa24(refID string) {
 // sending PAY to P24. It is the safe bridge for a future verified QRIS charge.
 func (h *UserTransactionHandler) PendingPayment(w http.ResponseWriter, r *http.Request) {
 	id, ok := h.userID(w, r)
-	if !ok { return }
+	if !ok {
+		return
+	}
 	var in paymentInput
 	if json.NewDecoder(r.Body).Decode(&in) != nil || in.Amount < 1 || strings.TrimSpace(in.SKU) == "" || strings.TrimSpace(in.Target) == "" {
 		response.Error(w, http.StatusBadRequest, "data pembayaran tidak valid")
@@ -213,19 +240,25 @@ func (h *UserTransactionHandler) PendingPayment(w http.ResponseWriter, r *http.R
 
 func (h *UserTransactionHandler) PendingPaymentStatus(w http.ResponseWriter, r *http.Request) {
 	id, ok := h.userID(w, r)
-	if !ok { return }
+	if !ok {
+		return
+	}
 	txID := strings.TrimSpace(r.PathValue("id"))
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	for i := range h.items[id] {
 		tx := &h.items[id][i]
-		if tx.ID != txID { continue }
+		if tx.ID != txID {
+			continue
+		}
 		if tx.Status == "Menunggu Pembayaran" && !tx.ExpiresAt.IsZero() && !time.Now().UTC().Before(tx.ExpiresAt) {
 			tx.Status = "Kedaluwarsa"
 			_ = h.saveLocked()
 		}
 		status := "pending"
-		if tx.Status == "Kedaluwarsa" { status = "expire" }
+		if tx.Status == "Kedaluwarsa" {
+			status = "expire"
+		}
 		response.JSON(w, http.StatusOK, map[string]any{"transaction": *tx, "status": status, "expires_at": tx.ExpiresAt})
 		return
 	}
