@@ -1,4 +1,4 @@
-import {useCallback,useEffect,useMemo,useState} from 'react'
+import {useCallback,useEffect,useMemo,useRef,useState} from 'react'
 import {useParams,useNavigate,useLocation} from 'react-router-dom'
 import {ArrowLeft,ShieldCheck,CheckCircle2,ChevronRight,Zap,LockKeyhole,Clock3,ReceiptText,BadgeCheck,ContactRound,Star,Search} from 'lucide-react'
 import {useAsync} from '../hooks/useAsync'
@@ -62,18 +62,21 @@ const serviceHeroes={
 
 export default function ServicePurchasePage(){
  const {type}=useParams(),navigate=useNavigate(),location=useLocation(),config=serviceConfig[type]||serviceConfig.pulsa
+ const restored=location.state?.purchase||{}
  const loadProducts=useCallback(()=>getProducts(type),[type])
  const {data=[]}=useAsync(loadProducts)
  const {user}=useAuth(),{show}=useToast()
- const [target,setTarget]=useState(''),[provider,setProvider]=useState(type==='pln'?'PLN':''),[catalog,setCatalog]=useState(false),[mode,setMode]=useState('product'),[selected,setSelected]=useState(null),[freeAmount,setFreeAmount]=useState('')
- const [plnMode,setPlnMode]=useState('token'),[plnBill,setPlnBill]=useState(null)
+ const [target,setTarget]=useState(restored.target||''),[provider,setProvider]=useState(restored.provider||(type==='pln'?'PLN':'')),[catalog,setCatalog]=useState(Boolean(location.state?.catalog)),[mode,setMode]=useState(restored.mode||'product'),[selected,setSelected]=useState(restored.selected||null),[freeAmount,setFreeAmount]=useState(restored.freeAmount||'')
+ const [plnMode,setPlnMode]=useState(restored.plnMode||'token'),[plnBill,setPlnBill]=useState(restored.plnBill||null)
  const [checkingBill,setCheckingBill]=useState(false),[billError,setBillError]=useState('')
  const [favoriteContacts,setFavoriteContacts]=useState(()=>getFavoriteContacts(user?.id)),[contactHint,setContactHint]=useState('')
- const [providerQuery,setProviderQuery]=useState(''),[providerLimit,setProviderLimit]=useState(18),[productQuery,setProductQuery]=useState(''),[productLimit,setProductLimit]=useState(40),[catalogGroup,setCatalogGroup]=useState('')
+ const [providerQuery,setProviderQuery]=useState(''),[providerLimit,setProviderLimit]=useState(18),[productQuery,setProductQuery]=useState(restored.productQuery||''),[productLimit,setProductLimit]=useState(restored.productLimit||40),[catalogGroup,setCatalogGroup]=useState(restored.catalogGroup||'')
+ const providerEffectReady=useRef(false)
  const supportsContacts=type==='pulsa'||type==='ewallet'
  const matchingFavorites=useMemo(()=>favoriteContacts.filter(item=>item.service===type),[favoriteContacts,type])
  const favorite=favoriteContacts.some(item=>item.id===`${normalizeNumber(target)}-${type}`)
- const openCatalog=()=>{setCatalog(true);navigate(location.pathname,{state:{catalog:true}})}
+ const purchaseSnapshot=()=>({target,provider,mode,selected,freeAmount,plnMode,plnBill,productQuery,productLimit,catalogGroup})
+ const openCatalog=()=>{setCatalog(true);navigate(location.pathname,{state:{...location.state,catalog:true,purchase:purchaseSnapshot()}})}
  const closeCatalog=()=>{if(location.state?.catalog){navigate(-1);return}setCatalog(false)}
  useEffect(()=>{setCatalog(Boolean(location.state?.catalog))},[location.state])
  useEffect(()=>{if(user?.id)loadFavoriteContacts(user.id).then(setFavoriteContacts).catch(()=>setContactHint('Favorit belum dapat dimuat dari server.'))},[user?.id])
@@ -87,7 +90,7 @@ export default function ServicePurchasePage(){
  const filteredProducts=useMemo(()=>products.filter(product=>(!catalogGroup||product.group===catalogGroup)&&normalize(`${product.name} ${product.sku||''} ${product.group||''}`).includes(normalize(productQuery))),[products,productQuery,catalogGroup])
  const visibleProducts=filteredProducts.slice(0,productLimit)
  useEffect(()=>{setProviderQuery('');setProviderLimit(18)},[type])
- useEffect(()=>{setProductQuery('');setProductLimit(40);setCatalogGroup('')},[provider])
+ useEffect(()=>{if(!providerEffectReady.current){providerEffectReady.current=true;return}setProductQuery('');setProductLimit(40);setCatalogGroup('')},[provider])
  const selectedVariable=isVariableProduct(selected)
  const amount=type==='pln'&&plnMode==='bill'?plnBill?.total||0:(mode==='custom'||selectedVariable)?Number(freeAmount):selected?.price||0
  const [inputPrefix,inputPlaceholder,inputMode]=inputMeta[type]||[phoneServices.includes(type)?'+62':'Akun',config.placeholder,textInputServices.includes(type)?'text':'numeric']
@@ -116,7 +119,7 @@ export default function ServicePurchasePage(){
    setPlnBill({...result,data:result.data||{},total:Number(result.amount||0),sku:plnProduct.sku,idpel:target})
   } catch(error) { setBillError(error.message) } finally { setCheckingBill(false) }
  }
- const checkout=()=>navigate('/app/checkout',{state:{backgroundLocation:location,order:{type,title:type==='pln'&&plnMode==='bill'?'Bayar Tagihan PLN':config.title,target,provider:type==='pln'&&plnMode==='bill'?'PLN Pascabayar':provider,product:type==='pln'&&plnMode==='bill'?`Tagihan PLN ${plnBill?.idpel}`:selected?.name||((mode==='custom'||selectedVariable)?`${config.title} ${rupiah(amount)}`:config.title),amount,sku:type==='pln'&&plnMode==='bill'?plnBill?.sku:selected?.sku,qty:type==='pln'&&plnMode==='bill'?amount:((mode==='custom'||selectedVariable)?amount:(selected?.nominal||amount)),detail:type==='pln'&&plnMode==='bill'?plnBill:null}}})
+ const checkout=()=>{const backgroundLocation={...location,state:{...location.state,catalog:true,purchase:purchaseSnapshot()}};navigate('/app/checkout',{state:{backgroundLocation,order:{type,title:type==='pln'&&plnMode==='bill'?'Bayar Tagihan PLN':config.title,target,provider:type==='pln'&&plnMode==='bill'?'PLN Pascabayar':provider,product:type==='pln'&&plnMode==='bill'?`Tagihan PLN ${plnBill?.idpel}`:selected?.name||((mode==='custom'||selectedVariable)?`${config.title} ${rupiah(amount)}`:config.title),amount,sku:type==='pln'&&plnMode==='bill'?plnBill?.sku:selected?.sku,qty:type==='pln'&&plnMode==='bill'?amount:((mode==='custom'||selectedVariable)?amount:(selected?.nominal||amount)),detail:type==='pln'&&plnMode==='bill'?plnBill:null}}})}
  if(catalog)return <main className={`mobile-app product-catalog-page service-${type} catalog-provider-${providerIndex}`}>
   <header className="catalog-page-head"><button onClick={closeCatalog}><ArrowLeft/></button><div><strong>Produk {provider}</strong><small>{config.title} · {products.length} pilihan tersedia</small></div></header>
   <section className="catalog-provider-hero"><div><span>PROVIDER TERPILIH</span><h1>{provider}</h1><p>Pilih produk atau nominal yang paling sesuai dengan kebutuhanmu.</p></div><ProviderLogo name={provider} className="catalog-provider-logo"/></section>
