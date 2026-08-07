@@ -17,10 +17,6 @@ import {
   XCircle,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import {
-  createTransaction,
-  payWithBalance,
-} from "../services/transactionService";
 import { rupiah } from "../utils/currency";
 import { request } from "../services/http";
 import BrandProviderLogo from "../components/mobile/ProviderLogo";
@@ -88,7 +84,7 @@ export default function TransferPage() {
   const location = useLocation(),
     navigate = useNavigate(),
     withdraw = location.pathname.endsWith("/withdraw"),
-    { session, user, setBalance, deductBalance } = useAuth(),
+    { user } = useAuth(),
     [channel, setChannel] = useState(withdraw ? "bank" : ""),
     [provider, setProvider] = useState(""),
     [number, setNumber] = useState(""),
@@ -137,6 +133,10 @@ export default function TransferPage() {
     setStep("confirm");
   };
   const send = async () => {
+    setError(
+      "Kirim bank, e-wallet, sesama KuotaKita, dan tarik saldo belum aktif. Fitur ini akan dibuka setelah mitra payout resmi untuk cek nama penerima, pengiriman dana, dan webhook terhubung.",
+    );
+    return;
     setProcessing(true);
     setError("");
     try {

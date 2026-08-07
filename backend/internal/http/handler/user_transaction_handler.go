@@ -40,6 +40,9 @@ type paymentInput struct {
 	SKU      string `json:"sku"`
 	Qty      int64  `json:"qty"`
 }
+
+// Kept for backwards-compatible request decoding. Top-up is intentionally
+// disabled until a verified QRIS/VA payment provider and webhook are active.
 type topupInput struct {
 	Amount int64  `json:"amount"`
 	Method string `json:"method"`
@@ -88,23 +91,10 @@ func (h *UserTransactionHandler) List(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserTransactionHandler) Create(w http.ResponseWriter, r *http.Request) {
-	id, ok := h.userID(w, r)
-	if !ok {
+	if _, ok := h.userID(w, r); !ok {
 		return
 	}
-	var in domain.CreateTransactionInput
-	if json.NewDecoder(r.Body).Decode(&in) != nil {
-		response.Error(w, 400, "data transaksi tidak valid")
-		return
-	}
-	if in.Amount < 1000 || in.Customer == "" {
-		response.Error(w, 422, "tujuan dan nominal wajib diisi")
-		return
-	}
-	now := time.Now()
-	tx := domain.Transaction{ID: fmt.Sprintf("PP-%d", now.UnixMilli()), Customer: in.Customer, Email: in.Email, Method: in.Method, Amount: in.Amount, Status: "Berhasil", Target: in.Target, Provider: in.Provider, Title: in.Title, Product: in.Product, OrderNumber: fmt.Sprintf("ORD-%d", now.UnixMilli()), SN: fmt.Sprintf("SN-%d", now.UnixNano()%100000000), CreatedAt: now}
-	h.append(id, tx)
-	response.JSON(w, http.StatusCreated, tx)
+	response.Error(w, http.StatusMethodNotAllowed, "pencatatan transaksi manual tidak diizinkan. Gunakan pembayaran produk melalui H2H Pulsa24Jam")
 }
 
 func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request) {
@@ -424,6 +414,8 @@ func (h *UserTransactionHandler) TopUp(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
+	response.Error(w, http.StatusServiceUnavailable, "isi saldo belum aktif. Hubungkan QRIS atau Virtual Account resmi beserta webhook pembayaran sebelum menerima isi saldo")
+	return
 	var in topupInput
 	if json.NewDecoder(r.Body).Decode(&in) != nil || in.Amount < 10000 {
 		response.Error(w, 400, "nominal isi saldo minimal Rp10.000")

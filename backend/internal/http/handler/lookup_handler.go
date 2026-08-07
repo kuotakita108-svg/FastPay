@@ -6,6 +6,7 @@ import (
 	"kuotakita/backend/internal/http/response"
 	"kuotakita/backend/internal/service"
 	"net/http"
+	"strings"
 )
 
 type LookupHandler struct{ service *service.LookupService }
@@ -23,4 +24,25 @@ func (h *LookupHandler) Lookup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.JSON(w, http.StatusOK, result)
+}
+
+type recipientLookupInput struct {
+	Channel  string `json:"channel"`
+	Provider string `json:"provider"`
+	Number   string `json:"number"`
+}
+
+// RecipientLookup deliberately does not invent a recipient name. Name
+// verification is only possible once a licensed payout partner is connected.
+func (h *LookupHandler) RecipientLookup(w http.ResponseWriter, r *http.Request) {
+	var in recipientLookupInput
+	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+		response.Error(w, http.StatusBadRequest, "data penerima tidak valid")
+		return
+	}
+	if strings.TrimSpace(in.Channel) == "" || strings.TrimSpace(in.Provider) == "" || strings.TrimSpace(in.Number) == "" {
+		response.Error(w, http.StatusBadRequest, "jenis layanan, penyedia, dan nomor tujuan wajib diisi")
+		return
+	}
+	response.Error(w, http.StatusServiceUnavailable, "verifikasi nama penerima belum aktif. Hubungkan mitra payout resmi untuk cek rekening/e-wallet dan webhook terlebih dahulu")
 }

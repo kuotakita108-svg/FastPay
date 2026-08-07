@@ -33,6 +33,7 @@ func New(h Handlers) http.Handler {
 	mux.HandleFunc("GET /api/v1/auth/google", h.Auth.Google)
 	mux.HandleFunc("GET /api/v1/auth/google/callback", h.Auth.GoogleCallback)
 	mux.HandleFunc("POST /api/v1/services/lookup", h.Lookup.Lookup)
+	mux.HandleFunc("POST /api/v1/services/recipient-lookup", h.Lookup.RecipientLookup)
 	mux.HandleFunc("GET /api/v1/me/transactions", h.UserTransactions.List)
 	mux.HandleFunc("POST /api/v1/me/transactions", h.UserTransactions.Create)
 	mux.HandleFunc("POST /api/v1/me/payments", h.UserTransactions.Payment)
