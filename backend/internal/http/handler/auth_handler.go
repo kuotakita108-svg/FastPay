@@ -41,6 +41,17 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, 200, result)
 }
 
+// Me returns the current account directly from the server.  The browser must
+// never treat a previously cached balance as authoritative.
+func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
+	user, err := h.service.CurrentUser(r.Header.Get("Authorization"))
+	if err != nil {
+		response.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+	response.JSON(w, http.StatusOK, user)
+}
+
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var in domain.RegisterInput
 	if json.NewDecoder(r.Body).Decode(&in) != nil {

@@ -8,6 +8,12 @@ export async function register(profile){
   return request('/auth/register',{method:'POST',body:JSON.stringify(profile)})
 }
 
+// Account data is always read from the backend so a browser's old session
+// cannot display a demo/stale balance after the app has moved to the server.
+export async function currentUser(){
+  return request('/me')
+}
+
 // Dipakai marketing untuk membuat kredensial agent dari panel internal.
 // Akun disimpan dengan hash password dan tidak pernah menyimpan password mentah.
 export async function createManagedAgent(profile){
