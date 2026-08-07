@@ -10,7 +10,8 @@ import {rupiah} from '../utils/currency'
 import {saveFavoriteContact} from '../services/contactFavorites'
 
 export default function CheckoutPage() {
-  const {state} = useLocation()
+  const {state:locationState} = useLocation()
+  const state=locationState?.order||locationState
   const navigate = useNavigate()
   const {user, setBalance} = useAuth()
   const [processing, setProcessing] = useState(false)

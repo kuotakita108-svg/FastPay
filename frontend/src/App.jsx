@@ -1,5 +1,5 @@
 import {lazy,Suspense} from 'react'
-import {Navigate,Route,Routes} from 'react-router-dom'
+import {Navigate,Route,Routes,useLocation} from 'react-router-dom'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
 import UserHomePage from './pages/UserHomePage'
@@ -36,7 +36,9 @@ const Agent=({children})=> <ProtectedRoute roles={['agent']}>{children}</Protect
 const AdminOnly=({children})=> <ProtectedRoute roles={['master','admin']}>{children}</ProtectedRoute>
 const ReviewOnly=({children})=> <ProtectedRoute roles={['master','admin','marketing','operator','analis']}>{children}</ProtectedRoute>
 
-export default function App(){return <Suspense fallback={<RouteLoading/>}><Routes>
+export default function App(){
+ const location=useLocation(),backgroundLocation=location.state?.backgroundLocation
+ return <Suspense fallback={<RouteLoading/>}><Routes location={backgroundLocation||location}>
  <Route path="/login" element={<LoginPage/>}/>
  <Route path="/app" element={<User><UserHomePage/></User>}/>
  <Route path="/app/buy/:type" element={<User><ServicePurchasePage/></User>}/>
@@ -68,4 +70,4 @@ export default function App(){return <Suspense fallback={<RouteLoading/>}><Route
  </Route>
  <Route path="/" element={<Navigate to="/login" replace/>}/>
  <Route path="*" element={<NotFoundPage/>}/>
-</Routes></Suspense>}
+</Routes>{backgroundLocation&&<Routes><Route path="/app/checkout" element={<User><CheckoutPage/></User>}/></Routes>}</Suspense>}
