@@ -125,17 +125,24 @@ func (s *Pulsa24Service) request(command string, payload map[string]any) (Pulsa2
 	row := data
 	if nested, ok := data["data"].(map[string]any); ok {
 		row = nested
+	} else if transaction, ok := data["transaksi_member"].(map[string]any); ok {
+		row = transaction
+	}
+	statusText := firstText(stringVal(row, "keterangan"), stringVal(row, "status_label"), stringVal(row, "status_description"))
+	status := normalizeP24Status(statusText)
+	if status == "" {
+		status = normalizeP24Status(stringVal(row, "status"))
 	}
 	result := Pulsa24Result{
 		OK:           boolVal(data, "ok"),
 		Command:      command,
-		RefID:        stringVal(row, "refid"),
-		Status:       normalizeP24Status(stringVal(row, "status")),
+		RefID:        firstText(stringVal(row, "refid"), stringVal(row, "ref_id")),
+		Status:       status,
 		SN:           stringVal(row, "sn"),
 		CustomerName: firstText(stringVal(row, "customer_name"), stringVal(row, "customerName"), stringVal(row, "nama_pelanggan"), stringVal(row, "customer"), stringVal(row, "name"), stringVal(row, "nama")),
-		Message:      firstText(stringVal(row, "msg"), stringVal(data, "msg")),
+		Message:      firstText(stringVal(row, "msg"), stringVal(row, "keterangan"), stringVal(data, "msg"), stringVal(data, "message")),
 		Balance:      firstIntValP24(row, "balance", "saldo"),
-		Amount:       firstIntValP24(row, "amount", "total", "bill", "tagihan", "harga", "price", "nominal"),
+		Amount:       firstIntValP24(row, "amount", "total", "bill", "tagihan", "harga", "price", "nominal", "biaya_perkiraan"),
 		Raw:          data,
 	}
 	if result.RefID == "" {
@@ -247,9 +254,9 @@ func normalizeP24Status(v string) string {
 	v = strings.ToLower(strings.TrimSpace(v))
 	switch {
 	case v == "1":
-		return "success"
-	case v == "2":
 		return "pending"
+	case v == "2":
+		return "success"
 	case v == "3":
 		return "failed"
 	case strings.Contains(v, "sukses"), strings.Contains(v, "success"), strings.Contains(v, "berhasil"):
