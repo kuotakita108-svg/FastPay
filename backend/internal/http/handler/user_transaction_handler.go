@@ -458,8 +458,11 @@ func (h *UserTransactionHandler) Pulsa24Inquiry(w http.ResponseWriter, r *http.R
 	response.JSON(w, http.StatusOK, map[string]any{"inquiry": map[string]any{"refid": refID, "status": result.Status, "message": result.Message, "amount": result.Amount, "data": result.Raw}})
 }
 
-// Pulsa24Callback accepts the provider callback, then independently asks P24
-// for STATUS-PAY. This makes spoofed callback bodies harmless.
+// Pulsa24Callback acknowledges the provider immediately. P24 can deliver this
+// callback while its PAY/STATUS-PAY response is still waiting, so calling
+// STATUS-PAY synchronously from here would deadlock both servers. The browser
+// polling path verifies the final state independently before mutating an order;
+// callback data itself is deliberately never trusted as a final status.
 func (h *UserTransactionHandler) Pulsa24Callback(w http.ResponseWriter, r *http.Request) {
 	if h.pulsa24 == nil || !h.pulsa24.Enabled() {
 		response.Error(w, http.StatusServiceUnavailable, "integrasi Pulsa24Jam belum aktif")
@@ -474,20 +477,7 @@ func (h *UserTransactionHandler) Pulsa24Callback(w http.ResponseWriter, r *http.
 	if nested, ok := payload["data"].(map[string]any); ok && refID == "" {
 		refID = strings.TrimSpace(fmt.Sprint(nested["refid"]))
 	}
-	order, found := h.pulsa24.Order(refID)
-	if refID == "" || !found {
-		response.JSON(w, http.StatusAccepted, map[string]any{"ok": true})
-		return
-	}
-	result, err := h.pulsa24.Verify(order)
-	if err != nil {
-		response.Error(w, http.StatusBadGateway, "status callback belum dapat diverifikasi")
-		return
-	}
-	if result.Status == "success" || result.Status == "failed" {
-		h.finalizePulsa24(refID, result)
-	}
-	response.JSON(w, http.StatusOK, map[string]any{"ok": true, "refid": refID, "status": result.Status})
+	response.JSON(w, http.StatusOK, map[string]any{"ok": true, "refid": refID})
 }
 
 func (h *UserTransactionHandler) TopUp(w http.ResponseWriter, r *http.Request) {

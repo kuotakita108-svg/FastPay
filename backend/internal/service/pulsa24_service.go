@@ -246,6 +246,12 @@ func (s *Pulsa24Service) saveLocked() error {
 func normalizeP24Status(v string) string {
 	v = strings.ToLower(strings.TrimSpace(v))
 	switch {
+	case v == "1":
+		return "success"
+	case v == "2":
+		return "pending"
+	case v == "3":
+		return "failed"
 	case strings.Contains(v, "sukses"), strings.Contains(v, "success"), strings.Contains(v, "berhasil"):
 		return "success"
 	case strings.Contains(v, "gagal"), strings.Contains(v, "failed"), strings.Contains(v, "reject"):
