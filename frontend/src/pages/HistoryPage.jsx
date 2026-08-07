@@ -23,11 +23,12 @@ export default function HistoryPage() {
   const [receipt, setReceipt] = useState(null)
   const [printMode, setPrintMode] = useState(false)
   const [updates, setUpdates] = useState({})
+  const records=useMemo(()=>Array.isArray(data)?data:[],[data])
 
   const items = useMemo(() => {
     const now = new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    return data?.map(item=>updates[item.id]||item).filter(item => {
+    return records.map(item=>updates[item.id]||item).filter(item => {
       const created = new Date(item.created_at)
       const target = String(item.customer || '').toLowerCase()
       const id = String(item.id || '').toLowerCase()
@@ -47,12 +48,12 @@ export default function HistoryPage() {
       }
       return matchesText && matchesDate && matchesPeriod
     }) || []
-  }, [data, updates, query, date, filter])
+  }, [records, updates, query, date, filter])
 
   const enriched = item => getReceipt(item.id) || item
   const openDetail = item => setSelected(enriched(item))
   useEffect(()=>{
-    const pending=data.filter(item=>item.status==='Diproses'&&(item.order_number||item.orderNumber))
+    const pending=records.filter(item=>item.status==='Diproses'&&(item.order_number||item.orderNumber))
     if(!pending.length)return
     let active=true,timer
     const remaining=new Map(pending.map(item=>[item.id,item]))
@@ -72,7 +73,7 @@ export default function HistoryPage() {
     synchronize()
     timer=setInterval(synchronize,5000)
     return()=>{active=false;clearInterval(timer)}
-  },[data])
+  },[records])
   const openReceipt = (item, printer = false) => {
     setReceipt(enriched(item))
     setPrintMode(printer)

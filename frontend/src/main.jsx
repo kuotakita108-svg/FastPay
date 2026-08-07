@@ -6,6 +6,7 @@ import {ThemeProvider} from './context/ThemeContext'
 import {ToastProvider} from './context/ToastContext'
 import {AuthProvider} from './context/AuthContext'
 import {env} from './config/env'
+import AppErrorBoundary from './components/common/AppErrorBoundary'
 import heroImage from './assets/images/kuotakita-ppob-hero-v4.png'
 import './styles/global.css'
 
@@ -18,4 +19,4 @@ heroPreload.href=heroImage
 heroPreload.fetchPriority='high'
 document.head.appendChild(heroPreload)
 
-ReactDOM.createRoot(document.getElementById('root')).render(<React.StrictMode><BrowserRouter basename={env.basePath}><ThemeProvider><ToastProvider><AuthProvider><App/></AuthProvider></ToastProvider></ThemeProvider></BrowserRouter></React.StrictMode>)
+ReactDOM.createRoot(document.getElementById('root')).render(<React.StrictMode><BrowserRouter basename={env.basePath}><ThemeProvider><ToastProvider><AuthProvider><AppErrorBoundary><App/></AppErrorBoundary></AuthProvider></ToastProvider></ThemeProvider></BrowserRouter></React.StrictMode>)
