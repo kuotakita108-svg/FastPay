@@ -33,7 +33,7 @@ type Pulsa24Order struct {
 	RefID, UserID, Product, Destination, TransactionID string
 	Qty, Amount, MainUsed, CreditUsed                  int64
 	Status, SN, Message, CustomerName                  string
-	Debited, Refunded                                  bool
+	Debited, Refunded, DirectH2H                       bool
 	CreatedAt, UpdatedAt                               time.Time
 }
 

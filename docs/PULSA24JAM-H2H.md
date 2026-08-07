@@ -18,7 +18,13 @@ KuotaKita mengirim semua transaksi H2H dari backend. Browser atau aplikasi agen 
    P24_API_KEY=isi_api_key_h2h
    P24_PIN=isi_pin_transaksi_h2h
    P24_REQUEST_TIMEOUT_SECONDS=15
+   P24_TEST_USERNAME=username_owner_test
+   P24_TEST_PASSWORD=password_panjang_khusus_test
    ```
+
+   `P24_TEST_USERNAME` adalah satu-satunya akun user yang boleh menguji produk
+   langsung dari deposit H2H tanpa Saldo Utama. Jangan gunakan username agent
+   atau membagikan akun ini kepada pelanggan.
 
 4. `docker-compose.yml` meneruskan `backend/.env` ke container backend. Restart
    backend setelah mengubah environment:

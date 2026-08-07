@@ -14,6 +14,7 @@ type RegisterInput struct {
 type User struct {
 	ID              string `json:"id"`
 	Username        string `json:"username"`
+	H2HDirect       bool   `json:"h2h_direct,omitempty"`
 	Name            string `json:"name"`
 	Role            string `json:"role"`
 	Balance         int64  `json:"balance"`

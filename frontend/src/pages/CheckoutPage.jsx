@@ -24,9 +24,10 @@ export default function CheckoutPage() {
   useEffect(()=>{loadSecurity(user.id).then(setSecurity).catch(()=>{})},[user.id])
   const protectedPayment = Boolean(security.pinHash || security.biometricEnabled)
   const isAgent=user.role==='agent'
+  const directH2H=Boolean(user.h2h_direct)
   const mainPayment=Math.min(Number(user.balance||0),Number(state?.amount||0))
   const creditPayment=isAgent?Math.max(0,Number(state?.amount||0)-Number(user.balance||0)):0
-  const balanceEnough=isAgent||Number(user.balance||0)>=Number(state?.amount||0)
+  const balanceEnough=directH2H||isAgent||Number(user.balance||0)>=Number(state?.amount||0)
   const enrichTransaction = useCallback(transaction => ({
     ...transaction,
     id: transaction.id,
@@ -111,8 +112,7 @@ export default function CheckoutPage() {
         <div><dt>Invoice</dt><dd>{result.transaction.order_number||result.transaction.id}</dd></div>
         <div><dt>Tujuan</dt><dd>{state.target}</dd></div>
         <div><dt>Status</dt><dd className={failed||expired?'refund-text':''}>{failed?'Dana dikembalikan':result.transaction.status}</dd></div>
-        <div><dt>{isAgent?'Pakai saldo utama':'Bayar dengan saldo'}</dt><dd>{rupiah(result.main_used||0)}</dd></div>
-        {isAgent&&<div><dt>Pakai saldo kredit</dt><dd>{rupiah(result.credit_used||0)}</dd></div>}
+        {directH2H?<div><dt>Sumber dana</dt><dd>Deposit H2H Owner</dd></div>:<><div><dt>{isAgent?'Pakai saldo utama':'Bayar dengan saldo'}</dt><dd>{rupiah(result.main_used||0)}</dd></div>{isAgent&&<div><dt>Pakai saldo kredit</dt><dd>{rupiah(result.credit_used||0)}</dd></div>}</>}
         <div><dt>Total bayar</dt><dd className="money-text">{rupiah(state.amount)}</dd></div>
         <div><dt>Metode bayar</dt><dd>{result.funding_source||'Saldo KuotaKita'}</dd></div>
       </dl>
@@ -128,8 +128,7 @@ export default function CheckoutPage() {
       <dl className="checkout-price-box">
         <div><dt>Nominal {state.type==='pulsa'?'pulsa':'produk'}</dt><dd>{rupiah(state.qty||state.amount)}</dd></div>
         <div><dt>Harga</dt><dd>{rupiah(state.amount)}</dd></div>
-        <div><dt>{isAgent?'Pakai saldo utama':'Bayar dengan saldo'}</dt><dd>{rupiah(mainPayment)}</dd></div>
-        {isAgent&&<div><dt>Pakai saldo kredit</dt><dd>{rupiah(creditPayment)}</dd></div>}
+        {directH2H?<div><dt>Sumber dana</dt><dd>Deposit H2H Owner</dd></div>:<><div><dt>{isAgent?'Pakai saldo utama':'Bayar dengan saldo'}</dt><dd>{rupiah(mainPayment)}</dd></div>{isAgent&&<div><dt>Pakai saldo kredit</dt><dd>{rupiah(creditPayment)}</dd></div>}</>}
         <div><dt>Fee admin</dt><dd>Rp 0</dd></div>
         <div><dt>Total bayar</dt><dd>{rupiah(state.amount)}</dd></div>
       </dl>

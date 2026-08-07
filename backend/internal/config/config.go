@@ -13,6 +13,7 @@ type Config struct {
 	AgentUsername, AgentPassword                                                                         string
 	MarketingUsername, MarketingPassword                                                                 string
 	AnalisUsername, AnalisPassword                                                                       string
+	H2HTestUsername, H2HTestPassword                                                                     string
 	AgentInitialBalance                                                                                  int64
 	P24BaseURL, P24APIKey, P24PIN                                                                        string
 	P24RequestTimeoutSeconds                                                                             int
@@ -42,6 +43,8 @@ func Load() Config {
 		MarketingPassword:  os.Getenv("MARKETING_PASSWORD"),
 		AnalisUsername:     os.Getenv("ANALIS_USERNAME"),
 		AnalisPassword:     os.Getenv("ANALIS_PASSWORD"),
+		H2HTestUsername:    os.Getenv("P24_TEST_USERNAME"),
+		H2HTestPassword:    os.Getenv("P24_TEST_PASSWORD"),
 		// Akun agen baru tidak boleh menerima saldo contoh. Saldo hanya berubah
 		// setelah top up atau kredit disetujui oleh Operator.
 		AgentInitialBalance:      envInt64("AGENT_INITIAL_BALANCE", 0),

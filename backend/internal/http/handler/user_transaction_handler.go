@@ -137,7 +137,7 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 	refID := h.pulsa24.NewRefID()
 	tx := domain.Transaction{ID: fmt.Sprintf("PP-%d", now.UnixMilli()), Customer: in.Target, Email: in.Email, Method: method, Amount: in.Amount, Status: "Diproses", Target: in.Target, Provider: in.Provider, Title: in.Title, Product: in.Product, OrderNumber: refID, CreatedAt: now}
 	h.append(id, tx)
-	if err := h.pulsa24.Record(service.Pulsa24Order{RefID: refID, UserID: id, Product: in.SKU, Destination: in.Target, TransactionID: tx.ID, Qty: qty, Amount: in.Amount, MainUsed: mainUsed, CreditUsed: creditUsed, Status: "pending", Debited: true, CreatedAt: now}); err != nil {
+	if err := h.pulsa24.Record(service.Pulsa24Order{RefID: refID, UserID: id, Product: in.SKU, Destination: in.Target, TransactionID: tx.ID, Qty: qty, Amount: in.Amount, MainUsed: mainUsed, CreditUsed: creditUsed, Status: "pending", Debited: !current.H2HDirect, DirectH2H: current.H2HDirect, CreatedAt: now}); err != nil {
 		h.restoreFunds(id, mainUsed, creditUsed)
 		h.updateTransaction(id, tx.ID, "Gagal", "", "")
 		response.Error(w, http.StatusServiceUnavailable, "order H2H tidak dapat disimpan")
@@ -151,21 +151,21 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 		if result.Status == "failed" || result.Message != "" {
 			result.Status = "failed"
 			tx = h.finalizePulsa24(refID, result)
-			h.writeFailedPaymentResponse(w, token, tx, mainUsed, creditUsed, result.Message)
+			h.writeFailedPaymentResponse(w, token, tx, mainUsed, creditUsed, current.H2HDirect, result.Message)
 			return
 		}
-		h.writePaymentResponseStatus(w, http.StatusAccepted, tx, user.Balance, mainUsed, creditUsed)
+		h.writePaymentResponseStatus(w, http.StatusAccepted, tx, user.Balance, mainUsed, creditUsed, current.H2HDirect)
 		return
 	}
 	if result.Status == "failed" {
 		tx = h.finalizePulsa24(refID, result)
-		h.writeFailedPaymentResponse(w, token, tx, mainUsed, creditUsed, result.Message)
+		h.writeFailedPaymentResponse(w, token, tx, mainUsed, creditUsed, current.H2HDirect, result.Message)
 		return
 	}
 	if result.Status == "success" {
 		tx = h.finalizePulsa24(refID, result)
 	}
-	h.writePaymentResponseStatus(w, http.StatusAccepted, tx, user.Balance, mainUsed, creditUsed)
+	h.writePaymentResponseStatus(w, http.StatusAccepted, tx, user.Balance, mainUsed, creditUsed, current.H2HDirect)
 	return
 }
 
@@ -206,7 +206,7 @@ func (h *UserTransactionHandler) PendingPaymentStatus(w http.ResponseWriter, r *
 	response.Error(w, http.StatusNotFound, "invoice pembayaran tidak ditemukan")
 }
 
-func (h *UserTransactionHandler) writeFailedPaymentResponse(w http.ResponseWriter, token string, tx domain.Transaction, mainUsed, creditUsed int64, message string) {
+func (h *UserTransactionHandler) writeFailedPaymentResponse(w http.ResponseWriter, token string, tx domain.Transaction, mainUsed, creditUsed int64, directH2H bool, message string) {
 	if strings.TrimSpace(message) == "" {
 		message = "transaksi ditolak provider"
 	}
@@ -215,7 +215,9 @@ func (h *UserTransactionHandler) writeFailedPaymentResponse(w http.ResponseWrite
 		balance = current.Balance
 	}
 	funding := "Saldo Utama"
-	if creditUsed > 0 && mainUsed > 0 {
+	if directH2H {
+		funding = "Deposit H2H Owner"
+	} else if creditUsed > 0 && mainUsed > 0 {
 		funding = "Saldo Utama + Saldo Kredit"
 	} else if creditUsed > 0 {
 		funding = "Saldo Kredit"
@@ -228,6 +230,9 @@ func (h *UserTransactionHandler) writeFailedPaymentResponse(w http.ResponseWrite
 }
 
 func (h *UserTransactionHandler) chargeFunds(token string, current domain.User, amount int64) (domain.User, int64, int64, error) {
+	if current.H2HDirect {
+		return current, 0, 0, nil
+	}
 	mainUsed := amount
 	if current.Balance < mainUsed {
 		mainUsed = current.Balance
@@ -271,12 +276,14 @@ func (h *UserTransactionHandler) restoreFunds(userID string, mainUsed, creditUse
 }
 
 func (h *UserTransactionHandler) writePaymentResponse(w http.ResponseWriter, tx domain.Transaction, balance, mainUsed, creditUsed int64) {
-	h.writePaymentResponseStatus(w, http.StatusCreated, tx, balance, mainUsed, creditUsed)
+	h.writePaymentResponseStatus(w, http.StatusCreated, tx, balance, mainUsed, creditUsed, false)
 }
 
-func (h *UserTransactionHandler) writePaymentResponseStatus(w http.ResponseWriter, status int, tx domain.Transaction, balance, mainUsed, creditUsed int64) {
+func (h *UserTransactionHandler) writePaymentResponseStatus(w http.ResponseWriter, status int, tx domain.Transaction, balance, mainUsed, creditUsed int64, directH2H bool) {
 	funding := "Saldo Utama"
-	if creditUsed > 0 && mainUsed > 0 {
+	if directH2H {
+		funding = "Deposit H2H Owner"
+	} else if creditUsed > 0 && mainUsed > 0 {
 		funding = "Saldo Utama + Saldo Kredit"
 	} else if creditUsed > 0 {
 		funding = "Saldo Kredit"
@@ -366,7 +373,9 @@ func (h *UserTransactionHandler) Pulsa24Status(w http.ResponseWriter, r *http.Re
 		balance = current.Balance
 	}
 	funding := "Saldo Utama"
-	if settledOrder.CreditUsed > 0 && settledOrder.MainUsed > 0 {
+	if settledOrder.DirectH2H {
+		funding = "Deposit H2H Owner"
+	} else if settledOrder.CreditUsed > 0 && settledOrder.MainUsed > 0 {
 		funding = "Saldo Utama + Saldo Kredit"
 	} else if settledOrder.CreditUsed > 0 {
 		funding = "Saldo Kredit"

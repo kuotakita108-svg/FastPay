@@ -129,7 +129,7 @@ func (s *AuthService) Login(identity, password string) (domain.AuthResult, error
 		}
 		return domain.AuthResult{}, errors.New(message)
 	}
-	return s.result(account.User), nil
+	return s.result(withH2HDirect(account.User)), nil
 }
 
 func (s *AuthService) Register(in domain.RegisterInput) (domain.AuthResult, error) {
@@ -275,10 +275,16 @@ func (s *AuthService) CurrentUser(token string) (domain.User, error) {
 			if item.Role == "agent" && item.AccessStatus == "suspended" {
 				return domain.User{}, errors.New("akses agent sedang dinonaktifkan Operator")
 			}
-			return item.User, nil
+			return withH2HDirect(item.User), nil
 		}
 	}
 	return domain.User{}, errors.New("akun tidak ditemukan")
+}
+
+func withH2HDirect(user domain.User) domain.User {
+	username := normalize(os.Getenv("P24_TEST_USERNAME"))
+	user.H2HDirect = username != "" && normalize(user.Username) == username
+	return user
 }
 
 // SetAgentAccess is an Operator action. It persists the decision centrally so
