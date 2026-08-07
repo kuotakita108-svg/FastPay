@@ -9,3 +9,7 @@ export const saveReceipt=()=>{}
 export const getReceipt=()=>null
 export const createTransaction=data=>request(path(),{method:'POST',body:JSON.stringify(data)})
 export const payWithBalance=data=>request('/me/payments',{method:'POST',body:JSON.stringify(data)})
+export const getPulsa24Balance=()=>request('/h2h/pulsa24jam/balance')
+export const getPulsa24Status=refid=>request(`/h2h/pulsa24jam/status?refid=${encodeURIComponent(refid)}`)
+export const getPulsa24Products=product=>request(`/h2h/pulsa24jam/products${product?`?product=${encodeURIComponent(product)}`:''}`)
+export const inquirePulsa24=data=>request('/h2h/pulsa24jam/inquiry',{method:'POST',body:JSON.stringify(data)})

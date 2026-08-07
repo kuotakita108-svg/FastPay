@@ -2,7 +2,7 @@ import {useEffect,useState} from 'react'
 import {Navigate, useLocation, useNavigate} from 'react-router-dom'
 import {ArrowLeft, Check, ChevronRight, Clock3, ReceiptText, ShieldCheck, WalletCards, XCircle} from 'lucide-react'
 import {useAuth} from '../context/AuthContext'
-import {createTransaction, makeReceiptNumber, payWithBalance, saveReceipt} from '../services/transactionService'
+import {payWithBalance, saveReceipt} from '../services/transactionService'
 import {getSecurity,loadSecurity} from '../services/securityService'
 import PaymentSecurityModal from '../components/mobile/PaymentSecurityModal'
 import TransactionReceipt from '../components/mobile/TransactionReceipt'
@@ -12,14 +12,14 @@ import {saveFavoriteContact} from '../services/contactFavorites'
 export default function CheckoutPage() {
   const {state} = useLocation()
   const navigate = useNavigate()
-  const {session, user, setBalance, deductBalance} = useAuth()
+  const {user, setBalance} = useAuth()
   const [processing, setProcessing] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
   const [verifyOpen, setVerifyOpen] = useState(false)
   const [receiptOpen, setReceiptOpen] = useState(false)
 
-  if (!state?.amount) return <Navigate to="/app/services" replace/>
+  if (!state?.amount || !state?.sku) return <Navigate to="/app/services" replace/>
 
   const [security,setSecurity] = useState(()=>getSecurity(user.id))
   useEffect(()=>{loadSecurity(user.id).then(setSecurity).catch(()=>{})},[user.id])
@@ -35,8 +35,8 @@ export default function CheckoutPage() {
     product: state.product,
     amount: state.amount,
     payment_method: 'Saldo KuotaKita',
-    order_number: transaction.order_number || makeReceiptNumber('ORD'),
-    sn: transaction.sn || makeReceiptNumber('SN'),
+    order_number: transaction.order_number || '-',
+    sn: transaction.sn || '-',
   })
   const pay = async () => {
     setVerifyOpen(false)
@@ -44,7 +44,8 @@ export default function CheckoutPage() {
     setError('')
     try {
       let response
-      if (session?.offline) {
+      // Seluruh pembayaran wajib melewati backend H2H, tidak ada lagi transaksi lokal/browser.
+      if (false) {
         deductBalance(state.amount)
         const transaction = await createTransaction({
           customer: state.target,
@@ -60,7 +61,7 @@ export default function CheckoutPage() {
         })
         response = {transaction, balance: Number(user.balance) - Number(state.amount)}
       } else {
-        response = await payWithBalance({...state, email: user.email})
+        response = await payWithBalance({...state, qty: state.qty || state.amount, email: user.email || `${user.id}@kuotakita.id`})
         setBalance(response.balance)
       }
       const transaction = enrichTransaction(response.transaction)
@@ -79,10 +80,10 @@ export default function CheckoutPage() {
 
   if (result) return <main className="mobile-app checkout-page">
     <section className="payment-result">
-      <i><Check/></i>
-      <span>PEMBAYARAN BERHASIL</span>
+      <i>{result.transaction.status === 'Berhasil' ? <Check/> : <Clock3/>}</i>
+      <span>{result.transaction.status === 'Berhasil' ? 'PEMBAYARAN BERHASIL' : 'PESANAN SEDANG DIPROSES'}</span>
       <h1>{rupiah(state.amount)}</h1>
-      <p>{state.product} untuk {state.target} berhasil diproses.</p>
+      <p>{result.transaction.status === 'Berhasil' ? `${state.product} untuk ${state.target} berhasil diproses.` : `Pesanan ${state.product} sudah dikirim ke Pulsa24Jam. Status final akan diperbarui melalui callback.`}</p>
       <div><small>ID Transaksi</small><strong>{result.transaction.id}</strong></div>
       <button onClick={() => setReceiptOpen(true)}>Cetak / Lihat Struk</button>
       <button className="ghost" onClick={() => navigate('/app/history')}>Lihat Riwayat</button>

@@ -336,6 +336,16 @@ func (s *AuthService) ChangeBalance(token string, delta int64) (domain.User, err
 	if err != nil {
 		return domain.User{}, err
 	}
+	return s.changeBalanceByID(id, delta)
+}
+
+// ChangeBalanceByUserID is used only by trusted backend workflows, such as a
+// verified H2H refund. It is never exposed as an HTTP endpoint.
+func (s *AuthService) ChangeBalanceByUserID(id string, delta int64) (domain.User, error) {
+	return s.changeBalanceByID(id, delta)
+}
+
+func (s *AuthService) changeBalanceByID(id string, delta int64) (domain.User, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for key, item := range s.users {

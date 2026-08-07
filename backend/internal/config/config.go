@@ -14,6 +14,8 @@ type Config struct {
 	MarketingUsername, MarketingPassword                                                                 string
 	AnalisUsername, AnalisPassword                                                                       string
 	AgentInitialBalance                                                                                  int64
+	P24BaseURL, P24APIKey, P24PIN                                                                         string
+	P24RequestTimeoutSeconds                                                                              int
 }
 
 func Load() Config {
@@ -41,6 +43,10 @@ func Load() Config {
 		AnalisUsername:      os.Getenv("ANALIS_USERNAME"),
 		AnalisPassword:      os.Getenv("ANALIS_PASSWORD"),
 		AgentInitialBalance: envInt64("AGENT_INITIAL_BALANCE", 200000),
+		P24BaseURL:           env("P24_BASE_URL", "https://api.pulsa24jam.net"),
+		P24APIKey:            os.Getenv("P24_API_KEY"),
+		P24PIN:               os.Getenv("P24_PIN"),
+		P24RequestTimeoutSeconds: int(envInt64("P24_REQUEST_TIMEOUT_SECONDS", 15)),
 	}
 }
 

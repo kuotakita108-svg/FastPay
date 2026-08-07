@@ -3,6 +3,7 @@ import {useParams,useNavigate,useLocation} from 'react-router-dom'
 import {ArrowLeft,ShieldCheck,CheckCircle2,ChevronRight,Zap,LockKeyhole,Clock3,ReceiptText,BadgeCheck,ContactRound,Star,Search} from 'lucide-react'
 import {useAsync} from '../hooks/useAsync'
 import {getProducts} from '../services/productService'
+import {inquirePulsa24} from '../services/transactionService'
 import {rupiah} from '../utils/currency'
 import {serviceConfig} from '../constants/services'
 import {detectOperator} from '../constants/operators'
@@ -59,28 +60,6 @@ const serviceHeroes={
  tax:propertyHero,zakat:healthHero,parking:vehicleHero,delivery:travelHero,
 }
 
-const plnCustomers=['Budi Santoso','Siti Aminah','Rizky Pratama','Anggi Budino','Mikael KuotaKita','Dewi Lestari','Agus Salim','Nur Aisyah']
-const makePlnBill=id=>{
- const clean=String(id||'').replace(/\D/g,'')
- if(clean.length<6)return null
- const seed=clean.split('').reduce((sum,char,index)=>sum+(Number(char)||0)*(index+1),0)
- const base=[74500,126800,182400,238900,315600,426700][seed%6]
- const admin=3000
- const period=new Date().toLocaleDateString('id-ID',{month:'long',year:'numeric'})
- return {
-  customer:plnCustomers[seed%plnCustomers.length],
-  idpel:clean,
-  meter:`53${clean.slice(-8).padStart(8,'0')}`,
-  tariff:['R1/900VA','R1/1300VA','R1/2200VA','B1/2200VA'][seed%4],
-  period,
-  stand:`${(seed*17%9000)+1000} - ${(seed*17%9000)+1128}`,
-  bill:base,
-  admin,
-  total:base+admin,
-  ref:`PLN-${clean.slice(-6)}-${Date.now().toString().slice(-4)}`
- }
-}
-
 export default function ServicePurchasePage(){
  const {type}=useParams(),navigate=useNavigate(),location=useLocation(),config=serviceConfig[type]||serviceConfig.pulsa
  const loadProducts=useCallback(()=>getProducts(type),[type])
@@ -88,6 +67,7 @@ export default function ServicePurchasePage(){
  const {user}=useAuth(),{show}=useToast()
  const [target,setTarget]=useState(''),[provider,setProvider]=useState(type==='pln'?'PLN':''),[catalog,setCatalog]=useState(false),[mode,setMode]=useState('product'),[selected,setSelected]=useState(null),[freeAmount,setFreeAmount]=useState('')
  const [plnMode,setPlnMode]=useState('token'),[plnBill,setPlnBill]=useState(null)
+ const [checkingBill,setCheckingBill]=useState(false),[billError,setBillError]=useState('')
  const [favoriteContacts,setFavoriteContacts]=useState(()=>getFavoriteContacts(user?.id)),[contactHint,setContactHint]=useState('')
  const [providerQuery,setProviderQuery]=useState(''),[providerLimit,setProviderLimit]=useState(18),[productQuery,setProductQuery]=useState(''),[productLimit,setProductLimit]=useState(40),[catalogGroup,setCatalogGroup]=useState('')
  const supportsContacts=type==='pulsa'||type==='ewallet'
@@ -127,8 +107,16 @@ export default function ServicePurchasePage(){
   } catch { /* pengguna membatalkan pemilih kontak */ }
  }
  const changePlnMode=value=>{setPlnMode(value);closeCatalog();setSelected(null);setFreeAmount('');setPlnBill(null);if(value==='bill')setProvider('PLN Pascabayar');else setProvider('PLN')}
- const checkPlnBill=()=>setPlnBill(makePlnBill(target))
- const checkout=()=>navigate('/app/checkout',{state:{type,title:type==='pln'&&plnMode==='bill'?'Bayar Tagihan PLN':config.title,target,provider:type==='pln'&&plnMode==='bill'?'PLN Pascabayar':provider,product:type==='pln'&&plnMode==='bill'?`Tagihan PLN ${plnBill?.period}`:selected?.name||((mode==='custom'||selectedVariable)?`${config.title} ${rupiah(amount)}`:config.title),amount,detail:type==='pln'&&plnMode==='bill'?plnBill:null}})
+ const checkPlnBill=async()=>{
+  const plnProduct=products.find(item=>/pascabayar|tagihan/i.test(`${item.name} ${item.sku||''}`))
+  if(!plnProduct?.sku){setBillError('Produk inquiry PLN belum tersedia dari katalog H2H.');return}
+  setCheckingBill(true);setBillError('');setPlnBill(null)
+  try {
+   const result=await inquirePulsa24({sku:plnProduct.sku,target})
+   setPlnBill({...result,data:result.data||{},total:Number(result.amount||0),sku:plnProduct.sku,idpel:target})
+  } catch(error) { setBillError(error.message) } finally { setCheckingBill(false) }
+ }
+ const checkout=()=>navigate('/app/checkout',{state:{type,title:type==='pln'&&plnMode==='bill'?'Bayar Tagihan PLN':config.title,target,provider:type==='pln'&&plnMode==='bill'?'PLN Pascabayar':provider,product:type==='pln'&&plnMode==='bill'?`Tagihan PLN ${plnBill?.idpel}`:selected?.name||((mode==='custom'||selectedVariable)?`${config.title} ${rupiah(amount)}`:config.title),amount,sku:type==='pln'&&plnMode==='bill'?plnBill?.sku:selected?.sku,qty:type==='pln'&&plnMode==='bill'?amount:((mode==='custom'||selectedVariable)?amount:(selected?.nominal||amount)),detail:type==='pln'&&plnMode==='bill'?plnBill:null}})
  if(catalog)return <main className={`mobile-app product-catalog-page service-${type} catalog-provider-${providerIndex}`}>
   <header className="catalog-page-head"><button onClick={closeCatalog}><ArrowLeft/></button><div><strong>Produk {provider}</strong><small>{config.title} · {products.length} pilihan tersedia</small></div></header>
   <section className="catalog-provider-hero"><div><span>PROVIDER TERPILIH</span><h1>{provider}</h1><p>Pilih produk atau nominal yang paling sesuai dengan kebutuhanmu.</p></div><ProviderLogo name={provider} className="catalog-provider-logo"/></section>
@@ -146,9 +134,9 @@ export default function ServicePurchasePage(){
   <section className="service-intro service-person-hero"><img src={serviceHeroes[type]||communicationHero} alt="" aria-hidden="true" decoding="async" fetchPriority="high"/><div className="service-person-shade"/><div className="service-intro-copy"><span>{config.title}</span><h1>Transaksi lebih praktis dan aman</h1><p>Masukkan data tujuan, pilih penyedia, lalu tentukan produk yang kamu inginkan.</p></div></section>
   <section className="modern-purchase-body">
    {type==='pln'&&<section className="pln-mode-panel"><button type="button" className={plnMode==='token'?'active':''} onClick={()=>changePlnMode('token')}><Zap/><span><b>Beli Token Listrik</b><small>Isi token prabayar PLN</small></span></button><button type="button" className={plnMode==='bill'?'active':''} onClick={()=>changePlnMode('bill')}><ReceiptText/><span><b>Bayar Tagihan PLN</b><small>Cek tagihan pascabayar</small></span></button></section>}
-   <section className="number-panel"><div className="number-title"><i className="service-input-emblem"><ServiceEmblem type={type} label={config.title}/></i><div><strong>{type==='pln'&&plnMode==='bill'?'ID Pelanggan / Nomor Meter':config.input}</strong><small>{type==='pln'&&plnMode==='bill'?'Masukkan ID PLN untuk cek tagihan otomatis':'Pastikan data tujuan sudah benar'}</small></div><span className="verified-service"><ShieldCheck/> Resmi</span></div><label><span className="target-prefix">{type==='pln'&&plnMode==='bill'?'IDPEL':inputPrefix}</span><input value={target} onChange={event=>changeTarget(event.target.value)} placeholder={type==='pln'&&plnMode==='bill'?'Contoh: 535123456789':inputPlaceholder} inputMode={inputMode}/>{provider&&automatic.includes(type)&&<CheckCircle2/>}</label>{supportsContacts&&<><div className="contact-target-tools"><button type="button" onClick={pickContact}><ContactRound/> Pilih dari kontak</button><button type="button" className={favorite?'active':''} onClick={toggleFavorite} aria-pressed={favorite}><Star fill={favorite?'currentColor':'none'}/> {favorite?'Tersimpan':'Simpan favorit'}</button></div>{matchingFavorites.length>0&&<div className="contact-favorites"><small>Nomor favorit</small><div>{matchingFavorites.map(item=><button type="button" key={item.id} onClick={()=>changeTarget(item.number)}><span>{item.label}</span><b>{item.number}</b></button>)}</div></div>}{contactHint&&<p className="contact-hint">{contactHint}</p>}</>}{automatic.includes(type)&&<p>{provider?<>Nomor terdeteksi sebagai <b>{provider}</b></>:'Operator terpilih otomatis berdasarkan nomor.'}</p>}{type==='pln'&&plnMode==='bill'&&<button type="button" className="pln-check-button" onClick={checkPlnBill} disabled={target.replace(/\D/g,'').length<6}><ReceiptText/> Cek Tagihan PLN</button>}</section>
+   <section className="number-panel"><div className="number-title"><i className="service-input-emblem"><ServiceEmblem type={type} label={config.title}/></i><div><strong>{type==='pln'&&plnMode==='bill'?'ID Pelanggan / Nomor Meter':config.input}</strong><small>{type==='pln'&&plnMode==='bill'?'Masukkan ID PLN untuk cek tagihan otomatis':'Pastikan data tujuan sudah benar'}</small></div><span className="verified-service"><ShieldCheck/> Resmi</span></div><label><span className="target-prefix">{type==='pln'&&plnMode==='bill'?'IDPEL':inputPrefix}</span><input value={target} onChange={event=>changeTarget(event.target.value)} placeholder={type==='pln'&&plnMode==='bill'?'Contoh: 535123456789':inputPlaceholder} inputMode={inputMode}/>{provider&&automatic.includes(type)&&<CheckCircle2/>}</label>{supportsContacts&&<><div className="contact-target-tools"><button type="button" onClick={pickContact}><ContactRound/> Pilih dari kontak</button><button type="button" className={favorite?'active':''} onClick={toggleFavorite} aria-pressed={favorite}><Star fill={favorite?'currentColor':'none'}/> {favorite?'Tersimpan':'Simpan favorit'}</button></div>{matchingFavorites.length>0&&<div className="contact-favorites"><small>Nomor favorit</small><div>{matchingFavorites.map(item=><button type="button" key={item.id} onClick={()=>changeTarget(item.number)}><span>{item.label}</span><b>{item.number}</b></button>)}</div></div>}{contactHint&&<p className="contact-hint">{contactHint}</p>}</>}{automatic.includes(type)&&<p>{provider?<>Nomor terdeteksi sebagai <b>{provider}</b></>:'Operator terpilih otomatis berdasarkan nomor.'}</p>}{type==='pln'&&plnMode==='bill'&&<><button type="button" className="pln-check-button" onClick={checkPlnBill} disabled={checkingBill||target.replace(/\D/g,'').length<6}><ReceiptText/> {checkingBill?'Memeriksa tagihan...':'Cek Tagihan PLN'}</button>{billError&&<p className="contact-hint">{billError}</p>}</>}</section>
    <section className="service-confidence"><div><Zap/><span><b>Proses instan</b><small>Diproses otomatis</small></span></div><div><LockKeyhole/><span><b>Data aman</b><small>Terenkripsi</small></span></div><div><Clock3/><span><b>Aktif 24 jam</b><small>Setiap hari</small></span></div></section>
-   {type==='pln'&&plnMode==='bill'&&plnBill&&<section className="pln-bill-card"><header><div><BadgeCheck/><span>Tagihan ditemukan</span></div><strong>{rupiah(plnBill.total)}</strong></header><div className="pln-bill-owner"><ProviderLogo name="PLN"/><div><b>{plnBill.customer}</b><small>IDPEL {plnBill.idpel} • Meter {plnBill.meter}</small></div></div><dl><div><dt>Periode</dt><dd>{plnBill.period}</dd></div><div><dt>Tarif/Daya</dt><dd>{plnBill.tariff}</dd></div><div><dt>Stand meter</dt><dd>{plnBill.stand}</dd></div><div><dt>Tagihan</dt><dd>{rupiah(plnBill.bill)}</dd></div><div><dt>Admin</dt><dd>{rupiah(plnBill.admin)}</dd></div><div><dt>Ref cek</dt><dd>{plnBill.ref}</dd></div></dl><button type="button" onClick={checkout}>Lanjut Bayar Tagihan <ChevronRight/></button></section>}
+   {type==='pln'&&plnMode==='bill'&&plnBill&&<section className="pln-bill-card"><header><div><BadgeCheck/><span>Tagihan ditemukan dari Pulsa24Jam</span></div><strong>{rupiah(plnBill.total)}</strong></header><div className="pln-bill-owner"><ProviderLogo name="PLN"/><div><b>{plnBill.data?.customer_name||plnBill.data?.customer||'Pelanggan PLN'}</b><small>IDPEL {plnBill.idpel}</small></div></div><dl><div><dt>Nominal tagihan</dt><dd>{rupiah(plnBill.total)}</dd></div><div><dt>Status inquiry</dt><dd>{plnBill.status||'pending'}</dd></div><div><dt>Ref cek</dt><dd>{plnBill.refid}</dd></div></dl><button type="button" onClick={checkout}>Lanjut Bayar Tagihan <ChevronRight/></button></section>}
    {!(type==='pln'&&plnMode==='bill')&&<section className="provider-panel"><header><div><strong>{type==='pln'?'Pilih Produk PLN':'Pilih Penyedia'}</strong><small>{type==='pln'?'Token listrik resmi PLN':`${availableProviders.length} penyedia H2H tersedia`}</small></div>{provider&&<span>Terpilih</span>}</header>{availableProviders.length>9&&<label className="provider-search"><Search/><input value={providerQuery} onChange={event=>{setProviderQuery(event.target.value);setProviderLimit(18)}} placeholder="Cari penyedia"/><span>{matchingProviders.length}</span></label>}<div className="modern-provider-grid">{visibleProviders.map((name,index)=><button className={`${provider===name?'active':''} tone-${index%5}`} onClick={()=>{setProvider(name);closeCatalog();setSelected(null)}} key={name}><ProviderLogo name={name}/><span>{name}</span>{provider===name&&<CheckCircle2/>}</button>)}</div>{visibleProviders.length<matchingProviders.length&&<button type="button" className="provider-load-more" onClick={()=>setProviderLimit(limit=>limit+18)}>Tampilkan penyedia lainnya <ChevronRight/></button>}<button className="show-products" onClick={()=>{openCatalog();window.scrollTo({top:0,behavior:'smooth'})}} disabled={target.length<4||!provider}>Lihat Produk & Nominal <ChevronRight/></button></section>}
    <p className="modern-secure"><ShieldCheck/>Transaksi dilindungi sistem keamanan KuotaKita</p>
   </section><MobileNav/>
