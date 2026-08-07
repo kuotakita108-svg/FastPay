@@ -23,6 +23,10 @@ export default function CheckoutPage() {
   const [security,setSecurity] = useState(()=>getSecurity(user.id))
   useEffect(()=>{loadSecurity(user.id).then(setSecurity).catch(()=>{})},[user.id])
   const protectedPayment = Boolean(security.pinHash || security.biometricEnabled)
+  const isAgent=user.role==='agent'
+  const mainPayment=Math.min(Number(user.balance||0),Number(state?.amount||0))
+  const creditPayment=isAgent?Math.max(0,Number(state?.amount||0)-Number(user.balance||0)):0
+  const balanceEnough=isAgent||Number(user.balance||0)>=Number(state?.amount||0)
   const enrichTransaction = useCallback(transaction => ({
     ...transaction,
     id: transaction.id,
@@ -96,8 +100,8 @@ export default function CheckoutPage() {
         <div><dt>Invoice</dt><dd>{result.transaction.order_number||result.transaction.id}</dd></div>
         <div><dt>Tujuan</dt><dd>{state.target}</dd></div>
         <div><dt>Status</dt><dd className={failed?'refund-text':''}>{failed?'Dana dikembalikan':result.transaction.status}</dd></div>
-        <div><dt>Pakai saldo utama</dt><dd>{rupiah(result.main_used||0)}</dd></div>
-        <div><dt>Pakai saldo kredit</dt><dd>{rupiah(result.credit_used||0)}</dd></div>
+        <div><dt>{isAgent?'Pakai saldo utama':'Bayar dengan saldo'}</dt><dd>{rupiah(result.main_used||0)}</dd></div>
+        {isAgent&&<div><dt>Pakai saldo kredit</dt><dd>{rupiah(result.credit_used||0)}</dd></div>}
         <div><dt>Total bayar</dt><dd className="money-text">{rupiah(state.amount)}</dd></div>
         <div><dt>Metode bayar</dt><dd>{result.funding_source||'Saldo KuotaKita'}</dd></div>
       </dl>
@@ -113,15 +117,16 @@ export default function CheckoutPage() {
       <dl className="checkout-price-box">
         <div><dt>Nominal {state.type==='pulsa'?'pulsa':'produk'}</dt><dd>{rupiah(state.qty||state.amount)}</dd></div>
         <div><dt>Harga</dt><dd>{rupiah(state.amount)}</dd></div>
-        <div><dt>Pakai saldo utama</dt><dd>{rupiah(Math.min(Number(user.balance||0),Number(state.amount||0)))}</dd></div>
-        <div><dt>Pakai saldo kredit</dt><dd>{rupiah(Math.max(0,Number(state.amount||0)-Number(user.balance||0)))}</dd></div>
+        <div><dt>{isAgent?'Pakai saldo utama':'Bayar dengan saldo'}</dt><dd>{rupiah(mainPayment)}</dd></div>
+        {isAgent&&<div><dt>Pakai saldo kredit</dt><dd>{rupiah(creditPayment)}</dd></div>}
         <div><dt>Fee admin</dt><dd>Rp 0</dd></div>
         <div><dt>Total bayar</dt><dd>{rupiah(state.amount)}</dd></div>
       </dl>
       <label className="checkout-target"><span>Nomor Tujuan</span><input value={state.target} readOnly/></label>
       {protectedPayment&&<div className="checkout-protected"><ShieldCheck/> PIN atau biometrik akan diminta sebelum pembayaran.</div>}
     {error && <div className="checkout-error"><XCircle/><span>{error}</span>{/saldo/i.test(error) && <button onClick={() => navigate('/app/balance/topup')}>Isi Saldo</button>}</div>}
-      <button className="checkout-pay-button" disabled={processing} onClick={requestPay}><WalletCards/>{processing?'Memproses ke P24...':protectedPayment?'Verifikasi & Bayar':'Bayar'}</button>
+      <button className="checkout-pay-button" disabled={processing||!balanceEnough} onClick={requestPay}><WalletCards/>{processing?'Memproses ke P24...':!balanceEnough?'QRIS belum terhubung':protectedPayment?'Verifikasi & Bayar':'Bayar'}</button>
+      {!balanceEnough&&<div className="checkout-qris-unavailable"><QrCode/><span><b>Saldo tidak mencukupi</b><small>QRIS akan aktif setelah gateway merchant resmi dan webhook pembayaran dihubungkan.</small></span></div>}
       <small className="checkout-provider-note"><ShieldCheck/> Diproses resmi melalui Pulsa24Jam. PAY tidak diulang otomatis agar transaksi tidak ganda.</small>
     </section>
     <PaymentSecurityModal open={verifyOpen} user={user} settings={security} onClose={() => setVerifyOpen(false)} onVerified={pay}/>
