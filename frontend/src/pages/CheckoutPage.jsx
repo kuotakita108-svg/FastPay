@@ -29,41 +29,28 @@ export default function CheckoutPage() {
     id: transaction.id,
     customer: transaction.customer || state.target,
     target: state.target,
-    customer_name: state.customer_name || transaction.customer_name || 'Pelanggan KuotaKita',
+    customer_name: transaction.customer_name || state.customer_name || '',
     provider: state.provider,
     title: state.title,
     product: state.product,
     amount: state.amount,
     payment_method: 'Saldo KuotaKita',
     order_number: transaction.order_number || '-',
-    sn: transaction.sn || '-',
+    sn: transaction.sn || '',
   })
   const pay = async () => {
     setVerifyOpen(false)
     setProcessing(true)
     setError('')
     try {
-      let response
-      // Seluruh pembayaran wajib melewati backend H2H, tidak ada lagi transaksi lokal/browser.
-      if (false) {
-        deductBalance(state.amount)
-        const transaction = await createTransaction({
-          customer: state.target,
-          target: state.target,
-          customer_name: state.customer_name || 'Pelanggan KuotaKita',
-          email: user.email || `${user.id}@kuotakita.id`,
-          method: `${state.provider} Â· ${state.title}`,
-          provider: state.provider,
-          title: state.title,
-          product: state.product,
-          amount: state.amount,
-          payment_method: 'Saldo KuotaKita',
-        })
-        response = {transaction, balance: Number(user.balance) - Number(state.amount)}
-      } else {
-        response = await payWithBalance({...state, qty: state.qty || state.amount, email: user.email || `${user.id}@kuotakita.id`})
-        setBalance(response.balance)
-      }
+      // Seluruh pembayaran wajib melewati backend H2H Pulsa24Jam.
+      // Tidak ada transaksi lokal, nama penerima buatan, atau saldo browser.
+      const response = await payWithBalance({
+        ...state,
+        qty: state.qty || state.amount,
+        email: user.email || `${user.id}@kuotakita.id`,
+      })
+      setBalance(response.balance)
       const transaction = enrichTransaction(response.transaction)
       saveReceipt(transaction)
       if (state.type === 'pulsa' || state.type === 'ewallet') {

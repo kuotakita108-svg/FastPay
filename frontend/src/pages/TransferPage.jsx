@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { rupiah } from "../utils/currency";
-import { request } from "../services/http";
 import BrandProviderLogo from "../components/mobile/ProviderLogo";
 
 const channels = [
@@ -106,25 +105,15 @@ export default function TransferPage() {
     setNumber("");
     setRecipient(null);
   };
-  const lookup = async () => {
+  const lookup = () => {
     setError("");
     if (!provider) return setError("Pilih bank atau penyedia tujuan");
     if (number.replace(/\D/g, "").length < 6)
       return setError("Nomor tujuan belum lengkap");
-    setProcessing(true);
-    try {
-      const detail = await request("/services/recipient-lookup", {
-        method: "POST",
-        body: JSON.stringify({ channel, provider, number }),
-      });
-      setRecipient(detail);
-      setStep("amount");
-    } catch (current) {
-      setRecipient(null);
-      setError(current.message);
-    } finally {
-      setProcessing(false);
-    }
+    setRecipient(null);
+    setError(
+      "Cek nama penerima dan kirim dana belum tersedia pada API Pulsa24Jam. Fitur ini dinonaktifkan agar aplikasi tidak menampilkan nama atau transaksi palsu.",
+    );
   };
   const review = () => {
     setError("");
@@ -132,50 +121,10 @@ export default function TransferPage() {
     if (total > available) return setError("Saldo KuotaKita tidak mencukupi");
     setStep("confirm");
   };
-  const send = async () => {
+  const send = () => {
     setError(
       "Kirim bank, e-wallet, sesama KuotaKita, dan tarik saldo belum aktif. Fitur ini akan dibuka setelah mitra payout resmi untuk cek nama penerima, pengiriman dana, dan webhook terhubung.",
     );
-    return;
-    setProcessing(true);
-    setError("");
-    try {
-      const payload = {
-        type: withdraw ? "withdraw" : "transfer",
-        title: withdraw
-          ? "Tarik Saldo"
-          : channel === "bank"
-            ? "Transfer Bank"
-            : channel === "wallet"
-              ? "Transfer E-Wallet"
-              : "Transfer KuotaKita",
-        target: `${recipient.name} Â· ${recipient.number}`,
-        provider: recipient.provider,
-        product: withdraw ? "Penarikan Saldo" : `Kirim ke ${recipient.name}`,
-        amount: total,
-        email: user.email,
-      };
-      let response;
-      if (session?.offline) {
-        deductBalance(total);
-        const transaction = await createTransaction({
-          customer: payload.target,
-          email: user.email || `${user.id}@kuotakita.id`,
-          method: `${payload.provider} Â· ${payload.title}`,
-          amount: total,
-        });
-        response = { transaction, balance: available - total };
-      } else {
-        response = await payWithBalance(payload);
-        setBalance(response.balance);
-      }
-      setResult(response);
-      setStep("success");
-    } catch (current) {
-      setError(current.message);
-    } finally {
-      setProcessing(false);
-    }
   };
   if (step === "success")
     return (
@@ -322,9 +271,15 @@ export default function TransferPage() {
                   />
                 </div>
               </label>
-<button className="transfer-main" onClick={lookup} disabled={processing}>
+              <button className="transfer-main" onClick={lookup} disabled={processing}>
                 {processing ? "Memverifikasi..." : "Cek Detail Penerima"} <ChevronRight />
               </button>
+              {error && (
+                <div className="transfer-error">
+                  <XCircle />
+                  {error}
+                </div>
+              )}
             </section>
           )}
         </section>

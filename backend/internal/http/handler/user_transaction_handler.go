@@ -130,53 +130,38 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 	}
 	method := strings.TrimSpace(strings.TrimSpace(in.Provider) + " · " + strings.TrimSpace(in.Title))
 	now := time.Now()
-	if strings.TrimSpace(in.SKU) != "" {
-		if h.pulsa24 == nil || !h.pulsa24.Enabled() {
-			h.restoreFunds(id, mainUsed, creditUsed)
-			response.Error(w, http.StatusServiceUnavailable, "transaksi H2H belum diaktifkan di server")
-			return
-		}
-		if strings.TrimSpace(in.SKU) == "" || strings.TrimSpace(in.Target) == "" {
-			h.restoreFunds(id, mainUsed, creditUsed)
-			response.Error(w, 422, "produk H2H atau tujuan transaksi belum valid")
-			return
-		}
-		qty := in.Qty
-		if qty < 1 {
-			qty = in.Amount
-		}
-		refID := h.pulsa24.NewRefID()
-		tx := domain.Transaction{ID: fmt.Sprintf("PP-%d", now.UnixMilli()), Customer: in.Target, Email: in.Email, Method: method, Amount: in.Amount, Status: "Diproses", Target: in.Target, Provider: in.Provider, Title: in.Title, Product: in.Product, OrderNumber: refID, CreatedAt: now}
-		h.append(id, tx)
-		if err := h.pulsa24.Record(service.Pulsa24Order{RefID: refID, UserID: id, Product: in.SKU, Destination: in.Target, TransactionID: tx.ID, Qty: qty, Amount: in.Amount, MainUsed: mainUsed, CreditUsed: creditUsed, Status: "pending", Debited: true, CreatedAt: now}); err != nil {
-			h.restoreFunds(id, mainUsed, creditUsed)
-			h.updateTransaction(id, tx.ID, "Gagal", "")
-			response.Error(w, http.StatusServiceUnavailable, "order H2H tidak dapat disimpan")
-			return
-		}
-		result, requestErr := h.pulsa24.Pay(in.SKU, in.Target, qty, refID)
-		if requestErr != nil {
-			h.writePaymentResponseStatus(w, http.StatusAccepted, tx, user.Balance, mainUsed, creditUsed)
-			return
-		}
-		if result.Status == "failed" {
-			tx = h.finalizePulsa24(refID, result)
-			message := "transaksi H2H ditolak"
-			if result.Message != "" {
-				message = result.Message
-			}
-			response.Error(w, 422, message)
-			return
-		}
-		if result.Status == "success" {
-			tx = h.finalizePulsa24(refID, result)
-		}
+	qty := in.Qty
+	if qty < 1 {
+		qty = in.Amount
+	}
+	refID := h.pulsa24.NewRefID()
+	tx := domain.Transaction{ID: fmt.Sprintf("PP-%d", now.UnixMilli()), Customer: in.Target, Email: in.Email, Method: method, Amount: in.Amount, Status: "Diproses", Target: in.Target, Provider: in.Provider, Title: in.Title, Product: in.Product, OrderNumber: refID, CreatedAt: now}
+	h.append(id, tx)
+	if err := h.pulsa24.Record(service.Pulsa24Order{RefID: refID, UserID: id, Product: in.SKU, Destination: in.Target, TransactionID: tx.ID, Qty: qty, Amount: in.Amount, MainUsed: mainUsed, CreditUsed: creditUsed, Status: "pending", Debited: true, CreatedAt: now}); err != nil {
+		h.restoreFunds(id, mainUsed, creditUsed)
+		h.updateTransaction(id, tx.ID, "Gagal", "", "")
+		response.Error(w, http.StatusServiceUnavailable, "order H2H tidak dapat disimpan")
+		return
+	}
+	result, requestErr := h.pulsa24.Pay(in.SKU, in.Target, qty, refID)
+	if requestErr != nil {
 		h.writePaymentResponseStatus(w, http.StatusAccepted, tx, user.Balance, mainUsed, creditUsed)
 		return
 	}
-	tx := domain.Transaction{ID: fmt.Sprintf("PP-%d", now.UnixMilli()), Customer: in.Target, Email: in.Email, Method: method, Amount: in.Amount, Status: "Berhasil", Target: in.Target, Provider: in.Provider, Title: in.Title, Product: in.Product, OrderNumber: fmt.Sprintf("ORD-%d", now.UnixMilli()), SN: fmt.Sprintf("SN-%d", now.UnixNano()%100000000), CreatedAt: now}
-	h.append(id, tx)
-	h.writePaymentResponse(w, tx, user.Balance, mainUsed, creditUsed)
+	if result.Status == "failed" {
+		tx = h.finalizePulsa24(refID, result)
+		message := "transaksi H2H ditolak"
+		if result.Message != "" {
+			message = result.Message
+		}
+		response.Error(w, 422, message)
+		return
+	}
+	if result.Status == "success" {
+		tx = h.finalizePulsa24(refID, result)
+	}
+	h.writePaymentResponseStatus(w, http.StatusAccepted, tx, user.Balance, mainUsed, creditUsed)
+	return
 }
 
 func (h *UserTransactionHandler) chargeFunds(token string, current domain.User, amount int64) (domain.User, int64, int64, error) {
@@ -233,7 +218,7 @@ func (h *UserTransactionHandler) writePaymentResponseStatus(w http.ResponseWrite
 	response.JSON(w, status, map[string]any{"transaction": tx, "balance": balance, "main_used": mainUsed, "credit_used": creditUsed, "funding_source": funding})
 }
 
-func (h *UserTransactionHandler) updateTransaction(userID, transactionID, status, sn string) {
+func (h *UserTransactionHandler) updateTransaction(userID, transactionID, status, sn, customerName string) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	for i := range h.items[userID] {
@@ -243,6 +228,9 @@ func (h *UserTransactionHandler) updateTransaction(userID, transactionID, status
 		h.items[userID][i].Status = status
 		if sn != "" {
 			h.items[userID][i].SN = sn
+		}
+		if customerName != "" {
+			h.items[userID][i].CustomerName = customerName
 		}
 		break
 	}
@@ -275,7 +263,7 @@ func (h *UserTransactionHandler) finalizePulsa24(refID string, result service.Pu
 			h.restoreFunds(refund.UserID, refund.MainUsed, refund.CreditUsed)
 		}
 	}
-	h.updateTransaction(order.UserID, order.TransactionID, status, result.SN)
+	h.updateTransaction(order.UserID, order.TransactionID, status, result.SN, result.CustomerName)
 	transaction, _ := h.transaction(order.UserID, order.TransactionID)
 	return transaction
 }

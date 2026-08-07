@@ -32,7 +32,7 @@ type Pulsa24Service struct {
 type Pulsa24Order struct {
 	RefID, UserID, Product, Destination, TransactionID string
 	Qty, Amount, MainUsed, CreditUsed                  int64
-	Status, SN, Message                                string
+	Status, SN, Message, CustomerName                  string
 	Debited, Refunded                                  bool
 	CreatedAt, UpdatedAt                               time.Time
 }
@@ -42,15 +42,16 @@ type pulsa24OrderFile struct {
 }
 
 type Pulsa24Result struct {
-	OK      bool           `json:"ok"`
-	Command string         `json:"command,omitempty"`
-	RefID   string         `json:"refid,omitempty"`
-	Status  string         `json:"status,omitempty"`
-	SN      string         `json:"sn,omitempty"`
-	Message string         `json:"msg,omitempty"`
-	Balance int64          `json:"balance,omitempty"`
-	Amount  int64          `json:"amount,omitempty"`
-	Raw     map[string]any `json:"-"`
+	OK           bool           `json:"ok"`
+	Command      string         `json:"command,omitempty"`
+	RefID        string         `json:"refid,omitempty"`
+	Status       string         `json:"status,omitempty"`
+	SN           string         `json:"sn,omitempty"`
+	CustomerName string         `json:"customer_name,omitempty"`
+	Message      string         `json:"msg,omitempty"`
+	Balance      int64          `json:"balance,omitempty"`
+	Amount       int64          `json:"amount,omitempty"`
+	Raw          map[string]any `json:"-"`
 }
 
 func NewPulsa24Service(cfg config.Config, state *database.StateStore) *Pulsa24Service {
@@ -125,7 +126,18 @@ func (s *Pulsa24Service) request(command string, payload map[string]any) (Pulsa2
 	if nested, ok := data["data"].(map[string]any); ok {
 		row = nested
 	}
-	result := Pulsa24Result{OK: boolVal(data, "ok"), Command: command, RefID: stringVal(row, "refid"), Status: normalizeP24Status(stringVal(row, "status")), SN: stringVal(row, "sn"), Message: firstText(stringVal(row, "msg"), stringVal(data, "msg")), Balance: firstIntValP24(row, "balance", "saldo"), Amount: firstIntValP24(row, "amount", "total", "bill", "tagihan", "harga", "price", "nominal"), Raw: data}
+	result := Pulsa24Result{
+		OK:           boolVal(data, "ok"),
+		Command:      command,
+		RefID:        stringVal(row, "refid"),
+		Status:       normalizeP24Status(stringVal(row, "status")),
+		SN:           stringVal(row, "sn"),
+		CustomerName: firstText(stringVal(row, "customer_name"), stringVal(row, "customerName"), stringVal(row, "nama_pelanggan"), stringVal(row, "customer"), stringVal(row, "name"), stringVal(row, "nama")),
+		Message:      firstText(stringVal(row, "msg"), stringVal(data, "msg")),
+		Balance:      firstIntValP24(row, "balance", "saldo"),
+		Amount:       firstIntValP24(row, "amount", "total", "bill", "tagihan", "harga", "price", "nominal"),
+		Raw:          data,
+	}
 	if result.RefID == "" {
 		result.RefID = stringVal(data, "refid")
 	}
@@ -134,6 +146,9 @@ func (s *Pulsa24Service) request(command string, payload map[string]any) (Pulsa2
 	}
 	if result.Amount == 0 {
 		result.Amount = firstIntValP24(data, "amount", "total", "bill", "tagihan", "harga", "price", "nominal")
+	}
+	if result.CustomerName == "" {
+		result.CustomerName = firstText(stringVal(data, "customer_name"), stringVal(data, "customerName"), stringVal(data, "nama_pelanggan"), stringVal(data, "customer"), stringVal(data, "name"), stringVal(data, "nama"))
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 || data["ok"] == false {
 		if result.Message == "" {
@@ -186,6 +201,9 @@ func (s *Pulsa24Service) Finalize(refID string, result Pulsa24Result) (Pulsa24Or
 	}
 	if result.Message != "" {
 		order.Message = result.Message
+	}
+	if result.CustomerName != "" {
+		order.CustomerName = result.CustomerName
 	}
 	order.UpdatedAt = time.Now().UTC()
 	s.orders[refID] = order

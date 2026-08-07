@@ -13,8 +13,8 @@ func TestLookupOperator(t *testing.T) {
 	if result.Provider != "Telkomsel" {
 		t.Fatalf("operator=%s", result.Provider)
 	}
-	if result.CustomerName == "" {
-		t.Fatal("nama penerima kosong")
+	if result.CustomerName != "" {
+		t.Fatalf("nama penerima tidak boleh dibuat-buat: %q", result.CustomerName)
 	}
 }
 func TestLookupWalletNeedsProvider(t *testing.T) {

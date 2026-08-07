@@ -50,9 +50,9 @@ export function buildThermalReceipt({transaction, order = {}, user = {}}) {
   const service = transaction.title || order.title || (transaction.method || '').split('Â·')[1]?.trim() || 'KuotaKita'
   const product = transaction.product || order.product || service
   const target = transaction.target || order.target || transaction.customer
-  const customerName = transaction.customer_name || order.customer_name || transaction.customerName || 'Pelanggan KuotaKita'
+  const customerName = transaction.customer_name || order.customer_name || transaction.customerName || '-'
   const orderNumber = transaction.order_number || transaction.orderNumber || transaction.id
-  const serial = transaction.sn || transaction.serial || `SN-${String(transaction.id || '0000000000').replace(/\D/g, '').slice(-10)}`
+  const serial = transaction.sn || transaction.serial || '-'
 
   return [
     INIT,

@@ -3,7 +3,6 @@ package service
 import (
 	"errors"
 	"kuotakita/backend/internal/domain"
-	"fmt"
 	"strings"
 	"unicode"
 )
@@ -39,9 +38,8 @@ func (s *LookupService) Lookup(in domain.LookupInput) (domain.LookupResult, erro
 			return domain.LookupResult{}, errors.New("pilih game terlebih dahulu")
 		}
 	}
-	name := maskedName(target)
-	message := fmt.Sprintf("Data %s berhasil diverifikasi", provider)
-	return domain.LookupResult{Valid: true, Provider: provider, CustomerName: name, Target: target, Message: message}, nil
+	message := "Provider terdeteksi. Nama penerima hanya ditampilkan jika dikirim oleh provider resmi."
+	return domain.LookupResult{Valid: true, Provider: provider, Target: target, Message: message}, nil
 }
 func digits(value string) string {
 	return strings.Map(func(r rune) rune {
@@ -61,8 +59,4 @@ func detectOperator(phone string) string {
 		}
 	}
 	return ""
-}
-func maskedName(target string) string {
-	names := []string{"ANDI P****", "SITI N****", "BUDI S****", "OCTA P****", "RINA A****"}
-	return names[int(target[len(target)-1]-'0')%len(names)]
 }
