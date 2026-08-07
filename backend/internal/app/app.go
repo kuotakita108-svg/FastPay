@@ -35,7 +35,7 @@ func New(cfg config.Config) *App {
 		{Username: cfg.AgentUsername, Password: cfg.AgentPassword, Name: "Agent KuotaKita", Role: "agent", InitialBalance: cfg.AgentInitialBalance},
 		{Username: cfg.MarketingUsername, Password: cfg.MarketingPassword, Name: "Marketing KuotaKita", Role: "marketing"},
 		{Username: cfg.AnalisUsername, Password: cfg.AnalisPassword, Name: "Analis KuotaKita", Role: "analis"},
-		{Username: cfg.H2HTestUsername, Password: cfg.H2HTestPassword, Name: "Owner Test H2H", Role: "user"},
+		{Username: cfg.H2HTestUsername, Password: cfg.H2HTestPassword, Name: "Owner Test H2H", Role: "user", SyncPassword: true},
 	})
 	lookup := service.NewLookupService()
 	credit := service.NewDatabaseCreditService(filepath.Join(cfg.DataDir, "credit-applications.json"), auth, state)
