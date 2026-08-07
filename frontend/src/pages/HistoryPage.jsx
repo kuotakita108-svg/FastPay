@@ -7,7 +7,7 @@ import MobileNav from '../components/mobile/MobileNav'
 import TransactionReceipt from '../components/mobile/TransactionReceipt'
 import {useAuth} from '../context/AuthContext'
 import {useAsync} from '../hooks/useAsync'
-import {getReceipt, getTransactions} from '../services/transactionService'
+import {getPulsa24Status, getReceipt, getTransactions} from '../services/transactionService'
 import {rupiah} from '../utils/currency'
 import {formatDate} from '../utils/date'
 
@@ -22,11 +22,14 @@ export default function HistoryPage() {
   const [selected, setSelected] = useState(null)
   const [receipt, setReceipt] = useState(null)
   const [printMode, setPrintMode] = useState(false)
+  const [updates, setUpdates] = useState({})
+  const [checkingStatus, setCheckingStatus] = useState(false)
+  const [statusError, setStatusError] = useState('')
 
   const items = useMemo(() => {
     const now = new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    return data?.filter(item => {
+    return data?.map(item=>updates[item.id]||item).filter(item => {
       const created = new Date(item.created_at)
       const target = String(item.customer || '').toLowerCase()
       const id = String(item.id || '').toLowerCase()
@@ -46,10 +49,19 @@ export default function HistoryPage() {
       }
       return matchesText && matchesDate && matchesPeriod
     }) || []
-  }, [data, query, date, filter])
+  }, [data, updates, query, date, filter])
 
   const enriched = item => getReceipt(item.id) || item
   const openDetail = item => setSelected(enriched(item))
+  const checkStatus = async item => {
+    const refid=item.order_number||item.orderNumber
+    if(!refid)return
+    setCheckingStatus(true);setStatusError('')
+    try{
+      const result=await getPulsa24Status(refid)
+      if(result.transaction?.id){setUpdates(current=>({...current,[result.transaction.id]:result.transaction}));setSelected(result.transaction)}
+    }catch(error){setStatusError(error.message)}finally{setCheckingStatus(false)}
+  }
   const openReceipt = (item, printer = false) => {
     setReceipt(enriched(item))
     setPrintMode(printer)
@@ -93,7 +105,9 @@ export default function HistoryPage() {
           <div><dt>SN / Ref</dt><dd>{safe(selected.sn || selected.serial)}</dd></div>
           <div><dt>Tanggal</dt><dd>{formatDate(selected.created_at)}</dd></div>
         </dl>
+        {statusError&&<p className="checkout-error">{statusError}</p>}
         <footer>
+          {selected.status==='Diproses'&&<button type="button" className="history-detail-view" disabled={checkingStatus} onClick={()=>checkStatus(selected)}>{checkingStatus?'Memeriksa...':'Cek Status P24'}</button>}
           <button type="button" className="history-detail-print" onClick={() => openReceipt(selected, true)}><Printer/>Cetak Struk</button>
           <button type="button" className="history-detail-view" onClick={() => openReceipt(selected, false)}><Eye/>Lihat Struk</button>
         </footer>
