@@ -126,7 +126,7 @@ export default function CheckoutPage() {
     <section className="checkout-sheet">
       <header className="sheet-heading"><div><small>CHECKOUT</small><h1>{state.product}</h1></div><button onClick={() => navigate(-1)} aria-label="Tutup"><X/></button></header>
       <dl className="checkout-price-box">
-        <div><dt>Nominal {state.type==='pulsa'?'pulsa':'produk'}</dt><dd>{rupiah(state.qty||state.amount)}</dd></div>
+        <div><dt>Nominal {state.type==='pulsa'?'pulsa':'produk'}</dt><dd>{rupiah(state.nominal||state.amount)}</dd></div>
         <div><dt>Harga</dt><dd>{rupiah(state.amount)}</dd></div>
         {directH2H?<div><dt>Sumber dana</dt><dd>Deposit H2H Owner</dd></div>:<><div><dt>{isAgent?'Pakai saldo utama':'Bayar dengan saldo'}</dt><dd>{rupiah(mainPayment)}</dd></div>{isAgent&&<div><dt>Pakai saldo kredit</dt><dd>{rupiah(creditPayment)}</dd></div>}</>}
         <div><dt>Fee admin</dt><dd>Rp 0</dd></div>
