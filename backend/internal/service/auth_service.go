@@ -119,11 +119,6 @@ func (s *AuthService) Login(identity, password string) (domain.AuthResult, error
 		}
 	}
 	s.mu.RUnlock()
-	if account.ID == "" && s.dataFile == "" && identity == "octa" {
-		if demo, ok := demoAccount(password); ok {
-			return s.result(demo), nil
-		}
-	}
 	if account.ID == "" || account.PasswordHash == "" || bcrypt.CompareHashAndPassword([]byte(account.PasswordHash), []byte(password)) != nil {
 		return domain.AuthResult{}, errors.New("username atau password salah")
 	}
@@ -479,14 +474,4 @@ func uniqueUsername(value string, users map[string]storedUser) string {
 		result = base + strconv.Itoa(index)
 	}
 	return result
-}
-
-func demoAccount(password string) (domain.User, bool) {
-	accounts := map[string]domain.User{
-		"octa11": {ID: "USR-001", Username: "octa", Name: "Octa User", Role: "user", Balance: 275000, Phone: "081234567890", Email: "user@kuotakita.id"},
-		"octa22": {ID: "MST-001", Username: "octa", Name: "Octa Master", Role: "master", Balance: 25000000, Phone: "081234567890", Email: "master@kuotakita.id"},
-		"octa33": {ID: "ADM-001", Username: "octa", Name: "Octa Admin", Role: "admin", Balance: 8500000, Phone: "081234567890", Email: "admin@kuotakita.id"},
-	}
-	user, ok := accounts[password]
-	return user, ok
 }
