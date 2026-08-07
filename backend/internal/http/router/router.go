@@ -37,6 +37,8 @@ func New(h Handlers) http.Handler {
 	mux.HandleFunc("GET /api/v1/me/transactions", h.UserTransactions.List)
 	mux.HandleFunc("POST /api/v1/me/transactions", h.UserTransactions.Create)
 	mux.HandleFunc("POST /api/v1/me/payments", h.UserTransactions.Payment)
+	mux.HandleFunc("POST /api/v1/me/payments/pending", h.UserTransactions.PendingPayment)
+	mux.HandleFunc("GET /api/v1/me/payments/pending/{id}", h.UserTransactions.PendingPaymentStatus)
 	mux.HandleFunc("GET /api/v1/h2h/pulsa24jam/status", h.UserTransactions.Pulsa24Status)
 	mux.HandleFunc("GET /api/v1/h2h/pulsa24jam/balance", h.UserTransactions.Pulsa24Balance)
 	mux.HandleFunc("GET /api/v1/h2h/pulsa24jam/products", h.UserTransactions.Pulsa24Products)

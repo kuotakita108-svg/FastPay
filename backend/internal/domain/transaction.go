@@ -17,6 +17,7 @@ type Transaction struct {
 	OrderNumber  string    `json:"order_number,omitempty"`
 	SN           string    `json:"sn,omitempty"`
 	CreatedAt    time.Time `json:"created_at"`
+	ExpiresAt    time.Time `json:"expires_at,omitempty"`
 }
 type CreateTransactionInput struct {
 	Customer     string `json:"customer"`

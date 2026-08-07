@@ -169,6 +169,43 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 	return
 }
 
+// PendingPayment records an unpaid checkout without debiting wallet funds or
+// sending PAY to P24. It is the safe bridge for a future verified QRIS charge.
+func (h *UserTransactionHandler) PendingPayment(w http.ResponseWriter, r *http.Request) {
+	id, ok := h.userID(w, r)
+	if !ok { return }
+	var in paymentInput
+	if json.NewDecoder(r.Body).Decode(&in) != nil || in.Amount < 1 || strings.TrimSpace(in.SKU) == "" || strings.TrimSpace(in.Target) == "" {
+		response.Error(w, http.StatusBadRequest, "data pembayaran tidak valid")
+		return
+	}
+	now := time.Now().UTC()
+	tx := domain.Transaction{ID: fmt.Sprintf("QR-%d", now.UnixMilli()), Customer: in.Target, Email: in.Email, Method: "Menunggu QRIS", Amount: in.Amount, Status: "Menunggu Pembayaran", Target: in.Target, Provider: in.Provider, Title: in.Title, Product: in.Product, OrderNumber: fmt.Sprintf("INV-%d", now.UnixMilli()), CreatedAt: now, ExpiresAt: now.Add(15 * time.Minute)}
+	h.append(id, tx)
+	response.JSON(w, http.StatusCreated, map[string]any{"transaction": tx, "status": "pending", "expires_at": tx.ExpiresAt, "payment_method": "QRIS belum tersedia"})
+}
+
+func (h *UserTransactionHandler) PendingPaymentStatus(w http.ResponseWriter, r *http.Request) {
+	id, ok := h.userID(w, r)
+	if !ok { return }
+	txID := strings.TrimSpace(r.PathValue("id"))
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	for i := range h.items[id] {
+		tx := &h.items[id][i]
+		if tx.ID != txID { continue }
+		if tx.Status == "Menunggu Pembayaran" && !tx.ExpiresAt.IsZero() && !time.Now().UTC().Before(tx.ExpiresAt) {
+			tx.Status = "Kedaluwarsa"
+			_ = h.saveLocked()
+		}
+		status := "pending"
+		if tx.Status == "Kedaluwarsa" { status = "expire" }
+		response.JSON(w, http.StatusOK, map[string]any{"transaction": *tx, "status": status, "expires_at": tx.ExpiresAt})
+		return
+	}
+	response.Error(w, http.StatusNotFound, "invoice pembayaran tidak ditemukan")
+}
+
 func (h *UserTransactionHandler) writeFailedPaymentResponse(w http.ResponseWriter, token string, tx domain.Transaction, mainUsed, creditUsed int64, message string) {
 	if strings.TrimSpace(message) == "" {
 		message = "transaksi ditolak provider"
