@@ -284,6 +284,59 @@ func (s *AuthService) CurrentUser(token string) (domain.User, error) {
 	return domain.User{}, errors.New("akun tidak ditemukan")
 }
 
+// UpdateProfile lets a signed-in account maintain its own public contact data.
+// Username, role, balance, and access controls are intentionally immutable here.
+func (s *AuthService) UpdateProfile(token string, in domain.ProfileInput) (domain.User, error) {
+	id, _, err := s.session(token)
+	if err != nil {
+		return domain.User{}, err
+	}
+	in.Name = strings.TrimSpace(in.Name)
+	in.Phone = strings.TrimSpace(in.Phone)
+	in.Email = normalize(in.Email)
+	if len(in.Name) < 3 {
+		return domain.User{}, errors.New("nama lengkap minimal 3 karakter")
+	}
+	if in.Phone != "" && (len(in.Phone) < 10 || len(in.Phone) > 15) {
+		return domain.User{}, errors.New("nomor handphone harus 10 sampai 15 digit")
+	}
+	for _, character := range in.Phone {
+		if character < '0' || character > '9' {
+			return domain.User{}, errors.New("nomor handphone hanya boleh berisi angka")
+		}
+	}
+	if in.Email != "" && (!strings.Contains(in.Email, "@") || strings.HasPrefix(in.Email, "@") || strings.HasSuffix(in.Email, "@")) {
+		return domain.User{}, errors.New("alamat email tidak valid")
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, item := range s.users {
+		if item.ID == id {
+			continue
+		}
+		if in.Phone != "" && item.Phone == in.Phone {
+			return domain.User{}, errors.New("nomor handphone sudah digunakan")
+		}
+		if in.Email != "" && normalize(item.Email) == in.Email {
+			return domain.User{}, errors.New("email sudah digunakan")
+		}
+	}
+	for key, item := range s.users {
+		if item.ID != id {
+			continue
+		}
+		original := item
+		item.Name, item.Phone, item.Email = in.Name, in.Phone, in.Email
+		s.users[key] = item
+		if err := s.saveLocked(); err != nil {
+			s.users[key] = original
+			return domain.User{}, errors.New("profil belum dapat disimpan ke server")
+		}
+		return withH2HDirect(item.User), nil
+	}
+	return domain.User{}, errors.New("akun tidak ditemukan")
+}
+
 func withH2HDirect(user domain.User) domain.User {
 	username := normalize(os.Getenv("P24_TEST_USERNAME"))
 	user.H2HDirect = username != "" && normalize(user.Username) == username

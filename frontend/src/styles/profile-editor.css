@@ -1,0 +1,24 @@
+.personal-info strong.incomplete{color:#98a2b2;font-weight:600}
+.profile-saved-message{display:flex;align-items:center;gap:7px;margin:12px 15px 0;padding:10px 12px;border:1px solid #cceedd;border-radius:11px;background:#effbf5;color:#23845f;font-size:8px;font-weight:750}
+.profile-saved-message svg{width:15px}
+.profile-edit-backdrop{position:fixed;z-index:150;inset:0;display:flex;align-items:flex-end;justify-content:center;padding-top:30px;background:#17213b73}
+.profile-edit-sheet{width:100%;max-width:480px;padding:18px 17px calc(20px + env(safe-area-inset-bottom));border-radius:24px 24px 0 0;background:#fff;box-shadow:0 -18px 45px #151d382e;animation:profile-sheet-up .22s ease-out}
+@keyframes profile-sheet-up{from{transform:translateY(35px);opacity:.5}}
+.profile-edit-sheet>header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:17px}
+.profile-edit-sheet>header span{color:#6552da;font-size:6px;font-weight:900;letter-spacing:1px}
+.profile-edit-sheet>header h2{margin:4px 0;color:#1d283b;font-size:15px}
+.profile-edit-sheet>header p{margin:0;color:#8b95a5;font-size:8px}
+.profile-edit-sheet>header button{display:grid;place-items:center;width:34px;height:34px;border:0;border-radius:11px;background:#f2f4f8;color:#758094}
+.profile-edit-sheet>header button svg{width:16px}
+.profile-edit-sheet>label{display:block;margin-top:12px}
+.profile-edit-sheet>label>span{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;color:#526075;font-size:8px;font-weight:750}
+.profile-edit-sheet>label em{padding:3px 6px;border-radius:6px;background:#f0edff;color:#6552da;font-size:6px;font-style:normal}
+.profile-edit-sheet>label>div{display:flex;align-items:center;min-height:45px;padding:0 11px;border:1px solid #dfe4ec;border-radius:11px;background:#fbfcfe}
+.profile-edit-sheet>label>div:focus-within{border-color:#7561e5;box-shadow:0 0 0 3px #7561e512;background:#fff}
+.profile-edit-sheet>label svg{width:16px;color:#6552da}
+.profile-edit-sheet input{width:100%;min-width:0;padding:12px 9px;border:0;outline:0;background:transparent;color:#202b3d;font-size:10px}
+.profile-edit-hint{display:flex!important;align-items:center;gap:5px;margin:13px 0 0;padding:9px;border-radius:9px;background:#f0faf6;color:#397d67;font-size:7px!important}
+.profile-edit-hint svg{width:13px}
+.profile-edit-error{margin-top:9px;padding:9px;border-radius:9px;background:#fff0f2;color:#c74455;font-size:8px}
+.profile-save-button{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:45px;margin-top:14px;border:0;border-radius:11px;background:linear-gradient(135deg,#755fe9,#5742ce);color:#fff;font-size:9px;font-weight:900;box-shadow:0 8px 20px #5e48d43b}
+.profile-save-button svg{width:15px}

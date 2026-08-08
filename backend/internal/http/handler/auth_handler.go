@@ -52,6 +52,20 @@ func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, user)
 }
 
+func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	var in domain.ProfileInput
+	if json.NewDecoder(r.Body).Decode(&in) != nil {
+		response.Error(w, http.StatusBadRequest, "data profil tidak valid")
+		return
+	}
+	user, err := h.service.UpdateProfile(r.Header.Get("Authorization"), in)
+	if err != nil {
+		response.Error(w, http.StatusUnprocessableEntity, err.Error())
+		return
+	}
+	response.JSON(w, http.StatusOK, user)
+}
+
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var in domain.RegisterInput
 	if json.NewDecoder(r.Body).Decode(&in) != nil {

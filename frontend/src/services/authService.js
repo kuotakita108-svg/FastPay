@@ -14,6 +14,10 @@ export async function currentUser(){
   return request('/me')
 }
 
+export async function updateProfile(profile){
+  return request('/me',{method:'PATCH',body:JSON.stringify(profile)})
+}
+
 // Dipakai marketing untuk membuat kredensial agent dari panel internal.
 // Akun disimpan dengan hash password dan tidak pernah menyimpan password mentah.
 export async function createManagedAgent(profile){

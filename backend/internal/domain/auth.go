@@ -11,6 +11,11 @@ type RegisterInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+type ProfileInput struct {
+	Name  string `json:"name"`
+	Phone string `json:"phone"`
+	Email string `json:"email"`
+}
 type User struct {
 	ID              string `json:"id"`
 	Username        string `json:"username"`
