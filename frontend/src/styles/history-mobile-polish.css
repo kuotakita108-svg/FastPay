@@ -1,20 +1,28 @@
 @media (max-width:720px){
   .history-page{overflow-x:hidden}
-  .history-tools .period-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;overflow:visible;padding:0;scrollbar-width:none}
+  .history-tools .period-filters{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;padding:0 0 2px;scrollbar-width:none;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
   .history-tools .period-filters::-webkit-scrollbar{display:none}
-  .history-tools .period-filters button{width:100%;min-width:0;min-height:36px;padding:8px 5px;border-radius:12px;text-align:center;font-size:9px;font-weight:750}
+  .history-tools .period-filters button{flex:0 0 auto;width:auto;min-width:max-content;min-height:38px;padding:8px 14px;border:0;border-radius:999px;text-align:center;font-size:10px;font-weight:750;scroll-snap-align:start;background:#f0f2f7}
+  .history-tools .period-filters button.active{background:#6552da;box-shadow:0 7px 16px #6552da2e}
   .history-tools .date-picker{min-height:46px;padding:9px 12px;border-radius:13px}
   .history-tools .date-picker input{min-width:0;max-width:58%;background:transparent;text-align:right}
   .clean-history-list{padding-inline:15px;padding-bottom:calc(120px + env(safe-area-inset-bottom));gap:10px}
-  .history-item-card{min-height:88px;padding:12px;gap:10px;border-radius:18px}
-  .history-item-card>i{width:44px;height:44px}
-  .history-item-card aside{min-width:78px}
+  .history-item-card{display:block;min-height:0;padding:16px;border-radius:18px}
+  .history-item-card .history-card-content{width:100%;min-width:0}
+  .history-card-content header,.history-card-content section,.history-card-content footer{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .history-card-content header strong{font-size:12px;line-height:1.35;white-space:normal;text-transform:uppercase;text-align:left}
+  .history-card-content header svg{width:16px;flex:0 0 auto;color:#9aa5b5}
+  .history-card-invoice{display:flex!important;align-items:center;gap:7px;margin-top:8px;color:#8b94a4!important;font-size:9px!important;text-align:left}
+  .history-card-invoice svg{width:14px;flex:0 0 auto}
+  .history-card-content section{margin-top:14px}
+  .history-card-content section>b{font-size:14px}
+  .history-card-content footer{margin-top:13px;color:#8b94a4}
+  .history-card-content footer span,.history-card-content footer time{font-size:9px;color:#8b94a4}
 }
 
 @media (max-width:360px){
   .history-tools .period-filters{gap:6px}
-  .history-tools .period-filters button{font-size:8px;min-height:34px}
-  .history-item-card{padding:10px;gap:8px}
-  .history-item-card>i{width:40px;height:40px}
-  .history-item-card aside{min-width:68px}
+  .history-tools .period-filters button{font-size:9px;min-height:35px;padding-inline:12px}
+  .history-item-card{padding:14px}
+  .history-card-content footer{align-items:flex-start;flex-direction:column;gap:3px}
 }

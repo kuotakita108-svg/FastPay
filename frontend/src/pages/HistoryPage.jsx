@@ -12,6 +12,14 @@ import {rupiah} from '../utils/currency'
 import {formatDate} from '../utils/date'
 
 const safe = value => value || '-'
+const formatDateTime = value => {
+  if (!value) return '-'
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return '-'
+  return new Intl.DateTimeFormat('id-ID', {
+    day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+  }).format(parsed).replace('.', ':')
+}
 const statusFilters=[['all','Semua'],['pending','Pending'],['paid','Dibayar'],['processing','Diproses'],['success','Berhasil'],['failed','Gagal'],['expired','Expired'],['cancelled','Batal'],['refunded','Refund']]
 const transactionStatus=value=>{
   const status=String(value||'').toLowerCase()
@@ -87,10 +95,12 @@ export default function HistoryPage() {
     </section>
     {loading ? <LoadingState cards={3}/> : <section className="history-list clean-history-list">
       {items.map(item => <button type="button" className="history-item-card" key={item.id} onClick={() => openDetail(item)}>
-        <i><ReceiptText/></i>
-        <div><strong>{safe(item.customer)}</strong><small>{safe(item.method)}</small><span>{formatDate(item.created_at)} Â· {safe(item.id)}</span></div>
-        <aside><b>{rupiah(item.amount)}</b><StatusBadge status={item.status}/></aside>
-        <ChevronRight/>
+        <div className="history-card-content">
+          <header><strong>{safe(item.product || item.title || item.method)}</strong><ChevronRight/></header>
+          <span className="history-card-invoice"><ReceiptText/>{safe(item.order_number || item.orderNumber || item.id)}</span>
+          <section><b>{rupiah(item.amount)}</b><StatusBadge status={item.status}/></section>
+          <footer><span>{safe(item.customer || item.target)}</span><time>{formatDateTime(item.created_at)}</time></footer>
+        </div>
       </button>)}
       {!items.length && <div className="history-empty"><ReceiptText/><strong>Belum ada transaksi</strong><p>Transaksi pada tanggal yang dipilih tidak ditemukan.</p></div>}
     </section>}
