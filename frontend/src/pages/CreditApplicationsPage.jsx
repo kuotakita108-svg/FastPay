@@ -538,6 +538,16 @@ export default function CreditApplicationsPage() {
     saveApplication(item, {documents, marketingMeeting: meeting, marketingOwnerId: user?.id || item.marketingOwnerId || '', marketingOwnerName: reviewerName(user), status: item.status === 'Menunggu verifikasi marketing' ? 'Sedang diverifikasi marketing' : normalizeCreditStatus(item.status)})
     refresh()
   }
+  const startMarketingSurvey = item => {
+    if (!isMarketing && !isAdmin) return
+    saveApplication(item, {
+      status: 'Sedang diverifikasi marketing',
+      surveyStartedAt: item.surveyStartedAt || new Date().toISOString(),
+      marketingOwnerId: user?.id || '',
+      marketingOwnerName: reviewerName(user),
+    })
+    refresh()
+  }
   const forwardToOperator = item => {
     const readiness = marketingReadiness(item)
     if (!readiness.readyForAnalysis) return
@@ -547,6 +557,12 @@ export default function CreditApplicationsPage() {
       marketingOwnerId: user?.id || item.marketingOwnerId || '',
       marketingOwnerName: reviewerName(user),
       marketingVerification: {by: reviewerName(user), at: new Date().toISOString()},
+      marketingRecommendation: item.marketingRecommendation || {
+        amount: Number(item.form?.amount || 0),
+        note: 'Data agent dan empat dokumen survei telah diverifikasi langsung di lokasi.',
+        by: reviewerName(user),
+        at: new Date().toISOString(),
+      },
     })
     refresh()
   }
@@ -702,7 +718,7 @@ export default function CreditApplicationsPage() {
     approved: items.filter(item => statusGroup(item) === 'Disetujui').length,
     paid: items.filter(item => statusGroup(item) === 'Lunas').length,
   }
-  const marketingOwnedItems = sortedItems.filter(item => !isMarketing || !item.marketingOwnerId || item.marketingOwnerId === user?.id)
+  const marketingOwnedItems = sortedItems.filter(item => !isMarketing || !(item.marketingId || item.marketingOwnerId) || (item.marketingId || item.marketingOwnerId) === user?.id)
   const marketingQueue = marketingOwnedItems.filter(item => ['Menunggu verifikasi marketing', 'Sedang diverifikasi marketing'].includes(item.status))
   const meetingQueue = marketingQueue.filter(item => !marketingReadiness(item).meetingReady)
   const marketingReadyForAnalysis = marketingQueue.filter(item => marketingReadiness(item).readyForAnalysis)
@@ -805,13 +821,13 @@ export default function CreditApplicationsPage() {
       {(isMarketing || isAdmin) && view === 'agent-input' && <AgentAccountForm onClose={() => goToView('overview')}/>}
       {(isMarketing || isAdmin) && view === 'overview' && <section className="marketing-workspace">
         <header>
-          <div><span>MEJA KERJA MARKETING</span><h2>Kerjakan yang paling penting</h2><p>Daftarkan agent, bantu pengajuan, ambil selfie pertemuan, lalu pantau pelunasan. Keputusan kredit tetap dilakukan Operator.</p></div>
+          <div><span>MEJA KERJA MARKETING</span><h2>Kerjakan yang paling penting</h2><p>Agent mengisi pengajuan sendiri. Marketing mengambil antrean, memeriksa data, menyelesaikan empat foto survei, lalu mengirim berkas lengkap ke Operator.</p></div>
         </header>
         <div className="marketing-flow-strip" aria-label="Alur kerja marketing">
-          <button type="button" onClick={() => goToView('agent-input')}><b>1</b><span><strong>Daftarkan Agent</strong><small>Buat akun login resmi</small></span></button>
-          <button type="button" onClick={() => goToView('input')}><b>2</b><span><strong>Data & Dokumen</strong><small>Ambil KTP, toko, dan selfie</small></span></button>
-          <button type="button" onClick={() => goToView('verifikasi')}><b>3</b><span><strong>Kirim ke Operator</strong><small>Pastikan berkas lengkap</small></span></button>
-          <button type="button" onClick={() => goToView('angsuran')}><b>4</b><span><strong>Pantau Pelunasan</strong><small>Tagihan dan kunjungan offline</small></span></button>
+          <button type="button" onClick={() => goToView('agent-input')}><b>1</b><span><strong>Akun Agent</strong><small>Daftar sendiri atau dibantu</small></span></button>
+          <button type="button" onClick={() => goToView('verifikasi')}><b>2</b><span><strong>Ambil Antrean</strong><small>Hubungi dan jadwalkan survei</small></span></button>
+          <button type="button" onClick={() => goToView('verifikasi')}><b>3</b><span><strong>Survei Lapangan</strong><small>Cek data dan ambil 4 foto</small></span></button>
+          <button type="button" onClick={() => goToView('verifikasi')}><b>4</b><span><strong>Kirim ke Operator</strong><small>Berkas dan rekomendasi lengkap</small></span></button>
         </div>
         <div className="marketing-task-grid">
           {marketingCards.map(({title, value, note, icon: Icon}) => <article key={title}><i><Icon/></i><span>{title}</span><strong>{value}</strong><small>{note}</small></article>)}
@@ -1101,6 +1117,7 @@ export default function CreditApplicationsPage() {
                 <span><Clock3/>{item.status === 'Menunggu keputusan operator' ? 'Menunggu keputusan operator' : 'Menunggu verifikasi marketing'}</span>
                 <button type="button" className="detail" onClick={() => expanded ? closeDetailView() : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button>
               {expanded && (isMarketing || isAdmin) && score.percent < 100 && <span className="meeting-required"><AlertCircle/>Lengkapi data dan empat dokumen survei oleh marketing</span>}
+                {expanded && (isMarketing || isAdmin) && item.status === 'Menunggu verifikasi marketing' && <button type="button" className="sign" onClick={() => startMarketingSurvey(item)}><Camera/>Mulai Survei</button>}
                 {expanded && (isMarketing || isAdmin) && score.percent === 100 && !meetingSelfieReady && <span className="meeting-required"><Camera/>Ambil selfie pertemuan bersama agent</span>}
                 {expanded && (isMarketing || isAdmin) && readiness.readyForAnalysis && item.status !== 'Menunggu keputusan operator' && <button type="button" className="approve" onClick={() => forwardToOperator(item)}><ArrowRight/>Kirim ke Operator</button>}
                 {expanded && canOperatorSign && <button type="button" className="sign" onClick={() => openSignature(item, 'operator')}><PenLine/>TTD Operator</button>}

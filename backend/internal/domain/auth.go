@@ -5,11 +5,12 @@ type LoginInput struct {
 	Password string `json:"password"`
 }
 type RegisterInput struct {
-	Name     string `json:"name"`
-	Username string `json:"username"`
-	Phone    string `json:"phone"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Name        string `json:"name"`
+	Username    string `json:"username"`
+	Phone       string `json:"phone"`
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	AccountType string `json:"account_type,omitempty"`
 }
 type ProfileInput struct {
 	Name  string `json:"name"`

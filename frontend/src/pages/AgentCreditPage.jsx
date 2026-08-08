@@ -39,7 +39,6 @@ const terms = [
   'Marketing mengambil langsung empat dokumen saat survei: Foto KTP, Foto Toko, Selfie Agent Pegang KTP, dan Selfie Agent bersama Marketing sebelum berkas dikirim ke Operator.',
 ]
 
-const verificationDuration = 5 * 60 * 1000
 // Limit dapat naik otomatis dari riwayat pelunasan tepat waktu atau secara
 // manual oleh Operator. Angka awal dipakai sebelum keputusan pertama.
 const defaultRank = {name: 'Agent Pemula', limit: 500000, badge: 'BRONZE', tone: 'bronze', icon: Sparkles}
@@ -184,7 +183,6 @@ export default function AgentCreditPage() {
   const [paymentMethod, setPaymentMethod] = useState('')
   const [paymentProof, setPaymentProof] = useState(null)
   const [refillSource, setRefillSource] = useState(null)
-  const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => {
     if (!cameraDoc) return undefined
@@ -213,11 +211,6 @@ export default function AgentCreditPage() {
       stream?.getTracks().forEach(track => track.stop())
     }
   }, [cameraDoc])
-
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(timer)
-  }, [])
 
   useEffect(() => {
     const legacy = legacyApplicationsFor(user)
@@ -277,13 +270,6 @@ export default function AgentCreditPage() {
     }).catch(() => setMessage('Data belum tersimpan ke server. Periksa koneksi lalu coba lagi.'))
     return optimistic
   }
-
-  useEffect(() => {
-    if (!application || finalCreditStatus.includes(application.status)) return
-    if (application.status === 'Menunggu analis' || application.status === 'Menunggu keputusan analis') return
-    if (now < Number(application.verifyUntil || 0)) return
-    persistApplication({...application, status: 'Menunggu analis', queuedAt: application.queuedAt || new Date().toISOString(), forwardedAt: application.forwardedAt || new Date().toISOString(), updatedAt: new Date().toISOString()})
-  }, [application, now])
 
   const update = event => setForm({...form, [event.target.name]: event.target.value})
   const updateFile = async (key, file) => {
@@ -428,7 +414,6 @@ export default function AgentCreditPage() {
       status: 'Menunggu verifikasi marketing',
       createdAt: new Date().toISOString(),
       queuedAt: new Date().toISOString(),
-      verifyUntil: Date.now() + verificationDuration,
       userId: user?.id || 'guest',
       userName: user?.name || form.agentName,
       form: {...form, amount},
@@ -510,17 +495,17 @@ export default function AgentCreditPage() {
   const applicationStatus = item => {
     if (item.status === 'Disetujui') return {label: 'Sukses Diterima', className: 'approved'}
     if (item.status === 'Ditolak') return {label: 'Ditolak', className: 'rejected'}
-    return {label: 'Menunggu', className: 'waiting'}
+    if (item.status === 'Menunggu keputusan operator') return {label: 'Di Operator', className: 'waiting'}
+    if (item.status === 'Sedang diverifikasi marketing') return {label: 'Sedang Disurvei', className: 'waiting'}
+    return {label: 'Menunggu Marketing', className: 'waiting'}
   }
 
-  const remainingMs = application?.status === 'Disetujui' ? 0 : Math.max(0, (application?.verifyUntil || 0) - now)
-  const remainingSeconds = Math.ceil(remainingMs / 1000)
-  const progress = application ? Math.min(100, Math.round(((verificationDuration - remainingMs) / verificationDuration) * 100)) : 0
-  const minutes = String(Math.floor(remainingSeconds / 60)).padStart(2, '0')
-  const seconds = String(remainingSeconds % 60).padStart(2, '0')
   const approved = application?.status === 'Disetujui'
   const rejected = application?.status === 'Ditolak'
-  const waitingDecision = application && !approved && !rejected && remainingMs === 0
+  const atOperator = application?.status === 'Menunggu keputusan operator'
+  const inSurvey = application?.status === 'Sedang diverifikasi marketing'
+  const documentCount = ['ktp', 'store', 'selfieKtp', 'selfieMarketing'].filter(key => application?.documents?.[key]).length
+  const progress = approved || rejected ? 100 : atOperator ? 80 : inSurvey ? Math.min(70, 25 + documentCount * 11) : 20
   // Dua menu ini memang terpisah: daftar baru hanya formulir, sedangkan
   // semua peminjam hanya direktori/status pengajuan. Jangan otomatis membuka
   // formulir saat daftar masih kosong karena itu membuat keduanya terlihat
@@ -595,19 +580,19 @@ export default function AgentCreditPage() {
     </section>}
     {detailOpen && application && <section className={`agent-verification ${approved ? 'approved' : ''} ${rejected ? 'rejected' : ''}`}>
       <i>{approved ? <Stamp/> : rejected ? <X/> : <Loader2/>}</i>
-      <span>{approved ? 'PENGAJUAN DISETUJUI' : rejected ? 'PENGAJUAN DITOLAK' : waitingDecision ? 'MENUNGGU KEPUTUSAN' : 'MOHON MENUNGGU'}</span>
-      <h2>{approved ? 'Saldo kredit agent sudah aktif' : rejected ? 'Pengajuan belum diterima' : waitingDecision ? 'Menunggu keputusan' : 'Data sedang diverifikasi'}</h2>
-      <p>{approved ? 'Nominal yang diterima masuk ke saldo kredit agent. Saldo ini terpisah dari saldo transaksi biasa dan pelunasannya dilakukan sekaligus.' : rejected ? 'Pengajuan ini ditolak tim verifikasi. Periksa kembali data dan dokumen sebelum membuat pengajuan baru.' : waitingDecision ? 'Pemeriksaan awal sudah selesai. Status akan berubah setelah keputusan akhir diberikan.' : 'Sistem sedang mengecek formulir, dokumen, kualitas foto, dan tanda tangan online.'}</p>
+      <span>{approved ? 'PENGAJUAN DISETUJUI' : rejected ? 'PENGAJUAN DITOLAK' : atOperator ? 'MENUNGGU OPERATOR' : inSurvey ? 'SURVEI MARKETING' : 'MENUNGGU MARKETING'}</span>
+      <h2>{approved ? 'Saldo kredit agent sudah aktif' : rejected ? 'Pengajuan belum diterima' : atOperator ? 'Berkas sudah dikirim ke Operator' : inSurvey ? 'Marketing sedang melengkapi survei' : 'Pengajuan masuk antrean Marketing'}</h2>
+      <p>{approved ? 'Nominal yang diterima masuk ke saldo kredit agent. Saldo ini terpisah dari saldo transaksi biasa dan pelunasannya dilakukan sekaligus.' : rejected ? 'Pengajuan ini ditolak tim verifikasi. Lihat catatan keputusan sebelum membuat pengajuan baru.' : atOperator ? 'Data dan empat foto survei sudah lengkap. Sekarang menunggu keputusan akhir dari Operator.' : inSurvey ? `${documentCount} dari 4 foto survei sudah tersimpan. Marketing akan melengkapi sisanya saat pertemuan.` : 'Formulir sudah diterima. Marketing akan menghubungi dan menjadwalkan survei lokasi.'}</p>
       <div className="verification-meta">
         <b>{application.id}</b>
         <strong>{rupiah(application.form.amount)}</strong>
       </div>
-      <div className="verification-timer"><Clock3/><strong>{approved ? 'DITERIMA' : rejected ? 'DITOLAK' : waitingDecision ? 'REVIEW' : `${minutes}:${seconds}`}</strong><small>{approved ? 'Diterima tim verifikasi' : rejected ? 'Ditolak tim verifikasi' : waitingDecision ? 'Menunggu keputusan' : 'Estimasi pemeriksaan 5 menit'}</small></div>
+      <div className="verification-timer"><Clock3/><strong>{approved ? 'DITERIMA' : rejected ? 'DITOLAK' : atOperator ? 'OPERATOR' : inSurvey ? `${documentCount}/4 FOTO` : 'ANTREAN'}</strong><small>{approved ? 'Kredit telah diaktifkan' : rejected ? 'Keputusan telah diberikan' : atOperator ? 'Menunggu keputusan akhir' : inSurvey ? 'Survei sedang berlangsung' : 'Menunggu dihubungi Marketing'}</small></div>
       <div className="verification-progress"><span style={{width: `${approved ? 100 : progress}%`}}/></div>
       <ul className="verification-steps">
         <li className="done"><CheckCircle2/>Formulir agent diterima</li>
-        <li className={progress >= 25 || approved ? 'done' : 'active'}>{progress >= 25 || approved ? <CheckCircle2/> : <Loader2/>}Validasi foto KTP, toko, dan selfie</li>
-        <li className={progress >= 55 || approved ? 'done' : ''}>{progress >= 55 || approved ? <CheckCircle2/> : <Clock3/>}Pengecekan tanda tangan online</li>
+        <li className={inSurvey || atOperator || approved ? (documentCount === 4 || atOperator || approved ? 'done' : 'active') : ''}>{documentCount === 4 || atOperator || approved ? <CheckCircle2/> : inSurvey ? <Loader2/> : <Clock3/>}Survei dan 4 foto oleh Marketing</li>
+        <li className={atOperator || approved ? 'done' : ''}>{atOperator || approved ? <CheckCircle2/> : <Clock3/>}Berkas dikirim ke Operator</li>
         <li className={approved ? 'done' : rejected ? 'rejected' : ''}>{approved ? <CheckCircle2/> : rejected ? <X/> : <Clock3/>}Keputusan operator</li>
       </ul>
       {canRefill && <button type="button" className="agent-refill-button" onClick={() => startRefill(application)}><PlusCircle/> Ajukan Refill Kredit</button>}

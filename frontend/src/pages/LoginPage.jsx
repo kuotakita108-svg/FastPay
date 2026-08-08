@@ -7,7 +7,7 @@ import KuotaKitaLogo from '../components/common/KuotaKitaLogo'
 import loginHero from '../assets/images/kuotakita-ppob-hero-v4.png'
 
 const loginInitial = {username: '', password: ''}
-const registerInitial = {name: '', username: '', phone: '', email: '', password: ''}
+const registerInitial = {name: '', username: '', phone: '', email: '', password: '', account_type: 'user'}
 const resetInitial = {identity: '', password: ''}
 
 function Field({form, onChange, name, label, icon: Icon, type = 'text', placeholder, inputMode, required = true}) {
@@ -95,6 +95,10 @@ export default function LoginPage() {
         <div className="auth-divider"><span/>{mode === 'reset' ? 'buat kata sandi baru' : `atau gunakan ${mode === 'login' ? 'akun KuotaKita' : 'data diri tanpa Google'}`}<span/></div>
         <form onSubmit={submit}>
           {mode === 'register' && <>
+            <div className="register-account-type" role="group" aria-label="Pilih jenis akun">
+              <button type="button" className={form.account_type === 'user' ? 'active' : ''} onClick={() => setForm(current => ({...current, account_type: 'user'}))}><UserRound/><span><b>Pengguna biasa</b><small>Untuk transaksi pribadi</small></span></button>
+              <button type="button" className={form.account_type === 'agent' ? 'active' : ''} onClick={() => setForm(current => ({...current, account_type: 'agent'}))}><ShieldCheck/><span><b>Agent / Pemilik toko</b><small>Ajukan kredit setelah login</small></span></button>
+            </div>
             <Field {...props} name="name" label="Nama lengkap" icon={UserRound} placeholder="Nama sesuai identitas"/>
             <div className="auth-field-row">
               <Field {...props} name="phone" label="Nomor handphone" icon={Phone} placeholder="0812..." inputMode="numeric"/>
@@ -115,9 +119,9 @@ export default function LoginPage() {
           {mode === 'login' && <button type="button" className="forgot-button" onClick={() => switchMode('reset')}>Lupa kata sandi?</button>}
           {error && <div className="auth-error">{error}</div>}
           {notice && <div className="auth-success">{notice}</div>}
-          <button className="auth-submit" disabled={loading}>{loading ? 'Mohon tunggu...' : mode === 'login' ? 'Masuk ke KuotaKita' : mode === 'register' ? 'Buat Akun KuotaKita' : 'Reset Kata Sandi'}<ArrowRight/></button>
+          <button className="auth-submit" disabled={loading}>{loading ? 'Mohon tunggu...' : mode === 'login' ? 'Masuk ke KuotaKita' : mode === 'register' ? (form.account_type === 'agent' ? 'Buat Akun Agent' : 'Buat Akun KuotaKita') : 'Reset Kata Sandi'}<ArrowRight/></button>
         </form>
-        {mode === 'register' && <div className="register-benefits"><span><CheckCircle2/>Tanpa Gmail</span><span><CheckCircle2/>Saldo awal Rp0</span><span><CheckCircle2/>Langsung aktif</span></div>}
+        {mode === 'register' && <div className="register-benefits"><span><CheckCircle2/>Tanpa Gmail</span><span><CheckCircle2/>Saldo awal Rp0</span><span><CheckCircle2/>{form.account_type === 'agent' ? 'Survei oleh Marketing' : 'Langsung aktif'}</span></div>}
         <p className="auth-switch">{mode === 'login' ? 'Belum punya akun?' : mode === 'register' ? 'Sudah punya akun?' : 'Ingat kata sandi?'} <button type="button" onClick={() => switchMode(mode === 'login' ? 'register' : 'login')}>{mode === 'login' ? 'Daftar sekarang' : 'Masuk di sini'}</button></p>
         <small className="auth-terms">Dengan melanjutkan, kamu menyetujui Syarat Layanan dan Kebijakan Privasi KuotaKita.</small>
       </section>

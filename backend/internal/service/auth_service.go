@@ -136,7 +136,11 @@ func (s *AuthService) Login(identity, password string) (domain.AuthResult, error
 }
 
 func (s *AuthService) Register(in domain.RegisterInput) (domain.AuthResult, error) {
-	user, err := s.createAccount(in, "user")
+	role := "user"
+	if strings.EqualFold(strings.TrimSpace(in.AccountType), "agent") {
+		role = "agent"
+	}
+	user, err := s.createAccount(in, role)
 	if err != nil {
 		return domain.AuthResult{}, err
 	}
