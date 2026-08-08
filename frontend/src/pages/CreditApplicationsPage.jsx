@@ -806,6 +806,12 @@ export default function CreditApplicationsPage() {
         <header>
           <div><span>MEJA KERJA MARKETING</span><h2>Kerjakan yang paling penting</h2><p>Daftarkan agent, bantu pengajuan, ambil selfie pertemuan, lalu pantau pelunasan. Keputusan kredit tetap dilakukan Operator.</p></div>
         </header>
+        <div className="marketing-flow-strip" aria-label="Alur kerja marketing">
+          <button type="button" onClick={() => goToView('agent-input')}><b>1</b><span><strong>Daftarkan Agent</strong><small>Buat akun login resmi</small></span></button>
+          <button type="button" onClick={() => goToView('input')}><b>2</b><span><strong>Data & Dokumen</strong><small>Ambil KTP, toko, dan selfie</small></span></button>
+          <button type="button" onClick={() => goToView('verifikasi')}><b>3</b><span><strong>Kirim ke Operator</strong><small>Pastikan berkas lengkap</small></span></button>
+          <button type="button" onClick={() => goToView('angsuran')}><b>4</b><span><strong>Pantau Pelunasan</strong><small>Tagihan dan kunjungan offline</small></span></button>
+        </div>
         <div className="marketing-task-grid">
           {marketingCards.map(({title, value, note, icon: Icon}) => <article key={title}><i><Icon/></i><span>{title}</span><strong>{value}</strong><small>{note}</small></article>)}
         </div>

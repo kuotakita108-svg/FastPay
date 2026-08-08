@@ -10,6 +10,7 @@ const marketingNavigation = [
     items: [
       {to: '/credit-applications', label: 'Dashboard', icon: WalletCards},
       {to: '/credit-applications?view=agent-input', label: 'Tambah Agent', icon: UserPlus},
+      {to: '/credit-applications?view=input', label: 'Pengajuan & Dokumen', icon: ClipboardCheck},
       {to: '/credit-applications?view=verifikasi', label: 'Antrean Survei', icon: Camera},
     ],
   },
