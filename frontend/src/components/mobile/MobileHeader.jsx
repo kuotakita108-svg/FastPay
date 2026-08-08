@@ -40,7 +40,7 @@ export default function MobileHeader() {
               {visible ? <EyeOff /> : <Eye />}
             </button>
           </span>
-          <strong>{visible ? rupiah(user.balance) : 'Rp â€¢â€¢â€¢â€¢â€¢â€¢â€¢'}</strong>
+          <strong>{visible ? rupiah(user.balance) : 'Rp •••••••'}</strong>
         </div>
         <button className="topup-button" type="button" onClick={() => navigate('/app/balance/topup')}>
           <Plus /> Isi Saldo
