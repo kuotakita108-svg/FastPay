@@ -7,9 +7,9 @@ export async function loadSecurity(userId){const result=await request('/me/prefe
 export const setPin=async(userId,pin)=>save(userId,{...getSecurity(userId),pinHash:await digest(pin),updatedAt:new Date().toISOString()})
 export const verifyPin=async(userId,pin)=>(await digest(pin))===getSecurity(userId).pinHash
 export const removePin=userId=>{const value={...getSecurity(userId)};delete value.pinHash;return save(userId,value)}
-export const biometricAvailable=()=>Boolean(window.PublicKeyCredential&&navigator.credentials)
+export const biometricAvailable=()=>Boolean(window.isSecureContext&&window.PublicKeyCredential&&navigator.credentials)
 export async function enableBiometric(userId,userName){
- if(!biometricAvailable())throw new Error('Sidik jari tidak didukung pada perangkat atau browser ini.')
+ if(!biometricAvailable())throw new Error('Sidik jari memerlukan perangkat yang mendukung dan koneksi HTTPS yang aman.')
  const challenge=crypto.getRandomValues(new Uint8Array(32)),userHandle=crypto.getRandomValues(new Uint8Array(16));const credential=await navigator.credentials.create({publicKey:{challenge,rp:{name:'KuotaKita'},user:{id:userHandle,name:userName,displayName:userName},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required',residentKey:'preferred'},timeout:60000,attestation:'none'}})
  if(!credential)throw new Error('Pendaftaran sidik jari dibatalkan.');return save(userId,{...getSecurity(userId),biometricId:encode(credential.rawId),biometricEnabled:true,updatedAt:new Date().toISOString()})
 }
