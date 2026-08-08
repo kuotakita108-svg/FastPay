@@ -12,6 +12,19 @@ import {rupiah} from '../utils/currency'
 import {formatDate} from '../utils/date'
 
 const safe = value => value || '-'
+const statusFilters=[['all','Semua'],['pending','Pending'],['paid','Dibayar'],['processing','Diproses'],['success','Berhasil'],['failed','Gagal'],['expired','Expired'],['cancelled','Batal'],['refunded','Refund']]
+const transactionStatus=value=>{
+  const status=String(value||'').toLowerCase()
+  if(/refund|dikembalikan/.test(status))return 'refunded'
+  if(/kedaluwarsa|expired|expire/.test(status))return 'expired'
+  if(/dibatalkan|batal|cancel/.test(status))return 'cancelled'
+  if(/gagal|failed|reject/.test(status))return 'failed'
+  if(/berhasil|sukses|success/.test(status))return 'success'
+  if(/diproses|proses|processing/.test(status))return 'processing'
+  if(/dibayar|lunas|paid/.test(status))return 'paid'
+  if(/menunggu|pending/.test(status))return 'pending'
+  return 'pending'
+}
 
 export default function HistoryPage() {
   const {user} = useAuth()
@@ -26,27 +39,13 @@ export default function HistoryPage() {
   const records=useMemo(()=>Array.isArray(data)?data:[],[data])
 
   const items = useMemo(() => {
-    const now = new Date()
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     return records.map(item=>updates[item.id]||item).filter(item => {
-      const created = new Date(item.created_at)
       const target = String(item.customer || '').toLowerCase()
       const id = String(item.id || '').toLowerCase()
       const matchesText = target.includes(query.toLowerCase()) || id.includes(query.toLowerCase())
       const matchesDate = !date || item.created_at?.startsWith(date)
-      let matchesPeriod = true
-      if (filter === 'today') matchesPeriod = created >= today
-      if (filter === 'yesterday') {
-        const yesterday = new Date(today)
-        yesterday.setDate(today.getDate() - 1)
-        matchesPeriod = created >= yesterday && created < today
-      }
-      if (filter === 'week') {
-        const week = new Date(today)
-        week.setDate(today.getDate() - 7)
-        matchesPeriod = created >= week
-      }
-      return matchesText && matchesDate && matchesPeriod
+      const matchesStatus=filter==='all'||transactionStatus(item.status)===filter
+      return matchesText && matchesDate && matchesStatus
     }) || []
   }, [records, updates, query, date, filter])
 
@@ -83,7 +82,7 @@ export default function HistoryPage() {
     <SubPageHeader title="Riwayat Transaksi" description="Pantau semua transaksi KuotaKita"/>
     <section className="history-tools">
       <div className="history-search"><Search/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Cari nomor atau ID transaksi"/></div>
-      <div className="period-filters">{[['all', 'Semua'], ['today', 'Hari ini'], ['yesterday', 'Kemarin'], ['week', '7 Hari']].map(([key, label]) => <button className={filter === key ? 'active' : ''} onClick={() => setFilter(key)} key={key}>{label}</button>)}</div>
+      <div className="period-filters" aria-label="Filter status transaksi">{statusFilters.map(([key, label]) => <button type="button" className={filter === key ? 'active' : ''} onClick={() => setFilter(key)} key={key}>{label}</button>)}</div>
       <label className="date-picker"><CalendarDays/>Pilih tanggal<input type="date" value={date} onChange={event => setDate(event.target.value)}/></label>
     </section>
     {loading ? <LoadingState cards={3}/> : <section className="history-list clean-history-list">
