@@ -1,6 +1,6 @@
 import {Link, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
-import {Banknote, BarChart3, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, Landmark, LockKeyhole, LogOut, ShieldCheck, TrendingUp, UserPlus, Users, WalletCards, XCircle, Zap} from 'lucide-react'
+import {Banknote, BarChart3, BookOpenCheck, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, HandCoins, Landmark, LockKeyhole, LogOut, ShieldCheck, TrendingUp, UserPlus, Users, WalletCards, XCircle, Zap} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
 
@@ -12,8 +12,11 @@ const marketingNavigation = [
       {to: '/credit-applications?view=agent-input', label: 'Daftar & Survei Agent', icon: UserPlus},
       {to: '/credit-applications?view=verifikasi', label: 'Survei & Selfie Lapangan', icon: Camera},
       {to: '/credit-applications?view=peminjam', label: 'Agen Binaan', icon: Users},
+      {to: '/credit-applications?view=angsuran', label: 'Penagihan & Pelunasan', icon: HandCoins},
       {to: '/credit-applications?view=rekomendasi', label: 'Rekomendasi Limit', icon: TrendingUp},
       {to: '/credit-applications?view=komisi', label: 'Kantong Komisi', icon: Banknote},
+      {to: '/credit-applications?view=laporan', label: 'Laporan Binaan', icon: BarChart3},
+      {to: '/credit-applications?view=panduan', label: 'Panduan Marketing', icon: BookOpenCheck},
     ],
   },
 ]

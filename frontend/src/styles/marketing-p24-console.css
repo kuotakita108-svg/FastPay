@@ -1,0 +1,40 @@
+/* Lapisan terakhir panel Marketing: konsol navy gelap konsisten seperti panel H2H/P24. */
+.panel-workspace-shell:has(.marketing-review){--mk-bg:#030914;--mk-sidebar:#06111f;--mk-surface:#081624;--mk-surface-2:#0b1d2e;--mk-line:#183650;--mk-text:#f1f7fd;--mk-muted:#91a7bc;--mk-cyan:#39d6ed;background:var(--mk-bg)!important;color:var(--mk-text)!important}
+.panel-workspace-shell:has(.marketing-review) :is(.app-main,.page-content){background:var(--mk-bg)!important;color:var(--mk-text)!important}
+.panel-workspace-shell:has(.marketing-review) .sidebar.credit-sidebar{background:var(--mk-sidebar)!important;border-color:var(--mk-line)!important}
+.panel-workspace-shell:has(.marketing-review) .topbar{background:#071421!important;border-color:var(--mk-line)!important}
+.panel-workspace-shell:has(.marketing-review) .credit-review-panel.marketing-review{background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;box-shadow:none!important}
+.panel-workspace-shell .marketing-review :is(
+  .credit-review-hero,.credit-mode-panel,.marketing-workspace,.marketing-action-panel,.credit-command-panel,
+  .credit-create-box,.marketing-input-history,.marketing-guide-panel,.borrower-directory-panel,
+  .marketing-report-panel,.marketing-report-table,.credit-review-card,.credit-detail-block,
+  .credit-payment-summary,.quick-payment-list,.credit-payment-list,.directory-agent,.directory-list>button,
+  .marketing-document-upload,.payment-overview-stats,.command-summary,.command-list,.credit-review-empty
+){background:var(--mk-surface)!important;background-image:none!important;color:var(--mk-text)!important;border-color:var(--mk-line)!important;box-shadow:none!important}
+.panel-workspace-shell .marketing-review :is(
+  .credit-review-stats>article,.marketing-task-grid>article,.marketing-quick-actions>button,.marketing-focus-grid>div,
+  .marketing-focus-grid button,.directory-stats>article,.directory-tools label,.directory-tools button,
+  .directory-agent summary,.directory-agent-borrowers article,.quick-payment-list button,
+  .marketing-report-panel>article,.marketing-report-table article,.marketing-input-history button,
+  .marketing-document-upload article,.marketing-document-choice-actions label,.payment-overview-stats>article,
+  .command-summary>article,.command-list>article,.credit-review-grid>span,.credit-review-signatures>div,
+  .borrower-document-gallery figure,.credit-finance-summary>div>span
+){background:var(--mk-surface-2)!important;background-image:none!important;color:var(--mk-text)!important;border-color:var(--mk-line)!important;box-shadow:none!important}
+.panel-workspace-shell .marketing-review :is(h1,h2,h3,h4,h5,strong,b,label,legend,dt,dd){color:var(--mk-text)!important}
+.panel-workspace-shell .marketing-review :is(p,small,.muted,.helper-text){color:var(--mk-muted)!important}
+.panel-workspace-shell .marketing-review :is(.credit-review-hero>div>span,.credit-mode-panel>span,.marketing-workspace>header span,.marketing-section-label>span,.marketing-action-panel header span,.marketing-report-table header span,.marketing-guide-panel header span,.credit-command-panel header span){color:var(--mk-cyan)!important}
+.panel-workspace-shell .marketing-review :is(input,textarea,select){background:#040d18!important;color:var(--mk-text)!important;border-color:#244660!important;box-shadow:none!important}
+.panel-workspace-shell .marketing-review :is(input,textarea)::placeholder{color:#71879d!important}
+.panel-workspace-shell .marketing-review :is(fieldset,form,.credit-create-box form){border-color:var(--mk-line)!important;background:transparent!important}
+.panel-workspace-shell .marketing-review .marketing-quick-actions button.primary,.panel-workspace-shell .marketing-review :is(.approve,.credit-create-toggle,.credit-create-box form>button){background:#116fd0!important;color:#fff!important;border-color:#258ddd!important}
+.panel-workspace-shell .marketing-review :is(.marketing-quick-actions button:not(.primary),.directory-tools button,.detail,.secondary-button){background:#0a2236!important;color:#dcecff!important;border:1px solid #245173!important}
+.panel-workspace-shell .marketing-review :is(.marketing-quick-actions button,.marketing-focus-grid button,.quick-payment-list button,.directory-list>button):hover{background:#0e2b43!important;border-color:#2879a5!important}
+.panel-workspace-shell .marketing-review :is(.credit-review-card.status-disetujui,.credit-review-signatures .signed,.marketing-document-upload article.uploaded){background:#09251f!important;border-color:#1f6d59!important}
+.panel-workspace-shell .marketing-review .credit-review-card.status-ditolak{background:#251019!important;border-color:#6e2b3d!important}
+.panel-workspace-shell:has(.marketing-review) :is(.notification-popover,.marketing-document-choice>div,.review-payment-sheet,.review-signature-sheet,.proof-preview-sheet){background:#081624!important;color:var(--mk-text)!important;border:1px solid var(--mk-line)!important;box-shadow:0 24px 70px #0009!important}
+.panel-workspace-shell:has(.marketing-review) :is(.notification-popover,.marketing-document-choice>div,.review-payment-sheet,.review-signature-sheet,.proof-preview-sheet) :is(header,footer,.review-payment-amount,.review-bank-detail,.review-qr-detail,.review-signature-pad){background:#0b1d2e!important;background-image:none!important;border-color:var(--mk-line)!important;color:var(--mk-text)!important}
+.panel-workspace-shell:has(.marketing-review) :is(.notification-popover,.marketing-document-choice>div,.review-payment-sheet,.review-signature-sheet,.proof-preview-sheet) :is(h2,h3,strong,b){color:var(--mk-text)!important}
+.panel-workspace-shell:has(.marketing-review) :is(.notification-popover,.marketing-document-choice>div,.review-payment-sheet,.review-signature-sheet,.proof-preview-sheet) :is(p,small,span){color:var(--mk-muted)!important}
+.panel-workspace-shell:has(.marketing-review) .credit-sidebar .nav-item{min-height:34px!important;margin:5px 0!important;padding:0 10px!important;font-size:9px!important;letter-spacing:.025em!important}
+.panel-workspace-shell:has(.marketing-review) .credit-sidebar .workspace-nav{padding:12px 0!important}
+@media(max-width:760px){.panel-workspace-shell:has(.marketing-review) .credit-review-panel.marketing-review{padding:0!important}.panel-workspace-shell .marketing-review .credit-mode-panel{padding:13px!important}.panel-workspace-shell:has(.marketing-review) .credit-sidebar .nav-item{min-height:36px!important;font-size:10px!important}}
