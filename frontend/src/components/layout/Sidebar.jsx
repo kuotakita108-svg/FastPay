@@ -6,17 +6,27 @@ import {initials} from '../../utils/name'
 
 const marketingNavigation = [
   {
-    section: 'Marketing Kredit',
+    section: 'AKTIVITAS',
     items: [
-      {to: '/credit-applications', label: 'Ringkasan Kerja', icon: WalletCards},
-      {to: '/credit-applications?view=agent-input', label: 'Daftar & Survei Agent', icon: UserPlus},
-      {to: '/credit-applications?view=verifikasi', label: 'Survei & Selfie Lapangan', icon: Camera},
+      {to: '/credit-applications', label: 'Dashboard', icon: WalletCards},
+      {to: '/credit-applications?view=agent-input', label: 'Tambah Agent', icon: UserPlus},
+      {to: '/credit-applications?view=verifikasi', label: 'Antrean Survei', icon: Camera},
+    ],
+  },
+  {
+    section: 'PORTOFOLIO',
+    items: [
       {to: '/credit-applications?view=peminjam', label: 'Agen Binaan', icon: Users},
-      {to: '/credit-applications?view=angsuran', label: 'Penagihan & Pelunasan', icon: HandCoins},
+      {to: '/credit-applications?view=angsuran', label: 'Penagihan Kredit', icon: HandCoins},
       {to: '/credit-applications?view=rekomendasi', label: 'Rekomendasi Limit', icon: TrendingUp},
+    ],
+  },
+  {
+    section: 'KINERJA',
+    items: [
       {to: '/credit-applications?view=komisi', label: 'Kantong Komisi', icon: Banknote},
-      {to: '/credit-applications?view=laporan', label: 'Laporan Binaan', icon: BarChart3},
-      {to: '/credit-applications?view=panduan', label: 'Panduan Marketing', icon: BookOpenCheck},
+      {to: '/credit-applications?view=laporan', label: 'Laporan', icon: BarChart3},
+      {to: '/credit-applications?view=panduan', label: 'Panduan', icon: BookOpenCheck},
     ],
   },
 ]
