@@ -1,0 +1,20 @@
+@media (max-width:720px){
+  .history-page{overflow-x:hidden}
+  .history-tools .period-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;overflow:visible;padding:0;scrollbar-width:none}
+  .history-tools .period-filters::-webkit-scrollbar{display:none}
+  .history-tools .period-filters button{width:100%;min-width:0;min-height:36px;padding:8px 5px;border-radius:12px;text-align:center;font-size:9px;font-weight:750}
+  .history-tools .date-picker{min-height:46px;padding:9px 12px;border-radius:13px}
+  .history-tools .date-picker input{min-width:0;max-width:58%;background:transparent;text-align:right}
+  .clean-history-list{padding-inline:15px;padding-bottom:calc(120px + env(safe-area-inset-bottom));gap:10px}
+  .history-item-card{min-height:88px;padding:12px;gap:10px;border-radius:18px}
+  .history-item-card>i{width:44px;height:44px}
+  .history-item-card aside{min-width:78px}
+}
+
+@media (max-width:360px){
+  .history-tools .period-filters{gap:6px}
+  .history-tools .period-filters button{font-size:8px;min-height:34px}
+  .history-item-card{padding:10px;gap:8px}
+  .history-item-card>i{width:40px;height:40px}
+  .history-item-card aside{min-width:68px}
+}
