@@ -36,7 +36,7 @@ const terms = [
   'Nominal pengajuan boleh di bawah limit kredit agent yang aktif.',
   'Saldo kredit agent terpisah dari saldo transaksi aplikasi dan wajib dilunasi sekaligus melalui Bank, QRIS, atau penagihan langsung oleh marketing.',
   'Setelah pembayaran kredit lunas dan diverifikasi, agent dapat mengajukan refill kembali.',
-  'Marketing mengambil langsung Foto KTP, Foto Toko, dan Selfie Pegang KTP saat survei. Selfie pertemuan diambil marketing sebelum berkas dikirim ke Operator.',
+  'Marketing mengambil langsung empat dokumen saat survei: Foto KTP, Foto Toko, Selfie Agent Pegang KTP, dan Selfie Agent bersama Marketing sebelum berkas dikirim ke Operator.',
 ]
 
 const verificationDuration = 5 * 60 * 1000
@@ -666,7 +666,7 @@ export default function AgentCreditPage() {
         </div>
       </section>
       <section className="agent-card agent-marketing-document-note">
-        <header><i><Camera/></i><div><h2>Dokumen Survei Marketing</h2><p>Marketing mengambil langsung Foto KTP, Foto Toko, dan Selfie Pegang KTP saat survei. Selfie bersama marketing diambil saat pendampingan kredit. Agent tidak perlu unggah foto dari halaman ini.</p></div></header>
+        <header><i><Camera/></i><div><h2>Dokumen Survei Marketing</h2><p>Marketing mengambil langsung empat dokumen: Foto KTP, Foto Toko, Selfie Agent Pegang KTP, dan Selfie Agent bersama Marketing. Agent tidak perlu unggah foto dari halaman ini.</p></div></header>
       </section>
       <section className="agent-card">
         <header><i><FileText/></i><div><h2>Ketentuan Umum</h2><p>Baca dan setujui sebelum mengajukan.</p></div></header>

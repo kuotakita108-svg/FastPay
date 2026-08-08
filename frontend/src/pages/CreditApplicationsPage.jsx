@@ -37,12 +37,13 @@ const manualInitial = {
 const coreDocumentTypes = [
   {key: 'ktp', label: 'Foto KTP', hint: 'KTP asli dan tidak buram'},
   {key: 'store', label: 'Foto Toko', hint: 'Tampak depan toko/usaha'},
+  {key: 'selfieKtp', label: 'Selfie Agent Pegang KTP', hint: 'Wajah agent dan KTP terlihat jelas'},
   {key: 'selfieMarketing', label: 'Selfie Agen bersama Marketing', hint: 'Wajah agen dan marketing terlihat jelas'},
 ]
 const manualDocumentTypes = coreDocumentTypes
 // Seluruh bukti lapangan diambil Marketing saat kunjungan. Agen tidak dapat
 // mengunggah dokumen dari galeri untuk pengajuan kredit.
-const emptyManualDocuments = {ktp: null, store: null, selfieMarketing: null}
+const emptyManualDocuments = {ktp: null, store: null, selfieKtp: null, selfieMarketing: null}
 
 // Pengajuan lama yang sudah tersimpan di browser/server bisa belum memiliki
 // seluruh field terbaru. Normalisasi ini menjaga satu data lama tidak membuat
@@ -185,7 +186,7 @@ const viewInfo = {
   overview: {label: 'Ringkasan Kerja', title: 'Prioritas marketing hari ini', desc: 'Daftarkan agent, dampingi pengajuan, lengkapi bukti pertemuan, dan pantau pelunasan penuh.'},
   peminjam: {label: 'Kredit Aktif', title: 'Agent dengan kredit diterima', desc: 'Hanya menampilkan kredit yang sudah diterima, masih aktif, atau sudah lunas.'},
   input: {label: 'Pengajuan Kredit', title: 'Pengajuan saldo kredit agent', desc: 'Agen mengajukan nominal sesuai limit. Marketing melengkapi survei lapangan sebelum berkas dikirim ke Operator.'},
-  verifikasi: {label: 'Survei Lapangan', title: 'Validasi lapangan marketing', desc: 'Ambil tiga foto langsung dari kamera: KTP, toko, dan selfie agen bersama marketing. Setelah lengkap, Operator dapat memutuskan.'},
+  verifikasi: {label: 'Survei Lapangan', title: 'Validasi lapangan marketing', desc: 'Ambil empat foto langsung dari kamera: KTP, toko, selfie agent pegang KTP, dan selfie agent bersama marketing. Setelah lengkap, Operator dapat memutuskan.'},
   pembayaran: {label: 'Pelunasan Kredit', title: 'Pelunasan saldo kredit', desc: 'Bayar satu kali penuh melalui Bank, QRIS, atau penagihan langsung oleh marketing.'},
   angsuran: {label: 'Pelunasan Kredit', title: 'Monitor pelunasan penuh', desc: 'Pantau transfer Bank, QRIS, penagihan offline, bukti pembayaran, dan hak refill setelah lunas.'},
   pelunasan: {label: 'Bukti Pelunasan', title: 'Arsip bukti pelunasan', desc: 'Periksa kredit yang sudah lunas beserta nominal, metode, waktu, referensi, penerima, dan bukti pembayarannya.'},
@@ -205,13 +206,13 @@ const dataScore = item => {
     {label: 'NIK', ok: String(item.form.nik || '').length >= 12},
     {label: 'Alamat toko', ok: Boolean(item.form.storeAddress || item.form.homeAddress)},
     {label: 'Kontak keluarga', ok: Boolean(item.form.familyName && item.form.familyWhatsapp)},
-    {label: 'Dokumen survei', ok: ['ktp', 'store', 'selfieMarketing'].every(key => Boolean(item.documents?.[key]))},
+    {label: 'Dokumen survei', ok: ['ktp', 'store', 'selfieKtp', 'selfieMarketing'].every(key => Boolean(item.documents?.[key]))},
   ]
   const done = checks.filter(check => check.ok).length
   return {checks, done, total: checks.length, percent: Math.round((done / checks.length) * 100)}
 }
 
-// Tiga dokumen survei merupakan tanggung jawab Marketing saat mendampingi agent.
+// Empat dokumen survei merupakan tanggung jawab Marketing saat mendampingi agent.
 const marketingReadiness = item => {
   const score = dataScore(item)
   const meetingReady = Boolean(item.documents?.selfieMarketing?.dataUrl || item.documents?.selfieMarketing?.preview || item.documents?.selfieMarketing)
@@ -443,7 +444,7 @@ export default function CreditApplicationsPage() {
     if (!manualForm.agentName.trim() || !manualForm.storeName.trim() || !manualForm.whatsapp.trim() || !manualForm.amount) {
       return setManualMessage('Lengkapi nama agent, toko, WA, dan nominal pinjaman dulu.')
     }
-    if (coreDocumentTypes.some(doc => !manualDocuments[doc.key])) return setManualMessage('Lengkapi Foto KTP, Foto Toko, dan Selfie Agen bersama Marketing dulu.')
+    if (coreDocumentTypes.some(doc => !manualDocuments[doc.key])) return setManualMessage('Lengkapi Foto KTP, Foto Toko, Selfie Agent Pegang KTP, dan Selfie Agent bersama Marketing dulu.')
     const amount = Math.min(500000, Math.max(50000, Number(String(manualForm.amount).replace(/\D/g, '') || 0)))
     const application = {
       id: `KSA-${Date.now().toString().slice(-8)}`,
@@ -1008,7 +1009,7 @@ export default function CreditApplicationsPage() {
           <button type="submit"><PlusCircle/>Simpan Pengajuan</button>
         </form>}
       </section>}
-      {showCreate && manualDocumentChoice && <section className="marketing-document-choice" onMouseDown={event => event.target === event.currentTarget && setManualDocumentChoice('')}><div><header><div><span>AMBIL DOKUMEN</span><h3>{coreDocumentTypes.find(doc => doc.key === manualDocumentChoice)?.label}</h3><p>Kamera akan dibuka untuk mengambil foto langsung.</p></div><button type="button" onClick={() => setManualDocumentChoice('')}><X/></button></header><div className="marketing-document-choice-actions one-action"><label><Camera/><b>Buka Kamera</b><small>Foto langsung saat pendampingan</small><input type="file" accept="image/*" capture={manualDocumentChoice === 'selfieMarketing' ? 'user' : 'environment'} onChange={event => {chooseManualDocument(manualDocumentChoice, event); setManualDocumentChoice('')}}/></label></div></div></section>}
+      {showCreate && manualDocumentChoice && <section className="marketing-document-choice" onMouseDown={event => event.target === event.currentTarget && setManualDocumentChoice('')}><div><header><div><span>AMBIL DOKUMEN</span><h3>{coreDocumentTypes.find(doc => doc.key === manualDocumentChoice)?.label}</h3><p>Kamera akan dibuka untuk mengambil foto langsung.</p></div><button type="button" onClick={() => setManualDocumentChoice('')}><X/></button></header><div className="marketing-document-choice-actions one-action"><label><Camera/><b>Buka Kamera</b><small>Foto langsung saat pendampingan</small><input type="file" accept="image/*" capture={['selfieKtp', 'selfieMarketing'].includes(manualDocumentChoice) ? 'user' : 'environment'} onChange={event => {chooseManualDocument(manualDocumentChoice, event); setManualDocumentChoice('')}}/></label></div></div></section>}
       {(isMarketing || isAdmin) && view === 'input' && <section className="marketing-input-history">
         <header><ClipboardCheck/><div><span>RIWAYAT INPUT MARKETING</span><h2>Data yang baru ditambahkan</h2><p>Supaya marketing bisa cepat cek ulang data input peminjaman tanpa masuk daftar besar.</p></div></header>
         <div>{recentManual.length ? recentManual.map(item => <button type="button" key={item.id} onClick={() => goToView('verifikasi', item.id, 'Review')}>
@@ -1099,7 +1100,7 @@ export default function CreditApplicationsPage() {
               {item.status === 'Disetujui' ? <><span className="approved"><CheckCircle2/>Sudah Diterima operator</span><button type="button" className="detail" onClick={() => expanded ? closeDetailView() : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : item.status === 'Ditolak' ? <><span className="rejected"><XCircle/>Ditolak</span><button type="button" className="detail" onClick={() => expanded ? closeDetailView() : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button></> : <>
                 <span><Clock3/>{item.status === 'Menunggu keputusan operator' ? 'Menunggu keputusan operator' : 'Menunggu verifikasi marketing'}</span>
                 <button type="button" className="detail" onClick={() => expanded ? closeDetailView() : goToView('detail', item.id, filter)}><Eye/>{expanded ? 'Tutup' : 'Detail'}</button>
-                {expanded && (isMarketing || isAdmin) && score.percent < 100 && <span className="meeting-required"><AlertCircle/>Lengkapi data dan tiga dokumen inti oleh marketing</span>}
+              {expanded && (isMarketing || isAdmin) && score.percent < 100 && <span className="meeting-required"><AlertCircle/>Lengkapi data dan empat dokumen survei oleh marketing</span>}
                 {expanded && (isMarketing || isAdmin) && score.percent === 100 && !meetingSelfieReady && <span className="meeting-required"><Camera/>Ambil selfie pertemuan bersama agent</span>}
                 {expanded && (isMarketing || isAdmin) && readiness.readyForAnalysis && item.status !== 'Menunggu keputusan operator' && <button type="button" className="approve" onClick={() => forwardToOperator(item)}><ArrowRight/>Kirim ke Operator</button>}
                 {expanded && canOperatorSign && <button type="button" className="sign" onClick={() => openSignature(item, 'operator')}><PenLine/>TTD Operator</button>}
@@ -1141,7 +1142,7 @@ export default function CreditApplicationsPage() {
                 const isWaitingDecision = item.status === 'Menunggu keputusan operator'
                 return <div className="credit-detail-block analyst-checklist">
                   <header><div><span>CHECKLIST KEPUTUSAN</span><h4>Kelayakan sebelum keputusan</h4></div><strong>{analysis.percent}%</strong></header>
-                  <p>Operator memeriksa data, tiga dokumen inti, selfie pertemuan, persetujuan syarat, nominal, dan tanda tangan agent sebelum memberi keputusan akhir.</p>
+                  <p>Operator memeriksa data, empat dokumen survei, persetujuan syarat, nominal, dan tanda tangan agent sebelum memberi keputusan akhir.</p>
                   <ul>{analysis.checks.map(check => <li className={check.ok ? 'ok' : ''} key={check.label}>{check.ok ? <CheckCircle2/> : <AlertCircle/>}<span>{check.label}</span></li>)}</ul>
                   {isWaitingDecision && <label className="analysis-note"><span>Catatan keputusan <small>(wajib bila ditolak)</small></span><textarea value={decisionNote} onChange={event => setDecisionNote(event.target.value)} placeholder="Contoh: data toko belum memenuhi kebijakan kredit."/></label>}
                   {item.analysisDecision?.note && <div className="analysis-saved-note"><b>Catatan Operator</b><span>{item.analysisDecision.note}</span></div>}
@@ -1149,7 +1150,7 @@ export default function CreditApplicationsPage() {
               })()}
               {isDetail && <div className="credit-detail-block borrower-document-gallery">
                 <h4>Dokumen Peminjam</h4>
-                <div>{manualDocumentTypes.map(doc => { const value = item.documents?.[doc.key]; const file = typeof value === 'string' ? {name: value} : value || {}; const source = file.dataUrl || file.preview || ''; const missing = !source; return <figure key={doc.key}>{source ? <img src={source} alt={doc.label}/> : missing && (isMarketing || isAdmin) ? <label className="missing-document meeting-upload"><Camera/><b>{doc.key === 'selfieMarketing' ? 'Ambil selfie bersama agent' : `Ambil ${doc.label}`}</b><small>Diunggah Marketing saat pendampingan</small><input type="file" accept="image/*" capture={doc.key === 'selfieMarketing' ? 'user' : 'environment'} onChange={event => replaceBorrowerDocument(item, doc.key, event)}/></label> : <label className="missing-document"><Images/><b>Dokumen belum diunggah</b><small>Menunggu Marketing melengkapi foto</small></label>}<figcaption><b>{doc.label}</b><small>{file.name || 'Menunggu unggahan Marketing'}</small></figcaption></figure> })}</div>
+                <div>{manualDocumentTypes.map(doc => { const value = item.documents?.[doc.key]; const file = typeof value === 'string' ? {name: value} : value || {}; const source = file.dataUrl || file.preview || ''; const missing = !source; return <figure key={doc.key}>{source ? <img src={source} alt={doc.label}/> : missing && (isMarketing || isAdmin) ? <label className="missing-document meeting-upload"><Camera/><b>{doc.key === 'selfieMarketing' ? 'Ambil selfie bersama agent' : `Ambil ${doc.label}`}</b><small>Diunggah Marketing saat pendampingan</small><input type="file" accept="image/*" capture={['selfieKtp', 'selfieMarketing'].includes(doc.key) ? 'user' : 'environment'} onChange={event => replaceBorrowerDocument(item, doc.key, event)}/></label> : <label className="missing-document"><Images/><b>Dokumen belum diunggah</b><small>Menunggu Marketing melengkapi foto</small></label>}<figcaption><b>{doc.label}</b><small>{file.name || 'Menunggu unggahan Marketing'}</small></figcaption></figure> })}</div>
               </div>}
               {!isStandaloneDetail && <div className="credit-detail-block marketing-checklist">
                 <h4>Kelengkapan Pendampingan</h4>
