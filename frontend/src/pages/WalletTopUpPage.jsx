@@ -1,43 +1,46 @@
-import { useMemo, useState } from "react";
-import { Building2, Check, ChevronRight, CircleDollarSign, Landmark, ShieldCheck, Sparkles, WalletCards } from "lucide-react";
-import SubPageHeader from "../components/mobile/SubPageHeader";
-import { useAuth } from "../context/AuthContext";
-import { useToast } from "../context/ToastContext";
-import { rupiah } from "../utils/currency";
+import {useMemo, useState} from 'react'
+import {Clock3, QrCode, ReceiptText, ShieldCheck} from 'lucide-react'
+import SubPageHeader from '../components/mobile/SubPageHeader'
+import MobileNav from '../components/mobile/MobileNav'
+import {rupiah} from '../utils/currency'
 
-const amounts = [20000, 50000, 100000, 200000, 500000, 1000000];
-const methods = [
-  { id: "va", title: "Virtual Account", detail: "Menunggu mitra pembayaran resmi", icon: Landmark, fee: 0, badge: "Segera" },
-  { id: "bank", title: "Transfer Bank", detail: "Butuh verifikasi mutasi otomatis", icon: Building2, fee: 2500 },
-  { id: "wallet", title: "E-Wallet", detail: "Butuh webhook pembayaran resmi", icon: WalletCards, fee: 1500 },
-];
+const QRIS_AVAILABLE = false
+const MINIMUM_TOPUP = 10000
 
-export default function WalletTopUpPage() {
-  const { user } = useAuth();
-  const { show } = useToast();
-  const [amount, setAmount] = useState(100000);
-  const [custom, setCustom] = useState("");
-  const [method, setMethod] = useState("va");
-  const selected = methods.find((item) => item.id === method);
-  const value = custom ? Number(custom) : amount;
-  const total = useMemo(() => value + (selected?.fee || 0), [value, selected]);
-  const submit = () => show("Isi saldo belum aktif. Hubungkan QRIS atau Virtual Account resmi beserta webhook pembayaran terlebih dahulu.");
+export default function WalletTopUpPage(){
+  const [amount,setAmount]=useState('')
+  const nominal=Number(amount||0)
+  const fee=0
+  const total=useMemo(()=>nominal+fee,[nominal])
+  const nominalValid=nominal>=MINIMUM_TOPUP
+  const canCreate=QRIS_AVAILABLE&&nominalValid
 
-  return (
-    <main className="mobile-app wallet-topup-page">
-      <SubPageHeader title="Isi Saldo" description="Pembayaran tersedia setelah mitra resmi terhubung" back />
-      <section className="topup-mini-wallet"><div><span>Saldo saat ini</span><strong>{rupiah(user?.balance || 0)}</strong></div><i><CircleDollarSign /></i></section>
-      <section className="topup-card">
-        <header><div><small>NOMINAL</small><h2>Pilih nominal</h2></div><Sparkles /></header>
-        <div className="amount-grid">{amounts.map((item) => <button className={!custom && amount === item ? "active" : ""} onClick={() => { setAmount(item); setCustom(""); }} key={item}>{rupiah(item)}</button>)}</div>
-        <label className="custom-amount"><span>Nominal lain</span><div><b>Rp</b><input inputMode="numeric" placeholder="Minimal 10.000" value={custom} onChange={(event) => setCustom(event.target.value.replace(/\D/g, ""))} /></div></label>
-      </section>
-      <section className="topup-card">
-        <header><div><small>METODE</small><h2>Pembayaran resmi</h2></div><ShieldCheck /></header>
-        <div className="topup-methods">{methods.map((item) => { const Icon = item.icon; return <button key={item.id} className={method === item.id ? "active" : ""} onClick={() => setMethod(item.id)}><i><Icon /></i><div><strong>{item.title}</strong><small>{item.detail}</small></div>{item.badge && <em>{item.badge}</em>}<span>{method === item.id ? <Check /> : <ChevronRight />}</span></button>; })}</div>
-      </section>
-      <section className="topup-summary"><h2>Ringkasan rencana pembayaran</h2><div><span>Nominal isi saldo</span><b>{rupiah(value || 0)}</b></div><div><span>Estimasi biaya</span><b>{selected?.fee ? rupiah(selected.fee) : "Gratis"}</b></div><div className="total"><span>Total</span><strong>{rupiah(total || 0)}</strong></div><small><ShieldCheck /> Belum ada saldo yang ditambahkan sampai webhook pembayaran resmi mengonfirmasi transaksi.</small></section>
-      <footer className="topup-footer"><div><span>Total</span><strong>{rupiah(total || 0)}</strong></div><button disabled={!value} onClick={submit}>Info Pembayaran <ChevronRight /></button></footer>
-    </main>
-  );
+  return <main className="mobile-app wallet-topup-page qris-topup-page">
+    <SubPageHeader title="Isi Saldo" description="Topup saldo akun melalui QRIS" back/>
+
+    <section className="qris-builder-card">
+      <header><i><QrCode/></i><div><h2>Buat QRIS Topup</h2><p>Masukkan nominal lalu buat QRIS untuk menambah saldo akun.</p></div></header>
+
+      <label className="qris-amount-field">
+        <span>Nominal topup</span>
+        <div><b>Rp</b><input inputMode="numeric" value={amount} onChange={event=>setAmount(event.target.value.replace(/\D/g,'').slice(0,9))} placeholder="Minimal Rp 10.000"/></div>
+      </label>
+
+      <dl className="qris-topup-summary">
+        <div><dt>Saldo masuk</dt><dd>{rupiah(nominalValid?nominal:0)}</dd></div>
+        <div><dt>Fee admin</dt><dd>{rupiah(fee)}</dd></div>
+        <div className="total"><dt>Total bayar QRIS</dt><dd>{rupiah(nominalValid?total:0)}</dd></div>
+      </dl>
+
+      {!QRIS_AVAILABLE&&<div className="qris-waiting-note"><Clock3/><span><b>QRIS segera tersedia</b><small>Tombol akan aktif setelah barcode pembayaran resmi terhubung.</small></span></div>}
+      <button className="qris-create-button" type="button" disabled={!canCreate}><QrCode/>Buat QRIS Topup</button>
+      {!nominalValid&&amount&&<small className="qris-amount-error">Minimal topup {rupiah(MINIMUM_TOPUP)}</small>}
+    </section>
+
+    <section className="qris-history-card">
+      <header><i><ReceiptText/></i><div><h2>Riwayat Topup QRIS</h2><p>Riwayat topup terbaru dan status pembayaran QRIS.</p></div></header>
+      <div className="qris-history-empty"><ShieldCheck/><strong>Belum ada topup QRIS</strong><span>Transaksi akan tampil di sini setelah QRIS tersedia.</span></div>
+    </section>
+    <MobileNav/>
+  </main>
 }
