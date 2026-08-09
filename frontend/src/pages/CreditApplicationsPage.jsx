@@ -309,7 +309,7 @@ export default function CreditApplicationsPage() {
     refreshRemote()
     // Cukup berkala, bukan setiap 1,5 detik. Aksi penting tetap langsung
     // disimpan ke server lewat saveApplication.
-    const timer = window.setInterval(sync, 6000)
+    const timer = window.setInterval(sync, 3000)
     return () => {
       window.removeEventListener('storage', sync)
       window.removeEventListener('kuotakita-credit-sync', sync)

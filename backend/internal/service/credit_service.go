@@ -78,6 +78,13 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	current, exists := s.rows[id]
+	if !exists && user.Role == "agent" {
+		for _, existing := range s.rows {
+			if stringValue(existing["_owner_id"]) == user.ID && blocksNewCredit(existing) {
+				return nil, errors.New("agent masih memiliki pengajuan atau kredit aktif; lunasi kredit sebelum mengajukan kembali")
+			}
+		}
+	}
 	if exists && user.Role == "agent" && stringValue(current["_owner_id"]) != user.ID {
 		return nil, errors.New("pengajuan ini bukan milik agent")
 	}
@@ -220,6 +227,13 @@ func canWorkWithCredit(role string) bool {
 
 func isOperatorRole(role string) bool {
 	return role == "operator" || role == "analis" || role == "master" || role == "admin"
+}
+
+func blocksNewCredit(row map[string]any) bool {
+	if stringValue(row["status"]) == "Ditolak" {
+		return false
+	}
+	return stringValue(row["paymentStatus"]) != "Lunas" && stringValue(row["creditStatus"]) != "Lunas"
 }
 
 func protectCreditDecisionFields(target, source map[string]any) {

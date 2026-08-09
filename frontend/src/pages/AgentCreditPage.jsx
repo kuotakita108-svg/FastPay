@@ -261,17 +261,23 @@ export default function AgentCreditPage() {
     if (latest && latest.updatedAt !== application.updatedAt) setApplication(latest)
   }, [applications, application])
 
-  const persistApplication = nextApplication => {
+  const persistApplication = (nextApplication, requireServer = false) => {
     const userId = nextApplication.userId || user?.id || 'guest'
     const userName = nextApplication.userName || user?.name || nextApplication.form?.agentName
     const optimistic = {...nextApplication, userId, userName, updatedAt: new Date().toISOString()}
     setApplications(current => [optimistic, ...current.filter(row => row.id !== optimistic.id)])
     setApplication(optimistic)
-    request('/me/agent-credit', {method: 'POST', body: JSON.stringify(optimistic)}).then(saved => {
+    return request('/me/agent-credit', {method: 'POST', body: JSON.stringify(optimistic)}).then(saved => {
       setApplications(current => [saved, ...current.filter(row => row.id !== saved.id)])
       setApplication(current => current?.id === saved.id ? saved : current)
-    }).catch(() => setMessage('Data belum tersimpan ke server. Periksa koneksi lalu coba lagi.'))
-    return optimistic
+      window.dispatchEvent(new Event('kuotakita-credit-sync'))
+      return saved
+    }).catch(error => {
+      if (requireServer) setApplications(current => current.filter(row => row.id !== optimistic.id))
+      setMessage(error?.message || 'Data belum tersimpan ke server. Periksa koneksi lalu coba lagi.')
+      if (requireServer) throw error
+      return optimistic
+    })
   }
 
   const update = event => setForm({...form, [event.target.name]: event.target.value})
@@ -358,6 +364,7 @@ export default function AgentCreditPage() {
   }
   const maxCredit = currentRank.limit
   const activeCredit = applications.find(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas')
+  const blockingApplication = applications.find(item => item.status !== 'Ditolak' && item.paymentStatus !== 'Lunas' && item.creditStatus !== 'Lunas')
   // creditBalance is the remaining credit capacity; creditOutstanding is the
   // debt that must be settled in one payment. They must never be confused.
   const creditBalance = activeCredit ? Number(activeCredit.creditBalance ?? activeCredit.creditLimit ?? 0) : 0
@@ -409,7 +416,7 @@ export default function AgentCreditPage() {
   }
   const submit = async event => {
     event.preventDefault()
-    if (activeCredit) return setMessage('Saldo kredit agent masih aktif. Lunasi terlebih dahulu sebelum mengajukan refill baru.')
+    if (blockingApplication) return setMessage('Satu agent hanya boleh memiliki satu kredit. Tunggu pengajuan selesai atau lunasi kredit aktif sebelum mengajukan kembali.')
     const amount = Math.min(maxCredit, Math.max(50000, Number(form.amount || 0)))
     if (!accepted) return setMessage('Centang persetujuan ketentuan pengajuan dulu.')
     if (!signed) return setMessage('Tanda tangan online wajib diisi.')
@@ -433,8 +440,11 @@ export default function AgentCreditPage() {
       agentSignature: {name: form.agentName || user?.name || 'Agent KuotaKita', role: 'agent', at: new Date().toISOString(), image: canvasRef.current?.toDataURL('image/png') || ''},
     }
     setMessage('')
-    persistApplication(application)
-    setShowForm(false)
+    try {
+      await persistApplication(application, true)
+      setShowForm(false)
+      setMessage('Pengajuan berhasil dikirim dan sudah masuk ke antrean Marketing.')
+    } catch {/* pesan kegagalan sudah ditampilkan oleh persistApplication */}
   }
 
   const resetAgentForm = () => {
@@ -448,6 +458,11 @@ export default function AgentCreditPage() {
     if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
   }
   const startNewApplication = () => {
+    if (blockingApplication) {
+      setMessage('Pengajuan baru terkunci. Selesaikan pengajuan atau lunasi kredit aktif terlebih dahulu.')
+      setShowForm(false)
+      return
+    }
     resetAgentForm()
     setApplication(null)
     setDetailOpen(false)
