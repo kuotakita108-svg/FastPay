@@ -1,6 +1,6 @@
 import {Link, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
-import {Banknote, BarChart3, BookOpenCheck, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, Landmark, LockKeyhole, LogOut, ShieldCheck, UserPlus, Users, WalletCards, XCircle, Zap} from 'lucide-react'
+import {BarChart3, BookOpenCheck, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, Landmark, LockKeyhole, LogOut, ShieldCheck, UserPlus, Users, WalletCards, XCircle, Zap} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
 
@@ -23,7 +23,6 @@ const marketingNavigation = [
   {
     section: 'KINERJA',
     items: [
-      {to: '/credit-applications?view=komisi', label: 'Kantong Komisi', icon: Banknote},
       {to: '/credit-applications?view=laporan', label: 'Laporan', icon: BarChart3},
       {to: '/credit-applications?view=panduan', label: 'Panduan', icon: BookOpenCheck},
     ],

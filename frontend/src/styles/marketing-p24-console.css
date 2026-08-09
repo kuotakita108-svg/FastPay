@@ -324,3 +324,6 @@
 .panel-workspace-shell.role-marketing .marketing-review .credit-report-data>article .report-status-approved{color:#45d9a5!important}
 .panel-workspace-shell.role-marketing .marketing-review .credit-report-data>article .report-status-rejected{color:#ff6f7f!important}
 .panel-workspace-shell.role-marketing .marketing-review .credit-report-data>article .report-status-pending{color:#ffc466!important}
+.panel-workspace-shell.role-marketing .marketing-review .credit-report-columns,
+.panel-workspace-shell.role-marketing .marketing-review .credit-report-data>article{grid-template-columns:115px 115px minmax(125px,.9fr) minmax(125px,.9fr) 95px 85px 95px 105px!important}
+.panel-workspace-shell.role-marketing .marketing-review .credit-report-data>article .report-store{overflow:hidden!important;color:#d9e7f2!important;font-size:8px!important;font-weight:700!important;text-overflow:ellipsis!important;white-space:nowrap!important}
