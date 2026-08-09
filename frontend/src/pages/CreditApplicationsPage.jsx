@@ -144,6 +144,7 @@ const paymentSummary = item => {
   return {paid, total: rows.length, percent: rows.length ? Math.round((paid / rows.length) * 100) : 0, totalPaid}
 }
 const statusGroup = item => item.paymentStatus === 'Lunas' ? 'Lunas' : item.status === 'Disetujui' ? 'Disetujui' : item.status === 'Ditolak' ? 'Ditolak' : 'Review'
+const mentoringStage = item => item.paymentStatus === 'Lunas' ? 'Lunas' : item.status === 'Disetujui' ? 'Aktif' : item.status === 'Menunggu keputusan operator' ? 'Operator' : item.status === 'Ditolak' ? 'Ditolak' : 'Survei'
 const firstUnpaidRow = item => paymentRows(item).find(row => !row.paid)
 const agentIdentity = item => String(item?.form?.whatsapp || item?.userId || item?.userName || item?.form?.agentName || '').trim().toLowerCase()
 const creditProfile = (items, target) => {
@@ -739,10 +740,10 @@ export default function CreditApplicationsPage() {
   const operatorSuspendRows = [...new Map([...overdueItems, ...operatorSuspended].map(item => [item.id, item])).values()]
   const approvedActive = sortedItems.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas')
   const borrowerRows = sortedItems.map(item => ({item, pay: paymentSummary(item), next: firstUnpaidRow(item), score: dataScore(item)}))
-  const approvedBorrowerRows = borrowerRows.filter(({item}) => ['Disetujui', 'Lunas'].includes(statusGroup(item)))
-  const directoryRows = approvedBorrowerRows.filter(({item}) => {
+  const mentoredBorrowerRows = borrowerRows.filter(({item}) => !isMarketing || !(item.marketingId || item.marketingOwnerId) || (item.marketingId || item.marketingOwnerId) === user?.id)
+  const directoryRows = mentoredBorrowerRows.filter(({item}) => {
     const text = `${item.form.agentName || item.userName} ${item.form.storeName} ${item.form.whatsapp} ${item.id}`.toLowerCase()
-    return text.includes(borrowerQuery.toLowerCase().trim()) && (borrowerFilter === 'Semua' || statusGroup(item) === borrowerFilter)
+    return text.includes(borrowerQuery.toLowerCase().trim()) && (borrowerFilter === 'Semua' || mentoringStage(item) === borrowerFilter)
   })
   const directoryGroups = Object.values(directoryRows.reduce((groups, row) => {
     const key = row.item.userId || row.item.userName || row.item.form.agentName || 'agent-tanpa-nama'
@@ -885,25 +886,17 @@ export default function CreditApplicationsPage() {
       {(isMarketing || isOperator || isAdmin) && view === 'verifikasi' && !operatorTableMode && <section className="marketing-action-panel">
         <header>{isRejectedArchive ? <XCircle/> : <ClipboardCheck/>}<div><span>{isRejectedArchive ? 'ARSIP PENOLAKAN' : isOperator ? 'FOKUS OPERATOR' : 'FOKUS PENDAMPINGAN'}</span><h2>{isRejectedArchive ? `${rejectedItems.length} keputusan ditolak` : `${isOperator ? analystQueue.length : marketingQueue.length} pengajuan perlu ditangani`}</h2><p>{isRejectedArchive ? 'Buka detail untuk membaca alasan keputusan dan jejak pemeriksaan operator. Data di halaman ini hanya arsip, bukan antrean aktif.' : isOperator ? 'Cek nominal, batas kredit, data, dokumen, selfie pertemuan, ketentuan, dan tanda tangan agent. Setelah lengkap, tanda tangani lalu terima atau tolak.' : 'Buka detail pengajuan untuk membantu melengkapi data dan mengambil selfie bersama agent. Keputusan akhir dilakukan Operator.'}</p></div></header>
       </section>}
-      {(isMarketing || isOperator || isAdmin) && view === 'peminjam' && <section className="borrower-directory-panel">
-        <header><div><span>DIREKTORI PEMINJAM</span><h2>Data peminjam diterima</h2><p>Hanya pengajuan yang sudah diterima dan sedang berjalan atau lunas. Data review dan ditolak tidak ditampilkan di sini.</p></div><strong className="directory-total">{approvedBorrowerRows.length}<small>Data diterima</small></strong></header>
+      {(isMarketing || isOperator || isAdmin) && view === 'peminjam' && <section className="borrower-directory-panel mentoring-directory">
+        <header><div><span>AGEN BINAAN</span><h2>Pantau setiap agent dalam satu tempat</h2><p>Lihat tahap pengajuan, kelengkapan survei, kredit aktif, dan pelunasan tanpa mencampur pekerjaan agent lain.</p></div><strong className="directory-total">{directoryGroups.length}<small>Agent binaan</small></strong></header>
         <div className="directory-stats">
-          <article><b>{approvedBorrowerRows.length}</b><span>Total Diterima</span></article><article><b>{summary.approved}</b><span>Aktif dipantau</span></article><article><b>{summary.paid}</b><span>Sudah lunas</span></article><article><b>{approvedBorrowerRows.filter(row => row.score.percent < 100).length}</b><span>Data perlu dilengkapi</span></article>
+          <article><b>{mentoredBorrowerRows.length}</b><span>Total pengajuan</span></article><article><b>{mentoredBorrowerRows.filter(({item}) => mentoringStage(item) === 'Survei').length}</b><span>Perlu survei</span></article><article><b>{mentoredBorrowerRows.filter(({item}) => mentoringStage(item) === 'Aktif').length}</b><span>Kredit aktif</span></article><article><b>{mentoredBorrowerRows.filter(({item}) => mentoringStage(item) === 'Lunas').length}</b><span>Sudah lunas</span></article>
         </div>
-        <div className="directory-tools"><label><Search/><input value={borrowerQuery} onChange={event => setBorrowerQuery(event.target.value)} placeholder="Cari nama, toko, WA, atau ID..."/></label><div>{['Semua', 'Disetujui', 'Lunas'].map(name => <button type="button" className={borrowerFilter === name ? 'active' : ''} onClick={() => setBorrowerFilter(name)} key={name}>{name}</button>)}</div></div>
+        <div className="directory-tools"><label><Search/><input value={borrowerQuery} onChange={event => setBorrowerQuery(event.target.value)} placeholder="Cari agent, toko, WhatsApp, atau ID..."/></label><div>{['Semua', 'Survei', 'Operator', 'Aktif', 'Lunas'].map(name => <button type="button" className={borrowerFilter === name ? 'active' : ''} onClick={() => setBorrowerFilter(name)} key={name}>{name}</button>)}</div></div>
         <div className="directory-agent-list">
           {directoryGroups.length ? directoryGroups.map(group => <details className="directory-agent" key={group.key}>
-            <summary><span><b>{group.agent}</b><small>{group.rows.length} peminjam diterima</small></span><strong>{rupiah(group.rows.reduce((sum, row) => sum + Number(row.item.form.amount || 0), 0))}</strong></summary>
-            <div className="directory-agent-borrowers">{group.rows.map(({item, pay, score}) => <article key={item.id}><span><b>{item.form.storeName || item.form.agentName || item.id}</b><small>{item.id} · {statusGroup(item) === 'Lunas' ? 'Lunas' : 'Saldo kredit aktif'}</small></span><em><i style={{width: `${score.percent}%`}}/></em><strong>{pay.paid ? 'Lunas' : 'Belum lunas'}</strong><small>{rupiah(item.creditOutstanding || item.form.amount)}</small><button type="button" onClick={() => goToView('detail', item.id, 'Semua')}><Eye/>Cek data</button></article>)}</div>
-          </details>) : <p>Data peminjam diterima belum ada.</p>}
-        </div>
-        <div className="directory-list">
-          {directoryRows.length ? directoryRows.map(({item, pay, score}) => <button type="button" key={item.id} onClick={() => goToView('detail', item.id, 'Semua')}>
-            <span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id} · {item.status}</small></span>
-            <em><i style={{width: `${score.percent}%`}}/></em>
-            <strong>{pay.paid ? 'Lunas' : 'Belum lunas'}</strong>
-            <small>{rupiah(item.form.amount)}</small>
-          </button>) : <p>Data peminjam tidak ditemukan.</p>}
+            <summary><span><b>{group.agent}</b><small>{group.rows[0]?.item.form.storeName || 'Toko belum diisi'} · {group.rows[0]?.item.form.whatsapp || 'WA belum diisi'}</small></span><strong>{group.rows.length} pengajuan</strong></summary>
+            <div className="directory-agent-borrowers">{group.rows.map(({item, score}) => {const stage=mentoringStage(item); const wa=String(item.form.whatsapp || '').replace(/\D/g, '').replace(/^0/, '62'); return <article key={item.id}><span><b>{item.applicationType || 'Pengajuan Kredit'}</b><small>{item.id} · {dateTime(item.updatedAt || item.createdAt)}</small></span><em title={`Kelengkapan ${score.percent}%`}><i style={{width: `${score.percent}%`}}/></em><strong className={`mentoring-stage stage-${stage.toLowerCase()}`}>{stage}</strong><small>{rupiah(item.form.amount)}</small><div className="mentoring-actions">{wa&&<a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer"><PhoneCall/>WhatsApp</a>}<button type="button" onClick={() => goToView('detail', item.id, 'Semua')}><Eye/>{stage === 'Survei' ? 'Lanjut survei' : 'Lihat detail'}</button></div></article>})}</div>
+          </details>) : <p className="directory-empty">Agent binaan tidak ditemukan.</p>}
         </div>
       </section>}
       {(isMarketing || isOperator || isAdmin) && (view === 'pembayaran' || view === 'angsuran') && <section className="marketing-action-panel payment">

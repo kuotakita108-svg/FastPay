@@ -150,3 +150,31 @@
 .panel-workspace-shell.role-marketing .marketing-review .marketing-profile-header footer b:first-child{border-color:#155b50;background:#092823;color:#61d8b1!important}
 .panel-workspace-shell.role-marketing .marketing-review .marketing-profile-header footer svg{width:12px}
 @media(max-width:560px){.panel-workspace-shell.role-marketing .marketing-review .marketing-profile-header{min-height:0;padding:15px}.panel-workspace-shell.role-marketing .marketing-review .marketing-profile-header h1{font-size:16px}.panel-workspace-shell.role-marketing .marketing-review .marketing-profile-header p{font-size:9px}}
+
+/* Agen Binaan: satu direktori kerja, status jelas, dan aksi langsung. */
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .directory-total{border:1px solid #27506b;border-radius:9px;background:#0c2032!important;color:#fff!important}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .directory-total small{color:#8fa6ba!important}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .directory-stats article,
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .directory-agent,
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .directory-agent summary,
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .directory-agent-borrowers article{
+  border-color:var(--mk-line)!important;background:var(--mk-card2)!important;box-shadow:none!important
+}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .directory-agent{border-radius:9px!important}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .directory-agent summary{padding:13px 14px!important}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .directory-agent[open] summary{border-bottom:1px solid var(--mk-line)!important;background:#0b2235!important}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .directory-agent summary b{color:#fff!important;font-size:12px!important}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .directory-agent summary>strong{color:var(--mk-cyan)!important}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .directory-agent-borrowers article{grid-template-columns:minmax(160px,1fr) 100px auto auto auto;border-radius:8px!important;padding:10px 11px!important}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .directory-agent-borrowers em{background:#06111f!important}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .directory-agent-borrowers em i{background:#28b7d2!important}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .mentoring-stage{justify-self:start;border:1px solid #28516e;border-radius:999px;background:#0b2940;color:#72dff0!important;padding:5px 8px;font-size:8px!important}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .stage-aktif,.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .stage-lunas{border-color:#1d5b4d;background:#092821;color:#64d8ae!important}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .stage-operator{border-color:#5b4c24;background:#29220f;color:#f1c768!important}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .stage-ditolak{border-color:#673443;background:#2c1720;color:#ff9bad!important}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .mentoring-actions{display:flex;gap:6px;justify-content:flex-end}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .mentoring-actions :is(a,button){display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:31px;border:1px solid #28506c;border-radius:7px;background:#0b2032!important;color:#cde4f3!important;padding:6px 8px;font-size:8px;font-weight:900;text-decoration:none;white-space:nowrap}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .mentoring-actions button{border-color:#197aa5;background:#0d5f88!important;color:#fff!important}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .mentoring-actions svg{width:12px}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .directory-empty{padding:18px;border:1px dashed #29445c;border-radius:9px;background:#081522;color:var(--mk-muted)!important;text-align:center}
+@media(max-width:800px){.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .directory-agent-borrowers article{grid-template-columns:1fr auto}.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .directory-agent-borrowers em,.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .mentoring-actions{grid-column:1/-1}.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .mentoring-actions{justify-content:stretch}.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .mentoring-actions :is(a,button){flex:1}}
