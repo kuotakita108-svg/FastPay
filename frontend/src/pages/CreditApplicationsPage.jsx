@@ -280,6 +280,7 @@ export default function CreditApplicationsPage() {
   const [proofPreview, setProofPreview] = useState(null)
   const [decisionNote, setDecisionNote] = useState('')
   const [operatorDrafts, setOperatorDrafts] = useState({})
+  const [limitTarget, setLimitTarget] = useState(null)
   const [operatorMessage, setOperatorMessage] = useState('')
   const [marketingTab, setMarketingTab] = useState('Siap Foto')
   const [surveyDrafts, setSurveyDrafts] = useState({})
@@ -309,6 +310,10 @@ export default function CreditApplicationsPage() {
   useEffect(() => {
     if (['h2h', 'transaksi-agent', 'helpdesk'].includes(view) && !isOwner) {
       setSearchParams({})
+      return
+    }
+    if (view === 'limit' && !isOwner) {
+      setSearchParams({view: 'peminjam'})
       return
     }
     if (directoryScrollRef.current) directoryScrollRef.current.scrollLeft = 0
@@ -626,14 +631,14 @@ export default function CreditApplicationsPage() {
     refresh()
   }
   const saveOperatorLimit = item => {
-    if (!isOperator && !isAdmin) return
+    if (!isOperator && !isAdmin) return false
     const profile = creditProfile(items, item)
     // The displayed limit is the effective limit. Using it as the default means
     // the operator can save an unchanged value without first retyping it.
     const raw = Number(String(operatorDrafts[item.id] ?? profile.limit).replace(/\D/g, ''))
     if (raw < profile.automatic.limit || raw > 2000000) {
       setOperatorMessage(`Limit manual minimal ${rupiah(profile.automatic.limit)} dan maksimal Rp2.000.000.`)
-      return
+      return false
     }
     const tier = tierForLimit(raw)
     saveApplication(item, {
@@ -651,6 +656,7 @@ export default function CreditApplicationsPage() {
     })
     setOperatorMessage(`Limit ${item.form.agentName || item.userName} diperbarui menjadi ${rupiah(raw)}.`)
     refresh()
+    return true
   }
   const setAgentAccess = async (item, suspended) => {
     if (!isOperator && !isAdmin) return
@@ -813,7 +819,11 @@ export default function CreditApplicationsPage() {
   const nplRatio = approvedActive.length ? Math.round((nplCount / approvedActive.length) * 100) : 0
   const operatorSuspendRows = [...new Map([...overdueItems, ...operatorSuspended].map(item => [item.id, item])).values()]
   const borrowerRows = sortedItems.map(item => ({item, pay: paymentSummary(item), next: firstUnpaidRow(item), score: dataScore(item)}))
-  const mentoredBorrowerRows = borrowerRows.filter(({item}) => !isMarketing || !(item.marketingId || item.marketingOwnerId) || (item.marketingId || item.marketingOwnerId) === user?.id)
+  const mentoredBorrowerRows = borrowerRows.filter(({item}) => {
+    if (isMarketing) return !(item.marketingId || item.marketingOwnerId) || (item.marketingId || item.marketingOwnerId) === user?.id
+    if (!isOwner) return ['Disetujui', 'Lunas'].includes(statusGroup(item))
+    return true
+  })
   const directoryRows = mentoredBorrowerRows.filter(({item}) => {
     const text = `${item.form.agentName || item.userName} ${item.form.storeName} ${item.form.whatsapp} ${item.id}`.toLowerCase()
     return text.includes(borrowerQuery.toLowerCase().trim()) && (borrowerFilter === 'Semua' || mentoringStage(item) === borrowerFilter)
@@ -994,12 +1004,12 @@ export default function CreditApplicationsPage() {
         <header>{isRejectedArchive ? <XCircle/> : <ClipboardCheck/>}<div><span>{isRejectedArchive ? 'ARSIP PENOLAKAN' : isOperator ? 'FOKUS OPERATOR' : 'FOKUS PENDAMPINGAN'}</span><h2>{isRejectedArchive ? `${rejectedItems.length} keputusan ditolak` : `${isOperator ? analystQueue.length : marketingQueue.length} pengajuan perlu ditangani`}</h2><p>{isRejectedArchive ? 'Buka detail untuk membaca alasan keputusan dan jejak pemeriksaan operator. Data di halaman ini hanya arsip, bukan antrean aktif.' : isOperator ? 'Cek nominal, batas kredit, data, dokumen, selfie pertemuan, ketentuan, dan tanda tangan agent. Setelah lengkap, tanda tangani lalu terima atau tolak.' : 'Buka detail pengajuan untuk membantu melengkapi data dan mengambil selfie bersama agent. Keputusan akhir dilakukan Operator.'}</p></div></header>
       </section>}
       {(isMarketing || isOperator || isAdmin) && view === 'peminjam' && <section className="borrower-directory-panel mentoring-directory">
-        <header><div><span>AGEN BINAAN</span><h2>Pantau setiap agent dalam satu tempat</h2><p>Lihat tahap pengajuan, kelengkapan survei, kredit aktif, dan pelunasan tanpa mencampur pekerjaan agent lain.</p></div><strong className="directory-total">{directoryGroups.length}<small>Agent binaan</small></strong></header>
+        <header><div><span>{isMarketing ? 'AGEN BINAAN' : 'KREDIT AKTIF'}</span><h2>{isMarketing ? 'Pantau setiap agent binaan' : 'Kontrol kredit agent'}</h2><p>{isMarketing ? 'Lihat tahap pengajuan, kelengkapan survei, kredit aktif, dan pelunasan dalam satu daftar.' : 'Periksa kredit berjalan, atur limit secara langsung, dan pantau pelunasan setiap agent.'}</p></div><strong className="directory-total">{directoryGroups.length}<small>{isMarketing ? 'Agent binaan' : 'Agent kredit'}</small></strong></header>
         <div className="directory-stats">
           <article><b>{mentoredBorrowerRows.length}</b><span>Total pengajuan</span></article><article><b>{mentoredBorrowerRows.filter(({item}) => mentoringStage(item) === 'Survei').length}</b><span>Perlu survei</span></article><article><b>{mentoredBorrowerRows.filter(({item}) => mentoringStage(item) === 'Aktif').length}</b><span>Kredit aktif</span></article><article><b>{mentoredBorrowerRows.filter(({item}) => mentoringStage(item) === 'Lunas').length}</b><span>Sudah lunas</span></article>
         </div>
-        <div className="mentored-table-title"><div><span>PORTOFOLIO KREDIT</span><h2>Daftar Kredit Agent Binaan</h2><p>Pantau tanggal aktivitas, status kredit, tagihan, limit, dan tindak lanjut setiap agent.</p></div><strong>{directoryGroups.length}<small>Agent</small></strong></div>
-        <div className="directory-tools"><label><Search/><input value={borrowerQuery} onChange={event => setBorrowerQuery(event.target.value)} placeholder="Cari agent, toko, WhatsApp, atau ID..."/></label><div>{['Semua', 'Survei', 'Operator', 'Aktif', 'Lunas'].map(name => <button type="button" className={borrowerFilter === name ? 'active' : ''} onClick={() => setBorrowerFilter(name)} key={name}>{name}</button>)}</div></div>
+        <div className="mentored-table-title"><div><span>{isMarketing ? 'PORTOFOLIO BINAAN' : 'KONTROL KREDIT'}</span><h2>{isMarketing ? 'Daftar Kredit Agent Binaan' : 'Daftar Kredit Aktif Agent'}</h2><p>{isMarketing ? 'Pantau survei, status, tagihan, dan tindak lanjut agent binaan.' : 'Atur limit langsung dari tabel tanpa berpindah ke menu lain.'}</p></div><strong>{directoryGroups.length}<small>Agent</small></strong></div>
+        <div className="directory-tools"><label><Search/><input value={borrowerQuery} onChange={event => setBorrowerQuery(event.target.value)} placeholder="Cari agent, toko, WhatsApp, atau ID..."/></label><div>{(isMarketing ? ['Semua', 'Survei', 'Operator', 'Aktif', 'Lunas'] : ['Semua', 'Aktif', 'Lunas']).map(name => <button type="button" className={borrowerFilter === name ? 'active' : ''} onClick={() => setBorrowerFilter(name)} key={name}>{name}</button>)}</div></div>
         <div className="directory-agent-list" ref={directoryScrollRef}>
           {!!directoryGroups.length && <div className="mentored-agent-columns"><span>No</span><span>Tanggal</span><span>ID Pengajuan</span><span>Agent</span><span>Nama Toko</span><span>No. WhatsApp</span><span>Status</span><span>Tagihan</span><span>Limit</span><span>Aksi</span></div>}
           {directoryGroups.length ? directoryGroups.map((group,index) => {const row=group.rows[0]; const item=row.item; const stage=mentoringStage(item); const profile=creditProfile(items,item); const payable=group.rows.find(({item: candidate}) => candidate.status === 'Disetujui' && candidate.paymentStatus !== 'Lunas')?.item; const paymentRow=payable ? paymentRows(payable).find(candidate => !candidate.paid) : null; const activityAt=item.updatedAt || item.marketingSurveyAt || item.createdAt; return <article className="mentored-agent-row" key={group.key}>
@@ -1009,10 +1019,11 @@ export default function CreditApplicationsPage() {
             <strong className={`mentoring-stage stage-${stage.toLowerCase()}`}>{stage}</strong>
             <strong className="mentored-agent-limit">{rupiah(profile.limit)}</strong>
             <span className="mentored-agent-credit"><b>{rupiah(payable?.creditOutstanding ?? payable?.creditOriginalAmount ?? item.form.amount)}</b><small>Limit {rupiah(profile.limit)} · {group.rows.length} pengajuan</small></span>
-            <div className="mentoring-actions"><button type="button" onClick={() => goToView('detail', item.id, 'Semua')}><Eye/>Detail</button><button type="button" disabled={!payable || !paymentRow} onClick={() => {if(!payable || !paymentRow)return; setPaymentTarget({item:payable,row:paymentRow}); setPaymentMethod(''); setPaymentProof(null)}}><Banknote/>Bayar</button><button type="button" disabled={stage !== 'Aktif' && stage !== 'Lunas'} onClick={() => saveMarketingRecommendation(item)}><TrendingUp/>Rek. Limit</button></div>
+            <div className="mentoring-actions"><button type="button" onClick={() => goToView('detail', item.id, 'Semua')}><Eye/>Detail</button>{isMarketing ? <><button type="button" disabled={!payable || !paymentRow} onClick={() => {if(!payable || !paymentRow)return; setPaymentTarget({item:payable,row:paymentRow}); setPaymentMethod(''); setPaymentProof(null)}}><Banknote/>Bayar</button><button type="button" disabled={stage !== 'Aktif' && stage !== 'Lunas'} onClick={() => saveMarketingRecommendation(item)}><TrendingUp/>Rek. Limit</button></> : <button type="button" onClick={() => {setOperatorDrafts(current => ({...current,[item.id]:String(profile.limit)}));setLimitTarget(item)}}><Gauge/>Atur Limit</button>}</div>
           </article>}) : <p className="directory-empty">Agent binaan tidak ditemukan.</p>}
         </div>
       </section>}
+      {limitTarget && <section className="operator-limit-dialog" onMouseDown={event => event.target === event.currentTarget && setLimitTarget(null)}><article><header><div><span>KEPUTUSAN LIMIT OPERATOR</span><h3>{limitTarget.form.agentName || limitTarget.userName}</h3><p>{limitTarget.form.storeName || limitTarget.id}</p></div><button type="button" onClick={() => setLimitTarget(null)}><X/></button></header><div><small>Limit saat ini</small><strong>{rupiah(creditProfile(items,limitTarget).limit)}</strong><label>Limit baru<input inputMode="numeric" value={operatorDrafts[limitTarget.id] ?? ''} onChange={event => setOperatorDrafts(current => ({...current,[limitTarget.id]:event.target.value.replace(/\D/g,'')}))}/></label><p>Minimal mengikuti limit dasar agent dan maksimal Rp2.000.000. Perubahan tercatat atas nama Operator.</p></div><footer><button type="button" onClick={() => setLimitTarget(null)}>Batal</button><button type="button" className="primary" onClick={() => saveOperatorLimit(limitTarget) && setLimitTarget(null)}><CheckCircle2/>Simpan Limit</button></footer></article></section>}
       {(isMarketing || isOperator || isAdmin) && (view === 'pembayaran' || view === 'angsuran') && <section className="marketing-action-panel payment">
         <header><Banknote/><div><span>MONITOR SALDO KREDIT</span><h2>Pelunasan Kredit Agent</h2><p>Setiap kredit dibayar satu kali penuh. Buka data untuk melihat nominal, Bank/QRIS, dan bukti transfer.</p></div></header>
         <div className="payment-overview-stats"><article><small>Kredit aktif</small><strong>{installmentActive.length}</strong><span>Menunggu pelunasan</span></article><article><small>Sudah lunas</small><strong>{installmentFinished.length}</strong><span>Pembayaran selesai</span></article><article><small>Total dilunasi</small><strong>{rupiah(installmentPaidAmount)}</strong><span>Pembayaran tercatat</span></article><article><small>Saldo tertagih</small><strong>{rupiah(installmentRemainingAmount)}</strong><span>Perlu dipantau</span></article></div>

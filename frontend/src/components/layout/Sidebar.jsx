@@ -44,7 +44,6 @@ const operatorNavigation = [
     section: 'KREDIT AGENT',
     items: [
       {to: '/credit-applications?view=peminjam', label: 'Agen & Kredit Aktif', icon: CheckCircle2, badgeKey: 'active'},
-      {to: '/credit-applications?view=limit', label: 'Agen Limit & Tier', icon: Gauge, badgeKey: 'managed'},
       {to: '/credit-applications?view=pelunasan', label: 'Verifikasi Pelunasan', icon: FileCheck2, badgeKey: 'payments'},
       {to: '/credit-applications?view=suspend', label: 'Risiko & Akses Agent', icon: LockKeyhole, badgeKey: 'risk'},
     ],
