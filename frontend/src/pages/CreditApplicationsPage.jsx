@@ -932,7 +932,7 @@ export default function CreditApplicationsPage() {
         <article><span>Sudah Diterima</span><strong>{summary.approved}</strong><small>Aktif dipantau</small></article>
         <article><span>Lunas</span><strong>{summary.paid}</strong><small>Pembayaran selesai</small></article>
       </div>}
-      {view !== 'overview' && !operatorTableMode && <section className={`credit-mode-panel view-${view}`}>
+      {view !== 'overview' && view !== 'laporan' && !operatorTableMode && <section className={`credit-mode-panel view-${view}`}>
         <span>{activeView.label}</span>
         <h2>{activeView.title}</h2>
         <p>{activeView.desc}</p>
@@ -1081,7 +1081,7 @@ export default function CreditApplicationsPage() {
           <article><span>Rasio Lunas</span><strong>{items.length ? Math.round((summary.paid / items.length) * 100) : 0}%</strong><small>Dari seluruh peminjam</small></article>
         </section>
         <section className="marketing-report-table">
-          <header><div><span>LAPORAN DETAIL</span><h2>Rekap peminjam & pembayaran</h2><p>{isOperator ? 'Gunakan rekap ini untuk memantau keputusan akhir dan kesehatan kredit yang sudah berjalan.' : 'Data ini berguna buat kontrol tagihan, lihat sisa pembayaran, dan arsip kerja marketing.'}</p></div><button type="button" onClick={exportReport}><Banknote/>Export CSV</button></header>
+          <header><div><span>LAPORAN KREDIT</span><h2>Rekap peminjam & pembayaran</h2><p>{isOperator ? 'Ringkasan keputusan, pembayaran masuk, dan kesehatan seluruh kredit yang sedang berjalan.' : 'Kontrol tagihan, sisa pembayaran, dan arsip kerja marketing dalam satu laporan.'}</p></div><button type="button" onClick={exportReport}><Banknote/>Export CSV</button></header>
           <div className="credit-report-data">{!!sortedItems.length && <div className="credit-report-columns"><span>Tanggal</span><span>ID Pengajuan</span><span>Agent</span><span>Nama Toko</span><span>Pinjaman</span><span>Status</span><span>Terbayar</span><span>Sisa Tagihan</span></div>}{sortedItems.length ? sortedItems.map(item => {
             const pay = paymentSummary(item)
             return <article key={item.id}><small className="report-date">{dateTime(item.updatedAt || item.createdAt)}</small><code className="report-id" title={item.id}>{item.id}</code>
