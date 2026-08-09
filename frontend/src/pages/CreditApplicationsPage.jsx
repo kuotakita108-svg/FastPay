@@ -187,7 +187,7 @@ const viewInfo = {
   overview: {label: 'Ringkasan Kerja', title: 'Prioritas marketing hari ini', desc: 'Daftarkan agent, dampingi pengajuan, lengkapi bukti pertemuan, dan pantau pelunasan penuh.'},
   peminjam: {label: 'Agen Binaan', title: 'Pantau agent binaan', desc: 'Tahap survei, keputusan, kredit aktif, dan pelunasan dalam satu daftar ringkas.'},
   input: {label: 'Pengajuan Kredit', title: 'Pengajuan saldo kredit agent', desc: 'Agen mengajukan nominal sesuai limit. Marketing melengkapi survei lapangan sebelum berkas dikirim ke Operator.'},
-  verifikasi: {label: 'Survei Lapangan', title: 'Validasi lapangan marketing', desc: 'Ambil empat foto langsung dari kamera: KTP, toko, selfie agent pegang KTP, dan selfie agent bersama marketing. Setelah lengkap, Operator dapat memutuskan.'},
+  verifikasi: {label: 'Antrean Survei', title: 'Validasi data lapangan', desc: 'Periksa data agent dan lengkapi empat foto survei sebelum berkas dikirim kepada Operator.'},
   pembayaran: {label: 'Pelunasan Kredit', title: 'Pelunasan saldo kredit', desc: 'Bayar satu kali penuh melalui Bank, QRIS, atau penagihan langsung oleh marketing.'},
   angsuran: {label: 'Pelunasan Kredit', title: 'Monitor pelunasan penuh', desc: 'Pantau transfer Bank, QRIS, penagihan offline, bukti pembayaran, dan hak refill setelah lunas.'},
   pelunasan: {label: 'Bukti Pelunasan', title: 'Arsip bukti pelunasan', desc: 'Periksa kredit yang sudah lunas beserta nominal, metode, waktu, referensi, penerima, dan bukti pembayarannya.'},
@@ -1008,8 +1008,8 @@ export default function CreditApplicationsPage() {
         <div className="command-empty"><Landmark/><b>Bridge H2H belum diaktifkan</b><span>Hubungkan endpoint saldo dan transaksi Pulsa24Jam di backend. Setelah itu sistem dapat mengecek saldo induk sebelum memotong Saldo Utama atau Saldo Kredit agent.</span></div>
       </section>}
       {showMainList && <div className="panel-header">
-        <div><h2>{isRejectedArchive ? 'Riwayat Pengajuan Ditolak' : isOperator ? 'Berkas Siap Diperiksa' : 'Pengajuan Masuk'}</h2><p>{isRejectedArchive ? 'Setiap keputusan menyimpan alasan penolakan agar mudah ditinjau kembali dan dijelaskan kepada agent.' : isMarketing ? 'Tugas marketing: daftarkan dan dampingi agent, lengkapi selfie pertemuan, serta tangani pelunasan offline.' : isOperator ? 'Tugas operator: cek seluruh data, tanda tangan, lalu terima atau tolak.' : 'Pantau seluruh alur pengajuan kredit agent dari satu panel.'}</p></div>
-        <span className="review-role-badge">{isMarketing ? 'MARKETING' : isOperator ? 'OPERATOR' : 'ADMIN'}</span>
+        <div><h2>{isRejectedArchive ? 'Riwayat Pengajuan Ditolak' : isOperator ? 'Berkas Siap Diperiksa' : 'Antrean Survei Agent'}</h2><p>{isRejectedArchive ? 'Setiap keputusan menyimpan alasan penolakan agar mudah ditinjau kembali dan dijelaskan kepada agent.' : isMarketing ? 'Periksa agent yang masuk, lengkapi data dan foto kunjungan, lalu kirim berkas yang sudah siap kepada Operator.' : isOperator ? 'Tugas operator: cek seluruh data, tanda tangan, lalu terima atau tolak.' : 'Pantau seluruh alur pengajuan kredit agent dari satu panel.'}</p></div>
+        {!isMarketing && <span className="review-role-badge">{isOperator ? 'OPERATOR' : 'ADMIN'}</span>}
       </div>}
       {showCreateArea && <section className={`credit-create-box ${view === 'input' ? 'focus' : ''}`}>
         <button type="button" className="credit-create-toggle" onClick={() => setShowCreate(value => !value)}><PlusCircle/>{showCreate ? 'Tutup Form Peminjaman' : 'Input Peminjaman'}</button>
