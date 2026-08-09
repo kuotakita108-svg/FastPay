@@ -893,12 +893,12 @@ export default function CreditApplicationsPage() {
         </div>
         <div className="directory-tools"><label><Search/><input value={borrowerQuery} onChange={event => setBorrowerQuery(event.target.value)} placeholder="Cari agent, toko, WhatsApp, atau ID..."/></label><div>{['Semua', 'Survei', 'Operator', 'Aktif', 'Lunas'].map(name => <button type="button" className={borrowerFilter === name ? 'active' : ''} onClick={() => setBorrowerFilter(name)} key={name}>{name}</button>)}</div></div>
         <div className="directory-agent-list">
-          {directoryGroups.length ? directoryGroups.map(group => {const row=group.rows[0]; const item=row.item; const stage=mentoringStage(item); const wa=String(item.form.whatsapp || '').replace(/\D/g, '').replace(/^0/, '62'); return <article className="mentored-agent-row" key={group.key}>
+          {directoryGroups.length ? directoryGroups.map(group => {const row=group.rows[0]; const item=row.item; const stage=mentoringStage(item); const payable=group.rows.find(({item: candidate}) => candidate.status === 'Disetujui' && candidate.paymentStatus !== 'Lunas')?.item; return <article className="mentored-agent-row" key={group.key}>
             <span className="mentored-agent-name"><b>{group.agent}</b><small>{item.form.storeName || 'Toko belum diisi'} · {item.form.whatsapp || 'WA belum diisi'}</small></span>
             <span className="mentored-agent-progress"><em title={`Kelengkapan ${row.score.percent}%`}><i style={{width: `${row.score.percent}%`}}/></em><small>{row.score.percent}% lengkap</small></span>
             <strong className={`mentoring-stage stage-${stage.toLowerCase()}`}>{stage}</strong>
             <span className="mentored-agent-credit"><b>{rupiah(item.form.amount)}</b><small>{group.rows.length} pengajuan</small></span>
-            <div className="mentoring-actions">{wa&&<a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer"><PhoneCall/>WhatsApp</a>}<button type="button" onClick={() => goToView('detail', item.id, 'Semua')}><Eye/>{stage === 'Survei' ? 'Lanjut' : 'Detail'}</button></div>
+            <div className="mentoring-actions"><button type="button" onClick={() => goToView('detail', item.id, 'Semua')}><Eye/>Detail</button><button type="button" disabled={!payable} onClick={() => payable && goToView('angsuran-detail', payable.id, 'Disetujui')}><Banknote/>Bayar</button><button type="button" disabled={stage !== 'Aktif' && stage !== 'Lunas'} onClick={() => saveMarketingRecommendation(item)}><TrendingUp/>Rek. Limit</button></div>
           </article>}) : <p className="directory-empty">Agent binaan tidak ditemukan.</p>}
         </div>
       </section>}
