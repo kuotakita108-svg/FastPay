@@ -48,7 +48,10 @@ const operatorNavigation = [
       {to: '/credit-applications?view=suspend', label: 'Risiko & Akses Agent', icon: LockKeyhole, badgeKey: 'risk'},
     ],
   },
-  {section: 'LAPORAN', items: [{to: '/credit-applications?view=laporan', label: 'Laporan Kredit', icon: BarChart3}]},
+  {section: 'LAPORAN', items: [
+    {to: '/credit-applications?view=laporan', label: 'Laporan Kredit', icon: BarChart3},
+    {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Marketing', icon: Users},
+  ]},
 ]
 
 const superAdminNavigation = [

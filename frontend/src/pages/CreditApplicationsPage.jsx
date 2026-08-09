@@ -193,6 +193,7 @@ const viewInfo = {
   angsuran: {label: 'Pelunasan Kredit', title: 'Monitor pelunasan penuh', desc: 'Pantau transfer Bank, QRIS, penagihan offline, bukti pembayaran, dan hak refill setelah lunas.'},
   pelunasan: {label: 'Bukti Pelunasan', title: 'Arsip bukti pelunasan', desc: 'Periksa kredit yang sudah lunas beserta nominal, metode, waktu, referensi, penerima, dan bukti pembayarannya.'},
   laporan: {label: 'Laporan Kredit', title: 'Rekap kinerja kredit', desc: 'Lihat total nominal pinjaman, pembayaran masuk, sisa tagihan, dan status seluruh peminjam.'},
+  'kinerja-marketing': {label: 'Audit Tim Lapangan', title: 'Kinerja setiap marketing', desc: 'Lihat jumlah agent yang didaftarkan, hasil survei, persetujuan, kredit aktif, dan risiko per marketing.'},
   rekomendasi: {label: 'Rekomendasi Limit', title: 'Rekomendasikan kenaikan limit', desc: 'Marketing memberi catatan lapangan untuk agent binaan. Keputusan limit tetap di tangan Operator.'},
   komisi: {label: 'Kantong Komisi', title: 'Insentif marketing', desc: 'Komisi hanya tercatat dari transaksi H2H sukses yang sudah dikirim oleh sistem pusat.'},
   limit: {label: 'Tier & Limit Agent', title: 'Manajemen tier dan limit', desc: 'Operator dapat melihat rekomendasi marketing dan menyesuaikan limit secara manual tanpa menghapus aturan otomatis.'},
@@ -864,9 +865,12 @@ export default function CreditApplicationsPage() {
   const remainingLoan = Math.max(0, totalLoan - totalPaidAmount)
   const marketingPerformance = Object.values(sortedItems.reduce((groups, item) => {
     const name = item.marketingOwnerName || item.marketingName || 'Belum ditugaskan'
-    if (!groups[name]) groups[name] = {name, visits: 0, approved: 0, turnover: 0, overdue: 0}
+    if (!groups[name]) groups[name] = {name, registered: 0, visits: 0, pending: 0, approved: 0, active: 0, turnover: 0, overdue: 0}
+    groups[name].registered += 1
     if (item.fieldSurvey || item.marketingMeeting) groups[name].visits += 1
+    if (item.status === 'Menunggu keputusan operator') groups[name].pending += 1
     if (item.status === 'Disetujui') groups[name].approved += 1
+    if (item.status === 'Disetujui' && item.paymentStatus !== 'Lunas') groups[name].active += 1
     if (item.status === 'Disetujui') groups[name].turnover += Number(item.creditOutstanding || item.creditOriginalAmount || 0)
     if (item.status === 'Disetujui' && item.paymentStatus !== 'Lunas' && item.dueAt && new Date(item.dueAt).getTime() < Date.now()) groups[name].overdue += Number(item.creditOutstanding || item.creditOriginalAmount || 0)
     return groups
@@ -932,7 +936,7 @@ export default function CreditApplicationsPage() {
         <article><span>Sudah Diterima</span><strong>{summary.approved}</strong><small>Aktif dipantau</small></article>
         <article><span>Lunas</span><strong>{summary.paid}</strong><small>Pembayaran selesai</small></article>
       </div>}
-      {view !== 'overview' && view !== 'laporan' && !operatorTableMode && <section className={`credit-mode-panel view-${view}`}>
+      {view !== 'overview' && !['laporan', 'kinerja-marketing'].includes(view) && !operatorTableMode && <section className={`credit-mode-panel view-${view}`}>
         <span>{activeView.label}</span>
         <h2>{activeView.title}</h2>
         <p>{activeView.desc}</p>
@@ -1096,6 +1100,11 @@ export default function CreditApplicationsPage() {
         </section>
         {(isOperator || isAdmin) && <section className="marketing-audit-panel"><header><div><span>AUDIT TIM LAPANGAN</span><h2>Rapor kinerja Marketing</h2><p>Red flag muncul jika rasio tunggakan agent binaan melebihi 5%.</p></div><ShieldCheck/></header><div className="marketing-audit-columns"><span>Marketing</span><span>Kunjungan</span><span>Agent Disetujui</span><span>Omset Kredit</span><span>Kredit Macet</span><span>NPL</span></div>{marketingPerformance.map(row => <article className={row.npl > 5 ? 'red-flag' : ''} key={row.name}><b>{row.name}</b><span>{row.visits}</span><span>{row.approved}</span><strong>{rupiah(row.turnover)}</strong><strong>{rupiah(row.overdue)}</strong><em>{row.npl > 5 ? '⚠ ' : ''}{row.npl}%</em></article>)}{!marketingPerformance.length && <p>Belum ada aktivitas marketing untuk diaudit.</p>}</section>}
       </>}
+      {(isOperator || isAdmin) && view === 'kinerja-marketing' && <section className="marketing-performance-workspace">
+        <header><div><span>AUDIT TIM LAPANGAN</span><h2>Kinerja setiap Marketing</h2><p>Operator dapat melihat jumlah agent yang ditangani setiap marketing beserta hasil survei, keputusan, kredit aktif, dan tingkat risikonya.</p></div><ShieldCheck/></header>
+        <div className="marketing-performance-summary"><article><span>Total Marketing</span><strong>{marketingPerformance.filter(row => row.name !== 'Belum ditugaskan').length}</strong><small>Memiliki agent binaan</small></article><article><span>Agent Terdaftar</span><strong>{marketingPerformance.reduce((sum,row) => sum + row.registered,0)}</strong><small>Seluruh pengajuan tercatat</small></article><article><span>Sudah Disurvei</span><strong>{marketingPerformance.reduce((sum,row) => sum + row.visits,0)}</strong><small>Kunjungan lapangan selesai</small></article><article><span>Agent Disetujui</span><strong>{marketingPerformance.reduce((sum,row) => sum + row.approved,0)}</strong><small>Keputusan operator</small></article></div>
+        <section className="marketing-audit-panel detailed"><header><div><span>RAPOR PER MARKETING</span><h2>Agent terdaftar dan kualitas portofolio</h2><p>Setiap baris menunjukkan tanggung jawab satu marketing. Red flag muncul jika NPL melebihi 5%.</p></div></header><div className="marketing-audit-columns"><span>Marketing</span><span>Agent Terdaftar</span><span>Sudah Survei</span><span>Menunggu Operator</span><span>Disetujui</span><span>Kredit Aktif</span><span>Kredit Macet</span><span>NPL</span></div>{marketingPerformance.map(row => <article className={row.npl > 5 ? 'red-flag' : ''} key={row.name}><b>{row.name}</b><span>{row.registered}</span><span>{row.visits}</span><span>{row.pending}</span><span>{row.approved}</span><strong>{row.active}</strong><strong>{rupiah(row.overdue)}</strong><em>{row.npl > 5 ? '⚠ ' : ''}{row.npl}%</em></article>)}{!marketingPerformance.length && <p>Belum ada aktivitas marketing untuk diaudit.</p>}</section>
+      </section>}
       {(isMarketing || isAdmin) && view === 'panduan' && <section className="marketing-guide-panel">
         <header><CircleHelp/><div><span>PANDUAN MARKETING</span><h2>Alur kerja yang benar</h2></div></header>
         <ol>

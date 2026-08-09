@@ -59,6 +59,16 @@
 .panel-workspace-shell .operator-review .mentoring-directory .has-marketing>.mentoring-actions{grid-column:11!important}
 @media(max-width:760px){.panel-workspace-shell .operator-review .mentoring-directory .operator-directory-filters{grid-template-columns:1fr 1fr!important}.panel-workspace-shell .operator-review .mentoring-directory .operator-directory-filters>label:first-child{grid-column:1/-1!important}.panel-workspace-shell .operator-review .mentoring-directory .operator-directory-filters>div{overflow-x:auto!important}.panel-workspace-shell .operator-review .mentoring-directory .directory-reset{width:100%!important}}
 
+/* Rapor marketing menjadi menu Operator tersendiri, bukan duplikat laporan kredit. */
+.marketing-report-table+.marketing-audit-panel{display:none!important}
+.marketing-performance-workspace{display:grid;gap:12px;color:#edf7ff}
+.marketing-performance-workspace>header{display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid #193a56;border-radius:9px;background:#081725;padding:14px 16px}
+.marketing-performance-workspace>header span{color:#42d5eb;font-size:7px;font-weight:900;letter-spacing:1.1px}.marketing-performance-workspace>header h2{margin:4px 0;font-size:17px}.marketing-performance-workspace>header p{margin:0;color:#8fa6ba;font-size:9px}.marketing-performance-workspace>header svg{width:24px;color:#42d5eb}
+.marketing-performance-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));overflow:hidden;border:1px solid #193a56;border-radius:9px;background:#081725}
+.marketing-performance-summary article{min-height:78px;border-right:1px solid #193a56;padding:12px 14px}.marketing-performance-summary article:last-child{border-right:0}.marketing-performance-summary span,.marketing-performance-summary small{display:block;color:#8fa6ba;font-size:8px}.marketing-performance-summary strong{display:block;margin:5px 0;color:#fff;font-size:19px}
+.marketing-audit-panel.detailed{overflow-x:auto}.marketing-audit-panel.detailed .marketing-audit-columns,.marketing-audit-panel.detailed>article{grid-template-columns:minmax(150px,1fr) 88px 80px 105px 75px 75px 105px 55px;min-width:850px}
+@media(max-width:700px){.marketing-performance-summary{grid-template-columns:1fr 1fr}.marketing-performance-summary article:nth-child(2){border-right:0}.marketing-performance-summary article:nth-child(-n+2){border-bottom:1px solid #193a56}}
+
 .panel-workspace-shell .operator-review .analyst-payment-proof-panel{gap:10px!important;border-radius:9px!important;padding:12px!important}
 .panel-workspace-shell .operator-review .payment-proof-heading{align-items:center!important;gap:11px!important;border:1px solid #1b3a55!important;border-radius:8px!important;background:#081725!important;padding:12px 14px!important}
 .panel-workspace-shell .operator-review .payment-proof-heading>i{flex-basis:38px!important;height:38px!important;border-radius:9px!important;background:#10263a!important}
