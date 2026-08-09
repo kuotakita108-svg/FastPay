@@ -36,8 +36,11 @@
 .panel-workspace-shell .operator-review .operator-workspace .marketing-focus-grid p{min-height:36px!important;margin:0!important;border:1px solid #1a354b!important;border-radius:6px!important;background:#071421!important;color:#8299ad!important;padding:10px!important;font-size:8px!important}
 
 .panel-workspace-shell .operator-review .mentoring-directory .directory-agent-list{scroll-behavior:auto!important;overscroll-behavior-x:contain!important}
-.panel-workspace-shell .operator-review .mentoring-directory :is(.mentored-agent-columns,.mentored-agent-row){grid-template-columns:28px 92px 104px 112px 108px 90px 52px 78px 86px 172px!important;gap:6px!important;min-width:996px!important}
-.panel-workspace-shell .operator-review .mentoring-directory .mentoring-actions{min-width:172px!important;justify-content:flex-start!important;overflow:visible!important}
+.panel-workspace-shell .operator-review .mentoring-directory :is(.mentored-agent-columns,.mentored-agent-row){grid-template-columns:28px 88px 100px 108px 102px 88px 62px 82px 90px 142px!important;column-gap:10px!important;min-width:1000px!important}
+.panel-workspace-shell .operator-review .mentoring-directory .mentored-agent-row>.mentoring-stage{min-width:54px!important;white-space:nowrap!important}
+.panel-workspace-shell .operator-review .mentoring-directory .mentored-agent-credit{min-width:74px!important;white-space:nowrap!important}
+.panel-workspace-shell .operator-review .mentoring-directory .mentored-agent-limit{min-width:84px!important;white-space:nowrap!important}
+.panel-workspace-shell .operator-review .mentoring-directory .mentoring-actions{min-width:142px!important;justify-content:flex-start!important;overflow:visible!important;padding-left:5px!important;border-left:1px solid #18354c!important}
 .panel-workspace-shell .operator-review .mentoring-directory .mentoring-actions button{flex:0 0 auto!important;padding:3px 6px!important}
 .panel-workspace-shell .operator-review .mentoring-directory :is(.mentored-agent-credit,.mentored-agent-limit){white-space:nowrap!important}
 
