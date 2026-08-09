@@ -3,16 +3,17 @@ import {Navigate,Route,Routes,useLocation} from 'react-router-dom'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
 import UserHomePage from './pages/UserHomePage'
+import HistoryPage from './pages/HistoryPage'
+import ProfilePage from './pages/ProfilePage'
+import AgentCreditPage from './pages/AgentCreditPage'
 
 const AppLayout=lazy(()=>import('./components/layout/AppLayout'))
 const ServicePurchasePage=lazy(()=>import('./pages/ServicePurchasePage'))
 const CheckoutPage=lazy(()=>import('./pages/CheckoutPage'))
 const AllServicesPage=lazy(()=>import('./pages/AllServicesPage'))
-const HistoryPage=lazy(()=>import('./pages/HistoryPage'))
 const BalancePage=lazy(()=>import('./pages/BalancePage'))
 const WalletTopUpPage=lazy(()=>import('./pages/WalletTopUpPage'))
 const TransferPage=lazy(()=>import('./pages/TransferPage'))
-const ProfilePage=lazy(()=>import('./pages/ProfilePage'))
 const DashboardPage=lazy(()=>import('./pages/DashboardPage'))
 const TopUpPage=lazy(()=>import('./pages/TopUpPage'))
 const ProductsPage=lazy(()=>import('./pages/ProductsPage'))
@@ -25,7 +26,6 @@ const SettingsPage=lazy(()=>import('./pages/SettingsPage'))
 const NotFoundPage=lazy(()=>import('./pages/NotFoundPage'))
 const SecurityPage=lazy(()=>import('./pages/SecurityPage'))
 const AccountFeaturePage=lazy(()=>import('./pages/AccountFeaturePage'))
-const AgentCreditPage=lazy(()=>import('./pages/AgentCreditPage'))
 const CreditApplicationsPage=lazy(()=>import('./pages/CreditApplicationsPage'))
 
 // Halaman awal dibuat langsung tersedia. Jangan menahan pengguna di splash screen.

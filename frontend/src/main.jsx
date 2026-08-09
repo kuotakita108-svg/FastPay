@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import {BrowserRouter} from 'react-router-dom'
+import {BrowserRouter,useLocation} from 'react-router-dom'
 import App from './App'
 import {ThemeProvider} from './context/ThemeContext'
 import {ToastProvider} from './context/ToastContext'
@@ -19,4 +19,9 @@ heroPreload.href=heroImage
 heroPreload.fetchPriority='high'
 document.head.appendChild(heroPreload)
 
-ReactDOM.createRoot(document.getElementById('root')).render(<React.StrictMode><BrowserRouter basename={env.basePath}><ThemeProvider><ToastProvider><AuthProvider><AppErrorBoundary><App/></AppErrorBoundary></AuthProvider></ToastProvider></ThemeProvider></BrowserRouter></React.StrictMode>)
+function StableApp(){
+  const location=useLocation()
+  return <AppErrorBoundary resetKey={`${location.pathname}${location.search}`}><App/></AppErrorBoundary>
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<React.StrictMode><BrowserRouter basename={env.basePath}><ThemeProvider><ToastProvider><AuthProvider><StableApp/></AuthProvider></ToastProvider></ThemeProvider></BrowserRouter></React.StrictMode>)

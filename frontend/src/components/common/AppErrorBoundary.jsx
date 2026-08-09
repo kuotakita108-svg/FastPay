@@ -7,6 +7,10 @@ export default class AppErrorBoundary extends React.Component {
 
   componentDidCatch(error,info){console.error('KuotaKita UI error',error,info)}
 
+  componentDidUpdate(previousProps){
+    if(this.state.failed&&previousProps.resetKey!==this.props.resetKey)this.setState({failed:false})
+  }
+
   render(){
     if(!this.state.failed)return this.props.children
     return <main className="mobile-app" style={{minHeight:'100vh',display:'grid',placeItems:'center',padding:24,background:'#f6f7fb'}}>
