@@ -53,6 +53,36 @@
 .panel-workspace-shell .operator-review .operator-row-actions button.print{color:#b9a9ff!important}
 .panel-workspace-shell .operator-review .operator-row-actions button.suspend{color:#ff8991!important}
 .panel-workspace-shell .operator-review .operator-row-actions button.restore{color:#52dda6!important}
+
+/* Laporan Operator: tabel delapan kolom yang sejajar seperti ledger P24. */
+.panel-workspace-shell .operator-review .marketing-report-panel{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:0!important;overflow:hidden!important;border-radius:9px!important;padding:0!important}
+.panel-workspace-shell .operator-review .marketing-report-panel>article{min-height:86px!important;border:0!important;border-right:1px solid var(--op-line)!important;border-radius:0!important;background:#091827!important;padding:13px 15px!important}
+.panel-workspace-shell .operator-review .marketing-report-panel>article:last-child{border-right:0!important}
+.panel-workspace-shell .operator-review .marketing-report-table{overflow:hidden!important;border-radius:9px!important;padding:0!important}
+.panel-workspace-shell .operator-review .marketing-report-table>header{margin:0!important;padding:13px 15px!important;border-bottom:1px solid var(--op-line)!important}
+.panel-workspace-shell .operator-review .marketing-report-table>header h2{margin:3px 0!important;font-size:16px!important}
+.panel-workspace-shell .operator-review .marketing-report-table>header p{font-size:9px!important}
+.panel-workspace-shell .operator-review .marketing-report-table>header button{border:1px solid #28516e!important;border-radius:7px!important;background:#0c2235!important;color:#eef8ff!important;padding:8px 10px!important;font-size:9px!important}
+.panel-workspace-shell .operator-review .credit-report-data{display:grid!important;grid-template-columns:minmax(970px,1fr)!important;gap:0!important;overflow-x:auto!important}
+.panel-workspace-shell .operator-review .credit-report-columns,
+.panel-workspace-shell .operator-review .credit-report-data>article{display:grid!important;grid-template-columns:120px 120px minmax(145px,1fr) minmax(120px,.85fr) 100px 105px 95px 110px!important;align-items:center!important;gap:9px!important;min-width:970px!important;box-sizing:border-box!important}
+.panel-workspace-shell .operator-review .credit-report-columns{padding:9px 11px!important;background:linear-gradient(90deg,#073d57,#14366a)!important;color:#d8f1ff!important;font-size:8px!important;font-weight:900!important;letter-spacing:.35px!important;text-transform:uppercase!important}
+.panel-workspace-shell .operator-review .credit-report-columns>span{display:block!important;color:inherit!important}
+.panel-workspace-shell .operator-review .credit-report-data>article{padding:10px 11px!important;border:0!important;border-bottom:1px solid var(--op-line-soft)!important;border-radius:0!important;background:#071421!important;color:#c7d8e8!important}
+.panel-workspace-shell .operator-review .credit-report-data>article:hover{background:#0a1c2d!important}
+.panel-workspace-shell .operator-review .credit-report-data>article :is(.report-date,.report-id,.report-store,strong,em,i,span){min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.panel-workspace-shell .operator-review .credit-report-data>article .report-date{margin:0!important;color:#9db3c7!important;font-size:8px!important}
+.panel-workspace-shell .operator-review .credit-report-data>article .report-id{color:#6fd9ef!important;font-size:8px!important}
+.panel-workspace-shell .operator-review .credit-report-data>article>span b{color:#f4f8ff!important;font-size:9px!important}
+.panel-workspace-shell .operator-review .credit-report-data>article>span small{display:none!important}
+.panel-workspace-shell .operator-review .credit-report-data>article .report-store{color:#dce9f4!important;font-size:8px!important}
+.panel-workspace-shell .operator-review .credit-report-data>article>strong{color:#fff!important;font-size:9px!important}
+.panel-workspace-shell .operator-review .credit-report-data>article .report-status{justify-self:start!important;border:0!important;border-radius:0!important;background:transparent!important;padding:0!important;font-size:8px!important;font-style:normal!important;font-weight:900!important}
+.panel-workspace-shell .operator-review .credit-report-data>article .report-status-approved{color:#4be0aa!important}
+.panel-workspace-shell .operator-review .credit-report-data>article .report-status-rejected{color:#ff8991!important}
+.panel-workspace-shell .operator-review .credit-report-data>article .report-status-pending{color:#f6c15a!important}
+.panel-workspace-shell .operator-review .credit-report-data>article i{color:#eaf4ff!important;font-size:9px!important;font-style:normal!important;font-weight:900!important}
+.panel-workspace-shell .operator-review .credit-report-data>article i small{display:none!important}
 .panel-workspace-shell .operator-review .h2h-connection-line{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--op-line);padding:0 0 12px;color:var(--op-muted);font-size:10px}.panel-workspace-shell .operator-review .h2h-connection-line>span{display:inline-flex;align-items:center;gap:7px;color:#ff8991;font-weight:900}.panel-workspace-shell .operator-review .h2h-connection-line>span.online{color:#4be0aa}.panel-workspace-shell .operator-review .h2h-connection-line i{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 9px currentColor}.panel-workspace-shell .operator-review .h2h-connection-line small{margin-right:auto}.panel-workspace-shell .operator-review .h2h-connection-line button{border:1px solid #27506f;border-radius:7px;background:transparent;color:#7bdff4;padding:7px 10px;font-size:9px;font-weight:900}.panel-workspace-shell .operator-review .h2h-error{border:1px solid #6e3340;border-radius:7px;background:#29131c;color:#ff9ca4;padding:9px 11px;font-size:10px}.panel-workspace-shell .operator-review .h2h-summary{grid-template-columns:repeat(4,minmax(0,1fr))}.panel-workspace-shell .operator-review .h2h-ledger{overflow:auto;border:1px solid var(--op-line);border-radius:8px;background:#071421}.panel-workspace-shell .operator-review .h2h-ledger-head,.panel-workspace-shell .operator-review .h2h-ledger>article{display:grid;grid-template-columns:125px minmax(180px,1.35fr) 85px 120px 105px 115px 95px;align-items:center;gap:10px;min-width:900px;padding:10px 12px}.panel-workspace-shell .operator-review .h2h-ledger-head{background:linear-gradient(90deg,#073d57,#14366a);color:#d9f2ff;font-size:8px;font-weight:900;letter-spacing:.5px;text-transform:uppercase}.panel-workspace-shell .operator-review .h2h-ledger>article{border-top:1px solid var(--op-line-soft);color:#c5d7e7;font-size:9px}.panel-workspace-shell .operator-review .h2h-ledger>article:hover{background:#0a1c2d}.panel-workspace-shell .operator-review .h2h-ledger code{overflow:hidden;color:#65d7f0;text-overflow:ellipsis}.panel-workspace-shell .operator-review .h2h-ledger b,.panel-workspace-shell .operator-review .h2h-ledger strong{color:#fff}.panel-workspace-shell .operator-review .h2h-status{font-style:normal;font-weight:900;color:#f6c15a}.panel-workspace-shell .operator-review .h2h-status.success{color:#4be0aa}.panel-workspace-shell .operator-review .h2h-status.failed{color:#ff8991}
 
 @media(max-width:760px){
@@ -65,4 +95,7 @@
   .panel-workspace-shell .operator-review .operator-queue-table>header p{display:none}
   .panel-workspace-shell .operator-review .h2h-summary{grid-template-columns:1fr 1fr}
   .panel-workspace-shell .operator-review .h2h-connection-line{align-items:flex-start;flex-wrap:wrap}.panel-workspace-shell .operator-review .h2h-connection-line small{width:100%;order:3}
+  .panel-workspace-shell .operator-review .marketing-report-panel{grid-template-columns:1fr 1fr!important}
+  .panel-workspace-shell .operator-review .marketing-report-panel>article:nth-child(2){border-right:0!important}
+  .panel-workspace-shell .operator-review .marketing-report-panel>article:nth-child(-n+2){border-bottom:1px solid var(--op-line)!important}
 }
