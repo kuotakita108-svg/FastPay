@@ -961,9 +961,9 @@ export default function CreditApplicationsPage() {
         </section>
         <section className="marketing-report-table">
           <header><div><span>LAPORAN DETAIL</span><h2>Rekap peminjam & pembayaran</h2><p>{isOperator ? 'Gunakan rekap ini untuk memantau keputusan akhir dan kesehatan kredit yang sudah berjalan.' : 'Data ini berguna buat kontrol tagihan, lihat sisa pembayaran, dan arsip kerja marketing.'}</p></div><button type="button" onClick={exportReport}><Banknote/>Export CSV</button></header>
-          <div>{sortedItems.length ? sortedItems.map(item => {
+          <div className="credit-report-data">{!!sortedItems.length && <div className="credit-report-columns"><span>Tanggal</span><span>ID Pengajuan</span><span>Agent / Toko</span><span>Pinjaman</span><span>Status</span><span>Terbayar</span><span>Sisa Tagihan</span></div>}{sortedItems.length ? sortedItems.map(item => {
             const pay = paymentSummary(item)
-            return <article key={item.id}>
+            return <article key={item.id}><small className="report-date">{dateTime(item.updatedAt || item.createdAt)}</small><code className="report-id" title={item.id}>{item.id}</code>
               <span><b>{item.form.agentName || item.userName}</b><small>{item.id} · {item.form.storeName || 'Tanpa toko'}</small></span>
               <strong>{rupiah(item.form.amount)}</strong>
               <em>{item.status}</em>
