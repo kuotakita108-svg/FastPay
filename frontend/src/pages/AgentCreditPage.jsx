@@ -1,13 +1,12 @@
 import {useEffect, useRef, useState} from 'react'
 import {useLocation,useNavigate} from 'react-router-dom'
 import {QRCodeSVG} from 'qrcode.react'
-import {ArrowRight, CalendarDays, Camera, Check, CheckCircle2, Clock3, Copy, CreditCard, Crown, FileText, HandCoins, Images, Landmark, Loader2, PenLine, QrCode, Rocket, Search, ShieldCheck, Sparkles, Stamp, Store, Upload, UserRound, WalletCards, X} from 'lucide-react'
+import {ArrowRight, CalendarDays, Camera, Check, CheckCircle2, Clock3, Copy, CreditCard, Crown, FileText, HandCoins, Images, Landmark, Loader2, PenLine, QrCode, Rocket, Search, ShieldCheck, Sparkles, Stamp, Store, Upload, UserRound, X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
 import {rupiah} from '../utils/currency'
 import {request} from '../services/http'
-import financeHero from '../assets/service-heroes/finance.png'
 
 const initialForm = {
   agentName: '',
@@ -526,12 +525,13 @@ export default function AgentCreditPage() {
   const RankIcon = currentRank.icon
   return <main className="mobile-app agent-credit-page">
     <SubPageHeader title="Kredit Saldo Agent" description="Ajukan tanam saldo langsung dari aplikasi" back/>
-    <section className="agent-credit-hero">
-      <img className="agent-credit-person" src={financeHero} alt="" aria-hidden="true"/>
-      <div className="agent-credit-hero-shade"/>
-      <i><WalletCards/></i>
-      <div><span>MODAL AGENT RESMI</span><h1>Ajukan Kredit Saldo Lebih Cepat</h1><p>Marketing mengambil dokumen survei di lokasi. Isi pengajuan, baca ketentuan, lalu tanda tangan sebelum Operator memberi keputusan.</p></div>
-      <b><small>Limit Pengajuan</small><strong>{rupiah(Math.min(maxCredit, Math.max(0, Number(form.amount || 0))))}</strong></b>
+    <section className="agent-credit-workflow">
+      <header><span>ALUR KREDIT AGENT</span><h1>Pengajuan ringkas dan terpantau</h1><p>Saldo kredit hanya aktif setelah pemeriksaan lengkap dan keputusan Operator.</p></header>
+      <ol>
+        <li><b>1</b><span><strong>Ajukan</strong><small>Lengkapi data</small></span></li>
+        <li><b>2</b><span><strong>Verifikasi</strong><small>Survei & dokumen</small></span></li>
+        <li><b>3</b><span><strong>Kredit Aktif</strong><small>Setelah disetujui</small></span></li>
+      </ol>
     </section>
     <section className="agent-rank-card">
       <header>
