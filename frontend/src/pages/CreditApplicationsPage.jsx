@@ -966,7 +966,7 @@ export default function CreditApplicationsPage() {
             return <article key={item.id}><small className="report-date">{dateTime(item.updatedAt || item.createdAt)}</small><code className="report-id" title={item.id}>{item.id}</code>
               <span><b>{item.form.agentName || item.userName}</b><small>{item.id} · {item.form.storeName || 'Tanpa toko'}</small></span>
               <strong>{rupiah(item.form.amount)}</strong>
-              <em>{item.status}</em>
+              <em className={`report-status report-status-${item.status === 'Disetujui' ? 'approved' : item.status === 'Ditolak' ? 'rejected' : 'pending'}`}>{item.status}</em>
               <i><small>Terbayar</small>{rupiah(pay.totalPaid)}</i>
               <i><small>Sisa</small>{rupiah(Math.max(0, Number(item.form.amount || 0) - pay.totalPaid))}</i>
             </article>
