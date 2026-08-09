@@ -1,12 +1,15 @@
 import {useEffect, useRef, useState} from 'react'
 import {useLocation,useNavigate} from 'react-router-dom'
 import {QRCodeSVG} from 'qrcode.react'
-import {ArrowRight, CalendarDays, Camera, Check, CheckCircle2, Clock3, Copy, CreditCard, Crown, Eye, EyeOff, FileText, HandCoins, Images, Landmark, Loader2, PenLine, QrCode, Rocket, Search, ShieldCheck, Star, Stamp, Store, Upload, UserRound, X} from 'lucide-react'
+import {ArrowRight, CalendarDays, Camera, Check, CheckCircle2, Clock3, Copy, CreditCard, Crown, Eye, EyeOff, FileText, HandCoins, Images, Landmark, Loader2, PenLine, QrCode, Rocket, Search, ShieldCheck, Stamp, Store, Upload, UserRound, X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
 import {rupiah} from '../utils/currency'
 import {request} from '../services/http'
+import bronzeRank from '../assets/ranks/bronze.png'
+import silverRank from '../assets/ranks/silver.png'
+import goldRank from '../assets/ranks/gold.png'
 
 const initialForm = {
   agentName: '',
@@ -40,7 +43,7 @@ const terms = [
 
 // Limit dapat naik otomatis dari riwayat pelunasan tepat waktu atau secara
 // manual oleh Operator. Angka awal dipakai sebelum keputusan pertama.
-const defaultRank = {name: 'Agent Pemula', limit: 500000, badge: 'BRONZE', tone: 'bronze', icon: Star}
+const defaultRank = {name: 'Agent Pemula', limit: 500000, badge: 'BRONZE', tone: 'bronze'}
 const finalCreditStatus = ['Disetujui', 'Ditolak']
 
 const readJSON = (key, fallback = []) => {
@@ -523,20 +526,18 @@ export default function AgentCreditPage() {
   const totalCreditApproved = applications.filter(item => item.status === 'Disetujui' || item.paymentStatus === 'Lunas').reduce((sum, item) => sum + Number(item.form?.amount || 0), 0)
   const totalCreditPaid = repayments.filter(item => item.status === 'Lunas').reduce((sum, item) => sum + Number(item.amount || 0), 0)
   const canRefill = application?.paymentStatus === 'Lunas' || application?.creditStatus === 'Lunas'
-  const RankIcon = currentRank.icon
+  const rankIdentity = `${currentRank.name} ${currentRank.badge}`.toLowerCase()
+  const rankAsset = rankIdentity.includes('gold') || rankIdentity.includes('titan') ? goldRank : rankIdentity.includes('silver') ? silverRank : bronzeRank
   return <main className="mobile-app agent-credit-page">
     <SubPageHeader title="Kredit Saldo Agent" description="Ajukan tanam saldo langsung dari aplikasi" back/>
+    <section className="agent-credit-identity">
+      <div><span>AGENT KREDIT</span><h1>{user?.name || user?.username || 'Agent KuotaKita'}</h1><p>{currentRank.name} · {currentRank.badge}</p></div>
+      <img src={rankAsset} alt={`Pangkat ${currentRank.badge}`}/>
+    </section>
     <section className="agent-credit-balance">
       <div><span>Saldo Kredit</span><button type="button" onClick={() => setCreditVisible(value => !value)} aria-label={creditVisible ? 'Sembunyikan saldo kredit' : 'Tampilkan saldo kredit'}>{creditVisible ? <EyeOff/> : <Eye/>}</button></div>
       <strong>{creditVisible ? rupiah(creditBalance) : 'Rp •••••••'}</strong>
       <small>{approvedProfile ? 'Saldo kredit aktif sesuai persetujuan Operator.' : 'Belum aktif · menunggu persetujuan Operator.'}</small>
-    </section>
-    <section className="agent-rank-card">
-      <header>
-        <i className={`rank-emblem ${currentRank.tone}`}><RankIcon/></i>
-        <div><span>PANGKAT AGENT</span><h2>{currentRank.name}</h2><p>{approvedProfile ? `Limit aktif ${rupiah(currentRank.limit)} · sesuai keputusan Operator.` : 'Pangkat awal agent · limit kredit menunggu persetujuan.'}</p></div>
-        <b>{currentRank.badge}</b>
-      </header>
     </section>
     <div className="agent-credit-tabs" role="tablist" aria-label="Menu Kredit Agent">
       <button type="button" className={!showForm && !detailOpen ? 'active' : ''} onClick={backToApplications}><FileText/><span>Pengajuan Saya<small>{applications.length} pengajuan tersimpan</small></span></button>
