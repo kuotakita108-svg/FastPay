@@ -533,10 +533,8 @@ export default function AgentCreditPage() {
       </header>
     </section>
     {approvedProfile && <section className="agent-credit-balance">
-      <div className="agent-credit-balance-title"><span>Saldo Kredit</span><i><CreditCard/></i></div>
+      <span>Saldo Kredit</span>
       <strong>{rupiah(creditBalance)}</strong>
-      <small>{activeCredit ? `${rupiah(creditOutstanding)} telah digunakan dan wajib dilunasi penuh.` : 'Siap digunakan untuk transaksi agent.'}</small>
-      <footer><span>Limit kredit disetujui</span><b>{rupiah(maxCredit)}</b></footer>
     </section>}
     <div className="agent-credit-tabs" role="tablist" aria-label="Menu Kredit Agent">
       <button type="button" className={!showForm && !detailOpen ? 'active' : ''} onClick={backToApplications}><FileText/><span>Pengajuan Saya<small>{applications.length} pengajuan tersimpan</small></span></button>
