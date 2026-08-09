@@ -797,9 +797,13 @@ export default function CreditApplicationsPage() {
   }
 
   return <>
-    {!isStandaloneDetail && view === 'overview' && <PageHeader eyebrow={isOperator ? 'OPERATOR KREDIT' : 'MARKETING KREDIT'} title={isOperator ? 'Keputusan Akhir Kredit Agent' : 'Pendampingan Kredit Agent'} description={isOperator ? 'Operator memeriksa seluruh data, menandatangani, lalu memberi keputusan akhir.' : 'Marketing mendaftarkan agent, membimbing pengajuan, mengambil selfie pertemuan, dan menangani pelunasan offline.'}/>}
+    {!isStandaloneDetail && view === 'overview' && isOperator && <PageHeader eyebrow="OPERATOR KREDIT" title="Keputusan Akhir Kredit Agent" description="Operator memeriksa seluruh data, menandatangani, lalu memberi keputusan akhir."/>}
     <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''} ${(isMarketing || isAdmin) ? 'marketing-review' : ''} ${isOperator ? 'analyst-review operator-review' : ''}`}>
-      {view === 'overview' && !operatorTableMode && <div className="credit-review-hero">
+      {view === 'overview' && isMarketing && <section className="marketing-profile-header">
+        <div><span>PROFIL AKTIF</span><h1>{String(user?.name || 'Marketing KuotaKita').toUpperCase()}</h1><p>Akun marketing aktif untuk pendampingan agent, survei lapangan, dokumen, dan pemantauan kredit.</p><footer><b><CheckCircle2/>Marketing</b><b><ShieldCheck/>Role aktif di sesi ini</b></footer></div>
+        <i><UserCheck/></i>
+      </section>}
+      {view === 'overview' && !operatorTableMode && !isMarketing && <div className="credit-review-hero">
         <div>
           <span>{isOperator ? 'RUANG KEPUTUSAN OPERATOR' : 'RUANG DATA PEMINJAM'}</span>
           <h2>{isOperator ? 'Kontrol Keputusan Kredit' : 'Monitoring Kredit Agent'}</h2>

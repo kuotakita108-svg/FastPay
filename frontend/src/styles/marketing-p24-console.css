@@ -121,3 +121,32 @@
 .panel-workspace-shell.role-marketing .marketing-review .agent-account-submit:hover{background:#1989dc!important}
 .panel-workspace-shell.role-marketing .marketing-review .agent-account-success{border-color:#205c50!important;background:#0a2925!important;color:#69d9b0!important}
 .panel-workspace-shell.role-marketing .marketing-review .agent-account-error{border-color:#633345!important;background:#2b1720!important;color:#ff9bae!important}
+
+/* Identitas marketing hanya tampil sekali di Dashboard, mengikuti profil ringkas P24. */
+.panel-workspace-shell.role-marketing .marketing-review .marketing-profile-header{
+  display:grid;grid-template-columns:minmax(0,1fr) 38px;align-items:start;gap:16px;
+  min-height:118px;padding:17px 18px;border:1px solid var(--mk-line);border-radius:10px;
+  background:linear-gradient(115deg,#0a1728,#091424);color:var(--mk-text);box-shadow:none
+}
+.panel-workspace-shell.role-marketing .marketing-review .marketing-profile-header span{
+  display:block;color:var(--mk-cyan)!important;font-size:8px;font-weight:900;letter-spacing:.16em
+}
+.panel-workspace-shell.role-marketing .marketing-review .marketing-profile-header h1{
+  margin:7px 0 6px;color:#fff!important;font-size:18px;line-height:1.1
+}
+.panel-workspace-shell.role-marketing .marketing-review .marketing-profile-header p{
+  margin:0;color:var(--mk-muted)!important;font-size:9px;line-height:1.5
+}
+.panel-workspace-shell.role-marketing .marketing-review .marketing-profile-header>i{
+  display:grid;place-items:center;width:34px;height:34px;border:1px solid #17627f;
+  border-radius:9px;background:#08273a;color:var(--mk-cyan)
+}
+.panel-workspace-shell.role-marketing .marketing-review .marketing-profile-header>i svg{width:17px}
+.panel-workspace-shell.role-marketing .marketing-review .marketing-profile-header footer{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap}
+.panel-workspace-shell.role-marketing .marketing-review .marketing-profile-header footer b{
+  display:inline-flex;align-items:center;gap:5px;border:1px solid #244058;border-radius:999px;
+  background:#0c1929;color:#c8d7e4!important;padding:5px 8px;font-size:8px;font-weight:800
+}
+.panel-workspace-shell.role-marketing .marketing-review .marketing-profile-header footer b:first-child{border-color:#155b50;background:#092823;color:#61d8b1!important}
+.panel-workspace-shell.role-marketing .marketing-review .marketing-profile-header footer svg{width:12px}
+@media(max-width:560px){.panel-workspace-shell.role-marketing .marketing-review .marketing-profile-header{min-height:0;padding:15px}.panel-workspace-shell.role-marketing .marketing-review .marketing-profile-header h1{font-size:16px}.panel-workspace-shell.role-marketing .marketing-review .marketing-profile-header p{font-size:9px}}
