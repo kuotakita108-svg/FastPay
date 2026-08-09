@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from 'react'
 import {useLocation,useNavigate} from 'react-router-dom'
 import {QRCodeSVG} from 'qrcode.react'
-import {ArrowRight, CalendarDays, Camera, Check, CheckCircle2, Clock3, Copy, CreditCard, Crown, FileText, HandCoins, Images, Landmark, Loader2, PenLine, QrCode, Rocket, Search, ShieldCheck, Sparkles, Stamp, Store, Upload, UserRound, X} from 'lucide-react'
+import {ArrowRight, CalendarDays, Camera, Check, CheckCircle2, Clock3, Copy, CreditCard, Crown, Eye, EyeOff, FileText, HandCoins, Images, Landmark, Loader2, PenLine, QrCode, Rocket, Search, ShieldCheck, Star, Stamp, Store, Upload, UserRound, X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
@@ -40,7 +40,7 @@ const terms = [
 
 // Limit dapat naik otomatis dari riwayat pelunasan tepat waktu atau secara
 // manual oleh Operator. Angka awal dipakai sebelum keputusan pertama.
-const defaultRank = {name: 'Agent Pemula', limit: 500000, badge: 'BRONZE', tone: 'bronze', icon: Sparkles}
+const defaultRank = {name: 'Agent Pemula', limit: 500000, badge: 'BRONZE', tone: 'bronze', icon: Star}
 const finalCreditStatus = ['Disetujui', 'Ditolak']
 
 const readJSON = (key, fallback = []) => {
@@ -182,6 +182,7 @@ export default function AgentCreditPage() {
   const [paymentMethod, setPaymentMethod] = useState('')
   const [paymentProof, setPaymentProof] = useState(null)
   const [refillSource, setRefillSource] = useState(null)
+  const [creditVisible, setCreditVisible] = useState(true)
 
   useEffect(() => {
     if (!cameraDoc) return undefined
@@ -525,25 +526,18 @@ export default function AgentCreditPage() {
   const RankIcon = currentRank.icon
   return <main className="mobile-app agent-credit-page">
     <SubPageHeader title="Kredit Saldo Agent" description="Ajukan tanam saldo langsung dari aplikasi" back/>
-    <section className="agent-credit-workflow">
-      <header><span>ALUR KREDIT AGENT</span><h1>Pengajuan ringkas dan terpantau</h1><p>Saldo kredit hanya aktif setelah pemeriksaan lengkap dan keputusan Operator.</p></header>
-      <ol>
-        <li><b>1</b><span><strong>Ajukan</strong><small>Lengkapi data</small></span></li>
-        <li><b>2</b><span><strong>Verifikasi</strong><small>Survei & dokumen</small></span></li>
-        <li><b>3</b><span><strong>Kredit Aktif</strong><small>Setelah disetujui</small></span></li>
-      </ol>
+    <section className="agent-credit-balance">
+      <div><span>Saldo Kredit</span><button type="button" onClick={() => setCreditVisible(value => !value)} aria-label={creditVisible ? 'Sembunyikan saldo kredit' : 'Tampilkan saldo kredit'}>{creditVisible ? <EyeOff/> : <Eye/>}</button></div>
+      <strong>{creditVisible ? rupiah(creditBalance) : 'Rp •••••••'}</strong>
+      <small>{approvedProfile ? 'Saldo kredit aktif sesuai persetujuan Operator.' : 'Belum aktif · menunggu persetujuan Operator.'}</small>
     </section>
     <section className="agent-rank-card">
       <header>
         <i className={`rank-emblem ${currentRank.tone}`}><RankIcon/></i>
-        <div><span>{approvedProfile ? 'LIMIT KREDIT AGENT' : 'STATUS KREDIT AGENT'}</span><h2>{approvedProfile ? currentRank.name : 'Belum disetujui'}</h2><p>{approvedProfile ? `Limit aktif ${rupiah(currentRank.limit)} · berasal dari keputusan Operator.` : 'Saldo kredit akan tampil setelah pengajuan benar-benar disetujui Operator.'}</p></div>
-        <b>{approvedProfile ? currentRank.badge : 'BELUM AKTIF'}</b>
+        <div><span>PANGKAT AGENT</span><h2>{currentRank.name}</h2><p>{approvedProfile ? `Limit aktif ${rupiah(currentRank.limit)} · sesuai keputusan Operator.` : 'Pangkat awal agent · limit kredit menunggu persetujuan.'}</p></div>
+        <b>{currentRank.badge}</b>
       </header>
     </section>
-    {approvedProfile && <section className="agent-credit-balance">
-      <span>Saldo Kredit</span>
-      <strong>{rupiah(creditBalance)}</strong>
-    </section>}
     <div className="agent-credit-tabs" role="tablist" aria-label="Menu Kredit Agent">
       <button type="button" className={!showForm && !detailOpen ? 'active' : ''} onClick={backToApplications}><FileText/><span>Pengajuan Saya<small>{applications.length} pengajuan tersimpan</small></span></button>
       <button type="button" className={showForm ? 'active' : ''} onClick={startNewApplication}><UserRound/><span>Ajukan Kredit<small>Isi nominal di bawah limit aktif</small></span></button>
