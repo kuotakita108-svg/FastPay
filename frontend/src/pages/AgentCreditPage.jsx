@@ -531,14 +531,13 @@ export default function AgentCreditPage() {
         <div><span>{approvedProfile ? 'LIMIT KREDIT AGENT' : 'STATUS KREDIT AGENT'}</span><h2>{approvedProfile ? currentRank.name : 'Belum disetujui'}</h2><p>{approvedProfile ? `Limit aktif ${rupiah(currentRank.limit)} · berasal dari keputusan Operator.` : 'Saldo kredit akan tampil setelah pengajuan benar-benar disetujui Operator.'}</p></div>
         <b>{approvedProfile ? currentRank.badge : 'BELUM AKTIF'}</b>
       </header>
-      {approvedProfile && <>
-        <div className="agent-wallet-overview approved-credit-wallet">
-          <div className="agent-wallet-credit"><small>Saldo kredit tersedia</small><strong>{rupiah(creditBalance)}</strong><span>{activeCredit ? `${rupiah(creditOutstanding)} sudah dipakai dan wajib dilunasi penuh.` : 'Tidak ada tagihan kredit yang berjalan.'}</span></div>
-          <div className="agent-wallet-limit"><small>Limit kredit disetujui</small><strong>{rupiah(maxCredit)}</strong><span>Nilai resmi sesuai keputusan Operator.</span></div>
-        </div>
-        <div className="rank-meter"><span style={{width: '100%'}}/></div>
-      </>}
     </section>
+    {approvedProfile && <section className="agent-credit-balance">
+      <div className="agent-credit-balance-title"><span>Saldo Kredit</span><i><CreditCard/></i></div>
+      <strong>{rupiah(creditBalance)}</strong>
+      <small>{activeCredit ? `${rupiah(creditOutstanding)} telah digunakan dan wajib dilunasi penuh.` : 'Siap digunakan untuk transaksi agent.'}</small>
+      <footer><span>Limit kredit disetujui</span><b>{rupiah(maxCredit)}</b></footer>
+    </section>}
     <div className="agent-credit-tabs" role="tablist" aria-label="Menu Kredit Agent">
       <button type="button" className={!showForm && !detailOpen ? 'active' : ''} onClick={backToApplications}><FileText/><span>Pengajuan Saya<small>{applications.length} pengajuan tersimpan</small></span></button>
       <button type="button" className={showForm ? 'active' : ''} onClick={startNewApplication}><UserRound/><span>Ajukan Kredit<small>Isi nominal di bawah limit aktif</small></span></button>
