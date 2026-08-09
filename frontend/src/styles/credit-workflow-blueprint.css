@@ -13,3 +13,6 @@
 @media(max-width:700px){.marketing-live-tracker>header small{display:none}.marketing-live-tracker>div>button{grid-template-columns:minmax(0,1fr) auto}.marketing-live-tracker>div em{display:none}.field-survey-options{grid-template-columns:1fr}.field-survey-location{align-items:stretch;flex-direction:column}.field-survey-location button{width:100%}.marketing-audit-panel,.operator-live-traffic{overflow-x:auto}}
 .agent-account-note{grid-column:1/-1;margin:0;border-left:3px solid #16b9d2;padding:8px 10px;background:#eefaff;color:#587083;font-size:10px;line-height:1.45}
 .role-marketing .agent-account-note{background:#071e2d;color:#91b8ca;border-color:#22d3ee}
+.operator-review .credit-review-tools{margin-top:0}
+.operator-review .credit-review-empty{min-height:0;border:1px solid #193a56;border-radius:8px;background:#071421;padding:34px 16px}
+.operator-review .credit-review-empty svg{width:28px;height:28px}.operator-review .credit-review-empty strong{font-size:12px}.operator-review .credit-review-empty span{font-size:9px}
