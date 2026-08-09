@@ -484,6 +484,14 @@ export default function AgentCreditPage() {
     setMessage('')
     window.setTimeout(() => document.querySelector('.agent-verification')?.scrollIntoView({behavior: 'smooth', block: 'start'}), 80)
   }
+  const openApplicationPayment = item => {
+    const amount = Number(item.creditOutstanding ?? 0)
+    if (amount <= 0) return selectApplication(item)
+    setApplication(item)
+    setPaymentMethod('')
+    setPaymentProof(null)
+    setPaymentItem({key: `${item.id}-pelunasan`, label: 'Pelunasan Saldo Kredit', amount, paid: false, dueAt: item.dueAt || ''})
+  }
   const backToApplications = () => {
     if (location.state?.creditView) {
       navigate(-1)
@@ -569,10 +577,14 @@ export default function AgentCreditPage() {
             <div>
               <strong>{item.form?.agentName || item.userName || 'Pendaftar Agent'}</strong>
               <small>{item.form?.storeName || 'Toko belum diisi'} • {item.createdAt ? new Date(item.createdAt).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'}) : 'Tanggal belum ada'}</small>
+              <code>{item.id}</code>
               <b>{rupiah(item.form?.amount || 0)}</b>
             </div>
             <span className={`agent-status-pill ${status.className}`}>{status.label}</span>
-            <button type="button" onClick={() => selectApplication(item)}>Lihat Status</button>
+            <div className="agent-application-actions">
+              <button type="button" onClick={() => selectApplication(item)}>Detail</button>
+              {item.status === 'Disetujui' && item.paymentStatus !== 'Lunas' && <button type="button" className="pay" onClick={() => openApplicationPayment(item)}>{Number(item.creditOutstanding ?? 0) > 0 ? 'Bayar' : 'Lihat Kredit'}</button>}
+            </div>
           </article>
         })}
       </div> : <div className="agent-registered-empty"><FileText/><strong>{applications.length ? 'Pengajuan tidak ditemukan' : 'Belum ada pengajuan kredit'}</strong><small>{applications.length ? 'Coba ubah kata pencarian atau filter status.' : 'Ajukan kredit pertama, lalu statusnya muncul otomatis di sini.'}</small></div>}
