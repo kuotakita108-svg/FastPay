@@ -85,3 +85,39 @@
 .panel-workspace-shell.role-marketing .credit-sidebar .sidebar-role-panel span{font-size:8px!important;color:#48dff3!important}
 .panel-workspace-shell.role-marketing .credit-sidebar .sidebar-role-panel strong{font-size:13px!important;line-height:1.3!important}
 @media(max-width:760px){.panel-workspace-shell.role-marketing .credit-sidebar .nav-item{min-height:42px!important;font-size:11.5px!important}}
+
+/* Form tambah agent dibuat monokrom seperti panel P24: cyan hanya sebagai aksen. */
+.panel-workspace-shell.role-marketing .marketing-review .agent-account-form{
+  border:1px solid var(--mk-line)!important;border-radius:10px!important;
+  background:var(--mk-card)!important;background-image:none!important;padding:18px!important;box-shadow:none!important
+}
+.panel-workspace-shell.role-marketing .marketing-review .agent-account-form>header{border-color:var(--mk-line)!important;padding-bottom:15px!important}
+.panel-workspace-shell.role-marketing .marketing-review .agent-account-form>header>i{
+  width:25px!important;height:25px!important;border:0!important;border-radius:0!important;
+  background:transparent!important;color:var(--mk-cyan)!important;box-shadow:none!important
+}
+.panel-workspace-shell.role-marketing .marketing-review .agent-account-form>header>i svg{width:22px!important}
+.panel-workspace-shell.role-marketing .marketing-review .agent-account-form>header span{color:var(--mk-cyan)!important;font-size:8px!important}
+.panel-workspace-shell.role-marketing .marketing-review .agent-account-form>header h2{color:var(--mk-text)!important;font-size:18px!important}
+.panel-workspace-shell.role-marketing .marketing-review .agent-account-form>header p{color:var(--mk-muted)!important;font-size:10px!important}
+.panel-workspace-shell.role-marketing .marketing-review .agent-account-form>header>button{
+  width:32px!important;height:32px!important;border:1px solid var(--mk-line)!important;border-radius:7px!important;
+  background:#0d1b2f!important;color:#91a8bc!important
+}
+.panel-workspace-shell.role-marketing .marketing-review .agent-account-form label{color:#dce7f1!important;font-size:10px!important}
+.panel-workspace-shell.role-marketing .marketing-review .agent-account-form label svg{color:#5ccfe3!important}
+.panel-workspace-shell.role-marketing .marketing-review .agent-account-form label input{
+  border:1px solid #27445e!important;border-radius:8px!important;background:#061221!important;
+  color:#f5f8fc!important;box-shadow:none!important
+}
+.panel-workspace-shell.role-marketing .marketing-review .agent-account-form label input:focus{border-color:#268eb5!important;box-shadow:0 0 0 2px #268eb51f!important}
+.panel-workspace-shell.role-marketing .marketing-review .agent-account-form label input:-webkit-autofill{
+  -webkit-text-fill-color:#f5f8fc!important;-webkit-box-shadow:0 0 0 1000px #061221 inset!important;caret-color:#f5f8fc!important
+}
+.panel-workspace-shell.role-marketing .marketing-review .agent-account-submit{
+  border:1px solid #248bd0!important;border-radius:8px!important;background:#167bcb!important;
+  background-image:none!important;box-shadow:none!important;color:#fff!important
+}
+.panel-workspace-shell.role-marketing .marketing-review .agent-account-submit:hover{background:#1989dc!important}
+.panel-workspace-shell.role-marketing .marketing-review .agent-account-success{border-color:#205c50!important;background:#0a2925!important;color:#69d9b0!important}
+.panel-workspace-shell.role-marketing .marketing-review .agent-account-error{border-color:#633345!important;background:#2b1720!important;color:#ff9bae!important}
