@@ -31,16 +31,31 @@ const marketingNavigation = [
 
 const operatorNavigation = [
   {
-    section: 'Operator Kredit',
+    section: 'RINGKASAN',
     items: [
-      {to: '/credit-applications', label: 'Dashboard Operator', icon: ShieldCheck},
-      {to: '/credit-applications?view=verifikasi', label: 'Ruang Verifikasi', icon: ClipboardCheck},
+      {to: '/credit-applications', label: 'Dashboard', icon: ShieldCheck},
+    ],
+  },
+  {
+    section: 'KEPUTUSAN KREDIT',
+    items: [
+      {to: '/credit-applications?view=verifikasi', label: 'Antrean Verifikasi', icon: ClipboardCheck},
       {to: '/credit-applications?view=limit', label: 'Tier & Limit Agent', icon: Gauge},
+    ],
+  },
+  {
+    section: 'PENGAWASAN',
+    items: [
       {to: '/credit-applications?view=peminjam', label: 'Kredit Aktif', icon: CheckCircle2},
       {to: '/credit-applications?view=pelunasan', label: 'Pelunasan & Bukti', icon: FileCheck2},
       {to: '/credit-applications?view=suspend', label: 'Suspend & Tunggakan', icon: LockKeyhole},
-      {to: '/credit-applications?view=h2h', label: 'Monitor Saldo H2H', icon: Landmark},
       {to: '/credit-applications?view=laporan', label: 'Arsip Keputusan', icon: BarChart3},
+    ],
+  },
+  {
+    section: 'SISTEM',
+    items: [
+      {to: '/credit-applications?view=h2h', label: 'Monitor Saldo H2H', icon: Landmark},
     ],
   },
 ]
@@ -61,7 +76,7 @@ export default function Sidebar({open, onClose}) {
   const roleLabel = role === 'master' ? 'Admin Pusat Kredit' : role === 'marketing' ? 'Marketing Kredit' : isOperator ? 'Operator Kredit' : 'Panel Administrator'
   const current = `${location.pathname}${location.search}`
   const active = to => current === to || (!to.includes('?') && location.pathname === to && !location.search)
-  const activeLabel = visibleNavigation.flatMap(group => group.items).find(item => active(item.to))?.label || (isCreditAdmin ? 'Dashboard Operator' : 'Ringkasan Kerja')
+  const activeLabel = visibleNavigation.flatMap(group => group.items).find(item => active(item.to))?.label || (isCreditAdmin ? 'Dashboard' : 'Ringkasan Kerja')
   const rolePanel = isMarketing
     ? {eyebrow: 'MODE MARKETING', title: 'Validasi lapangan', description: 'Daftarkan agent, ambil tiga foto langsung, pantau agen binaan, dan kirim rekomendasi limit.'}
     : isCreditAdmin

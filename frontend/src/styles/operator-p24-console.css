@@ -1,0 +1,65 @@
+/* Konsol Operator KuotaKita — padat, tenang, dan konsisten dengan panel H2H. */
+.panel-workspace-shell.role-operator,
+.panel-workspace-shell.role-analis{--op-bg:#050b14;--op-panel:#091827;--op-panel-2:#0b1d2f;--op-line:#193a56;--op-line-soft:#122c43;--op-cyan:#38d7ef;--op-blue:#1888d4;--op-text:#edf7ff;--op-muted:#91a9bf;background:var(--op-bg)}
+.panel-workspace-shell.role-operator .page-content,
+.panel-workspace-shell.role-analis .page-content{background:var(--op-bg);padding:18px 20px 28px}
+.panel-workspace-shell.role-operator .page-content>.page-header,
+.panel-workspace-shell.role-analis .page-content>.page-header{margin:0 0 12px!important;border:1px solid var(--op-line)!important;border-radius:11px!important;background:linear-gradient(100deg,#091827,#071321)!important;padding:15px 17px!important}
+.panel-workspace-shell.role-operator .page-header h1,
+.panel-workspace-shell.role-analis .page-header h1{margin:3px 0 4px!important;font-size:20px!important;letter-spacing:-.02em}
+.panel-workspace-shell.role-operator .page-header p,
+.panel-workspace-shell.role-analis .page-header p{margin:0!important;font-size:10px!important}
+
+/* Sidebar: hanya menu aktif diberi bidang warna; ikon lain langsung tanpa kotak. */
+.panel-workspace-shell:is(.role-operator,.role-analis) .credit-sidebar .brand{min-height:62px;padding:0 18px;border-bottom:1px solid var(--op-line-soft);font-size:16px}
+.panel-workspace-shell:is(.role-operator,.role-analis) .credit-sidebar .brand>span{display:contents;color:var(--op-cyan)}
+.panel-workspace-shell:is(.role-operator,.role-analis) .credit-sidebar .workspace-nav{padding:10px 8px!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .credit-sidebar .nav-label{margin:15px 9px 6px!important;color:#67839e!important;font-size:8px!important;font-weight:900!important;letter-spacing:1.35px!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .credit-sidebar .nav-item{min-height:36px!important;margin:2px 0!important;padding:0 10px!important;border-radius:7px!important;font-size:10px!important;font-weight:800!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .credit-sidebar .nav-item svg{width:15px!important;height:15px!important;color:#7192ad!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .credit-sidebar .nav-item.active svg{color:var(--op-cyan)!important}
+
+/* Dashboard operator: ringkas seperti dashboard operasional, tanpa kartu putih. */
+.panel-workspace-shell :is(.operator-review) .credit-review-hero{min-height:108px;border-radius:11px!important;padding:17px 19px!important;background:linear-gradient(110deg,#0a1c2e,#071522)!important}
+.panel-workspace-shell .operator-review .credit-review-hero>i{width:43px;height:43px;border:1px solid #1e5875!important;border-radius:10px!important;background:#0b2b43!important;color:var(--op-cyan)!important}
+.panel-workspace-shell .operator-review .credit-review-hero h2{font-size:20px!important;margin:4px 0!important}
+.panel-workspace-shell .operator-review .credit-review-hero p{max-width:760px;font-size:10px!important}
+.panel-workspace-shell .operator-review .credit-review-stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px!important}
+.panel-workspace-shell .operator-review .credit-review-stats article{min-height:82px!important;border-radius:9px!important;padding:12px 13px!important;background:#0a1929!important}
+.panel-workspace-shell .operator-review .credit-review-stats strong{font-size:20px!important;color:#fff!important}
+.panel-workspace-shell .operator-review .operator-workspace{border-radius:11px!important;padding:14px!important}
+.panel-workspace-shell .operator-review .operator-workspace>header{border:0!important;border-bottom:1px solid var(--op-line)!important;border-radius:0!important;padding:3px 2px 13px!important;background:transparent!important}
+.panel-workspace-shell .operator-review .operator-workspace>header h2{font-size:18px!important;margin:3px 0!important}
+.panel-workspace-shell .operator-review .marketing-task-grid>article{min-height:88px!important;border-radius:8px!important;padding:11px!important}
+.panel-workspace-shell .operator-review .marketing-task-grid>article i{width:auto!important;height:auto!important;padding:0!important;background:transparent!important;color:var(--op-cyan)!important}
+.panel-workspace-shell .operator-review .marketing-quick-actions>button{border-radius:8px!important;background:#0a1d30!important;border:1px solid #1a405e!important;box-shadow:none!important}
+.panel-workspace-shell .operator-review .marketing-quick-actions>button.primary{background:#0b2c45!important;border-color:#17688d!important}
+.panel-workspace-shell .operator-review .marketing-focus-grid>div{border-radius:8px!important}
+
+/* Semua halaman kerja memakai header tipis dan tabel kompak. */
+.panel-workspace-shell .operator-review .credit-mode-panel{border-radius:10px!important;padding:13px 15px!important}
+.panel-workspace-shell .operator-review .credit-mode-panel h2{margin:3px 0!important;font-size:18px!important}
+.panel-workspace-shell .operator-review .credit-mode-panel p{margin:0!important;font-size:10px!important}
+.panel-workspace-shell .operator-review .credit-command-panel{border-radius:10px!important;padding:14px!important}
+.panel-workspace-shell .operator-review .credit-command-panel>header{padding:0 0 12px!important;border:0!important;border-bottom:1px solid var(--op-line)!important;background:transparent!important}
+.panel-workspace-shell .operator-review .command-summary article,
+.panel-workspace-shell .operator-review .command-list article{border-radius:8px!important;background:#0a1b2c!important}
+.panel-workspace-shell .operator-review .operator-queue-table{border-radius:10px!important}
+.panel-workspace-shell .operator-review .operator-queue-table>header{padding:12px 14px!important;border-radius:0!important;background:#0a1a2a!important}
+.panel-workspace-shell .operator-review .operator-queue-table>header h3{font-size:15px!important}
+.panel-workspace-shell .operator-review .operator-queue-table th{background:linear-gradient(90deg,#073d57,#12356a)!important;padding:9px 10px!important}
+.panel-workspace-shell .operator-review .operator-queue-table td{padding:10px!important}
+.panel-workspace-shell .operator-review .operator-row-actions button{border:0!important;background:transparent!important;padding:5px 4px!important;color:#65d7f0!important}
+.panel-workspace-shell .operator-review .operator-row-actions button.print{color:#b9a9ff!important}
+.panel-workspace-shell .operator-review .operator-row-actions button.suspend{color:#ff8991!important}
+.panel-workspace-shell .operator-review .operator-row-actions button.restore{color:#52dda6!important}
+
+@media(max-width:760px){
+  .panel-workspace-shell.role-operator .page-content,.panel-workspace-shell.role-analis .page-content{padding:10px!important}
+  .panel-workspace-shell .operator-review .credit-review-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .panel-workspace-shell .operator-review .credit-review-hero{min-height:0;padding:14px!important}
+  .panel-workspace-shell .operator-review .credit-review-hero>i{display:none!important}
+  .panel-workspace-shell .operator-review .operator-workspace{padding:10px!important}
+  .panel-workspace-shell .operator-review .operator-queue-table>header{align-items:center}
+  .panel-workspace-shell .operator-review .operator-queue-table>header p{display:none}
+}

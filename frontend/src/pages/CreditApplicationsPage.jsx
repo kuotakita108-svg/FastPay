@@ -697,7 +697,9 @@ export default function CreditApplicationsPage() {
   // Halaman utama Operator adalah daftar kerja yang bisa menampung banyak
   // pengajuan. Semua status tetap berada di satu tabel; filter hanya dipakai
   // saat Operator ingin mempersempit pencarian.
-  const operatorTableMode = isOperator && !isStandaloneDetail && (view === 'overview' || view === 'verifikasi')
+  // Dashboard tetap menjadi pusat kendali. Tabel antrean hanya tampil pada
+  // menu Antrean Verifikasi agar tiap menu memiliki satu fungsi yang jelas.
+  const operatorTableMode = isOperator && !isStandaloneDetail && view === 'verifikasi'
   const visibleItems = sortedItems.filter(item => {
     const matchDetail = !isStandaloneDetail || item.id === params.get('id')
     const text = `${item.id} ${item.form.agentName} ${item.userName} ${item.form.storeName} ${item.form.whatsapp} ${item.form.nik}`.toLowerCase()
