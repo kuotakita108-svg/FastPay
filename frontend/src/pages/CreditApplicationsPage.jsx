@@ -185,7 +185,7 @@ const creditProfile = (items, target) => {
 const tierForLimit = limit => [...automaticCreditLevels].reverse().find(level => limit >= level.limit) || defaultCreditTier
 const viewInfo = {
   overview: {label: 'Ringkasan Kerja', title: 'Prioritas marketing hari ini', desc: 'Daftarkan agent, dampingi pengajuan, lengkapi bukti pertemuan, dan pantau pelunasan penuh.'},
-  peminjam: {label: 'Kredit Aktif', title: 'Agent dengan kredit diterima', desc: 'Hanya menampilkan kredit yang sudah diterima, masih aktif, atau sudah lunas.'},
+  peminjam: {label: 'Agen Binaan', title: 'Pantau agent binaan', desc: 'Tahap survei, keputusan, kredit aktif, dan pelunasan dalam satu daftar ringkas.'},
   input: {label: 'Pengajuan Kredit', title: 'Pengajuan saldo kredit agent', desc: 'Agen mengajukan nominal sesuai limit. Marketing melengkapi survei lapangan sebelum berkas dikirim ke Operator.'},
   verifikasi: {label: 'Survei Lapangan', title: 'Validasi lapangan marketing', desc: 'Ambil empat foto langsung dari kamera: KTP, toko, selfie agent pegang KTP, dan selfie agent bersama marketing. Setelah lengkap, Operator dapat memutuskan.'},
   pembayaran: {label: 'Pelunasan Kredit', title: 'Pelunasan saldo kredit', desc: 'Bayar satu kali penuh melalui Bank, QRIS, atau penagihan langsung oleh marketing.'},
@@ -893,10 +893,13 @@ export default function CreditApplicationsPage() {
         </div>
         <div className="directory-tools"><label><Search/><input value={borrowerQuery} onChange={event => setBorrowerQuery(event.target.value)} placeholder="Cari agent, toko, WhatsApp, atau ID..."/></label><div>{['Semua', 'Survei', 'Operator', 'Aktif', 'Lunas'].map(name => <button type="button" className={borrowerFilter === name ? 'active' : ''} onClick={() => setBorrowerFilter(name)} key={name}>{name}</button>)}</div></div>
         <div className="directory-agent-list">
-          {directoryGroups.length ? directoryGroups.map(group => <details className="directory-agent" key={group.key}>
-            <summary><span><b>{group.agent}</b><small>{group.rows[0]?.item.form.storeName || 'Toko belum diisi'} · {group.rows[0]?.item.form.whatsapp || 'WA belum diisi'}</small></span><strong>{group.rows.length} pengajuan</strong></summary>
-            <div className="directory-agent-borrowers">{group.rows.map(({item, score}) => {const stage=mentoringStage(item); const wa=String(item.form.whatsapp || '').replace(/\D/g, '').replace(/^0/, '62'); return <article key={item.id}><span><b>{item.applicationType || 'Pengajuan Kredit'}</b><small>{item.id} · {dateTime(item.updatedAt || item.createdAt)}</small></span><em title={`Kelengkapan ${score.percent}%`}><i style={{width: `${score.percent}%`}}/></em><strong className={`mentoring-stage stage-${stage.toLowerCase()}`}>{stage}</strong><small>{rupiah(item.form.amount)}</small><div className="mentoring-actions">{wa&&<a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer"><PhoneCall/>WhatsApp</a>}<button type="button" onClick={() => goToView('detail', item.id, 'Semua')}><Eye/>{stage === 'Survei' ? 'Lanjut survei' : 'Lihat detail'}</button></div></article>})}</div>
-          </details>) : <p className="directory-empty">Agent binaan tidak ditemukan.</p>}
+          {directoryGroups.length ? directoryGroups.map(group => {const row=group.rows[0]; const item=row.item; const stage=mentoringStage(item); const wa=String(item.form.whatsapp || '').replace(/\D/g, '').replace(/^0/, '62'); return <article className="mentored-agent-row" key={group.key}>
+            <span className="mentored-agent-name"><b>{group.agent}</b><small>{item.form.storeName || 'Toko belum diisi'} · {item.form.whatsapp || 'WA belum diisi'}</small></span>
+            <span className="mentored-agent-progress"><em title={`Kelengkapan ${row.score.percent}%`}><i style={{width: `${row.score.percent}%`}}/></em><small>{row.score.percent}% lengkap</small></span>
+            <strong className={`mentoring-stage stage-${stage.toLowerCase()}`}>{stage}</strong>
+            <span className="mentored-agent-credit"><b>{rupiah(item.form.amount)}</b><small>{group.rows.length} pengajuan</small></span>
+            <div className="mentoring-actions">{wa&&<a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer"><PhoneCall/>WhatsApp</a>}<button type="button" onClick={() => goToView('detail', item.id, 'Semua')}><Eye/>{stage === 'Survei' ? 'Lanjut' : 'Detail'}</button></div>
+          </article>}) : <p className="directory-empty">Agent binaan tidak ditemukan.</p>}
         </div>
       </section>}
       {(isMarketing || isOperator || isAdmin) && (view === 'pembayaran' || view === 'angsuran') && <section className="marketing-action-panel payment">
