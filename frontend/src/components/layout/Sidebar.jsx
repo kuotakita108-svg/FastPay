@@ -40,7 +40,7 @@ const operatorNavigation = [
     section: 'KEPUTUSAN KREDIT',
     items: [
       {to: '/credit-applications?view=verifikasi', label: 'Antrean Verifikasi', icon: ClipboardCheck},
-      {to: '/credit-applications?view=limit', label: 'Tier & Limit Agent', icon: Gauge},
+      {to: '/credit-applications?view=limit', label: 'Keputusan Limit', icon: Gauge},
     ],
   },
   {
@@ -55,7 +55,7 @@ const operatorNavigation = [
   {
     section: 'SISTEM',
     items: [
-      {to: '/credit-applications?view=h2h', label: 'Monitor Saldo H2H', icon: Landmark},
+      {to: '/credit-applications?view=h2h', label: 'Transaksi & Saldo H2H', icon: Landmark},
     ],
   },
 ]

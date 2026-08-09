@@ -503,6 +503,44 @@ func (h *UserTransactionHandler) Pulsa24Balance(w http.ResponseWriter, r *http.R
 	response.JSON(w, http.StatusOK, map[string]any{"balance": result.Balance, "updated_at": time.Now()})
 }
 
+// Pulsa24Operations exposes the real server-side order ledger to Operator and
+// Admin. API keys and the provider PIN never leave the backend.
+func (h *UserTransactionHandler) Pulsa24Operations(w http.ResponseWriter, r *http.Request) {
+	current, err := h.auth.CurrentUser(r.Header.Get("Authorization"))
+	if err != nil {
+		response.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+	role := strings.ToLower(strings.TrimSpace(current.Role))
+	if role != "operator" && role != "analis" && role != "admin" && role != "master" {
+		response.Error(w, http.StatusForbidden, "akses monitor H2H hanya untuk Operator")
+		return
+	}
+	if h.pulsa24 == nil || !h.pulsa24.Enabled() {
+		response.Error(w, http.StatusServiceUnavailable, "integrasi Pulsa24Jam belum aktif")
+		return
+	}
+	orders := h.pulsa24.Orders()
+	var success, pending, failed, successAmount int64
+	for _, order := range orders {
+		switch strings.ToLower(order.Status) {
+		case "success":
+			success++
+			successAmount += order.Amount
+		case "failed":
+			failed++
+		default:
+			pending++
+		}
+	}
+	response.JSON(w, http.StatusOK, map[string]any{
+		"connected":  true,
+		"updated_at": time.Now(),
+		"summary":    map[string]any{"total": len(orders), "success": success, "pending": pending, "failed": failed, "success_amount": successAmount},
+		"orders":     orders,
+	})
+}
+
 // Pulsa24Inquiry is required before a postpaid payment. The amount returned
 // by P24 is the only amount that may be submitted to PAY.
 func (h *UserTransactionHandler) Pulsa24Inquiry(w http.ResponseWriter, r *http.Request) {

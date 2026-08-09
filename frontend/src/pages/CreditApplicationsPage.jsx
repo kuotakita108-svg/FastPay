@@ -7,6 +7,7 @@ import {useAuth} from '../context/AuthContext'
 import {rupiah} from '../utils/currency'
 import {request} from '../services/http'
 import AgentAccountForm from '../components/credit/AgentAccountForm'
+import {getPulsa24Balance, getPulsa24Operations} from '../services/transactionService'
 
 const allKey = 'kuotakita_agent_credit_all'
 const userKey = userId => `kuotakita_agent_credit_${userId || 'guest'}`
@@ -274,6 +275,8 @@ export default function CreditApplicationsPage() {
   const [decisionNote, setDecisionNote] = useState('')
   const [operatorDrafts, setOperatorDrafts] = useState({})
   const [operatorMessage, setOperatorMessage] = useState('')
+  const [h2hMonitor, setH2hMonitor] = useState({loading: false, connected: false, balance: null, updatedAt: '', summary: {}, orders: [], error: ''})
+  const [h2hRefresh, setH2hRefresh] = useState(0)
   const isMarketing = user?.role === 'marketing'
   // Existing "analis" accounts are the legacy name for Operator. Keeping the
   // alias prevents existing staff from being locked out during the migration.
@@ -316,6 +319,24 @@ export default function CreditApplicationsPage() {
       window.clearInterval(timer)
     }
   }, [])
+
+  useEffect(() => {
+    if (view !== 'h2h' || (!isOperator && !isAdmin)) return undefined
+    let active = true
+    const loadH2H = async () => {
+      setH2hMonitor(current => ({...current, loading: true, error: ''}))
+      try {
+        const [balance, operations] = await Promise.all([getPulsa24Balance(), getPulsa24Operations()])
+        if (!active) return
+        setH2hMonitor({loading: false, connected: Boolean(operations?.connected), balance: Number(balance?.balance || 0), updatedAt: operations?.updated_at || balance?.updated_at || new Date().toISOString(), summary: operations?.summary || {}, orders: Array.isArray(operations?.orders) ? operations.orders : [], error: ''})
+      } catch (error) {
+        if (active) setH2hMonitor(current => ({...current, loading: false, connected: false, error: error.message || 'Monitor Pulsa24Jam belum dapat dimuat.'}))
+      }
+    }
+    loadH2H()
+    const timer = window.setInterval(loadH2H, 30000)
+    return () => { active = false; window.clearInterval(timer) }
+  }, [view, isOperator, isAdmin, h2hRefresh])
 
   useEffect(() => {
     if (view === 'input') {
@@ -801,7 +822,7 @@ export default function CreditApplicationsPage() {
 
   return <>
     {!isStandaloneDetail && view === 'overview' && isOperator && <PageHeader eyebrow="OPERATOR KREDIT" title="Keputusan Akhir Kredit Agent" description="Operator memeriksa seluruh data, menandatangani, lalu memberi keputusan akhir."/>}
-    <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''} ${(isMarketing || isAdmin) ? 'marketing-review' : ''} ${isOperator ? 'analyst-review operator-review' : ''}`}>
+    <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''} ${isMarketing ? 'marketing-review' : ''} ${(isOperator || isAdmin) ? 'analyst-review operator-review' : ''}`}>
       {view === 'overview' && isMarketing && <section className="marketing-profile-header">
         <div><span>PROFIL AKTIF</span><h1>{String(user?.name || 'Marketing KuotaKita').toUpperCase()}</h1><p>Akun marketing aktif untuk pendampingan agent, survei lapangan, dokumen, dan pemantauan kredit.</p><footer><b><CheckCircle2/>Marketing</b><b><ShieldCheck/>Role aktif di sesi ini</b></footer></div>
         <i><UserCheck/></i>
@@ -1006,9 +1027,11 @@ export default function CreditApplicationsPage() {
         {operatorMessage && <output className="operator-feedback" aria-live="polite">{operatorMessage}</output>}
       </section>}
       {(isOperator || isAdmin) && view === 'h2h' && <section className="credit-command-panel operator-command-panel">
-        <header><div><span>PULSA24JAM BRIDGE</span><h2>Monitor modal kredit dan saldo induk H2H</h2><p>Nilai kredit di bawah berasal dari data KuotaKita. Saldo deposit Pulsa24Jam baru dapat tampil real-time setelah API key H2H resmi dimasukkan ke backend.</p></div><Landmark/></header>
-        <div className="command-summary"><article><small>Kredit diterima</small><strong>{rupiah(operatorIssuedAmount)}</strong><span>Modal yang sudah diberikan</span></article><article><small>Tagihan berjalan</small><strong>{rupiah(operatorRemainingAmount)}</strong><span>Belum dibayar lunas</span></article><article><small>Saldo induk H2H</small><strong>Belum tersinkron</strong><span>API Pulsa24Jam diperlukan</span></article></div>
-        <div className="command-empty"><Landmark/><b>Bridge H2H belum diaktifkan</b><span>Hubungkan endpoint saldo dan transaksi Pulsa24Jam di backend. Setelah itu sistem dapat mengecek saldo induk sebelum memotong Saldo Utama atau Saldo Kredit agent.</span></div>
+        <header><div><span>PULSA24JAM OPERATIONS</span><h2>Saldo dan transaksi H2H langsung dari server</h2><p>Saldo dibaca melalui perintah SALDO. Daftar transaksi berasal dari setiap PAY KuotaKita yang benar-benar tercatat pada bridge Pulsa24Jam.</p></div><Landmark/></header>
+        <div className="h2h-connection-line"><span className={h2hMonitor.connected ? 'online' : 'offline'}><i/>{h2hMonitor.loading ? 'Menghubungkan...' : h2hMonitor.connected ? 'API Pulsa24Jam terhubung' : 'Koneksi API bermasalah'}</span><small>Pembaruan terakhir: {h2hMonitor.updatedAt ? dateTime(h2hMonitor.updatedAt) : '-'}</small><button type="button" onClick={() => setH2hRefresh(value => value + 1)} disabled={h2hMonitor.loading}>Perbarui</button></div>
+        {h2hMonitor.error && <output className="h2h-error">{h2hMonitor.error}</output>}
+        <div className="command-summary h2h-summary"><article><small>Saldo deposit P24</small><strong>{h2hMonitor.balance === null ? '-' : rupiah(h2hMonitor.balance)}</strong><span>Saldo induk real-time</span></article><article><small>Transaksi berhasil</small><strong>{h2hMonitor.summary.success || 0}</strong><span>{rupiah(h2hMonitor.summary.success_amount || 0)}</span></article><article><small>Sedang diproses</small><strong>{h2hMonitor.summary.pending || 0}</strong><span>Menunggu status final P24</span></article><article><small>Transaksi gagal</small><strong>{h2hMonitor.summary.failed || 0}</strong><span>Saldo direfund sesuai ledger</span></article></div>
+        <div className="h2h-ledger"><div className="h2h-ledger-head"><span>Waktu</span><span>Ref ID</span><span>Produk</span><span>Tujuan</span><span>Nominal</span><span>Sumber dana</span><span>Status</span></div>{h2hMonitor.orders.length ? h2hMonitor.orders.slice(0, 50).map(order => <article key={order.RefID}><small>{dateTime(order.CreatedAt)}</small><code title={order.RefID}>{order.RefID}</code><b>{order.Product || '-'}</b><span>{order.Destination || '-'}</span><strong>{rupiah(order.Amount || 0)}</strong><span>{order.DirectH2H ? 'Deposit H2H' : order.CreditUsed > 0 ? `Kredit ${rupiah(order.CreditUsed)}` : 'Saldo utama'}</span><em className={`h2h-status ${String(order.Status || 'pending').toLowerCase()}`}>{order.Status === 'success' ? 'Berhasil' : order.Status === 'failed' ? (order.Refunded ? 'Gagal · Refund' : 'Gagal') : 'Diproses'}</em></article>) : <div className="command-empty"><Landmark/><b>Belum ada transaksi H2H</b><span>Setiap pembayaran produk yang dikirim melalui PAY akan otomatis muncul di sini.</span></div>}</div>
       </section>}
       {showMainList && <div className="panel-header">
         <div><h2>{isRejectedArchive ? 'Riwayat Pengajuan Ditolak' : isOperator ? 'Berkas Siap Diperiksa' : 'Antrean Survei Agent'}</h2><p>{isRejectedArchive ? 'Setiap keputusan menyimpan alasan penolakan agar mudah ditinjau kembali dan dijelaskan kepada agent.' : isMarketing ? 'Periksa agent yang masuk, lengkapi data dan foto kunjungan, lalu kirim berkas yang sudah siap kepada Operator.' : isOperator ? 'Tugas operator: cek seluruh data, tanda tangan, lalu terima atau tolak.' : 'Pantau seluruh alur pengajuan kredit agent dari satu panel.'}</p></div>

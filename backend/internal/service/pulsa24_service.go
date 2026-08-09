@@ -11,6 +11,7 @@ import (
 	"kuotakita/backend/internal/config"
 	"kuotakita/backend/internal/database"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -206,6 +207,24 @@ func (s *Pulsa24Service) Order(refID string) (Pulsa24Order, bool) {
 	defer s.mu.RUnlock()
 	o, ok := s.orders[refID]
 	return o, ok
+}
+
+// Orders returns a newest-first snapshot for the internal Operator console.
+// A copy is returned so the UI cannot mutate the transaction authority map.
+func (s *Pulsa24Service) Orders() []Pulsa24Order {
+	if s == nil {
+		return []Pulsa24Order{}
+	}
+	s.mu.RLock()
+	items := make([]Pulsa24Order, 0, len(s.orders))
+	for _, order := range s.orders {
+		items = append(items, order)
+	}
+	s.mu.RUnlock()
+	sort.Slice(items, func(i, j int) bool {
+		return items[i].CreatedAt.After(items[j].CreatedAt)
+	})
+	return items
 }
 func (s *Pulsa24Service) Finalize(refID string, result Pulsa24Result) (Pulsa24Order, bool, error) {
 	s.mu.Lock()
