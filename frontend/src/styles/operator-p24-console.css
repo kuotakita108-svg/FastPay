@@ -1,10 +1,16 @@
 /* Konsol Operator KuotaKita — padat, tenang, dan konsisten dengan panel H2H. */
 .panel-workspace-shell.role-operator,
-.panel-workspace-shell.role-analis{--op-bg:#050b14;--op-panel:#091827;--op-panel-2:#0b1d2f;--op-line:#193a56;--op-line-soft:#122c43;--op-cyan:#38d7ef;--op-blue:#1888d4;--op-text:#edf7ff;--op-muted:#91a9bf;background:var(--op-bg)}
+.panel-workspace-shell.role-analis,
+.panel-workspace-shell.role-admin,
+.panel-workspace-shell.role-master{--op-bg:#050b14;--op-panel:#091827;--op-panel-2:#0b1d2f;--op-line:#193a56;--op-line-soft:#122c43;--op-cyan:#38d7ef;--op-blue:#1888d4;--op-text:#edf7ff;--op-muted:#91a9bf;background:var(--op-bg)}
 .panel-workspace-shell.role-operator .page-content,
-.panel-workspace-shell.role-analis .page-content{background:var(--op-bg);padding:18px 20px 28px}
+.panel-workspace-shell.role-analis .page-content,
+.panel-workspace-shell.role-admin .page-content,
+.panel-workspace-shell.role-master .page-content{background:var(--op-bg);padding:18px 20px 28px}
 .panel-workspace-shell.role-operator .page-content>.page-header,
-.panel-workspace-shell.role-analis .page-content>.page-header{margin:0 0 12px!important;border:1px solid var(--op-line)!important;border-radius:11px!important;background:linear-gradient(100deg,#091827,#071321)!important;padding:15px 17px!important}
+.panel-workspace-shell.role-analis .page-content>.page-header,
+.panel-workspace-shell.role-admin .page-content>.page-header,
+.panel-workspace-shell.role-master .page-content>.page-header{margin:0 0 12px!important;border:1px solid var(--op-line)!important;border-radius:11px!important;background:linear-gradient(100deg,#091827,#071321)!important;padding:15px 17px!important}
 .panel-workspace-shell.role-operator .page-header h1,
 .panel-workspace-shell.role-analis .page-header h1{margin:3px 0 4px!important;font-size:20px!important;letter-spacing:-.02em}
 .panel-workspace-shell.role-operator .page-header p,
@@ -18,6 +24,8 @@
 .panel-workspace-shell:is(.role-operator,.role-analis) .credit-sidebar .nav-item{min-height:36px!important;margin:2px 0!important;padding:0 10px!important;border-radius:7px!important;font-size:10px!important;font-weight:800!important}
 .panel-workspace-shell:is(.role-operator,.role-analis) .credit-sidebar .nav-item svg{width:15px!important;height:15px!important;color:#7192ad!important}
 .panel-workspace-shell:is(.role-operator,.role-analis) .credit-sidebar .nav-item.active svg{color:var(--op-cyan)!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .credit-sidebar .nav-item>b{display:grid!important;place-items:center!important;min-width:20px!important;height:18px!important;margin-left:auto!important;border:1px solid #1d6686!important;border-radius:999px!important;background:#0b3049!important;color:#7de8f7!important;padding:0 5px!important;font-size:8px!important;font-weight:900!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .credit-sidebar .workspace-nav>div+div{margin-top:5px;padding-top:4px;border-top:1px solid #112b40}
 
 /* Dashboard operator: ringkas seperti dashboard operasional, tanpa kartu putih. */
 .panel-workspace-shell :is(.operator-review) .credit-review-hero{min-height:108px;border-radius:11px!important;padding:17px 19px!important;background:linear-gradient(110deg,#0a1c2e,#071522)!important}

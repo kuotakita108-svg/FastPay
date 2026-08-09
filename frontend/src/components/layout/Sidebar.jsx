@@ -1,8 +1,10 @@
+import {useEffect, useMemo, useState} from 'react'
 import {Link, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
 import {BarChart3, BookOpenCheck, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, Landmark, LockKeyhole, LogOut, ShieldCheck, UserPlus, Users, WalletCards, XCircle, Zap} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
+import {request} from '../../services/http'
 
 const marketingNavigation = [
   {
@@ -37,25 +39,25 @@ const operatorNavigation = [
     ],
   },
   {
-    section: 'KEPUTUSAN KREDIT',
+    section: 'PEMERIKSAAN',
     items: [
-      {to: '/credit-applications?view=verifikasi', label: 'Antrean Verifikasi', icon: ClipboardCheck},
-      {to: '/credit-applications?view=limit', label: 'Keputusan Limit', icon: Gauge},
+      {to: '/credit-applications?view=verifikasi', label: 'Antrean Keputusan', icon: ClipboardCheck, badgeKey: 'review'},
+      {to: '/credit-applications?view=limit', label: 'Limit & Tier Agent', icon: Gauge, badgeKey: 'managed'},
     ],
   },
   {
-    section: 'PENGAWASAN',
+    section: 'PORTOFOLIO KREDIT',
     items: [
-      {to: '/credit-applications?view=peminjam', label: 'Kredit Aktif', icon: CheckCircle2},
-      {to: '/credit-applications?view=pelunasan', label: 'Pelunasan & Bukti', icon: FileCheck2},
-      {to: '/credit-applications?view=suspend', label: 'Suspend & Tunggakan', icon: LockKeyhole},
-      {to: '/credit-applications?view=laporan', label: 'Arsip Keputusan', icon: BarChart3},
+      {to: '/credit-applications?view=peminjam', label: 'Agent & Kredit Aktif', icon: CheckCircle2, badgeKey: 'active'},
+      {to: '/credit-applications?view=pelunasan', label: 'Verifikasi Pelunasan', icon: FileCheck2, badgeKey: 'payments'},
+      {to: '/credit-applications?view=suspend', label: 'Risiko & Akses Agent', icon: LockKeyhole, badgeKey: 'risk'},
     ],
   },
   {
-    section: 'SISTEM',
+    section: 'OPERASIONAL',
     items: [
       {to: '/credit-applications?view=h2h', label: 'Transaksi & Saldo H2H', icon: Landmark},
+      {to: '/credit-applications?view=laporan', label: 'Laporan & Audit', icon: BarChart3},
     ],
   },
 ]
@@ -71,7 +73,29 @@ export default function Sidebar({open, onClose}) {
   // clearer Operator role but both open the same controlled panel.
   const isOperator = role === 'operator' || role === 'analis'
   const isCreditAdmin = isOperator || role === 'admin' || role === 'master'
-  const visibleNavigation = isMarketing ? marketingNavigation : isCreditAdmin ? operatorNavigation : navigation
+  const [workCounts, setWorkCounts] = useState({})
+  useEffect(() => {
+    if (!isCreditAdmin) return undefined
+    let active = true
+    const load = () => request('/agent-credit/applications').then(rows => {
+      if (!active || !Array.isArray(rows)) return
+      const now = Date.now()
+      setWorkCounts({
+        review: rows.filter(item => item.status === 'Menunggu keputusan operator').length,
+        managed: new Set(rows.filter(item => ['Disetujui', 'Lunas'].includes(item.status) || item.paymentStatus === 'Lunas').map(item => item.userId || item.form?.whatsapp || item.userName)).size,
+        active: rows.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas').length,
+        payments: rows.filter(item => (item.repayments || []).some(payment => payment.status === 'Menunggu verifikasi')).length,
+        risk: rows.filter(item => item.agentAccessStatus === 'suspended' || (item.status === 'Disetujui' && item.paymentStatus !== 'Lunas' && item.dueAt && new Date(item.dueAt).getTime() < now)).length,
+      })
+    }).catch(() => {})
+    load()
+    const timer = window.setInterval(load, 15000)
+    return () => { active = false; window.clearInterval(timer) }
+  }, [isCreditAdmin])
+  const visibleNavigation = useMemo(() => {
+    const source = isMarketing ? marketingNavigation : isCreditAdmin ? operatorNavigation : navigation
+    return source.map(group => ({...group, items: group.items.map(item => ({...item, badge: item.badgeKey && workCounts[item.badgeKey] > 0 ? workCounts[item.badgeKey] : item.badge}))}))
+  }, [isMarketing, isCreditAdmin, workCounts])
   const home = isMarketing || isCreditAdmin ? '/credit-applications' : '/dashboard'
   const roleLabel = role === 'master' ? 'Admin Pusat Kredit' : role === 'marketing' ? 'Marketing Kredit' : isOperator ? 'Operator Kredit' : 'Panel Administrator'
   const current = `${location.pathname}${location.search}`
