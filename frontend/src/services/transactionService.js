@@ -13,6 +13,7 @@ export const createPendingPayment=data=>request('/me/payments/pending',{method:'
 export const getPendingPaymentStatus=id=>request(`/me/payments/pending/${encodeURIComponent(id)}`)
 export const getPulsa24Balance=()=>request('/h2h/pulsa24jam/balance')
 export const getPulsa24Operations=()=>request('/h2h/pulsa24jam/operations',{timeoutMs:25000})
+export const refundPulsa24Order=refid=>request(`/h2h/pulsa24jam/operations/${encodeURIComponent(refid)}/refund`,{method:'POST',timeoutMs:25000})
 export const getPulsa24Status=refid=>request(`/h2h/pulsa24jam/status?refid=${encodeURIComponent(refid)}`,{timeoutMs:25000})
 export const getPulsa24Products=product=>request(`/h2h/pulsa24jam/products${product?`?product=${encodeURIComponent(product)}`:''}`)
 export const inquirePulsa24=data=>request('/h2h/pulsa24jam/inquiry',{method:'POST',body:JSON.stringify(data)})

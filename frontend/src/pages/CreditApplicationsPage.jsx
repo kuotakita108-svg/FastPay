@@ -1,13 +1,13 @@
 import {useEffect, useRef, useState} from 'react'
 import {useSearchParams} from 'react-router-dom'
-import {AlertCircle, ArrowRight, Ban, Banknote, BarChart3, CalendarDays, Camera, Check, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, FileCheck2, Filter, Gauge, HandCoins, Images, Landmark, LockKeyhole, PenLine, PhoneCall, PlusCircle, Printer, QrCode, Search, ShieldCheck, Stamp, Trash2, TrendingUp, Upload, UserCheck, UserPlus, WalletCards, X, XCircle} from 'lucide-react'
+import {Activity, AlertCircle, ArrowRight, Ban, Banknote, BarChart3, CalendarDays, Camera, Check, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, FileCheck2, Filter, Gauge, HandCoins, Headphones, Images, Landmark, LockKeyhole, PenLine, PhoneCall, PlusCircle, Printer, QrCode, Search, ShieldCheck, Stamp, Trash2, TrendingUp, Upload, UserCheck, UserPlus, WalletCards, X, XCircle} from 'lucide-react'
 import {QRCodeSVG} from 'qrcode.react'
 import PageHeader from '../components/common/PageHeader'
 import {useAuth} from '../context/AuthContext'
 import {rupiah} from '../utils/currency'
 import {request} from '../services/http'
 import AgentAccountForm from '../components/credit/AgentAccountForm'
-import {getPulsa24Balance, getPulsa24Operations} from '../services/transactionService'
+import {getPulsa24Balance, getPulsa24Operations, refundPulsa24Order} from '../services/transactionService'
 
 const allKey = 'kuotakita_agent_credit_all'
 const userKey = userId => `kuotakita_agent_credit_${userId || 'guest'}`
@@ -197,6 +197,8 @@ const viewInfo = {
   komisi: {label: 'Kantong Komisi', title: 'Insentif marketing', desc: 'Komisi hanya tercatat dari transaksi H2H sukses yang sudah dikirim oleh sistem pusat.'},
   limit: {label: 'Tier & Limit Agent', title: 'Manajemen tier dan limit', desc: 'Operator dapat melihat rekomendasi marketing dan menyesuaikan limit secara manual tanpa menghapus aturan otomatis.'},
   suspend: {label: 'Suspend & Tunggakan', title: 'Kontrol akses agent', desc: 'Akses agent yang menunggak atau tokonya tutup dapat dihentikan sementara sampai diselesaikan.'},
+  'transaksi-agent': {label: 'Monitor Transaksi Agen', title: 'Log transaksi 24 jam', desc: 'Pantau waktu, agent, nomor tujuan, dan status transaksi tanpa membuka saldo H2H atau harga modal supplier.'},
+  helpdesk: {label: 'Tiket Bantuan & Komplain', title: 'Penanganan kendala transaksi', desc: 'Periksa transaksi gagal dan kembalikan saldo hanya setelah status gagal terbukti pada server.'},
   h2h: {label: 'Monitor Saldo H2H', title: 'Kesiapan bridge Pulsa24Jam', desc: 'Pantau kesiapan saldo induk sebelum transaksi agent diteruskan ke API H2H Pulsa24Jam.'},
   panduan: {label: 'Panduan Marketing', title: 'Panduan kerja marketing', desc: 'Daftarkan agent, bantu pengajuan, ambil selfie pertemuan, dan catat pelunasan offline secara tertib.'},
   'agent-input': {label: 'Tambah Agent', title: 'Daftarkan agent baru', desc: 'Buat akun agent resmi agar agent dapat login dan menggunakan layanan Kredit Saldo Agent.'},
@@ -290,6 +292,7 @@ export default function CreditApplicationsPage() {
   // alias prevents existing staff from being locked out during the migration.
   const isOperator = ['operator', 'analis'].includes(user?.role)
   const isAdmin = ['master', 'admin'].includes(user?.role)
+  const isOwner = user?.role === 'master'
   const view = params.get('view') || 'overview'
   const isDetail = view === 'detail'
   const isInstallmentDetail = view === 'angsuran-detail'
@@ -304,8 +307,12 @@ export default function CreditApplicationsPage() {
     window.scrollTo({top: 0, behavior: 'smooth'})
   }
   useEffect(() => {
+    if (view === 'h2h' && !isOwner) {
+      setSearchParams({})
+      return
+    }
     if (directoryScrollRef.current) directoryScrollRef.current.scrollLeft = 0
-  }, [view, borrowerFilter, borrowerQuery])
+  }, [view, borrowerFilter, borrowerQuery, isOwner, setSearchParams])
   // Used immediately after a local UI action. The periodic server refresh below
   // replaces this short-lived cache with the saved server response.
   const refresh = () => setItems(readAll())
@@ -332,14 +339,14 @@ export default function CreditApplicationsPage() {
   }, [])
 
   useEffect(() => {
-    if (!['overview', 'h2h'].includes(view) || (!isOperator && !isAdmin)) return undefined
+    if (!['overview', 'transaksi-agent', 'helpdesk', 'h2h'].includes(view) || (!isOperator && !isAdmin)) return undefined
     let active = true
     const loadH2H = async () => {
       setH2hMonitor(current => ({...current, loading: true, error: ''}))
       try {
-        const [balance, operations] = await Promise.all([getPulsa24Balance(), getPulsa24Operations()])
+        const [balance, operations] = await Promise.all([isOwner ? getPulsa24Balance() : Promise.resolve(null), getPulsa24Operations()])
         if (!active) return
-        setH2hMonitor({loading: false, connected: Boolean(operations?.connected), balance: Number(balance?.balance || 0), updatedAt: operations?.updated_at || balance?.updated_at || new Date().toISOString(), summary: operations?.summary || {}, orders: Array.isArray(operations?.orders) ? operations.orders : [], error: ''})
+        setH2hMonitor({loading: false, connected: Boolean(operations?.connected), balance: balance ? Number(balance?.balance || 0) : null, updatedAt: operations?.updated_at || balance?.updated_at || new Date().toISOString(), summary: operations?.summary || {}, orders: Array.isArray(operations?.orders) ? operations.orders : [], error: ''})
       } catch (error) {
         if (active) setH2hMonitor(current => ({...current, loading: false, connected: false, error: error.message || 'Monitor Pulsa24Jam belum dapat dimuat.'}))
       }
@@ -347,7 +354,7 @@ export default function CreditApplicationsPage() {
     loadH2H()
     const timer = window.setInterval(loadH2H, 30000)
     return () => { active = false; window.clearInterval(timer) }
-  }, [view, isOperator, isAdmin, h2hRefresh])
+  }, [view, isOperator, isAdmin, isOwner, h2hRefresh])
 
   useEffect(() => {
     if (view === 'input') {
@@ -414,7 +421,7 @@ export default function CreditApplicationsPage() {
       window.scrollTo({top: 0, behavior: 'smooth'})
       return
     }
-    if (['panduan', 'rekomendasi', 'komisi', 'limit', 'suspend', 'h2h'].includes(view)) {
+    if (['panduan', 'rekomendasi', 'komisi', 'limit', 'suspend', 'transaksi-agent', 'helpdesk', 'h2h'].includes(view)) {
       setShowCreate(false)
       setFilter('Semua')
       setExpandedId('')
@@ -427,7 +434,7 @@ export default function CreditApplicationsPage() {
     setExpandedId('')
     setQuery('')
     window.scrollTo({top: 0, behavior: 'smooth'})
-  }, [view])
+  }, [view, isOwner, setSearchParams])
   const signOperator = (item, image) => {
     const signature = stampPayload({...user, role: 'operator'}, image)
     saveApplication(item, {analisSignature: signature, operatorSignature: signature, status: 'Menunggu keputusan operator'})
@@ -781,6 +788,11 @@ export default function CreditApplicationsPage() {
   const analystPendingSignature = analystQueue.filter(item => !item.analisSignature)
   const analystReadyToDecide = analystQueue.filter(item => Boolean(item.analisSignature))
   const analystDecidedToday = sortedItems.filter(item => finalStatus.includes(item.status) && new Date(item.decidedAt || 0).toDateString() === new Date().toDateString())
+  const approvedToday = analystDecidedToday.filter(item => item.status === 'Disetujui')
+  const agentNameForOrder = order => {
+    const application = sortedItems.find(item => item.userId === order.UserID)
+    return application?.form?.agentName || application?.userName || 'Agent KuotaKita'
+  }
   const analystApprovedActive = sortedItems.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas')
   const operatorIssuedAmount = analystApprovedActive.reduce((sum, item) => sum + Number(item.creditOriginalAmount || item.form.amount || 0), 0)
   const operatorRemainingAmount = analystApprovedActive.reduce((sum, item) => sum + Number(item.creditOutstanding ?? item.creditBalance ?? item.creditOriginalAmount ?? item.form.amount ?? 0), 0)
@@ -866,6 +878,18 @@ export default function CreditApplicationsPage() {
     link.click()
     URL.revokeObjectURL(link.href)
   }
+  const processFailedRefund = async order => {
+    if (order.Status !== 'failed' || order.Refunded) return
+    if (!window.confirm(`Kembalikan saldo untuk transaksi ${order.RefID}? Tindakan hanya diproses satu kali.`)) return
+    setOperatorMessage('Memverifikasi dan memproses refund...')
+    try {
+      await refundPulsa24Order(order.RefID)
+      setOperatorMessage('Refund berhasil dicatat dan saldo agent sudah dikembalikan.')
+      setH2hRefresh(value => value + 1)
+    } catch (error) {
+      setOperatorMessage(error.message || 'Refund belum dapat diproses.')
+    }
+  }
   const printH2HOrder = order => {
     const win = window.open('', '_blank', 'width=760,height=820')
     if (!win) return setOperatorMessage('Izinkan pop-up browser agar bukti transaksi dapat dicetak.')
@@ -948,12 +972,12 @@ export default function CreditApplicationsPage() {
           <div><span>MEJA KERJA OPERATOR</span><h2>Kontrol limit, akses, dan keputusan</h2><p>Daftar dibuat ringkas untuk banyak agent. Buka detail hanya saat perlu memeriksa berkas, mengubah limit, menghentikan akses, atau mencetak pengajuan.</p></div>
         </header>
         <div className="marketing-task-grid">
-          <article><i><Landmark/></i><span>Saldo Induk P24</span><strong>{h2hMonitor.balance === null ? '-' : rupiah(h2hMonitor.balance)}</strong><small>{h2hMonitor.connected ? 'API terhubung' : 'Periksa koneksi API'}</small></article>
+          <article><i><CheckCircle2/></i><span>Disetujui Hari Ini</span><strong>{approvedToday.length}</strong><small>Limit agent baru diaktifkan</small></article>
           <article><i><Stamp/></i><span>Kredit Outstanding</span><strong>{rupiah(operatorRemainingAmount)}</strong><small>Modal sedang digunakan</small></article>
           <article className={nplRatio > 5 ? 'risk-alarm' : ''}><i><AlertCircle/></i><span>Rasio Kredit Macet</span><strong>{nplRatio}%</strong><small>{nplCount} agent lewat jatuh tempo</small></article>
           <article><i><ClipboardCheck/></i><span>Antrean KYC</span><strong>{analystQueue.length}</strong><small>Siap diperiksa Operator</small></article>
         </div>
-        <section className="operator-live-traffic"><header><div><span>LIVE TRAFFIC H2H</span><h3>Transaksi pulsa terbaru</h3></div><button type="button" onClick={() => goToView('h2h')}>Lihat semua</button></header><div className="operator-traffic-head"><span>Waktu</span><span>Produk</span><span>Tujuan</span><span>Nominal Kredit</span><span>Status</span></div>{h2hMonitor.orders.slice(0, 6).map(order => <article key={order.RefID}><small>{dateTime(order.CreatedAt)}</small><b>{order.Product || '-'}</b><span>{order.Destination || '-'}</span><strong>{rupiah(order.CreditUsed || 0)}</strong><em className={`h2h-status ${String(order.Status || 'pending').toLowerCase()}`}>{order.Status === 'success' ? 'Berhasil' : order.Status === 'failed' ? 'Gagal' : 'Pending'}</em></article>)}{!h2hMonitor.orders.length && <p>Belum ada transaksi H2H yang tercatat.</p>}</section>
+        <section className="operator-live-traffic safe-agent-log"><header><div><span>LOG TRANSAKSI 24 JAM</span><h3>Aktivitas transaksi agent</h3></div><button type="button" onClick={() => goToView('transaksi-agent')}>Lihat semua</button></header><div className="operator-traffic-head"><span>Waktu</span><span>Nama Agent</span><span>Nomor Tujuan</span><span>Status</span></div>{h2hMonitor.orders.slice(0, 6).map(order => <article key={order.RefID}><small>{dateTime(order.CreatedAt)}</small><b>{agentNameForOrder(order)}</b><span>{order.Destination || '-'}</span><em className={`h2h-status ${String(order.Status || 'pending').toLowerCase()}`}>{order.Status === 'success' ? 'Berhasil' : order.Status === 'failed' ? 'Gagal' : 'Diproses'}</em></article>)}{!h2hMonitor.orders.length && <p>Belum ada transaksi agent yang tercatat.</p>}</section>
         <div className="marketing-quick-actions" aria-label="Aksi cepat operator">
           <button type="button" className="primary" onClick={() => goToView('verifikasi')}><ClipboardCheck/><span><b>Buka antrean operator</b><small>{analystQueue.length ? `${analystQueue.length} berkas siap diperiksa` : 'Tidak ada berkas baru'}</small></span><strong>→</strong></button>
           <button type="button" onClick={() => goToView('laporan')}><BarChart3/><span><b>Rekap kredit agent</b><small>Nominal diterima, sisa, lunas, dan status</small></span><strong>→</strong></button>
@@ -1087,7 +1111,16 @@ export default function CreditApplicationsPage() {
         <div className="command-list">{operatorSuspendRows.length ? operatorSuspendRows.map(item => <article key={item.id}><div><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id} · {item.agentAccessStatus === 'suspended' ? 'Akses sedang dihentikan' : 'Lewat jatuh tempo'}</small><em>Sisa tagihan {rupiah(Number(item.creditOutstanding ?? item.creditBalance ?? item.form.amount ?? 0))}</em></div><button type="button" className={item.agentAccessStatus === 'suspended' ? 'safe' : 'danger'} onClick={() => setAgentAccess(item, item.agentAccessStatus === 'suspended')}><Ban/>{item.agentAccessStatus === 'suspended' ? 'Aktifkan akses' : 'Suspend akses'}</button></article>) : <p>Tidak ada agent menunggak atau akses yang sedang dihentikan.</p>}</div>
         {operatorMessage && <output className="operator-feedback" aria-live="polite">{operatorMessage}</output>}
       </section>}
-      {(isOperator || isAdmin) && view === 'h2h' && <section className="credit-command-panel operator-command-panel">
+      {(isOperator || isAdmin) && view === 'transaksi-agent' && <section className="credit-command-panel operator-command-panel agent-transaction-monitor">
+        <header><div><span>MONITOR TRANSAKSI AGEN</span><h2>Log transaksi 24 jam</h2><p>Operator hanya melihat data operasional agent. Saldo induk H2H dan harga modal supplier disembunyikan.</p></div><Activity/></header>
+        <div className="safe-log-table"><div><span>Waktu</span><span>Nama Agent</span><span>Nomor Tujuan</span><span>Status</span></div>{h2hMonitor.orders.map(order => <article key={order.RefID}><small>{dateTime(order.CreatedAt)}</small><b>{agentNameForOrder(order)}</b><span>{order.Destination || '-'}</span><em className={`h2h-status ${String(order.Status || 'pending').toLowerCase()}`}>{order.Status === 'success' ? 'Berhasil' : order.Status === 'failed' ? 'Gagal' : 'Diproses'}</em></article>)}{!h2hMonitor.orders.length && <p>Belum ada transaksi agent dalam log server.</p>}</div>
+      </section>}
+      {(isOperator || isAdmin) && view === 'helpdesk' && <section className="credit-command-panel operator-command-panel helpdesk-monitor">
+        <header><div><span>HELPDESK 24 JAM</span><h2>Tiket bantuan &amp; komplain transaksi</h2><p>Refund hanya tersedia untuk transaksi yang sudah berstatus gagal di server dan tidak pernah dikembalikan sebelumnya.</p></div><Headphones/></header>
+        {operatorMessage && <output className="operator-feedback" aria-live="polite">{operatorMessage}</output>}
+        <div className="helpdesk-list">{h2hMonitor.orders.filter(order => order.Status === 'failed' || order.Status === 'pending').map(order => <article key={order.RefID}><div><b>{agentNameForOrder(order)}</b><small>{order.Destination || '-'} · {dateTime(order.CreatedAt)}</small><code>{order.RefID}</code></div><span><em className={`h2h-status ${order.Status}`}>{order.Status === 'failed' ? 'Gagal terverifikasi' : 'Menunggu server'}</em>{order.Message && <small>{order.Message}</small>}</span><button type="button" disabled={order.Status !== 'failed' || order.Refunded} onClick={() => processFailedRefund(order)}>{order.Refunded ? 'Sudah direfund' : order.Status === 'failed' ? 'Refund saldo' : 'Belum dapat direfund'}</button></article>)}{!h2hMonitor.orders.some(order => order.Status === 'failed' || order.Status === 'pending') && <p>Tidak ada komplain transaksi yang perlu ditangani.</p>}</div>
+      </section>}
+      {isOwner && view === 'h2h' && <section className="credit-command-panel operator-command-panel">
         <header><div><span>PULSA24JAM OPERATIONS</span><h2>Saldo dan transaksi H2H langsung dari server</h2><p>Saldo dibaca melalui perintah SALDO. Daftar transaksi berasal dari setiap PAY KuotaKita yang benar-benar tercatat pada bridge Pulsa24Jam.</p></div><Landmark/></header>
         <div className="h2h-connection-line"><span className={h2hMonitor.connected ? 'online' : 'offline'}><i/>{h2hMonitor.loading ? 'Menghubungkan...' : h2hMonitor.connected ? 'API Pulsa24Jam terhubung' : 'Koneksi API bermasalah'}</span><small>Pembaruan terakhir: {h2hMonitor.updatedAt ? dateTime(h2hMonitor.updatedAt) : '-'}</small><button type="button" onClick={() => setH2hRefresh(value => value + 1)} disabled={h2hMonitor.loading}>Perbarui</button></div>
         {h2hMonitor.error && <output className="h2h-error">{h2hMonitor.error}</output>}

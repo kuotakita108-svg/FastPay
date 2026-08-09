@@ -43,6 +43,7 @@ func New(h Handlers) http.Handler {
 	mux.HandleFunc("GET /api/v1/h2h/pulsa24jam/status", h.UserTransactions.Pulsa24Status)
 	mux.HandleFunc("GET /api/v1/h2h/pulsa24jam/balance", h.UserTransactions.Pulsa24Balance)
 	mux.HandleFunc("GET /api/v1/h2h/pulsa24jam/operations", h.UserTransactions.Pulsa24Operations)
+	mux.HandleFunc("POST /api/v1/h2h/pulsa24jam/operations/{refid}/refund", h.UserTransactions.Pulsa24Refund)
 	mux.HandleFunc("GET /api/v1/h2h/pulsa24jam/products", h.UserTransactions.Pulsa24Products)
 	mux.HandleFunc("POST /api/v1/h2h/pulsa24jam/inquiry", h.UserTransactions.Pulsa24Inquiry)
 	mux.HandleFunc("POST /api/v1/webhooks/pulsa24jam", h.UserTransactions.Pulsa24Callback)

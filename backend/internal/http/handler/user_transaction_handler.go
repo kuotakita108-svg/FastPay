@@ -488,7 +488,13 @@ func (h *UserTransactionHandler) Pulsa24Products(w http.ResponseWriter, r *http.
 // Pulsa24Balance is for operational panels. The deposit balance belongs to
 // KuotaKita, not the browser or an individual agent.
 func (h *UserTransactionHandler) Pulsa24Balance(w http.ResponseWriter, r *http.Request) {
-	if _, ok := h.userID(w, r); !ok {
+	current, err := h.auth.CurrentUser(r.Header.Get("Authorization"))
+	if err != nil {
+		response.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+	if strings.ToLower(strings.TrimSpace(current.Role)) != "master" {
+		response.Error(w, http.StatusForbidden, "saldo induk hanya dapat dilihat Owner")
 		return
 	}
 	if h.pulsa24 == nil || !h.pulsa24.Enabled() {
@@ -533,12 +539,59 @@ func (h *UserTransactionHandler) Pulsa24Operations(w http.ResponseWriter, r *htt
 			pending++
 		}
 	}
+	if role != "master" {
+		safeOrders := make([]map[string]any, 0, len(orders))
+		for _, order := range orders {
+			safeOrders = append(safeOrders, map[string]any{"RefID": order.RefID, "UserID": order.UserID, "Destination": order.Destination, "Status": order.Status, "Refunded": order.Refunded, "Message": order.Message, "CreatedAt": order.CreatedAt})
+		}
+		response.JSON(w, http.StatusOK, map[string]any{"connected": true, "updated_at": time.Now(), "summary": map[string]any{"total": len(orders), "success": success, "pending": pending, "failed": failed}, "orders": safeOrders})
+		return
+	}
 	response.JSON(w, http.StatusOK, map[string]any{
 		"connected":  true,
 		"updated_at": time.Now(),
 		"summary":    map[string]any{"total": len(orders), "success": success, "pending": pending, "failed": failed, "success_amount": successAmount},
 		"orders":     orders,
 	})
+}
+
+// Pulsa24Refund allows an operator to return an agent's funds only after the
+// provider ledger has reached the final failed state. RefundOnce protects the
+// balance from duplicate clicks or repeated requests.
+func (h *UserTransactionHandler) Pulsa24Refund(w http.ResponseWriter, r *http.Request) {
+	current, err := h.auth.CurrentUser(r.Header.Get("Authorization"))
+	if err != nil {
+		response.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+	role := strings.ToLower(strings.TrimSpace(current.Role))
+	if role != "operator" && role != "analis" && role != "admin" && role != "master" {
+		response.Error(w, http.StatusForbidden, "refund hanya dapat diproses Operator")
+		return
+	}
+	if h.pulsa24 == nil || !h.pulsa24.Enabled() {
+		response.Error(w, http.StatusServiceUnavailable, "integrasi Pulsa24Jam belum aktif")
+		return
+	}
+	refID := strings.TrimSpace(r.PathValue("refid"))
+	order, found := h.pulsa24.Order(refID)
+	if !found {
+		response.Error(w, http.StatusNotFound, "transaksi tidak ditemukan")
+		return
+	}
+	if strings.ToLower(order.Status) != "failed" {
+		response.Error(w, http.StatusConflict, "refund hanya dapat dilakukan setelah status provider gagal")
+		return
+	}
+	refunded, changed, refundErr := h.pulsa24.RefundOnce(refID)
+	if refundErr != nil {
+		response.Error(w, http.StatusInternalServerError, "refund belum dapat disimpan")
+		return
+	}
+	if changed {
+		h.restoreFunds(refunded.UserID, refunded.MainUsed, refunded.CreditUsed)
+	}
+	response.JSON(w, http.StatusOK, map[string]any{"refid": refID, "refunded": true, "already_refunded": !changed})
 }
 
 // Pulsa24Inquiry is required before a postpaid payment. The amount returned

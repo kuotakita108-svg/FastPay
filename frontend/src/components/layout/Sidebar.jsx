@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useState} from 'react'
 import {Link, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
-import {BarChart3, BookOpenCheck, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, Landmark, LockKeyhole, LogOut, ShieldCheck, UserPlus, Users, WalletCards, XCircle, Zap} from 'lucide-react'
+import {Activity, BarChart3, BookOpenCheck, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, Headphones, LockKeyhole, LogOut, ShieldCheck, UserPlus, Users, WalletCards, Zap} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
 import {request} from '../../services/http'
@@ -34,31 +34,27 @@ const marketingNavigation = [
 
 const operatorNavigation = [
   {
-    section: 'RINGKASAN',
+    section: 'OPERASIONAL',
     items: [
-      {to: '/credit-applications', label: 'Dashboard', icon: ShieldCheck},
-    ],
-  },
-  {
-    section: 'PEMERIKSAAN',
-    items: [
+      {to: '/credit-applications', label: 'Dasbor Operasional', icon: ShieldCheck},
       {to: '/credit-applications?view=verifikasi', label: 'Antrean Keputusan', icon: ClipboardCheck, badgeKey: 'review'},
-      {to: '/credit-applications?view=limit', label: 'Limit & Tier Agent', icon: Gauge, badgeKey: 'managed'},
     ],
   },
   {
-    section: 'PORTOFOLIO KREDIT',
+    section: 'KREDIT AGENT',
     items: [
-      {to: '/credit-applications?view=peminjam', label: 'Agent & Kredit Aktif', icon: CheckCircle2, badgeKey: 'active'},
+      {to: '/credit-applications?view=peminjam', label: 'Agen & Kredit Aktif', icon: CheckCircle2, badgeKey: 'active'},
+      {to: '/credit-applications?view=limit', label: 'Agen Limit & Tier', icon: Gauge, badgeKey: 'managed'},
       {to: '/credit-applications?view=pelunasan', label: 'Verifikasi Pelunasan', icon: FileCheck2, badgeKey: 'payments'},
       {to: '/credit-applications?view=suspend', label: 'Risiko & Akses Agent', icon: LockKeyhole, badgeKey: 'risk'},
     ],
   },
   {
-    section: 'OPERASIONAL',
+    section: 'PENGAWASAN',
     items: [
-      {to: '/credit-applications?view=h2h', label: 'Transaksi & Saldo H2H', icon: Landmark},
-      {to: '/credit-applications?view=laporan', label: 'Laporan & Audit', icon: BarChart3},
+      {to: '/credit-applications?view=transaksi-agent', label: 'Monitor Transaksi Agen', icon: Activity},
+      {to: '/credit-applications?view=helpdesk', label: 'Tiket Bantuan & Komplain', icon: Headphones},
+      {to: '/credit-applications?view=laporan', label: 'Laporan Kinerja Lapangan', icon: BarChart3},
     ],
   },
 ]
@@ -105,7 +101,7 @@ export default function Sidebar({open, onClose}) {
   const rolePanel = isMarketing
     ? {eyebrow: 'MODE MARKETING', title: 'Validasi lapangan', description: 'Daftarkan agent, ambil tiga foto langsung, pantau agen binaan, dan kirim rekomendasi limit.'}
     : isCreditAdmin
-      ? {eyebrow: isOperator ? 'MODE OPERATOR' : 'MODE ADMIN PUSAT', title: 'Kontrol modal & kredit', description: 'Verifikasi berkas, atur limit, pantau pelunasan, suspend akses, dan cek kesiapan H2H.'}
+      ? {eyebrow: isOperator ? 'MODE OPERATOR' : 'MODE ADMIN PUSAT', title: 'Validasi & pengawasan', description: 'Verifikasi berkas, atur limit, pantau pelunasan, risiko, transaksi agent, dan komplain.'}
       : null
 
   return <aside className={`sidebar ${open ? 'open' : ''}${rolePanel ? ' credit-sidebar' : ''}`}>
