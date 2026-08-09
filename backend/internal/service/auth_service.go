@@ -163,8 +163,15 @@ func (s *AuthService) createAccount(in domain.RegisterInput, role string) (domai
 	in.Username = normalize(in.Username)
 	in.Phone = strings.TrimSpace(in.Phone)
 	in.Email = normalize(in.Email)
+	in.StoreName = strings.TrimSpace(in.StoreName)
+	in.Province = strings.TrimSpace(in.Province)
+	in.City = strings.TrimSpace(in.City)
+	in.District = strings.TrimSpace(in.District)
 	if len(in.Name) < 3 || len(in.Username) < 3 || len(in.Phone) < 10 || len(in.Password) < 6 || (in.Email != "" && !strings.Contains(in.Email, "@")) {
 		return domain.User{}, errors.New("lengkapi data dengan benar; password minimal 6 karakter")
+	}
+	if role == "agent" && (len(in.StoreName) < 2 || in.Province == "" || in.City == "" || in.District == "") {
+		return domain.User{}, errors.New("nama toko dan wilayah agent wajib dilengkapi")
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -183,7 +190,11 @@ func (s *AuthService) createAccount(in domain.RegisterInput, role string) (domai
 	if err != nil {
 		return domain.User{}, errors.New("gagal mengamankan kata sandi")
 	}
-	user := domain.User{ID: newUserID(), Username: in.Username, Name: in.Name, Role: role, Balance: 0, Phone: in.Phone, Email: in.Email}
+	userID := newUserID()
+	if role == "agent" {
+		userID = newAgentID()
+	}
+	user := domain.User{ID: userID, Username: in.Username, Name: in.Name, Role: role, Balance: 0, Phone: in.Phone, Email: in.Email, StoreName: in.StoreName, Province: in.Province, City: in.City, District: in.District}
 	s.users[user.Username] = storedUser{User: user, PasswordHash: string(hash), CreatedAt: time.Now().UTC()}
 	if err := s.saveLocked(); err != nil {
 		delete(s.users, user.Username)
@@ -533,6 +544,13 @@ func newUserID() string {
 		return fmt.Sprintf("USR-%d", time.Now().UnixNano())
 	}
 	return "USR-" + strings.ToUpper(base64.RawURLEncoding.EncodeToString(bytes))
+}
+func newAgentID() string {
+	bytes := make([]byte, 4)
+	if _, err := rand.Read(bytes); err != nil {
+		return fmt.Sprintf("KTK-%d-%06d", time.Now().Year(), time.Now().UnixNano()%1000000)
+	}
+	return fmt.Sprintf("KTK-%d-%s", time.Now().Year(), strings.ToUpper(base64.RawURLEncoding.EncodeToString(bytes)))
 }
 func uniqueUsername(value string, users map[string]storedUser) string {
 	base := strings.Map(func(r rune) rune {

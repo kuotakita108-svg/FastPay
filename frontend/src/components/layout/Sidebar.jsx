@@ -12,14 +12,15 @@ const marketingNavigation = [
     items: [
       {to: '/credit-applications', label: 'Dashboard', icon: WalletCards},
       {to: '/credit-applications?view=agent-input', label: 'Tambah Agent', icon: UserPlus},
-      {to: '/credit-applications?view=input', label: 'Pengajuan & Dokumen', icon: ClipboardCheck},
-      {to: '/credit-applications?view=verifikasi', label: 'Antrean Survei', icon: Camera},
+      {to: '/credit-applications?view=input', label: 'Pengajuan Kredit', icon: ClipboardCheck},
+      {to: '/credit-applications?view=verifikasi', label: 'Dokumen & Survei', icon: Camera},
     ],
   },
   {
     section: 'PORTOFOLIO',
     items: [
       {to: '/credit-applications?view=peminjam', label: 'Agen Binaan', icon: Users},
+      {to: '/credit-applications?view=angsuran', label: 'Buku Tagihan', icon: FileCheck2},
     ],
   },
   {

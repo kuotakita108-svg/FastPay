@@ -22,8 +22,9 @@ export async function updateProfile(profile){
 // Akun disimpan dengan hash password dan tidak pernah menyimpan password mentah.
 export async function createManagedAgent(profile){
   const name=String(profile.name||'').trim(),username=String(profile.username||'').toLowerCase().trim(),phone=String(profile.phone||'').trim(),email=String(profile.email||'').toLowerCase().trim(),password=String(profile.password||'')
-  if(name.length<3||username.length<3||password.length<6)throw new Error('Nama, username, dan password minimal harus diisi dengan benar.')
-  return request('/auth/agents',{method:'POST',body:JSON.stringify({name,username,phone,email,password})})
+  const store_name=String(profile.store_name||'').trim(),province=String(profile.province||'').trim(),city=String(profile.city||'').trim(),district=String(profile.district||'').trim()
+  if(name.length<3||username.length<3||phone.length<10||password.length<6||store_name.length<2||!province||!city||!district)throw new Error('Lengkapi identitas, toko, wilayah, WhatsApp, username, dan password agent.')
+  return request('/auth/agents',{method:'POST',body:JSON.stringify({name,username,phone,email,password,store_name,province,city,district})})
 }
 
 export async function resetPassword(profile){

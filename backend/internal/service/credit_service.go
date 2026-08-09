@@ -205,16 +205,25 @@ func (s *CreditService) SpendAvailableCredit(token string, amount int64) (int64,
 // RestoreAvailableCredit reverses a failed H2H transaction exactly once. The
 // caller keeps the idempotency marker with the H2H order before invoking this.
 func (s *CreditService) RestoreAvailableCredit(userID string, amount int64) error {
-	if amount <= 0 { return nil }
+	if amount <= 0 {
+		return nil
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for _, row := range s.rows {
-		if stringValue(row["_owner_id"]) != userID || stringValue(row["status"]) != "Disetujui" { continue }
+		if stringValue(row["_owner_id"]) != userID || stringValue(row["status"]) != "Disetujui" {
+			continue
+		}
 		row["creditBalance"] = intValue(row["creditBalance"]) + amount
 		outstanding := intValue(row["creditOutstanding"]) - amount
-		if outstanding < 0 { outstanding = 0 }
+		if outstanding < 0 {
+			outstanding = 0
+		}
 		row["creditOutstanding"] = outstanding
-		if outstanding == 0 { row["creditStatus"] = "Aktif"; row["paymentStatus"] = "Belum ada tagihan" }
+		if outstanding == 0 {
+			row["creditStatus"] = "Aktif"
+			row["paymentStatus"] = "Belum ada tagihan"
+		}
 		row["updatedAt"] = time.Now().UTC().Format(time.RFC3339)
 		return s.saveLocked()
 	}
@@ -243,6 +252,7 @@ func protectCreditDecisionFields(target, source map[string]any) {
 		"creditLimitSource", "creditBalance", "creditOutstanding", "creditOriginalAmount", "creditStatus",
 		"dueAt", "settledAt", "decidedAt", "analysisDecision", "analisSignature", "operatorSignature",
 		"agentAccessStatus", "agentAccessReason", "agentAccessUpdatedAt",
+		"decisionHistory", "blacklistedAt", "blacklistedBy", "blacklistReason",
 	} {
 		if value, ok := source[key]; ok {
 			target[key] = value
