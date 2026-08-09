@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useState} from 'react'
 import {Link, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
-import {Activity, BarChart3, BookOpenCheck, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, Headphones, LockKeyhole, LogOut, ShieldCheck, UserPlus, Users, WalletCards, Zap} from 'lucide-react'
+import {Activity, BarChart3, BookOpenCheck, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, Headphones, Landmark, LockKeyhole, LogOut, ShieldCheck, UserPlus, Users, WalletCards, Zap} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
 import {request} from '../../services/http'
@@ -49,14 +49,24 @@ const operatorNavigation = [
       {to: '/credit-applications?view=suspend', label: 'Risiko & Akses Agent', icon: LockKeyhole, badgeKey: 'risk'},
     ],
   },
-  {
-    section: 'PENGAWASAN',
-    items: [
-      {to: '/credit-applications?view=transaksi-agent', label: 'Monitor Transaksi Agen', icon: Activity},
-      {to: '/credit-applications?view=helpdesk', label: 'Tiket Bantuan & Komplain', icon: Headphones},
-      {to: '/credit-applications?view=laporan', label: 'Laporan Kinerja Lapangan', icon: BarChart3},
-    ],
-  },
+  {section: 'LAPORAN', items: [{to: '/credit-applications?view=laporan', label: 'Laporan Kredit', icon: BarChart3}]},
+]
+
+const superAdminNavigation = [
+  {section: 'KONTROL PUSAT', items: [
+    {to: '/credit-applications', label: 'Dasbor Super Admin', icon: ShieldCheck},
+    {to: '/credit-applications?view=verifikasi', label: 'Antrean Keputusan', icon: ClipboardCheck, badgeKey: 'review'},
+    {to: '/credit-applications?view=peminjam', label: 'Seluruh Kredit Agent', icon: Users, badgeKey: 'active'},
+    {to: '/credit-applications?view=limit', label: 'Limit & Tier', icon: Gauge, badgeKey: 'managed'},
+    {to: '/credit-applications?view=pelunasan', label: 'Verifikasi Pelunasan', icon: FileCheck2, badgeKey: 'payments'},
+    {to: '/credit-applications?view=suspend', label: 'Risiko & Akses', icon: LockKeyhole, badgeKey: 'risk'},
+  ]},
+  {section: 'RAHASIA OWNER', items: [
+    {to: '/credit-applications?view=h2h', label: 'Saldo & Transaksi H2H', icon: Landmark},
+    {to: '/credit-applications?view=transaksi-agent', label: 'Monitor Transaksi Agen', icon: Activity},
+    {to: '/credit-applications?view=helpdesk', label: 'Helpdesk & Refund', icon: Headphones},
+    {to: '/credit-applications?view=laporan', label: 'Laporan & Audit', icon: BarChart3},
+  ]},
 ]
 
 export default function Sidebar({open, onClose}) {
@@ -69,6 +79,7 @@ export default function Sidebar({open, onClose}) {
   // "analis" remains supported for existing accounts. New accounts use the
   // clearer Operator role but both open the same controlled panel.
   const isOperator = role === 'operator' || role === 'analis'
+  const isSuperAdmin = role === 'master'
   const isCreditAdmin = isOperator || role === 'admin' || role === 'master'
   const [workCounts, setWorkCounts] = useState({})
   useEffect(() => {
@@ -90,18 +101,20 @@ export default function Sidebar({open, onClose}) {
     return () => { active = false; window.clearInterval(timer) }
   }, [isCreditAdmin])
   const visibleNavigation = useMemo(() => {
-    const source = isMarketing ? marketingNavigation : isCreditAdmin ? operatorNavigation : navigation
+    const source = isMarketing ? marketingNavigation : isSuperAdmin ? superAdminNavigation : isCreditAdmin ? operatorNavigation : navigation
     return source.map(group => ({...group, items: group.items.map(item => ({...item, badge: item.badgeKey && workCounts[item.badgeKey] > 0 ? workCounts[item.badgeKey] : item.badge}))}))
-  }, [isMarketing, isCreditAdmin, workCounts])
+  }, [isMarketing, isSuperAdmin, isCreditAdmin, workCounts])
   const home = isMarketing || isCreditAdmin ? '/credit-applications' : '/dashboard'
-  const roleLabel = role === 'master' ? 'Admin Pusat Kredit' : role === 'marketing' ? 'Marketing Kredit' : isOperator ? 'Operator Kredit' : 'Panel Administrator'
+  const roleLabel = role === 'master' ? 'Super Admin / Owner' : role === 'marketing' ? 'Marketing Kredit' : isOperator || role === 'admin' ? 'Operator Kredit' : 'Panel Administrator'
   const current = `${location.pathname}${location.search}`
   const active = to => current === to || (!to.includes('?') && location.pathname === to && !location.search)
   const activeLabel = visibleNavigation.flatMap(group => group.items).find(item => active(item.to))?.label || (isCreditAdmin ? 'Dashboard' : 'Ringkasan Kerja')
   const rolePanel = isMarketing
     ? {eyebrow: 'MODE MARKETING', title: 'Validasi lapangan', description: 'Daftarkan agent, ambil tiga foto langsung, pantau agen binaan, dan kirim rekomendasi limit.'}
     : isCreditAdmin
-      ? {eyebrow: isOperator ? 'MODE OPERATOR' : 'MODE ADMIN PUSAT', title: 'Validasi & pengawasan', description: 'Verifikasi berkas, atur limit, pantau pelunasan, risiko, transaksi agent, dan komplain.'}
+      ? isSuperAdmin
+        ? {eyebrow: 'MODE SUPER ADMIN', title: 'Kontrol pusat & H2H', description: 'Akses owner untuk modal, H2H, audit, dan seluruh operasional kredit.'}
+        : {eyebrow: 'MODE OPERATOR', title: 'Keputusan akhir kredit', description: 'Fokus memeriksa berkas, menentukan limit, memantau kredit, pelunasan, dan risiko agent.'}
       : null
 
   return <aside className={`sidebar ${open ? 'open' : ''}${rolePanel ? ' credit-sidebar' : ''}`}>

@@ -518,8 +518,8 @@ func (h *UserTransactionHandler) Pulsa24Operations(w http.ResponseWriter, r *htt
 		return
 	}
 	role := strings.ToLower(strings.TrimSpace(current.Role))
-	if role != "operator" && role != "analis" && role != "admin" && role != "master" {
-		response.Error(w, http.StatusForbidden, "akses monitor H2H hanya untuk Operator")
+	if role != "master" {
+		response.Error(w, http.StatusForbidden, "monitor H2H hanya dapat diakses Super Admin")
 		return
 	}
 	if h.pulsa24 == nil || !h.pulsa24.Enabled() {
@@ -539,14 +539,6 @@ func (h *UserTransactionHandler) Pulsa24Operations(w http.ResponseWriter, r *htt
 			pending++
 		}
 	}
-	if role != "master" {
-		safeOrders := make([]map[string]any, 0, len(orders))
-		for _, order := range orders {
-			safeOrders = append(safeOrders, map[string]any{"RefID": order.RefID, "UserID": order.UserID, "Destination": order.Destination, "Status": order.Status, "Refunded": order.Refunded, "Message": order.Message, "CreatedAt": order.CreatedAt})
-		}
-		response.JSON(w, http.StatusOK, map[string]any{"connected": true, "updated_at": time.Now(), "summary": map[string]any{"total": len(orders), "success": success, "pending": pending, "failed": failed}, "orders": safeOrders})
-		return
-	}
 	response.JSON(w, http.StatusOK, map[string]any{
 		"connected":  true,
 		"updated_at": time.Now(),
@@ -565,8 +557,8 @@ func (h *UserTransactionHandler) Pulsa24Refund(w http.ResponseWriter, r *http.Re
 		return
 	}
 	role := strings.ToLower(strings.TrimSpace(current.Role))
-	if role != "operator" && role != "analis" && role != "admin" && role != "master" {
-		response.Error(w, http.StatusForbidden, "refund hanya dapat diproses Operator")
+	if role != "master" {
+		response.Error(w, http.StatusForbidden, "refund provider hanya dapat diproses Super Admin")
 		return
 	}
 	if h.pulsa24 == nil || !h.pulsa24.Enabled() {
