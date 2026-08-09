@@ -891,6 +891,7 @@ export default function CreditApplicationsPage() {
         <div className="directory-stats">
           <article><b>{mentoredBorrowerRows.length}</b><span>Total pengajuan</span></article><article><b>{mentoredBorrowerRows.filter(({item}) => mentoringStage(item) === 'Survei').length}</b><span>Perlu survei</span></article><article><b>{mentoredBorrowerRows.filter(({item}) => mentoringStage(item) === 'Aktif').length}</b><span>Kredit aktif</span></article><article><b>{mentoredBorrowerRows.filter(({item}) => mentoringStage(item) === 'Lunas').length}</b><span>Sudah lunas</span></article>
         </div>
+        <div className="mentored-table-title"><div><span>PORTOFOLIO KREDIT</span><h2>Daftar Kredit Agent Binaan</h2><p>Pantau tanggal aktivitas, status kredit, tagihan, limit, dan tindak lanjut setiap agent.</p></div><strong>{directoryGroups.length}<small>Agent</small></strong></div>
         <div className="directory-tools"><label><Search/><input value={borrowerQuery} onChange={event => setBorrowerQuery(event.target.value)} placeholder="Cari agent, toko, WhatsApp, atau ID..."/></label><div>{['Semua', 'Survei', 'Operator', 'Aktif', 'Lunas'].map(name => <button type="button" className={borrowerFilter === name ? 'active' : ''} onClick={() => setBorrowerFilter(name)} key={name}>{name}</button>)}</div></div>
         <div className="directory-agent-list">
           {!!directoryGroups.length && <div className="mentored-agent-columns"><span>Tanggal</span><span>Agent / Toko</span><span>Status</span><span>Tagihan / Limit</span><span>Aksi</span></div>}
