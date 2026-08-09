@@ -905,12 +905,14 @@ export default function CreditApplicationsPage() {
       {(isMarketing || isOperator || isAdmin) && (view === 'pembayaran' || view === 'angsuran') && <section className="marketing-action-panel payment">
         <header><Banknote/><div><span>MONITOR SALDO KREDIT</span><h2>Pelunasan Kredit Agent</h2><p>Setiap kredit dibayar satu kali penuh. Buka data untuk melihat nominal, Bank/QRIS, dan bukti transfer.</p></div></header>
         <div className="payment-overview-stats"><article><small>Kredit aktif</small><strong>{installmentActive.length}</strong><span>Menunggu pelunasan</span></article><article><small>Sudah lunas</small><strong>{installmentFinished.length}</strong><span>Pembayaran selesai</span></article><article><small>Total dilunasi</small><strong>{rupiah(installmentPaidAmount)}</strong><span>Pembayaran tercatat</span></article><article><small>Saldo tertagih</small><strong>{rupiah(installmentRemainingAmount)}</strong><span>Perlu dipantau</span></article></div>
-        <div className="quick-payment-list">
+        <div className="quick-payment-list compact-payment-list">
           {installmentRows.slice(0, 8).map(({item, pay, next}) => {
-            return <button type="button" key={item.id} onClick={() => goToView('angsuran-detail', item.id, 'Disetujui')}>
-              <span><b>{item.form.agentName || item.userName}</b><small>{pay.paid ? 'Sudah lunas' : 'Menunggu pelunasan penuh'}</small></span>
+            return <article className="payment-agent-row" key={item.id}>
+              <span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id}</small></span>
+              <em className={pay.paid ? 'paid' : ''}>{pay.paid ? 'Sudah lunas' : 'Menunggu pelunasan'}</em>
               <strong>{next ? rupiah(next.amount) : 'Lunas'}</strong>
-            </button>
+              <button type="button" disabled={pay.paid} onClick={() => goToView('angsuran-detail', item.id, 'Disetujui')}><Banknote/>{pay.paid ? 'Lihat' : 'Bayar'}</button>
+            </article>
           })}
           {!installmentRows.length && <p>Belum ada kredit diterima yang perlu dipantau.</p>}
         </div>
