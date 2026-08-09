@@ -344,7 +344,9 @@ export default function AgentCreditPage() {
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
     setSigned(false)
   }
-  const latestProfile = [...applications].sort((a,b) => new Date(b.decidedAt || b.updatedAt || b.createdAt) - new Date(a.decidedAt || a.updatedAt || a.createdAt)).find(item => item.creditTier || item.creditLimit)
+  const decidedApplications = [...applications].sort((a,b) => new Date(b.decidedAt || b.updatedAt || b.createdAt) - new Date(a.decidedAt || a.updatedAt || a.createdAt))
+  const approvedProfile = decidedApplications.find(item => item.status === 'Disetujui')
+  const latestProfile = approvedProfile
   const currentRank = {
     ...defaultRank,
     name: latestProfile?.creditTier || defaultRank.name,
@@ -357,7 +359,6 @@ export default function AgentCreditPage() {
   // debt that must be settled in one payment. They must never be confused.
   const creditBalance = activeCredit ? Number(activeCredit.creditBalance ?? activeCredit.creditLimit ?? 0) : 0
   const creditOutstanding = activeCredit ? Number(activeCredit.creditOutstanding ?? 0) : 0
-  const transactionBalance = Number(user?.balance || 0)
   const pendingApplications = applications.filter(item => !finalCreditStatus.includes(item.status)).length
   const approvedApplications = applications.filter(item => item.status === 'Disetujui').length
   const rejectedApplications = applications.filter(item => item.status === 'Ditolak').length
@@ -527,15 +528,16 @@ export default function AgentCreditPage() {
     <section className="agent-rank-card">
       <header>
         <i className={`rank-emblem ${currentRank.tone}`}><RankIcon/></i>
-        <div><span>LIMIT KREDIT AGENT</span><h2>{currentRank.name}</h2><p>Limit aktif {rupiah(currentRank.limit)} · naik dari pelunasan tepat waktu atau keputusan Operator.</p></div>
-        <b>{currentRank.badge}</b>
+        <div><span>{approvedProfile ? 'LIMIT KREDIT AGENT' : 'STATUS KREDIT AGENT'}</span><h2>{approvedProfile ? currentRank.name : 'Belum disetujui'}</h2><p>{approvedProfile ? `Limit aktif ${rupiah(currentRank.limit)} · berasal dari keputusan Operator.` : 'Saldo kredit akan tampil setelah pengajuan benar-benar disetujui Operator.'}</p></div>
+        <b>{approvedProfile ? currentRank.badge : 'BELUM AKTIF'}</b>
       </header>
-      <div className="agent-wallet-overview">
-        <div className="agent-wallet-main"><small>Saldo utama</small><strong>{rupiah(transactionBalance)}</strong><span>Dipakai lebih dulu untuk transaksi harian.</span></div>
-        <div className="agent-wallet-credit"><small>Saldo kredit tersedia</small><strong>{rupiah(creditBalance)}</strong><span>{activeCredit ? `${rupiah(creditOutstanding)} sudah dipakai dan wajib dilunasi penuh.` : 'Belum ada kredit yang berjalan.'}</span></div>
-        <div className="agent-wallet-limit"><small>Limit pengajuan</small><strong>{rupiah(maxCredit)}</strong><span>Pengajuan boleh di bawah limit aktif.</span></div>
-      </div>
-      <div className="rank-meter"><span style={{width: '100%'}}/></div>
+      {approvedProfile && <>
+        <div className="agent-wallet-overview approved-credit-wallet">
+          <div className="agent-wallet-credit"><small>Saldo kredit tersedia</small><strong>{rupiah(creditBalance)}</strong><span>{activeCredit ? `${rupiah(creditOutstanding)} sudah dipakai dan wajib dilunasi penuh.` : 'Tidak ada tagihan kredit yang berjalan.'}</span></div>
+          <div className="agent-wallet-limit"><small>Limit kredit disetujui</small><strong>{rupiah(maxCredit)}</strong><span>Nilai resmi sesuai keputusan Operator.</span></div>
+        </div>
+        <div className="rank-meter"><span style={{width: '100%'}}/></div>
+      </>}
     </section>
     <div className="agent-credit-tabs" role="tablist" aria-label="Menu Kredit Agent">
       <button type="button" className={!showForm && !detailOpen ? 'active' : ''} onClick={backToApplications}><FileText/><span>Pengajuan Saya<small>{applications.length} pengajuan tersimpan</small></span></button>
