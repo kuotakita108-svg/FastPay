@@ -1087,7 +1087,7 @@ export default function CreditApplicationsPage() {
           const canOperatorSign = !done && item.status === 'Menunggu keputusan operator' && analysis.ready && !operatorSigned && (isOperator || isAdmin)
           const canApprove = !done && operatorSigned && analysis.ready && (isOperator || isAdmin)
           const canReject = !done && (isAdmin || (isOperator && operatorSigned && Boolean(decisionNote.trim())))
-          return <article className={`credit-review-card status-${item.status.toLowerCase().replaceAll(' ', '-')}`} key={item.id}>
+          return <article className={`credit-review-card status-${item.status.toLowerCase().replaceAll(' ', '-')} ${expanded ? 'expanded' : ''}`} key={item.id}>
             <header>
               <div><span>{item.id}</span><h3>{item.form.agentName || item.userName}</h3><p>{item.form.storeName} · {item.form.whatsapp}</p></div>
               <b>{rupiah(item.form.amount)}</b>
