@@ -523,7 +523,7 @@ export default function AgentCreditPage() {
       <div className="agent-credit-hero-shade"/>
       <i><WalletCards/></i>
       <div><span>MODAL AGENT RESMI</span><h1>Ajukan Kredit Saldo Lebih Cepat</h1><p>Marketing mengambil dokumen survei di lokasi. Isi pengajuan, baca ketentuan, lalu tanda tangan sebelum Operator memberi keputusan.</p></div>
-      <b>{rupiah(Math.min(maxCredit, Math.max(0, Number(form.amount || 0))))}</b>
+      <b><small>Limit Pengajuan</small><strong>{rupiah(Math.min(maxCredit, Math.max(0, Number(form.amount || 0))))}</strong></b>
     </section>
     <section className="agent-rank-card">
       <header>
