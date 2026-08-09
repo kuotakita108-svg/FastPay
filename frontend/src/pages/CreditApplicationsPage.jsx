@@ -256,6 +256,7 @@ export default function CreditApplicationsPage() {
   const {user} = useAuth()
   const [params, setSearchParams] = useSearchParams()
   const canvasRef = useRef(null)
+  const directoryScrollRef = useRef(null)
   const drawing = useRef(false)
   const [items, setItems] = useState([])
   const [signaturePad, setSignaturePad] = useState(null)
@@ -302,6 +303,9 @@ export default function CreditApplicationsPage() {
     setSearchParams(targetView ? {view: targetView, ...(targetView === 'verifikasi' && filter ? {filter} : {})} : {})
     window.scrollTo({top: 0, behavior: 'smooth'})
   }
+  useEffect(() => {
+    if (directoryScrollRef.current) directoryScrollRef.current.scrollLeft = 0
+  }, [view, borrowerFilter, borrowerQuery])
   // Used immediately after a local UI action. The periodic server refresh below
   // replaces this short-lived cache with the saved server response.
   const refresh = () => setItems(readAll())
@@ -972,7 +976,7 @@ export default function CreditApplicationsPage() {
         </div>
         <div className="mentored-table-title"><div><span>PORTOFOLIO KREDIT</span><h2>Daftar Kredit Agent Binaan</h2><p>Pantau tanggal aktivitas, status kredit, tagihan, limit, dan tindak lanjut setiap agent.</p></div><strong>{directoryGroups.length}<small>Agent</small></strong></div>
         <div className="directory-tools"><label><Search/><input value={borrowerQuery} onChange={event => setBorrowerQuery(event.target.value)} placeholder="Cari agent, toko, WhatsApp, atau ID..."/></label><div>{['Semua', 'Survei', 'Operator', 'Aktif', 'Lunas'].map(name => <button type="button" className={borrowerFilter === name ? 'active' : ''} onClick={() => setBorrowerFilter(name)} key={name}>{name}</button>)}</div></div>
-        <div className="directory-agent-list">
+        <div className="directory-agent-list" ref={directoryScrollRef}>
           {!!directoryGroups.length && <div className="mentored-agent-columns"><span>No</span><span>Tanggal</span><span>ID Pengajuan</span><span>Agent</span><span>Nama Toko</span><span>No. WhatsApp</span><span>Status</span><span>Tagihan</span><span>Limit</span><span>Aksi</span></div>}
           {directoryGroups.length ? directoryGroups.map((group,index) => {const row=group.rows[0]; const item=row.item; const stage=mentoringStage(item); const profile=creditProfile(items,item); const payable=group.rows.find(({item: candidate}) => candidate.status === 'Disetujui' && candidate.paymentStatus !== 'Lunas')?.item; const paymentRow=payable ? paymentRows(payable).find(candidate => !candidate.paid) : null; const activityAt=item.updatedAt || item.marketingSurveyAt || item.createdAt; return <article className="mentored-agent-row" key={group.key}>
             <span className="mentored-agent-no">{index+1}</span>

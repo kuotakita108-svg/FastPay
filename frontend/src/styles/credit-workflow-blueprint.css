@@ -16,3 +16,11 @@
 .operator-review .credit-review-tools{margin-top:0}
 .operator-review .credit-review-empty{min-height:0;border:1px solid #193a56;border-radius:8px;background:#071421;padding:34px 16px}
 .operator-review .credit-review-empty svg{width:28px;height:28px}.operator-review .credit-review-empty strong{font-size:12px}.operator-review .credit-review-empty span{font-size:9px}
+
+/* Tabel operasional: kolom tidak boleh saling menimpa pada laptop maupun HP. */
+.panel-workspace-shell.role-marketing .mentoring-directory .directory-agent-list{scroll-behavior:auto!important;overscroll-behavior-x:contain!important}
+.panel-workspace-shell.role-marketing .mentoring-directory :is(.mentored-agent-columns,.mentored-agent-row){grid-template-columns:28px 88px 92px 112px 104px 86px 52px 76px 82px 190px!important;min-width:990px!important;column-gap:6px!important}
+.panel-workspace-shell.role-marketing .mentoring-directory .mentoring-actions{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:0!important;min-width:190px!important;overflow:visible!important;white-space:nowrap!important}
+.panel-workspace-shell.role-marketing .mentoring-directory .mentoring-actions button{flex:0 0 auto!important}
+.panel-workspace-shell.role-marketing .mentoring-directory :is(.mentored-agent-credit,.mentored-agent-limit){white-space:nowrap!important}
+.operator-queue-table .operator-table-scroll,.h2h-ledger,.credit-report-data{overscroll-behavior-x:contain;scroll-behavior:auto}
