@@ -99,3 +99,22 @@
   .panel-workspace-shell .operator-review .marketing-report-panel>article:nth-child(2){border-right:0!important}
   .panel-workspace-shell .operator-review .marketing-report-panel>article:nth-child(-n+2){border-bottom:1px solid var(--op-line)!important}
 }
+
+/* Ledger transaksi H2H mengikuti tabel transaksi Pulsa24Jam. */
+.panel-workspace-shell .operator-review .h2h-ledger-head,
+.panel-workspace-shell .operator-review .h2h-ledger>article{grid-template-columns:36px 145px 80px 125px 85px minmax(210px,1fr) 120px!important;padding:9px 12px!important}
+.panel-workspace-shell .operator-review .h2h-ledger code{color:#d7e9f8!important}
+.panel-workspace-shell .operator-review .h2h-row-actions{display:flex;gap:6px}
+.panel-workspace-shell .operator-review .h2h-row-actions button{display:inline-flex;align-items:center;gap:5px;border:1px solid #28445f;border-radius:6px;background:#0d1d31;color:#edf7ff;padding:6px 8px;font-size:8px;font-weight:900}
+.panel-workspace-shell .operator-review .h2h-row-actions svg{width:12px}
+.panel-workspace-shell .operator-review .h2h-pagination{display:flex;align-items:center;justify-content:space-between;min-width:900px;border-top:1px solid var(--op-line);padding:8px 10px;color:#9eb2c6;font-size:9px}
+.panel-workspace-shell .operator-review .h2h-pagination div{display:flex;gap:5px}
+.panel-workspace-shell .operator-review .h2h-pagination button{width:27px;height:27px;border:1px solid #203d59;border-radius:6px;background:#0b1b2c;color:#b9cde0;font-size:9px}
+.panel-workspace-shell .operator-review .h2h-pagination button.active{border-color:#246ca0;background:#145aa6;color:#fff}
+.h2h-detail-overlay{position:fixed;z-index:1200;inset:0;display:grid;place-items:center;background:#020711c7;padding:20px}
+.h2h-detail-overlay>article{width:min(620px,100%);overflow:hidden;border:1px solid #244a67;border-radius:12px;background:#081727;color:#edf7ff;box-shadow:0 24px 80px #0009}
+.h2h-detail-overlay header{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:1px solid #193a56;padding:15px 17px}
+.h2h-detail-overlay header span{color:#38d7ef;font-size:8px;font-weight:900;letter-spacing:1px}.h2h-detail-overlay header h3{margin:4px 0 0}.h2h-detail-overlay header button{border:0;background:transparent;color:#9db5ca}
+.h2h-detail-overlay dl{display:grid;grid-template-columns:1fr 1fr;margin:0;padding:10px 17px}.h2h-detail-overlay dl>div{border-bottom:1px solid #142d43;padding:10px 4px}.h2h-detail-overlay dl>div:nth-child(odd){padding-right:14px}.h2h-detail-overlay dl>div.wide{grid-column:1/-1}.h2h-detail-overlay dt{color:#819bb2;font-size:8px}.h2h-detail-overlay dd{overflow-wrap:anywhere;margin:4px 0 0;color:#f3f8ff;font-size:10px;font-weight:800}
+.h2h-detail-overlay footer{display:flex;justify-content:flex-end;gap:8px;padding:13px 17px}.h2h-detail-overlay footer button{display:inline-flex;align-items:center;gap:6px;border:1px solid #284861;border-radius:7px;background:transparent;color:#d9e9f5;padding:8px 11px;font-size:9px;font-weight:900}.h2h-detail-overlay footer button.primary{border-color:#17749c;background:#0d648d;color:#fff}
+@media(max-width:560px){.h2h-detail-overlay{padding:10px}.h2h-detail-overlay dl{grid-template-columns:1fr}.h2h-detail-overlay dl>div.wide{grid-column:auto}}
