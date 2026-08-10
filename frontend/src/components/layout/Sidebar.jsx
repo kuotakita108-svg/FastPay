@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useState} from 'react'
 import {Link, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
-import {Activity, Archive, BarChart3, BookOpenCheck, CalendarClock, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, Headphones, Landmark, LockKeyhole, LogOut, ShieldCheck, UserPlus, Users, WalletCards, Zap} from 'lucide-react'
+import {Activity, BarChart3, BookOpenCheck, CalendarClock, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, Headphones, Landmark, LockKeyhole, LogOut, ShieldCheck, UserPlus, Users, WalletCards, Zap} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
 import {request} from '../../services/http'
@@ -52,7 +52,6 @@ const operatorNavigation = [
   {section: 'LAPORAN', items: [
     {to: '/credit-applications?view=laporan', label: 'Laporan Kredit', icon: BarChart3},
     {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Marketing', icon: Users},
-    {to: '/credit-applications?view=arsip-keputusan', label: 'Arsip Keputusan', icon: Archive},
   ]},
 ]
 
