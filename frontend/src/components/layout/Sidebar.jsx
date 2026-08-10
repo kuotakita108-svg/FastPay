@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useState} from 'react'
 import {Link, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
-import {Activity, BarChart3, BookOpenCheck, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, Headphones, Landmark, LockKeyhole, LogOut, ShieldCheck, UserPlus, Users, WalletCards, Zap} from 'lucide-react'
+import {Activity, Archive, BarChart3, BookOpenCheck, CalendarClock, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, Headphones, Landmark, LockKeyhole, LogOut, ShieldCheck, UserPlus, Users, WalletCards, Zap} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
 import {request} from '../../services/http'
@@ -44,6 +44,7 @@ const operatorNavigation = [
     section: 'KREDIT AGENT',
     items: [
       {to: '/credit-applications?view=peminjam', label: 'Agen & Kredit Aktif', icon: CheckCircle2, badgeKey: 'active'},
+      {to: '/credit-applications?view=jatuh-tempo', label: 'Jatuh Tempo & Tagihan', icon: CalendarClock, badgeKey: 'due'},
       {to: '/credit-applications?view=pelunasan', label: 'Verifikasi Pelunasan', icon: FileCheck2, badgeKey: 'payments'},
       {to: '/credit-applications?view=suspend', label: 'Risiko & Akses Agent', icon: LockKeyhole, badgeKey: 'risk'},
     ],
@@ -51,6 +52,7 @@ const operatorNavigation = [
   {section: 'LAPORAN', items: [
     {to: '/credit-applications?view=laporan', label: 'Laporan Kredit', icon: BarChart3},
     {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Marketing', icon: Users},
+    {to: '/credit-applications?view=arsip-keputusan', label: 'Arsip Keputusan', icon: Archive},
   ]},
 ]
 
@@ -94,6 +96,7 @@ export default function Sidebar({open, onClose}) {
         review: rows.filter(item => item.status === 'Menunggu keputusan operator').length,
         managed: new Set(rows.filter(item => ['Disetujui', 'Lunas'].includes(item.status) || item.paymentStatus === 'Lunas').map(item => item.userId || item.form?.whatsapp || item.userName)).size,
         active: rows.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas').length,
+        due: rows.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas' && item.dueAt && new Date(item.dueAt).getTime() <= now + (7 * 86400000)).length,
         payments: rows.filter(item => (item.repayments || []).some(payment => payment.status === 'Menunggu verifikasi')).length,
         risk: rows.filter(item => item.agentAccessStatus === 'suspended' || (item.status === 'Disetujui' && item.paymentStatus !== 'Lunas' && item.dueAt && new Date(item.dueAt).getTime() < now)).length,
       })

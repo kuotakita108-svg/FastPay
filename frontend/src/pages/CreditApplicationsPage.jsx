@@ -194,6 +194,8 @@ const viewInfo = {
   pelunasan: {label: 'Bukti Pelunasan', title: 'Arsip bukti pelunasan', desc: 'Periksa kredit yang sudah lunas beserta nominal, metode, waktu, referensi, penerima, dan bukti pembayarannya.'},
   laporan: {label: 'Laporan Kredit', title: 'Rekap kinerja kredit', desc: 'Lihat total nominal pinjaman, pembayaran masuk, sisa tagihan, dan status seluruh peminjam.'},
   'kinerja-marketing': {label: 'Audit Tim Lapangan', title: 'Kinerja setiap marketing', desc: 'Lihat jumlah agent yang didaftarkan, hasil survei, persetujuan, kredit aktif, dan risiko per marketing.'},
+  'jatuh-tempo': {label: 'Kendali Tagihan', title: 'Jatuh tempo dan tagihan agent', desc: 'Prioritaskan kredit yang segera jatuh tempo atau sudah terlambat, lalu buka detail maupun hentikan akses bila diperlukan.'},
+  'arsip-keputusan': {label: 'Audit Keputusan', title: 'Arsip keputusan Operator', desc: 'Telusuri seluruh persetujuan dan penolakan beserta pemeriksa, marketing, limit, waktu, dan alasan keputusan.'},
   rekomendasi: {label: 'Rekomendasi Limit', title: 'Rekomendasikan kenaikan limit', desc: 'Marketing memberi catatan lapangan untuk agent binaan. Keputusan limit tetap di tangan Operator.'},
   komisi: {label: 'Kantong Komisi', title: 'Insentif marketing', desc: 'Komisi hanya tercatat dari transaksi H2H sukses yang sudah dikirim oleh sistem pusat.'},
   limit: {label: 'Tier & Limit Agent', title: 'Manajemen tier dan limit', desc: 'Operator dapat melihat rekomendasi marketing dan menyesuaikan limit secara manual tanpa menghapus aturan otomatis.'},
@@ -832,6 +834,17 @@ export default function CreditApplicationsPage() {
   const nplCount = approvedActive.filter(item => item.dueAt && new Date(item.dueAt).getTime() < Date.now()).length
   const nplRatio = approvedActive.length ? Math.round((nplCount / approvedActive.length) * 100) : 0
   const operatorSuspendRows = [...new Map([...overdueItems, ...operatorSuspended].map(item => [item.id, item])).values()]
+  const dueSoonLimit = Date.now() + (7 * 86400000)
+  const collectionRows = approvedActive
+    .filter(item => item.dueAt)
+    .sort((a, b) => new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime())
+  const dueSoonItems = collectionRows.filter(item => {
+    const due = new Date(item.dueAt).getTime()
+    return due >= Date.now() && due <= dueSoonLimit
+  })
+  const decisionArchiveRows = sortedItems
+    .filter(item => finalStatus.includes(item.status))
+    .sort((a, b) => new Date(b.decidedAt || b.updatedAt || 0).getTime() - new Date(a.decidedAt || a.updatedAt || 0).getTime())
   const borrowerRows = sortedItems.map(item => ({item, pay: paymentSummary(item), next: firstUnpaidRow(item), score: dataScore(item)}))
   const mentoredBorrowerRows = borrowerRows.filter(({item}) => {
     if (isMarketing) return !(item.marketingId || item.marketingOwnerId) || (item.marketingId || item.marketingOwnerId) === user?.id
@@ -948,7 +961,7 @@ export default function CreditApplicationsPage() {
         <article><span>Sudah Diterima</span><strong>{summary.approved}</strong><small>Aktif dipantau</small></article>
         <article><span>Lunas</span><strong>{summary.paid}</strong><small>Pembayaran selesai</small></article>
       </div>}
-      {view !== 'overview' && !['laporan', 'kinerja-marketing', 'pelunasan'].includes(view) && !operatorTableMode && <section className={`credit-mode-panel view-${view}`}>
+      {view !== 'overview' && !['laporan', 'kinerja-marketing', 'pelunasan', 'jatuh-tempo', 'arsip-keputusan'].includes(view) && !operatorTableMode && <section className={`credit-mode-panel view-${view}`}>
         <span>{activeView.label}</span>
         <h2>{activeView.title}</h2>
         <p>{activeView.desc}</p>
@@ -1116,6 +1129,17 @@ export default function CreditApplicationsPage() {
         <header><div><span>AUDIT TIM LAPANGAN</span><h2>Kinerja setiap Marketing</h2><p>Operator dapat melihat jumlah agent yang ditangani setiap marketing beserta hasil survei, keputusan, kredit aktif, dan tingkat risikonya.</p></div><ShieldCheck/></header>
         <div className="marketing-performance-summary"><article><span>Total Marketing</span><strong>{marketingPerformance.filter(row => row.name !== 'Belum ditugaskan').length}</strong><small>Memiliki agent binaan</small></article><article><span>Agent Terdaftar</span><strong>{marketingPerformance.reduce((sum,row) => sum + row.registered,0)}</strong><small>Seluruh pengajuan tercatat</small></article><article><span>Sudah Disurvei</span><strong>{marketingPerformance.reduce((sum,row) => sum + row.visits,0)}</strong><small>Kunjungan lapangan selesai</small></article><article><span>Agent Disetujui</span><strong>{marketingPerformance.reduce((sum,row) => sum + row.approved,0)}</strong><small>Keputusan operator</small></article></div>
         <section className="marketing-audit-panel detailed"><header><div><span>RAPOR PER MARKETING</span><h2>Agent terdaftar dan kualitas portofolio</h2><p>Setiap baris menunjukkan tanggung jawab satu marketing. Red flag muncul jika NPL melebihi 5%.</p></div></header><div className="marketing-audit-columns"><span>Marketing</span><span>Agent Terdaftar</span><span>Sudah Survei</span><span>Menunggu Operator</span><span>Disetujui</span><span>Kredit Aktif</span><span>Kredit Macet</span><span>NPL</span></div>{marketingPerformance.map(row => <article className={row.npl > 5 ? 'red-flag' : ''} key={row.name}><b>{row.name}</b><span>{row.registered}</span><span>{row.visits}</span><span>{row.pending}</span><span>{row.approved}</span><strong>{row.active}</strong><strong>{rupiah(row.overdue)}</strong><em>{row.npl > 5 ? '⚠ ' : ''}{row.npl}%</em></article>)}{!marketingPerformance.length && <p>Belum ada aktivitas marketing untuk diaudit.</p>}</section>
+      </section>}
+      {(isOperator || isAdmin) && view === 'jatuh-tempo' && <section className="operator-ledger-workspace">
+        <header><div><span>KENDALI TAGIHAN</span><h2>Jatuh Tempo &amp; Tagihan Agent</h2><p>Urutan dimulai dari tanggal terdekat agar Operator langsung menangani tagihan paling mendesak.</p></div><CalendarDays/></header>
+        <div className="operator-ledger-summary"><article><small>Kredit aktif</small><strong>{approvedActive.length}</strong><span>Belum lunas</span></article><article><small>Jatuh tempo 7 hari</small><strong>{dueSoonItems.length}</strong><span>Perlu diingatkan</span></article><article><small>Terlambat</small><strong>{overdueItems.length}</strong><span>Perlu tindakan</span></article><article><small>Sisa tagihan</small><strong>{rupiah(operatorRemainingAmount)}</strong><span>Total berjalan</span></article></div>
+        <div className="operator-ledger-table due-ledger"><div className="operator-ledger-head"><span>Jatuh Tempo</span><span>Agent / Toko</span><span>Marketing</span><span>Sisa Tagihan</span><span>Status</span><span>Aksi</span></div>{collectionRows.length ? collectionRows.map(item => { const dueTime = new Date(item.dueAt).getTime(); const isLate = dueTime < Date.now(); const outstanding = Number(item.creditOutstanding ?? item.creditBalance ?? item.creditOriginalAmount ?? item.form.amount ?? 0); return <article key={item.id}><span>{dateTime(item.dueAt)}</span><span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id}</small></span><span>{item.marketingOwnerName || item.marketingName || 'Belum ditugaskan'}</span><strong>{rupiah(outstanding)}</strong><em className={isLate ? 'ledger-danger' : 'ledger-warning'}>{isLate ? 'Terlambat' : dueTime <= dueSoonLimit ? 'Segera jatuh tempo' : 'Terjadwal'}</em><div><button type="button" onClick={() => goToView('detail', item.id, 'Disetujui')}><Eye/>Detail</button><button type="button" className={item.agentAccessStatus === 'suspended' ? 'restore' : 'suspend'} onClick={() => setAgentAccess(item, item.agentAccessStatus !== 'suspended')}><Ban/>{item.agentAccessStatus === 'suspended' ? 'Aktifkan' : 'Suspend'}</button></div></article> }) : <p>Belum ada kredit aktif yang memiliki tanggal jatuh tempo.</p>}</div>
+        {operatorMessage && <output className="operator-feedback" aria-live="polite">{operatorMessage}</output>}
+      </section>}
+      {(isOperator || isAdmin) && view === 'arsip-keputusan' && <section className="operator-ledger-workspace">
+        <header><div><span>AUDIT KEPUTUSAN</span><h2>Arsip Keputusan Operator</h2><p>Setiap keputusan akhir tersimpan bersama identitas pemeriksa dan alasan agar mudah ditelusuri kembali.</p></div><FileCheck2/></header>
+        <div className="operator-ledger-summary"><article><small>Total keputusan</small><strong>{decisionArchiveRows.length}</strong><span>Arsip tersimpan</span></article><article><small>Disetujui</small><strong>{decisionArchiveRows.filter(item => item.status === 'Disetujui').length}</strong><span>Kredit diterima</span></article><article><small>Ditolak</small><strong>{decisionArchiveRows.filter(item => item.status === 'Ditolak Permanen').length}</strong><span>Keputusan final</span></article><article><small>Keputusan hari ini</small><strong>{analystDecidedToday.length}</strong><span>Aktivitas Operator</span></article></div>
+        <div className="operator-ledger-table decision-ledger"><div className="operator-ledger-head"><span>Waktu</span><span>ID Pengajuan</span><span>Agent / Toko</span><span>Marketing</span><span>Keputusan</span><span>Nominal / Limit</span><span>Operator &amp; Alasan</span><span>Aksi</span></div>{decisionArchiveRows.length ? decisionArchiveRows.map(item => { const profile = creditProfile(items, item); return <article key={item.id}><span>{dateTime(item.decidedAt || item.updatedAt)}</span><code>{item.id}</code><span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || 'Tanpa toko'}</small></span><span>{item.marketingOwnerName || item.marketingName || 'Belum ditugaskan'}</span><em className={item.status === 'Disetujui' ? 'ledger-success' : 'ledger-danger'}>{item.status === 'Disetujui' ? 'Disetujui' : 'Ditolak'}</em><strong>{rupiah(item.status === 'Disetujui' ? profile.limit : item.form.amount)}</strong><span><b>{item.analysisDecision?.by || item.analisSignature?.name || 'Operator'}</b><small>{item.analysisDecision?.note || item.rejectionReason || 'Tanpa catatan tambahan'}</small></span><button type="button" onClick={() => goToView('detail', item.id, statusGroup(item))}><Eye/>Detail</button></article> }) : <p>Belum ada keputusan akhir yang tersimpan.</p>}</div>
       </section>}
       {(isMarketing || isAdmin) && view === 'panduan' && <section className="marketing-guide-panel">
         <header><CircleHelp/><div><span>PANDUAN MARKETING</span><h2>Alur kerja yang benar</h2></div></header>
