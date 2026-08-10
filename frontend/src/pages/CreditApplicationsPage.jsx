@@ -261,7 +261,8 @@ export default function CreditApplicationsPage() {
   const canvasRef = useRef(null)
   const directoryScrollRef = useRef(null)
   const drawing = useRef(false)
-  const [items, setItems] = useState([])
+  // Tampilkan cache lokal segera; server menyegarkan data di belakang layar.
+  const [items, setItems] = useState(readAll)
   const [signaturePad, setSignaturePad] = useState(null)
   const [signatureDrawn, setSignatureDrawn] = useState(false)
   const [query, setQuery] = useState('')
@@ -331,17 +332,36 @@ export default function CreditApplicationsPage() {
   }).catch(() => setItems(readAll()))
 
   useEffect(() => {
-    const sync = () => refreshRemote()
-    window.addEventListener('storage', sync)
-    window.addEventListener('kuotakita-credit-sync', sync)
-    refreshRemote()
-    // Cukup berkala, bukan setiap 1,5 detik. Aksi penting tetap langsung
-    // disimpan ke server lewat saveApplication.
-    const timer = window.setInterval(sync, 3000)
+    let active = true
+    let inFlight = false
+    let timer = 0
+    const schedule = delay => {
+      window.clearTimeout(timer)
+      if (active) timer = window.setTimeout(sync, delay)
+    }
+    const sync = async () => {
+      if (!active || inFlight || document.hidden) return schedule(15000)
+      inFlight = true
+      try { await refreshRemote() } finally {
+        inFlight = false
+        schedule(15000)
+      }
+    }
+    const syncNow = () => {
+      if (document.hidden) return
+      window.clearTimeout(timer)
+      sync()
+    }
+    window.addEventListener('storage', syncNow)
+    window.addEventListener('kuotakita-credit-sync', syncNow)
+    document.addEventListener('visibilitychange', syncNow)
+    sync()
     return () => {
-      window.removeEventListener('storage', sync)
-      window.removeEventListener('kuotakita-credit-sync', sync)
-      window.clearInterval(timer)
+      active = false
+      window.clearTimeout(timer)
+      window.removeEventListener('storage', syncNow)
+      window.removeEventListener('kuotakita-credit-sync', syncNow)
+      document.removeEventListener('visibilitychange', syncNow)
     }
   }, [])
 
