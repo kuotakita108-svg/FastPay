@@ -841,9 +841,6 @@ export default function CreditApplicationsPage() {
     const due = new Date(item.dueAt).getTime()
     return due >= Date.now() && due <= dueSoonLimit
   })
-  const decisionArchiveRows = sortedItems
-    .filter(item => finalStatus.includes(item.status))
-    .sort((a, b) => new Date(b.decidedAt || b.updatedAt || 0).getTime() - new Date(a.decidedAt || a.updatedAt || 0).getTime())
   const borrowerRows = sortedItems.map(item => ({item, pay: paymentSummary(item), next: firstUnpaidRow(item), score: dataScore(item)}))
   const mentoredBorrowerRows = borrowerRows.filter(({item}) => {
     if (isMarketing) return !(item.marketingId || item.marketingOwnerId) || (item.marketingId || item.marketingOwnerId) === user?.id
@@ -1122,11 +1119,6 @@ export default function CreditApplicationsPage() {
             </article>
           }) : <p>Belum ada data laporan kredit.</p>}</div>
         </section>
-        {(isOperator || isAdmin) && <section className="operator-ledger-workspace report-decision-archive">
-          <header><div><span>RIWAYAT KEPUTUSAN</span><h2>Keputusan Kredit &amp; Penanggung Jawab</h2><p>Persetujuan dan penolakan tersimpan bersama Marketing pengaju, Operator pemeriksa, nominal, limit, dan catatan keputusan.</p></div><FileCheck2/></header>
-          <div className="operator-ledger-summary"><article><small>Total keputusan</small><strong>{decisionArchiveRows.length}</strong><span>Arsip tersimpan</span></article><article><small>Disetujui</small><strong>{decisionArchiveRows.filter(item => item.status === 'Disetujui').length}</strong><span>Kredit diterima</span></article><article><small>Ditolak</small><strong>{decisionArchiveRows.filter(item => item.status === 'Ditolak Permanen').length}</strong><span>Keputusan final</span></article><article><small>Keputusan hari ini</small><strong>{analystDecidedToday.length}</strong><span>Aktivitas Operator</span></article></div>
-          <div className="operator-ledger-table decision-ledger"><div className="operator-ledger-head"><span>Waktu</span><span>ID Pengajuan</span><span>Agent / Toko</span><span>Marketing</span><span>Keputusan</span><span>Nominal / Limit</span><span>Operator &amp; Alasan</span><span>Aksi</span></div>{decisionArchiveRows.length ? decisionArchiveRows.map(item => { const profile = creditProfile(items, item); return <article key={item.id}><span>{dateTime(item.decidedAt || item.updatedAt)}</span><code>{item.id}</code><span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || 'Tanpa toko'}</small></span><span><b>{item.marketingOwnerName || item.marketingName || 'Belum ditugaskan'}</b><small>Marketing penanggung jawab</small></span><em className={item.status === 'Disetujui' ? 'ledger-success' : 'ledger-danger'}>{item.status === 'Disetujui' ? 'Disetujui' : 'Ditolak'}</em><strong>{rupiah(item.status === 'Disetujui' ? profile.limit : item.form.amount)}</strong><span><b>{item.analysisDecision?.by || item.analisSignature?.name || 'Operator'}</b><small>{item.analysisDecision?.note || item.rejectionReason || 'Tanpa catatan tambahan'}</small></span><button type="button" onClick={() => goToView('detail', item.id, statusGroup(item))}><Eye/>Detail</button></article> }) : <p>Belum ada keputusan akhir yang tersimpan.</p>}</div>
-        </section>}
         {(isOperator || isAdmin) && <section className="marketing-audit-panel"><header><div><span>AUDIT TIM LAPANGAN</span><h2>Rapor kinerja Marketing</h2><p>Red flag muncul jika rasio tunggakan agent binaan melebihi 5%.</p></div><ShieldCheck/></header><div className="marketing-audit-columns"><span>Marketing</span><span>Kunjungan</span><span>Agent Disetujui</span><span>Omset Kredit</span><span>Kredit Macet</span><span>NPL</span></div>{marketingPerformance.map(row => <article className={row.npl > 5 ? 'red-flag' : ''} key={row.name}><b>{row.name}</b><span>{row.visits}</span><span>{row.approved}</span><strong>{rupiah(row.turnover)}</strong><strong>{rupiah(row.overdue)}</strong><em>{row.npl > 5 ? '⚠ ' : ''}{row.npl}%</em></article>)}{!marketingPerformance.length && <p>Belum ada aktivitas marketing untuk diaudit.</p>}</section>}
       </>}
       {(isOperator || isAdmin) && view === 'kinerja-marketing' && <section className="marketing-performance-workspace">
