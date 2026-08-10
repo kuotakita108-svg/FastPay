@@ -1086,7 +1086,7 @@ export default function CreditApplicationsPage() {
               <div><dt>Referensi</dt><dd>{payment.paymentReference || payment.key || item.id}</dd></div>
             </dl>
             {proof?.dataUrl ? <button type="button" className="payment-proof-file" onClick={() => setProofPreview({source: proof.dataUrl, name: proof.name || `Bukti ${item.id}`, item})}><img src={proof.dataUrl} alt={`Bukti pembayaran ${item.id}`}/><span><b>Lihat bukti pembayaran</b><small>{proof.name || 'Foto bukti transfer'}</small></span><Eye/></button> : <div className="payment-proof-empty"><Images/><span><b>Bukti gambar tidak tersedia</b><small>{proof?.name || 'Data lama belum menyimpan pratinjau file'}</small></span></div>}
-          </article>) : <div className="payment-proof-zero"><i><FileCheck2/></i><b>Belum ada pelunasan terverifikasi</b><span>Halaman ini akan terisi otomatis saat agent mengirim pembayaran dan Operator mengonfirmasi bukti.</span><div className="payment-proof-zero-flow"><small><strong>1</strong>Agent mengirim bukti</small><small><strong>2</strong>Operator memverifikasi</small><small><strong>3</strong>Masuk arsip lunas</small></div></div>}
+          </article>) : <div className="payment-proof-zero"><i><FileCheck2/></i><b>Belum ada pelunasan terverifikasi</b><span>Bukti pembayaran yang sudah dikonfirmasi akan tersimpan otomatis di halaman ini.</span></div>}
         </div>
       </section>}
       {(isMarketing || isOperator || isAdmin) && view === 'laporan' && <>
