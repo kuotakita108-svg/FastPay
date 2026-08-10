@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react'
 import {useSearchParams} from 'react-router-dom'
-import {Activity, AlertCircle, ArrowRight, Ban, Banknote, BarChart3, CalendarDays, Camera, Check, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, FileCheck2, Filter, Gauge, HandCoins, Headphones, Images, Landmark, LockKeyhole, PenLine, PhoneCall, PlusCircle, Printer, QrCode, Search, ShieldCheck, Stamp, Trash2, TrendingUp, Upload, UserCheck, UserPlus, WalletCards, X, XCircle} from 'lucide-react'
+import {Activity, AlertCircle, ArrowRight, Ban, Banknote, BarChart3, CalendarDays, Camera, Check, CheckCircle2, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, FileCheck2, Filter, Gauge, HandCoins, Headphones, Images, LockKeyhole, PenLine, PhoneCall, PlusCircle, Printer, QrCode, Search, ShieldCheck, Stamp, Trash2, TrendingUp, Upload, UserCheck, UserPlus, WalletCards, X, XCircle} from 'lucide-react'
 import {QRCodeSVG} from 'qrcode.react'
 import PageHeader from '../components/common/PageHeader'
 import {useAuth} from '../context/AuthContext'
@@ -221,7 +221,7 @@ const dataScore = item => {
 const marketingReadiness = item => {
   const score = dataScore(item)
   const meetingReady = Boolean(item.documents?.selfieMarketing?.dataUrl || item.documents?.selfieMarketing?.preview || item.documents?.selfieMarketing)
-  const surveyReady = Boolean(item.fieldSurvey?.ownership && item.fieldSurvey?.stock && item.fieldSurvey?.recommendation && item.fieldSurvey?.location)
+  const surveyReady = Boolean(item.fieldSurvey?.ownership && item.fieldSurvey?.stock && item.fieldSurvey?.recommendation)
   return {
     score,
     meetingReady,
@@ -239,7 +239,7 @@ const analystReadiness = item => {
   const checks = [
     {label: 'Data peminjam lengkap', ok: core.percent === 100},
     {label: 'Selfie pertemuan marketing', ok: marketing.meetingReady},
-    {label: 'Survei dan koordinat GPS', ok: marketing.surveyReady},
+    {label: 'Survei kondisi toko lengkap', ok: marketing.surveyReady},
     {label: 'Persetujuan syarat agent', ok: Boolean(item.termsAcceptedAt || item.termsAccepted)},
     {label: 'Tanda tangan agent', ok: Boolean(item.agentSignature || item.createdAt)},
     {label: 'Nominal sesuai limit agent', ok: amount >= 50000 && amount <= limit},
@@ -617,19 +617,11 @@ export default function CreditApplicationsPage() {
     })
     refresh()
   }
-  const captureSurveyLocation = item => {
-    if (!navigator.geolocation) return setOperatorMessage('GPS tidak tersedia pada perangkat ini.')
-    navigator.geolocation.getCurrentPosition(position => {
-      const location = {latitude: position.coords.latitude, longitude: position.coords.longitude, accuracy: Math.round(position.coords.accuracy), capturedAt: new Date().toISOString()}
-      setSurveyDrafts(current => ({...current, [item.id]: {...current[item.id], location}}))
-      setOperatorMessage(`Lokasi survei tersimpan dengan akurasi ±${location.accuracy} meter.`)
-    }, () => setOperatorMessage('Izin lokasi ditolak. Aktifkan GPS agar survei dapat dikunci.'), {enableHighAccuracy: true, timeout: 15000})
-  }
   const saveFieldSurvey = item => {
     const draft = surveyDrafts[item.id] || {}
-    if (!draft.ownership || !draft.stock || !draft.recommendation || !draft.location) return setOperatorMessage('Lengkapi kondisi usaha, stok, rekomendasi, dan ambil GPS lokasi terlebih dahulu.')
+    if (!draft.ownership || !draft.stock || !draft.recommendation) return setOperatorMessage('Lengkapi kondisi tempat, stok fisik, dan rekomendasi limit terlebih dahulu.')
     saveApplication(item, {fieldSurvey: {...draft, surveyedBy: reviewerName(user), surveyedAt: new Date().toISOString()}, status: 'Sedang diverifikasi marketing'})
-    setOperatorMessage('Survei lapangan dan titik GPS berhasil dikunci ke pengajuan.')
+    setOperatorMessage('Data survei toko berhasil disimpan ke pengajuan.')
     refresh()
   }
   const saveOperatorLimit = item => {
@@ -1317,11 +1309,9 @@ export default function CreditApplicationsPage() {
                 </div>
               })()}
               {isDetail && (isMarketing || isAdmin) && <div className="credit-detail-block field-survey-panel">
-                <header><div><span>SURVEI LAPANGAN</span><h4>Validasi fisik toko dan lokasi</h4></div><b>{item.fieldSurvey ? 'TERKUNCI' : 'BELUM LENGKAP'}</b></header>
+                <header><div><span>SURVEI TOKO</span><h4>Validasi kondisi usaha agent</h4></div><b>{item.fieldSurvey ? 'TERSIMPAN' : 'BELUM LENGKAP'}</b></header>
                 <div className="field-survey-options"><label>Kepemilikan tempat<select value={surveyDrafts[item.id]?.ownership || item.fieldSurvey?.ownership || ''} onChange={event => setSurveyDrafts(current => ({...current, [item.id]: {...current[item.id], ownership: event.target.value}}))}><option value="">Pilih kondisi</option><option>Milik Sendiri</option><option>Sewa</option><option>Konter Rumahan</option></select></label><label>Stok fisik<select value={surveyDrafts[item.id]?.stock || item.fieldSurvey?.stock || ''} onChange={event => setSurveyDrafts(current => ({...current, [item.id]: {...current[item.id], stock: event.target.value}}))}><option value="">Pilih kondisi</option><option>Kosong</option><option>Sedikit</option><option>Padat / Banyak</option></select></label><label>Rekomendasi limit<select value={surveyDrafts[item.id]?.recommendation || item.fieldSurvey?.recommendation || ''} onChange={event => setSurveyDrafts(current => ({...current, [item.id]: {...current[item.id], recommendation: event.target.value}}))}><option value="">Pilih rekomendasi</option><option>Rp500.000</option><option>Rp1.000.000</option><option>Tolak / Mencurigakan</option></select></label></div>
-                <div className="field-survey-location"><span><Landmark/><b>{surveyDrafts[item.id]?.location || item.fieldSurvey?.location ? 'Koordinat GPS tersimpan' : 'Koordinat belum diambil'}</b><small>{(surveyDrafts[item.id]?.location || item.fieldSurvey?.location) ? `${(surveyDrafts[item.id]?.location || item.fieldSurvey?.location).latitude.toFixed(6)}, ${(surveyDrafts[item.id]?.location || item.fieldSurvey?.location).longitude.toFixed(6)} · akurasi ±${(surveyDrafts[item.id]?.location || item.fieldSurvey?.location).accuracy} m` : 'Aktifkan GPS dan ambil lokasi saat berada di toko agent.'}</small></span><button type="button" onClick={() => captureSurveyLocation(item)}>Ambil GPS</button></div>
-                <button type="button" className="lock-survey" onClick={() => saveFieldSurvey(item)}><LockKeyhole/>Kunci Data Survei</button>
-                <small className="integration-note">Pencocokan radius alamat dan peta akan aktif setelah API Maps/geocoding resmi dipasang.</small>
+                <button type="button" className="lock-survey" onClick={() => saveFieldSurvey(item)}><CheckCircle2/>Simpan Data Survei</button>
               </div>}
               {isDetail && <div className="credit-detail-block borrower-document-gallery">
                 <h4>Dokumen Peminjam</h4>
