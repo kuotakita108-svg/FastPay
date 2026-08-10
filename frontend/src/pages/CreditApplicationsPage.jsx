@@ -948,7 +948,7 @@ export default function CreditApplicationsPage() {
         <article><span>Sudah Diterima</span><strong>{summary.approved}</strong><small>Aktif dipantau</small></article>
         <article><span>Lunas</span><strong>{summary.paid}</strong><small>Pembayaran selesai</small></article>
       </div>}
-      {view !== 'overview' && !['laporan', 'kinerja-marketing'].includes(view) && !operatorTableMode && <section className={`credit-mode-panel view-${view}`}>
+      {view !== 'overview' && !['laporan', 'kinerja-marketing', 'pelunasan'].includes(view) && !operatorTableMode && <section className={`credit-mode-panel view-${view}`}>
         <span>{activeView.label}</span>
         <h2>{activeView.title}</h2>
         <p>{activeView.desc}</p>
@@ -1061,7 +1061,7 @@ export default function CreditApplicationsPage() {
       {(isOperator || isAdmin) && view === 'pelunasan' && <section className="analyst-payment-proof-panel">
         <header className="payment-proof-heading">
           <i><FileCheck2/></i>
-          <div><span>ARSIP PELUNASAN</span><h2>Bukti pembayaran kredit agent</h2><p>Setiap pelunasan tersusun dari yang terbaru. Operator dapat melihat nominal, jalur pembayaran, penerima, referensi, dan bukti transfer tanpa bercampur dengan antrean aktif.</p></div>
+          <div><span>VERIFIKASI &amp; ARSIP</span><h2>Pelunasan Kredit Agent</h2><p>Periksa bukti pembayaran yang baru masuk dan simpan seluruh kredit yang sudah lunas dalam satu arsip resmi.</p></div>
         </header>
         <div className="payment-proof-summary">
           <article><small>Perlu verifikasi</small><strong>{pendingProofRows.length}</strong><span>Bukti baru masuk</span></article>
@@ -1086,7 +1086,7 @@ export default function CreditApplicationsPage() {
               <div><dt>Referensi</dt><dd>{payment.paymentReference || payment.key || item.id}</dd></div>
             </dl>
             {proof?.dataUrl ? <button type="button" className="payment-proof-file" onClick={() => setProofPreview({source: proof.dataUrl, name: proof.name || `Bukti ${item.id}`, item})}><img src={proof.dataUrl} alt={`Bukti pembayaran ${item.id}`}/><span><b>Lihat bukti pembayaran</b><small>{proof.name || 'Foto bukti transfer'}</small></span><Eye/></button> : <div className="payment-proof-empty"><Images/><span><b>Bukti gambar tidak tersedia</b><small>{proof?.name || 'Data lama belum menyimpan pratinjau file'}</small></span></div>}
-          </article>) : <div className="payment-proof-zero"><FileCheck2/><b>Belum ada kredit yang lunas</b><span>Bukti pembayaran akan otomatis masuk ke sini setelah pelunasan dikonfirmasi.</span></div>}
+          </article>) : <div className="payment-proof-zero"><i><FileCheck2/></i><b>Belum ada pelunasan terverifikasi</b><span>Halaman ini akan terisi otomatis saat agent mengirim pembayaran dan Operator mengonfirmasi bukti.</span><div className="payment-proof-zero-flow"><small><strong>1</strong>Agent mengirim bukti</small><small><strong>2</strong>Operator memverifikasi</small><small><strong>3</strong>Masuk arsip lunas</small></div></div>}
         </div>
       </section>}
       {(isMarketing || isOperator || isAdmin) && view === 'laporan' && <>
