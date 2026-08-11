@@ -249,7 +249,9 @@ func (s *AuthService) GoogleLogin(googleID, name, email string) (domain.AuthResu
 }
 
 func (s *AuthService) result(user domain.User) domain.AuthResult {
-	payload := fmt.Sprintf("%s|%s|%d", user.ID, user.Role, time.Now().Add(24*time.Hour).Unix())
+	// Staff often keeps the operational panel open across work days. A seven-day
+	// signed session avoids valid forms failing mid-work while retaining expiry.
+	payload := fmt.Sprintf("%s|%s|%d", user.ID, user.Role, time.Now().Add(7*24*time.Hour).Unix())
 	mac := hmac.New(sha256.New, []byte(s.secret))
 	mac.Write([]byte(payload))
 	token := base64.RawURLEncoding.EncodeToString([]byte(payload)) + "." + base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
