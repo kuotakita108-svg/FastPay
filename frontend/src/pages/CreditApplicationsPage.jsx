@@ -972,12 +972,6 @@ export default function CreditApplicationsPage() {
         <header>
           <div><span>MEJA KERJA MARKETING</span><h2>Kerjakan yang paling penting</h2><p>Agent mengisi pengajuan sendiri. Marketing mengambil antrean, memeriksa data, menyelesaikan empat foto survei, lalu mengirim berkas lengkap ke Operator.</p></div>
         </header>
-        <div className="marketing-flow-strip" aria-label="Alur kerja marketing">
-          <button type="button" onClick={() => goToView('agent-input')}><b>1</b><span><strong>Akun Agent</strong><small>Daftar sendiri atau dibantu</small></span></button>
-          <button type="button" onClick={() => goToView('verifikasi')}><b>2</b><span><strong>Ambil Antrean</strong><small>Hubungi dan jadwalkan survei</small></span></button>
-          <button type="button" onClick={() => goToView('verifikasi')}><b>3</b><span><strong>Survei Lapangan</strong><small>Cek data dan ambil 4 foto</small></span></button>
-          <button type="button" onClick={() => goToView('verifikasi')}><b>4</b><span><strong>Kirim ke Operator</strong><small>Berkas dan rekomendasi lengkap</small></span></button>
-        </div>
         <div className="marketing-task-grid">
           {marketingCards.map(({title, value, note, icon: Icon}) => <article key={title}><i><Icon/></i><span>{title}</span><strong>{value}</strong><small>{note}</small></article>)}
         </div>
@@ -991,23 +985,6 @@ export default function CreditApplicationsPage() {
           <button type="button" onClick={() => meetingQueue[0] ? goToView('detail', meetingQueue[0].id, 'Review') : goToView('verifikasi')}><Camera/><span><b>Pertemuan &amp; selfie</b><small>{meetingQueue.length ? `${meetingQueue.length} agent perlu didampingi` : 'Tidak ada pertemuan tertunda'}</small></span><strong>→</strong></button>
           <button type="button" onClick={() => offlineCollectionQueue[0] ? goToView('angsuran-detail', offlineCollectionQueue[0].id, 'Disetujui') : goToView('angsuran')}><HandCoins/><span><b>Pelunasan offline</b><small>{offlineCollectionQueue.length ? `${offlineCollectionQueue.length} agent perlu dikunjungi` : 'Tidak ada penagihan tertunda'}</small></span><strong>→</strong></button>
           <button type="button" onClick={() => goToView('peminjam')}><Banknote/><span><b>Kredit aktif</b><small>{paymentToday.length ? `${paymentToday.length} kredit menunggu lunas` : 'Tidak ada kredit aktif'}</small></span><strong>→</strong></button>
-        </div>
-        <div className="marketing-section-label focus-label"><span>PEKERJAAN TERDEKAT</span><small>Daftar yang membutuhkan perhatian lebih dulu</small></div>
-        <div className="marketing-focus-grid">
-          <div>
-            <h3>Perlu selfie pertemuan</h3>
-            {meetingQueue.slice(0, 4).length ? meetingQueue.slice(0, 4).map(item => <button type="button" key={item.id} onClick={() => goToView('detail', item.id, 'Review')}>
-              <span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id}</small></span>
-              <strong>{rupiah(item.form.amount)}</strong>
-            </button>) : <p>Tidak ada agent yang menunggu pertemuan.</p>}
-          </div>
-          <div>
-            <h3>Siap diperiksa Operator</h3>
-            {marketingReadyForAnalysis.slice(0, 4).length ? marketingReadyForAnalysis.slice(0, 4).map(item => <button type="button" key={item.id} onClick={() => goToView('detail', item.id, 'Review')}>
-              <span><b>{item.form.agentName || item.userName}</b><small>Data dan selfie pertemuan lengkap</small></span>
-              <strong>{rupiah(item.form.amount)}</strong>
-            </button>) : <p>Belum ada berkas pendampingan yang lengkap.</p>}
-          </div>
         </div>
       </section>}
       {(isOperator || isAdmin) && view === 'overview' && !operatorTableMode && <section className="marketing-workspace analyst-workspace operator-workspace">
@@ -1027,11 +1004,6 @@ export default function CreditApplicationsPage() {
           <button type="button" onClick={() => goToView('peminjam')}><Ban/><span><b>Kontrol akses agent</b><small>{operatorSuspended.length ? `${operatorSuspended.length} akses sedang dihentikan` : 'Semua akses agent aktif'}</small></span><strong>→</strong></button>
         </div>
         {operatorMessage && <p className="operator-feedback" role="status">{operatorMessage}</p>}
-        <div className="marketing-section-label focus-label"><span>BERKAS PRIORITAS</span><small>Periksa kelayakan dan kelengkapan sebelum memberi keputusan</small></div>
-        <div className="marketing-focus-grid">
-          <div><h3>Menunggu tanda tangan operator</h3>{analystQueue.filter(item => !item.analisSignature).slice(0, 4).map(item => <button type="button" key={item.id} onClick={() => goToView('verifikasi', item.id, 'Review')}><span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id}</small></span><strong>{rupiah(item.form.amount)}</strong></button>)}{!analystQueue.some(item => !item.analisSignature) && <p>Tidak ada berkas yang menunggu tanda tangan operator.</p>}</div>
-          <div><h3>Siap diberi keputusan</h3>{analystReadyToDecide.slice(0, 4).map(item => <button type="button" key={item.id} onClick={() => goToView('verifikasi', item.id, 'Review')}><span><b>{item.form.agentName || item.userName}</b><small>TTD operator sudah tersimpan</small></span><strong>{rupiah(item.form.amount)}</strong></button>)}{!analystReadyToDecide.length && <p>Belum ada berkas yang siap diberi keputusan.</p>}</div>
-        </div>
       </section>}
       {(isMarketing || isOperator || isAdmin) && view === 'verifikasi' && !operatorTableMode && <section className="marketing-action-panel">
         <header>{isRejectedArchive ? <XCircle/> : <ClipboardCheck/>}<div><span>{isRejectedArchive ? 'ARSIP PENOLAKAN' : isOperator ? 'FOKUS OPERATOR' : 'FOKUS PENDAMPINGAN'}</span><h2>{isRejectedArchive ? `${rejectedItems.length} keputusan ditolak` : `${isOperator ? analystQueue.length : marketingQueue.length} pengajuan perlu ditangani`}</h2><p>{isRejectedArchive ? 'Buka detail untuk membaca alasan keputusan dan jejak pemeriksaan operator. Data di halaman ini hanya arsip, bukan antrean aktif.' : isOperator ? 'Cek nominal, batas kredit, data, dokumen, selfie pertemuan, ketentuan, dan tanda tangan agent. Setelah lengkap, tanda tangani lalu terima atau tolak.' : 'Buka detail pengajuan untuk membantu melengkapi data dan mengambil selfie bersama agent. Keputusan akhir dilakukan Operator.'}</p></div></header>
