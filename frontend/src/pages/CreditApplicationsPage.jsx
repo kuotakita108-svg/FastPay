@@ -1079,21 +1079,22 @@ export default function CreditApplicationsPage() {
         </div>
       </section>}
       {(isMarketing || isOperator || isAdmin) && view === 'laporan' && <>
+        <section className="credit-report-hero"><div><span>RINGKASAN PORTOFOLIO</span><h2>Laporan kredit agent</h2><p>Pantau nilai kredit, pembayaran masuk, dan kondisi setiap agent dari data yang tercatat di sistem.</p></div><div className="credit-report-period"><CalendarDays/><span><small>Diperbarui</small><b>{dateTime(new Date())}</b></span></div></section>
         <section className="marketing-report-panel">
-          <article><span>Total Pinjaman</span><strong>{rupiah(totalLoan)}</strong><small>Akumulasi nominal pengajuan</small></article>
-          <article><span>Pembayaran Masuk</span><strong>{rupiah(totalPaidAmount)}</strong><small>Pelunasan yang sudah dicatat</small></article>
-          <article><span>Sisa Tagihan</span><strong>{rupiah(remainingLoan)}</strong><small>Estimasi belum dibayar</small></article>
-          <article><span>Rasio Lunas</span><strong>{items.length ? Math.round((summary.paid / items.length) * 100) : 0}%</strong><small>Dari seluruh peminjam</small></article>
+          <article className="report-total"><span>Total Kredit</span><strong>{rupiah(totalLoan)}</strong><small>Nilai pengajuan tercatat</small></article>
+          <article className="report-paid"><span>Pembayaran Masuk</span><strong>{rupiah(totalPaidAmount)}</strong><small>Sudah diterima dan dicatat</small></article>
+          <article className="report-balance"><span>Sisa Berjalan</span><strong>{rupiah(remainingLoan)}</strong><small>Belum diselesaikan agent</small></article>
+          <article className="report-ratio"><span>Tingkat Penyelesaian</span><strong>{items.length ? Math.round((summary.paid / items.length) * 100) : 0}%</strong><small>{summary.paid} dari {items.length} pengajuan lunas</small></article>
         </section>
         <section className="marketing-report-table">
-          <header><div><span>LAPORAN KREDIT</span><h2>Rekap peminjam & pembayaran</h2><p>{isOperator ? 'Ringkasan keputusan, pembayaran masuk, dan kesehatan seluruh kredit yang sedang berjalan.' : 'Kontrol tagihan, sisa pembayaran, dan arsip kerja marketing dalam satu laporan.'}</p></div><button type="button" onClick={exportReport}><Banknote/>Export CSV</button></header>
+          <header><div><span>RINCIAN KREDIT</span><h2>Agent dan status pembayaran</h2><p>{isOperator ? 'Periksa keputusan, pembayaran, dan sisa kredit setiap agent.' : 'Lihat perkembangan kredit seluruh agent binaan tanpa membuka halaman detail satu per satu.'}</p></div><button type="button" onClick={exportReport}><BarChart3/>Unduh CSV</button></header>
           <div className="credit-report-data">{!!sortedItems.length && <div className="credit-report-columns"><span>Tanggal</span><span>ID Pengajuan</span><span>Agent</span><span>Nama Toko</span><span>Pinjaman</span><span>Status</span><span>Terbayar</span><span>Sisa Tagihan</span></div>}{sortedItems.length ? sortedItems.map(item => {
             const pay = paymentSummary(item)
             return <article key={item.id}><small className="report-date">{dateTime(item.updatedAt || item.createdAt)}</small><code className="report-id" title={item.id}>{item.id}</code>
               <span><b>{item.form.agentName || item.userName}</b><small>{item.id} · {item.form.storeName || 'Tanpa toko'}</small></span>
               <span className="report-store">{item.form.storeName || 'Tanpa toko'}</span>
               <strong>{rupiah(item.form.amount)}</strong>
-              <em className={`report-status report-status-${item.status === 'Disetujui' ? 'approved' : item.status === 'Ditolak' ? 'rejected' : 'pending'}`}>{item.status}</em>
+              <em className={`report-status report-status-${item.status === 'Disetujui' || item.status === 'Lunas' ? 'approved' : String(item.status).includes('Ditolak') ? 'rejected' : 'pending'}`}>{item.paymentStatus === 'Lunas' ? 'Lunas' : item.status}</em>
               <i><small>Terbayar</small>{rupiah(pay.totalPaid)}</i>
               <i><small>Sisa</small>{rupiah(Math.max(0, Number(item.form.amount || 0) - pay.totalPaid))}</i>
             </article>

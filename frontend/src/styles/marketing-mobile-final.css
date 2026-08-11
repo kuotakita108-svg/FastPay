@@ -179,6 +179,19 @@
   .panel-workspace-shell.role-marketing .marketing-review .payment-agent-row > strong { grid-column: 2 !important; grid-row: 1 !important; align-self: start !important; color: #fff !important; font-size: 13px !important; }
   .panel-workspace-shell.role-marketing .marketing-review .payment-agent-row > button { grid-column: 2 !important; grid-row: 2 !important; min-width: 78px !important; min-height: 34px !important; border-color: #197aa4 !important; border-radius: 8px !important; background: #0b6289 !important; color: #fff !important; font-size: 9px !important; }
   .panel-workspace-shell.role-marketing .marketing-review .payment-agent-row > button:disabled { border-color: #294359 !important; background: #102536 !important; color: #849cad !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .credit-report-hero { display: grid !important; gap: 10px !important; width: calc(100% - 16px) !important; margin: 8px !important; padding: 14px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .credit-report-hero h2 { font-size: 17px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .credit-report-hero p { font-size: 9px !important; line-height: 1.45 !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .credit-report-period { min-width: 0 !important; padding: 8px 10px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .marketing-report-panel { width: calc(100% - 16px) !important; margin: 0 8px 8px !important; padding: 0 !important; overflow: hidden !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .marketing-report-panel article { height: 70px !important; min-height: 70px !important; border-right: 1px solid #21445d !important; border-bottom: 1px solid #21445d !important; border-radius: 0 !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .marketing-report-panel article:nth-child(2n) { border-right: 0 !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .marketing-report-panel article:nth-last-child(-n+2) { border-bottom: 0 !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .marketing-report-table { width: calc(100% - 16px) !important; margin: 0 8px 8px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .marketing-report-table > header { grid-template-columns: minmax(0,1fr) auto !important; gap: 8px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .marketing-report-table > header h2 { font-size: 14px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .marketing-report-table > header p { font-size: 8px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .marketing-report-table > header button { align-self: center !important; white-space: nowrap !important; }
   .panel-workspace-shell.role-marketing .marketing-review .field-agenda-panel { width: calc(100% - 16px) !important; min-height: calc(100dvh - 68px) !important; margin: 8px !important; border-radius: 15px !important; }
   .panel-workspace-shell.role-marketing .marketing-review .field-agenda-panel > header { padding: 14px !important; }
   .panel-workspace-shell.role-marketing .marketing-review .field-agenda-panel > header h2 { font-size: 17px !important; }
