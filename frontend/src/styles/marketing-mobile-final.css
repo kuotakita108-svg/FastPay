@@ -1,7 +1,7 @@
 /* Lapisan final khusus perangkat lapangan. Jangan pakai ukuran desktop di sini. */
 @media (max-width: 760px) {
-  .panel-workspace-shell.role-marketing .page-content { width: 100% !important; max-width: none !important; padding: 0 !important; }
-  .panel-workspace-shell.role-marketing .marketing-review { display: flex !important; flex-direction: column !important; align-content: stretch !important; justify-content: flex-start !important; gap: 5px !important; width: 100% !important; max-width: none !important; min-width: 0 !important; margin: 0 !important; padding: 0 !important; }
+  .panel-workspace-shell.role-marketing .page-content { width: 100% !important; max-width: none !important; min-height: calc(100dvh - 52px) !important; padding: 0 !important; }
+  .panel-workspace-shell.role-marketing .marketing-review { display: flex !important; flex-direction: column !important; align-content: stretch !important; justify-content: flex-start !important; gap: 5px !important; width: 100% !important; max-width: none !important; min-width: 0 !important; min-height: calc(100dvh - 52px) !important; margin: 0 !important; padding: 0 !important; }
   .panel-workspace-shell.role-marketing .marketing-topbar { height: 52px !important; min-height: 52px !important; padding: 0 7px !important; }
   .panel-workspace-shell.role-marketing .marketing-topbar .add-agent-action { width: 36px !important; min-width: 36px !important; max-width: 36px !important; height: 36px !important; min-height: 36px !important; padding: 0 !important; overflow: hidden !important; }
   .panel-workspace-shell.role-marketing .marketing-topbar .add-agent-action span { display: none !important; }
@@ -32,7 +32,7 @@
   .panel-workspace-shell.role-marketing .marketing-review > .marketing-profile-header + .credit-review-stats,
   .panel-workspace-shell.role-marketing .marketing-review > .credit-review-stats + .marketing-workspace,
   .panel-workspace-shell.role-marketing .marketing-review > .marketing-profile-header + .marketing-workspace { margin-top: 0 !important; }
-  .panel-workspace-shell.role-marketing .marketing-review > .marketing-workspace { display: grid !important; gap: 5px !important; width: 100% !important; max-width: none !important; height: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 0 6px !important; border-color: #174d67 !important; border-radius: 0 !important; background: #071827 !important; }
+  .panel-workspace-shell.role-marketing .marketing-review > .marketing-workspace { display: grid !important; flex: 1 1 auto !important; align-content: start !important; gap: 5px !important; width: 100% !important; max-width: none !important; height: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 0 6px !important; border-color: #174d67 !important; border-radius: 0 !important; background: #071827 !important; }
   .panel-workspace-shell.role-marketing .marketing-review > .marketing-workspace > header { height: 42px !important; min-height: 42px !important; max-height: 42px !important; margin: 0 !important; padding: 6px 8px !important; border-color: #1b607a !important; background: linear-gradient(90deg,#0b3347,#0a2032) !important; }
   .panel-workspace-shell.role-marketing .marketing-review > .marketing-workspace > header span { color: #55e6f2 !important; font-size: 7px !important; }
   .panel-workspace-shell.role-marketing .marketing-review > .marketing-workspace > header h2 { margin: 2px 0 0 !important; color: #fff !important; font-size: 12px !important; }
