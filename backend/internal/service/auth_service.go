@@ -181,8 +181,8 @@ func (s *AuthService) createAccount(in domain.RegisterInput, role string) (domai
 	if len(in.Name) < 3 || len(in.Username) < 3 || len(in.Phone) < 10 || len(in.Password) < 6 || (in.Email != "" && !strings.Contains(in.Email, "@")) {
 		return domain.User{}, errors.New("lengkapi data dengan benar; password minimal 6 karakter")
 	}
-	if role == "agent" && (len(in.StoreName) < 2 || in.Province == "" || in.City == "" || in.District == "") {
-		return domain.User{}, errors.New("nama toko dan wilayah agent wajib dilengkapi")
+	if role == "agent" && len(in.StoreName) < 2 {
+		return domain.User{}, errors.New("nama toko agent wajib dilengkapi")
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
