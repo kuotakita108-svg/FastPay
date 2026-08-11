@@ -94,6 +94,20 @@ func (h *AuthHandler) CreateAgent(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusCreated, user)
 }
 
+func (h *AuthHandler) CreateMarketing(w http.ResponseWriter, r *http.Request) {
+	var in domain.RegisterInput
+	if json.NewDecoder(r.Body).Decode(&in) != nil {
+		response.Error(w, http.StatusBadRequest, "data marketing tidak valid")
+		return
+	}
+	user, err := h.service.CreateMarketing(r.Header.Get("Authorization"), in)
+	if err != nil {
+		response.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+	response.JSON(w, http.StatusCreated, user)
+}
+
 func (h *AuthHandler) SetAgentAccess(w http.ResponseWriter, r *http.Request) {
 	var in struct {
 		Suspended bool   `json:"suspended"`

@@ -158,6 +158,17 @@ func (s *AuthService) CreateAgent(token string, in domain.RegisterInput) (domain
 	return s.createAccount(in, "agent")
 }
 
+func (s *AuthService) CreateMarketing(token string, in domain.RegisterInput) (domain.User, error) {
+	_, role, err := s.session(token)
+	if err != nil {
+		return domain.User{}, err
+	}
+	if role != "operator" && role != "analis" && role != "admin" && role != "master" {
+		return domain.User{}, errors.New("hanya operator/admin yang dapat membuat akun marketing")
+	}
+	return s.createAccount(in, "marketing")
+}
+
 func (s *AuthService) createAccount(in domain.RegisterInput, role string) (domain.User, error) {
 	in.Name = strings.TrimSpace(in.Name)
 	in.Username = normalize(in.Username)

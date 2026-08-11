@@ -30,6 +30,7 @@ func New(h Handlers) http.Handler {
 	mux.HandleFunc("GET /api/v1/me", h.Auth.Me)
 	mux.HandleFunc("PATCH /api/v1/me", h.Auth.UpdateProfile)
 	mux.HandleFunc("POST /api/v1/auth/agents", h.Auth.CreateAgent)
+	mux.HandleFunc("POST /api/v1/auth/marketing", h.Auth.CreateMarketing)
 	mux.HandleFunc("PATCH /api/v1/auth/agents/{id}/access", h.Auth.SetAgentAccess)
 	mux.HandleFunc("GET /api/v1/auth/google", h.Auth.Google)
 	mux.HandleFunc("GET /api/v1/auth/google/callback", h.Auth.GoogleCallback)

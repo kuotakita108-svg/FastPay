@@ -7,6 +7,7 @@ import {useAuth} from '../context/AuthContext'
 import {rupiah} from '../utils/currency'
 import {request} from '../services/http'
 import AgentAccountForm from '../components/credit/AgentAccountForm'
+import MarketingAccountForm from '../components/credit/MarketingAccountForm'
 import {getPulsa24Balance, getPulsa24Operations, refundPulsa24Order} from '../services/transactionService'
 
 const allKey = 'kuotakita_agent_credit_all'
@@ -204,6 +205,7 @@ const viewInfo = {
   h2h: {label: 'Monitor Saldo H2H', title: 'Kesiapan bridge Pulsa24Jam', desc: 'Pantau kesiapan saldo induk sebelum transaksi agent diteruskan ke API H2H Pulsa24Jam.'},
   panduan: {label: 'Panduan Marketing', title: 'Panduan kerja marketing', desc: 'Daftarkan agent, bantu pengajuan, ambil selfie pertemuan, dan catat pelunasan offline secara tertib.'},
   'agent-input': {label: 'Tambah Agent', title: 'Daftarkan agent baru', desc: 'Buat akun agent resmi agar agent dapat login dan menggunakan layanan Kredit Saldo Agent.'},
+  'marketing-input': {label: 'Tambah Marketing', title: 'Daftarkan marketing baru', desc: 'Buat akun kerja resmi agar marketing dapat langsung login dan menangani agent binaannya.'},
 }
 const dataScore = item => {
   const checks = [
@@ -959,12 +961,13 @@ export default function CreditApplicationsPage() {
         <article><span>Sudah Diterima</span><strong>{summary.approved}</strong><small>Aktif dipantau</small></article>
         <article><span>Lunas</span><strong>{summary.paid}</strong><small>Pembayaran selesai</small></article>
       </div>}
-      {view !== 'overview' && !['laporan', 'kinerja-marketing', 'pelunasan', 'jatuh-tempo'].includes(view) && !operatorTableMode && <section className={`credit-mode-panel view-${view}`}>
+      {view !== 'overview' && !['laporan', 'kinerja-marketing', 'pelunasan', 'jatuh-tempo', 'marketing-input'].includes(view) && !operatorTableMode && <section className={`credit-mode-panel view-${view}`}>
         <span>{activeView.label}</span>
         <h2>{activeView.title}</h2>
         <p>{activeView.desc}</p>
       </section>}
       {(isMarketing || isAdmin) && view === 'agent-input' && <AgentAccountForm onClose={() => goToView('overview')}/>}
+      {(isOperator || isAdmin) && view === 'marketing-input' && <MarketingAccountForm onClose={() => goToView('overview')}/>}
       {(isMarketing || isAdmin) && view === 'overview' && <section className="marketing-workspace">
         <header>
           <div><span>MEJA KERJA MARKETING</span><h2>Kerjakan yang paling penting</h2><p>Agent mengisi pengajuan sendiri. Marketing mengambil antrean, memeriksa data, menyelesaikan empat foto survei, lalu mengirim berkas lengkap ke Operator.</p></div>

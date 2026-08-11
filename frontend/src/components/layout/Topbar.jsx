@@ -38,11 +38,11 @@ export default function Topbar({onMenu}) {
         <button className="icon-button notification" onClick={() => setNoticeOpen(value => !value)} aria-label="Buka notifikasi"><Bell size={18}/><i/></button>
         {noticeOpen && <div className="notification-popover"><header><div><strong>Notifikasi</strong><small>Informasi yang perlu kamu cek</small></div><span>{notices.length}</span></header>{notices.map(({title, desc, action, icon: Icon}) => <button type="button" key={title} onClick={() => {setNoticeOpen(false); action()}}><i><Icon/></i><span><b>{title}</b><small>{desc}</small></span><em>›</em></button>)}</div>}
       </div>
-      {canCreateAgent
+      {isOperator
+        ? <button className="primary-button add-agent-action" onClick={() => navigate('/credit-applications?view=marketing-input')}><Plus size={17}/><span className="agent-label-wide">Tambah Marketing</span><span className="agent-label-mobile">Marketing</span></button>
+        : canCreateAgent
         ? <button className="primary-button add-agent-action" onClick={() => navigate('/credit-applications?view=agent-input')}><Plus size={17}/><span className="agent-label-wide">Tambah Agent</span><span className="agent-label-mobile">Agent Baru</span></button>
-        : isOperator
-          ? <button className="primary-button" onClick={() => navigate('/credit-applications?view=verifikasi')}><ClipboardCheck size={17}/>Buka Operator</button>
-          : <button className="primary-button" onClick={() => navigate('/topup')}><Plus size={17}/>Transaksi Pulsa</button>}
+        : <button className="primary-button" onClick={() => navigate('/topup')}><Plus size={17}/>Transaksi Pulsa</button>}
     </div>
   </header>
 }
