@@ -947,7 +947,11 @@ export default function CreditApplicationsPage() {
         <div><span>PROFIL AKTIF</span><h1>{String(user?.name || 'Marketing KuotaKita').toUpperCase()}</h1><p>Akun marketing aktif untuk pendampingan agent, survei lapangan, dokumen, dan pemantauan kredit.</p><footer><b><CheckCircle2/>Marketing</b><b><ShieldCheck/>Role aktif di sesi ini</b></footer></div>
         <i><UserCheck/></i>
       </section>}
-      {view === 'overview' && !operatorTableMode && !isMarketing && <div className="credit-review-hero">
+      {view === 'overview' && !operatorTableMode && isOperator && <section className="operator-profile-header">
+        <div><span>PROFIL AKTIF</span><h1>{String(user?.name || 'Operator KuotaKita').toUpperCase()}</h1><p>Akun Operator aktif untuk keputusan akhir, pengaturan limit, verifikasi pelunasan, dan pengamanan kredit agent.</p><footer><b><ClipboardCheck/>Operator</b><b><ShieldCheck/>Role aktif di sesi ini</b></footer></div>
+        <i><ClipboardCheck/></i>
+      </section>}
+      {view === 'overview' && !operatorTableMode && !isMarketing && !isOperator && <div className="credit-review-hero">
         <div>
           <span>{isOperator ? 'RUANG KEPUTUSAN OPERATOR' : 'RUANG DATA PEMINJAM'}</span>
           <h2>{isOperator ? 'Kontrol Keputusan Kredit' : 'Monitoring Kredit Agent'}</h2>
@@ -955,7 +959,7 @@ export default function CreditApplicationsPage() {
         </div>
         <i><WalletCards/></i>
       </div>}
-      {view === 'overview' && !operatorTableMode && <div className="credit-review-stats">
+      {view === 'overview' && !operatorTableMode && <div className={`credit-review-stats ${isOperator ? 'operator-summary-stats' : ''}`}>
         <article><span>Total Peminjam</span><strong>{summary.total}</strong><small>Seluruh pengajuan</small></article>
         <article><span>Butuh Review</span><strong>{summary.review}</strong><small>Menunggu keputusan</small></article>
         <article><span>Sudah Diterima</span><strong>{summary.approved}</strong><small>Aktif dipantau</small></article>
