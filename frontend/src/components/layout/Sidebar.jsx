@@ -20,7 +20,7 @@ const marketingNavigation = [
     section: 'PORTOFOLIO',
     items: [
       {to: '/credit-applications?view=peminjam', label: 'Agen Binaan', icon: Users},
-      {to: '/credit-applications?view=angsuran', label: 'Buku Tagihan', icon: FileCheck2},
+      {to: '/credit-applications?view=agenda', label: 'Agenda Lapangan', icon: CalendarClock},
     ],
   },
   {

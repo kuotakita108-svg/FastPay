@@ -179,6 +179,19 @@
   .panel-workspace-shell.role-marketing .marketing-review .payment-agent-row > strong { grid-column: 2 !important; grid-row: 1 !important; align-self: start !important; color: #fff !important; font-size: 13px !important; }
   .panel-workspace-shell.role-marketing .marketing-review .payment-agent-row > button { grid-column: 2 !important; grid-row: 2 !important; min-width: 78px !important; min-height: 34px !important; border-color: #197aa4 !important; border-radius: 8px !important; background: #0b6289 !important; color: #fff !important; font-size: 9px !important; }
   .panel-workspace-shell.role-marketing .marketing-review .payment-agent-row > button:disabled { border-color: #294359 !important; background: #102536 !important; color: #849cad !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .field-agenda-panel { width: calc(100% - 16px) !important; min-height: calc(100dvh - 68px) !important; margin: 8px !important; border-radius: 15px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .field-agenda-panel > header { padding: 14px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .field-agenda-panel > header h2 { font-size: 17px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .field-agenda-panel > header p { font-size: 9px !important; line-height: 1.45 !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .field-agenda-panel > header > strong { min-width: 52px !important; font-size: 19px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .field-agenda-summary { gap: 5px !important; padding: 8px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .field-agenda-summary article { min-height: 60px !important; padding: 8px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .field-agenda-list { padding: 0 8px 8px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .field-agenda-list > article { grid-template-columns: minmax(0,1fr) auto !important; gap: 5px 8px !important; padding: 10px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .field-agenda-list time { grid-column: 1 / -1 !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .field-agenda-list em { justify-self: end !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .field-agenda-list p { grid-column: 1 !important; margin: 2px 0 !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .field-agenda-list button { grid-column: 2 !important; }
   .panel-workspace-shell.role-marketing .marketing-review .marketing-guide-panel ol { display: grid !important; grid-template-columns: 1fr !important; gap: 5px !important; margin: 6px 0 0 !important; padding: 0 !important; }
   .panel-workspace-shell.role-marketing .marketing-review .marketing-guide-panel li { display: grid !important; grid-template-columns: 26px minmax(0,1fr) !important; gap: 2px 7px !important; height: auto !important; min-height: 0 !important; padding: 7px !important; }
   .panel-workspace-shell.role-marketing .marketing-review .marketing-guide-panel li::before { grid-row: 1 / 3 !important; width: 26px !important; height: 26px !important; }

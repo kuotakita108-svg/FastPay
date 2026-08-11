@@ -188,6 +188,7 @@ const tierForLimit = limit => [...automaticCreditLevels].reverse().find(level =>
 const viewInfo = {
   overview: {label: 'Ringkasan Kerja', title: 'Prioritas marketing hari ini', desc: 'Daftarkan agent, dampingi pengajuan, lengkapi bukti pertemuan, dan pantau pelunasan penuh.'},
   peminjam: {label: 'Agen Binaan', title: 'Pantau agent binaan', desc: 'Tahap survei, keputusan, kredit aktif, dan pelunasan dalam satu daftar ringkas.'},
+  agenda: {label: 'Agenda Lapangan', title: 'Tindak lanjut agent', desc: 'Susun prioritas survei, revisi berkas, dan kunjungan pembayaran agent dalam satu daftar kerja.'},
   input: {label: 'Pengajuan Kredit', title: 'Pengajuan saldo kredit agent', desc: 'Agen mengajukan nominal sesuai limit. Marketing melengkapi survei lapangan sebelum berkas dikirim ke Operator.'},
   verifikasi: {label: 'Antrean Survei', title: 'Validasi data lapangan', desc: 'Periksa data agent dan lengkapi empat foto survei sebelum berkas dikirim kepada Operator.'},
   pembayaran: {label: 'Pelunasan Kredit', title: 'Pelunasan saldo kredit', desc: 'Bayar satu kali penuh melalui Bank, QRIS, atau penagihan langsung oleh marketing.'},
@@ -808,6 +809,12 @@ export default function CreditApplicationsPage() {
   const meetingQueue = marketingQueue.filter(item => !marketingReadiness(item).meetingReady)
   const marketingReadyForAnalysis = marketingQueue.filter(item => marketingReadiness(item).readyForAnalysis)
   const offlineCollectionQueue = sortedItems.filter(item => item.status === 'Disetujui' && item.paymentStatus === 'Menunggu penagihan offline')
+  const fieldAgenda = marketingOwnedItems.flatMap(item => {
+    if (item.status === 'Perlu Revisi Marketing') return [{item, kind: 'Revisi berkas', note: 'Lengkapi kembali data atau foto yang dikembalikan Operator', priority: 1}]
+    if (['Menunggu verifikasi marketing', 'Sedang diverifikasi marketing'].includes(item.status)) return [{item, kind: 'Survei agent', note: marketingReadiness(item).readyForAnalysis ? 'Berkas siap dikirim kepada Operator' : 'Lengkapi data dan empat foto survei', priority: 2}]
+    if (item.status === 'Disetujui' && item.paymentStatus === 'Menunggu penagihan offline') return [{item, kind: 'Kunjungan pembayaran', note: 'Konfirmasi jadwal dan catat bukti penerimaan', priority: 3}]
+    return []
+  }).sort((a, b) => a.priority - b.priority || new Date(a.item.updatedAt || a.item.createdAt) - new Date(b.item.updatedAt || b.item.createdAt))
   const analystQueue = sortedItems.filter(item => item.status === 'Menunggu keputusan operator')
   const analystPendingSignature = analystQueue.filter(item => !item.analisSignature)
   const analystReadyToDecide = analystQueue.filter(item => Boolean(item.analisSignature))
@@ -1035,20 +1042,10 @@ export default function CreditApplicationsPage() {
         </div>
       </section>}
       {limitTarget && <section className="operator-limit-dialog" onMouseDown={event => event.target === event.currentTarget && setLimitTarget(null)}><article><header><div><span>KEPUTUSAN LIMIT OPERATOR</span><h3>{limitTarget.form.agentName || limitTarget.userName}</h3><p>{limitTarget.form.storeName || limitTarget.id}</p></div><button type="button" onClick={() => setLimitTarget(null)}><X/></button></header><div><small>Limit saat ini</small><strong>{rupiah(creditProfile(items,limitTarget).limit)}</strong><label>Limit baru<input inputMode="numeric" value={operatorDrafts[limitTarget.id] ?? ''} onChange={event => setOperatorDrafts(current => ({...current,[limitTarget.id]:event.target.value.replace(/\D/g,'')}))}/></label><p>Minimal mengikuti limit dasar agent dan maksimal Rp2.000.000. Perubahan tercatat atas nama Operator.</p></div><footer><button type="button" onClick={() => setLimitTarget(null)}>Batal</button><button type="button" className="primary" onClick={() => saveOperatorLimit(limitTarget) && setLimitTarget(null)}><CheckCircle2/>Simpan Limit</button></footer></article></section>}
-      {(isMarketing || isOperator || isAdmin) && (view === 'pembayaran' || view === 'angsuran') && <section className="marketing-action-panel payment">
-        <header><Banknote/><div><span>BUKU TAGIHAN AGENT</span><h2>Kontrol Tagihan Kredit</h2><p>Pantau kredit berjalan, catat pembayaran agent, dan pastikan setiap bukti diteruskan kepada Operator untuk diverifikasi.</p></div></header>
-        <div className="payment-overview-stats"><article><small>Tagihan aktif</small><strong>{installmentActive.length}</strong><span>Perlu ditindaklanjuti</span></article><article><small>Tagihan selesai</small><strong>{installmentFinished.length}</strong><span>Sudah terverifikasi</span></article><article><small>Total pembayaran</small><strong>{rupiah(installmentPaidAmount)}</strong><span>Berhasil dicatat</span></article><article><small>Sisa tagihan</small><strong>{rupiah(installmentRemainingAmount)}</strong><span>Belum terselesaikan</span></article></div>
-        <div className="quick-payment-list compact-payment-list">
-          {installmentRows.slice(0, 8).map(({item, pay, next}) => {
-            return <article className="payment-agent-row" key={item.id}>
-              <span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || 'Toko belum diisi'} · {item.id}</small></span>
-              <em className={pay.paid ? 'paid' : ''}>{pay.paid ? 'Lunas terverifikasi' : 'Tagihan aktif'}</em>
-              <strong>{next ? rupiah(next.amount) : 'Lunas'}</strong>
-              <button type="button" disabled={pay.paid} onClick={() => goToView('angsuran-detail', item.id, 'Disetujui')}><Banknote/>{pay.paid ? 'Lihat' : 'Bayar'}</button>
-            </article>
-          })}
-          {!installmentRows.length && <p>Belum ada kredit diterima yang perlu dipantau.</p>}
-        </div>
+      {(isMarketing || isAdmin) && view === 'agenda' && <section className="field-agenda-panel">
+        <header><div><span>AGENDA LAPANGAN</span><h2>Prioritas tindak lanjut agent</h2><p>Kerjaan disusun otomatis agar survei, revisi berkas, dan kunjungan agent tidak terlewat.</p></div><strong>{fieldAgenda.length}<small>Tugas aktif</small></strong></header>
+        <div className="field-agenda-summary"><article><small>Survei &amp; foto</small><strong>{fieldAgenda.filter(row => row.kind === 'Survei agent').length}</strong></article><article><small>Perlu revisi</small><strong>{fieldAgenda.filter(row => row.kind === 'Revisi berkas').length}</strong></article><article><small>Kunjungan</small><strong>{fieldAgenda.filter(row => row.kind === 'Kunjungan pembayaran').length}</strong></article></div>
+        <div className="field-agenda-list">{fieldAgenda.length ? fieldAgenda.map(({item, kind, note}) => <article key={`${item.id}-${kind}`}><time>{dateTime(item.updatedAt || item.createdAt)}</time><div><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || 'Toko belum diisi'} · {item.form.whatsapp || item.id}</small></div><em>{kind}</em><p>{note}</p><button type="button" onClick={() => goToView(kind === 'Kunjungan pembayaran' ? 'angsuran-detail' : 'detail', item.id, item.status)}><Eye/>Buka tugas</button></article>) : <div className="field-agenda-empty"><CalendarDays/><b>Agenda lapangan sudah tertangani</b><span>Tugas baru akan muncul otomatis saat ada agent yang perlu disurvei, direvisi, atau dikunjungi.</span></div>}</div>
       </section>}
       {(isOperator || isAdmin) && view === 'pelunasan' && <section className="analyst-payment-proof-panel">
         <header className="payment-proof-heading">
