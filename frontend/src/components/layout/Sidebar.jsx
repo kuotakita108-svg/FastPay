@@ -91,17 +91,18 @@ export default function Sidebar({open, onClose}) {
     const load = () => request('/agent-credit/applications').then(rows => {
       if (!active || !Array.isArray(rows)) return
       const now = Date.now()
-      setWorkCounts({
+      const nextCounts = {
         review: rows.filter(item => item.status === 'Menunggu keputusan operator').length,
         managed: new Set(rows.filter(item => ['Disetujui', 'Lunas'].includes(item.status) || item.paymentStatus === 'Lunas').map(item => item.userId || item.form?.whatsapp || item.userName)).size,
         active: rows.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas').length,
         due: rows.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas' && item.dueAt && new Date(item.dueAt).getTime() <= now + (7 * 86400000)).length,
         payments: rows.filter(item => (item.repayments || []).some(payment => payment.status === 'Menunggu verifikasi')).length,
         risk: rows.filter(item => item.agentAccessStatus === 'suspended' || (item.status === 'Disetujui' && item.paymentStatus !== 'Lunas' && item.dueAt && new Date(item.dueAt).getTime() < now)).length,
-      })
+      }
+      setWorkCounts(current => Object.keys(nextCounts).every(key => current[key] === nextCounts[key]) ? current : nextCounts)
     }).catch(() => {})
     load()
-    const timer = window.setInterval(load, 15000)
+    const timer = window.setInterval(load, 45000)
     return () => { active = false; window.clearInterval(timer) }
   }, [isCreditAdmin])
   const visibleNavigation = useMemo(() => {

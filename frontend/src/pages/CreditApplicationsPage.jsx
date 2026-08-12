@@ -349,8 +349,12 @@ export default function CreditApplicationsPage() {
     if (!Array.isArray(remote)) return
     // Server data wins. This prevents stale browser cache from overwriting
     // signatures, documents, status and repayments from other users.
-    setItems(remote.map(normalizeApplication))
-  }).catch(() => setItems(readAll()))
+    const nextItems = remote.map(normalizeApplication)
+    setItems(current => JSON.stringify(current) === JSON.stringify(nextItems) ? current : nextItems)
+  }).catch(() => {
+    const cached = readAll()
+    setItems(current => JSON.stringify(current) === JSON.stringify(cached) ? current : cached)
+  })
 
   useEffect(() => {
     let active = true
@@ -361,11 +365,11 @@ export default function CreditApplicationsPage() {
       if (active) timer = window.setTimeout(sync, delay)
     }
     const sync = async () => {
-      if (!active || inFlight || document.hidden) return schedule(15000)
+      if (!active || inFlight || document.hidden) return schedule(45000)
       inFlight = true
       try { await refreshRemote() } finally {
         inFlight = false
-        schedule(15000)
+        schedule(45000)
       }
     }
     const syncNow = () => {
