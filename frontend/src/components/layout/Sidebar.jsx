@@ -34,22 +34,22 @@ const marketingNavigation = [
 
 const operatorNavigation = [
   {
-    section: 'OPERASIONAL',
+    section: 'PUSAT KERJA',
     items: [
-      {to: '/credit-applications', label: 'Dasbor Operasional', icon: ShieldCheck},
+      {to: '/credit-applications', label: 'Dashboard Operator', icon: ShieldCheck},
       {to: '/credit-applications?view=verifikasi', label: 'Antrean Keputusan', icon: ClipboardCheck, badgeKey: 'review'},
     ],
   },
   {
-    section: 'KREDIT AGENT',
+    section: 'PENGAWASAN KREDIT',
     items: [
       {to: '/credit-applications?view=peminjam', label: 'Agen & Kredit Aktif', icon: CheckCircle2, badgeKey: 'active'},
-      {to: '/credit-applications?view=jatuh-tempo', label: 'Jatuh Tempo & Tagihan', icon: CalendarClock, badgeKey: 'due'},
+      {to: '/credit-applications?view=jatuh-tempo', label: 'Jatuh Tempo', icon: CalendarClock, badgeKey: 'due'},
       {to: '/credit-applications?view=pelunasan', label: 'Verifikasi Pelunasan', icon: FileCheck2, badgeKey: 'payments'},
-      {to: '/credit-applications?view=suspend', label: 'Risiko & Akses Agent', icon: LockKeyhole, badgeKey: 'risk'},
+      {to: '/credit-applications?view=suspend', label: 'Risiko & Akses', icon: LockKeyhole, badgeKey: 'risk'},
     ],
   },
-  {section: 'LAPORAN', items: [
+  {section: 'LAPORAN & TIM', items: [
     {to: '/credit-applications?view=laporan', label: 'Laporan Kredit', icon: BarChart3},
     {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Marketing', icon: Users},
   ]},

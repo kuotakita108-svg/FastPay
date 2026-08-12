@@ -1007,7 +1007,6 @@ export default function CreditApplicationsPage() {
   }
 
   return <>
-    {!isStandaloneDetail && view === 'overview' && isOperator && <PageHeader eyebrow="OPERATOR KREDIT" title="Keputusan Akhir Kredit Agent" description="Operator memeriksa seluruh data, menandatangani, lalu memberi keputusan akhir."/>}
     <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''} ${isMarketing ? 'marketing-review' : ''} ${(isOperator || isAdmin) ? 'analyst-review operator-review' : ''}`}>
       {view === 'overview' && isMarketing && <section className="marketing-profile-header">
         <div><span>PROFIL AKTIF</span><h1>{String(user?.name || 'Marketing KuotaKita').toUpperCase()}</h1><p>Akun marketing aktif untuk pendampingan agent, survei lapangan, dokumen, dan pemantauan kredit.</p><footer><b><CheckCircle2/>Marketing</b><b><ShieldCheck/>Role aktif di sesi ini</b></footer></div>
@@ -1068,11 +1067,15 @@ export default function CreditApplicationsPage() {
           <article><i><ClipboardCheck/></i><span>Antrean KYC</span><strong>{analystQueue.length}</strong><small>Siap diperiksa Operator</small></article>
         </div>
         {isOwner && <section className="operator-live-traffic safe-agent-log"><header><div><span>LOG TRANSAKSI 24 JAM</span><h3>Aktivitas transaksi agent</h3></div><button type="button" onClick={() => goToView('transaksi-agent')}>Lihat semua</button></header><div className="operator-traffic-head"><span>Waktu</span><span>Nama Agent</span><span>Nomor Tujuan</span><span>Status</span></div>{h2hMonitor.orders.slice(0, 6).map(order => <article key={order.RefID}><small>{dateTime(order.CreatedAt)}</small><b>{agentNameForOrder(order)}</b><span>{order.Destination || '-'}</span><em className={`h2h-status ${String(order.Status || 'pending').toLowerCase()}`}>{order.Status === 'success' ? 'Berhasil' : order.Status === 'failed' ? 'Gagal' : 'Diproses'}</em></article>)}{!h2hMonitor.orders.length && <p>Belum ada transaksi agent yang tercatat.</p>}</section>}
-        <div className="marketing-quick-actions" aria-label="Aksi cepat operator">
-          <button type="button" className="primary" onClick={() => goToView('verifikasi')}><ClipboardCheck/><span><b>Buka antrean operator</b><small>{analystQueue.length ? `${analystQueue.length} berkas siap diperiksa` : 'Tidak ada berkas baru'}</small></span><strong>→</strong></button>
-          <button type="button" onClick={() => goToView('laporan')}><BarChart3/><span><b>Rekap kredit agent</b><small>Nominal diterima, sisa, lunas, dan status</small></span><strong>→</strong></button>
-          <button type="button" onClick={() => goToView('peminjam')}><Ban/><span><b>Kontrol akses agent</b><small>{operatorSuspended.length ? `${operatorSuspended.length} akses sedang dihentikan` : 'Semua akses agent aktif'}</small></span><strong>→</strong></button>
-        </div>
+        <section className="operator-priority-board">
+          <header><div><span>PRIORITAS HARI INI</span><h3>Tugas yang perlu ditangani</h3></div><small>Diperbarui dari data kredit</small></header>
+          <div>
+            <button type="button" className={analystQueue.length ? 'urgent' : ''} onClick={() => goToView('verifikasi')}><i><ClipboardCheck/></i><span><b>Keputusan kredit</b><small>{analystQueue.length ? 'Berkas lengkap menunggu keputusan' : 'Tidak ada berkas baru'}</small></span><strong>{analystQueue.length}</strong></button>
+            <button type="button" className={dueSoonItems.length ? 'warning' : ''} onClick={() => goToView('jatuh-tempo')}><i><CalendarClock/></i><span><b>Jatuh tempo dekat</b><small>{dueSoonItems.length ? 'Perlu dipantau sebelum terlambat' : 'Tidak ada tagihan mendesak'}</small></span><strong>{dueSoonItems.length}</strong></button>
+            <button type="button" className={pendingProofRows.length ? 'urgent' : ''} onClick={() => goToView('pelunasan')}><i><FileCheck2/></i><span><b>Bukti pelunasan</b><small>{pendingProofRows.length ? 'Bukti baru perlu diverifikasi' : 'Tidak ada bukti baru'}</small></span><strong>{pendingProofRows.length}</strong></button>
+            <button type="button" className={operatorSuspended.length ? 'danger' : ''} onClick={() => goToView('suspend')}><i><LockKeyhole/></i><span><b>Risiko & akses</b><small>{operatorSuspended.length ? 'Akses agent sedang dihentikan' : 'Seluruh akses terpantau aman'}</small></span><strong>{operatorSuspended.length}</strong></button>
+          </div>
+        </section>
         {operatorMessage && <p className="operator-feedback" role="status">{operatorMessage}</p>}
       </section>}
       {(isMarketing || isOperator || isAdmin) && view === 'verifikasi' && !operatorTableMode && <section className="marketing-action-panel">
