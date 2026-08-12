@@ -183,6 +183,8 @@
   .panel-workspace-shell.role-marketing .marketing-review .credit-report-hero h2 { font-size: 17px !important; }
   .panel-workspace-shell.role-marketing .marketing-review .credit-report-hero p { font-size: 9px !important; line-height: 1.45 !important; }
   .panel-workspace-shell.role-marketing .marketing-review .credit-report-period { min-width: 0 !important; padding: 8px 10px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .credit-report-guide { width: calc(100% - 16px) !important; margin: 0 8px 8px !important; padding: 10px 12px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .credit-report-guide p { font-size: 8px !important; line-height: 1.45 !important; }
   .panel-workspace-shell.role-marketing .marketing-review .marketing-report-panel { width: calc(100% - 16px) !important; margin: 0 8px 8px !important; padding: 0 !important; overflow: hidden !important; }
   .panel-workspace-shell.role-marketing .marketing-review .marketing-report-panel article { height: 70px !important; min-height: 70px !important; border-right: 1px solid #21445d !important; border-bottom: 1px solid #21445d !important; border-radius: 0 !important; }
   .panel-workspace-shell.role-marketing .marketing-review .marketing-report-panel article:nth-child(2n) { border-right: 0 !important; }
@@ -192,6 +194,8 @@
   .panel-workspace-shell.role-marketing .marketing-review .marketing-report-table > header h2 { font-size: 14px !important; }
   .panel-workspace-shell.role-marketing .marketing-review .marketing-report-table > header p { font-size: 8px !important; }
   .panel-workspace-shell.role-marketing .marketing-review .marketing-report-table > header button { align-self: center !important; white-space: nowrap !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .credit-report-data > article { grid-template-columns: minmax(0,1fr) auto !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .credit-report-data .report-detail-action { grid-column: 2 !important; grid-row: 4 !important; min-height: 30px !important; }
   .panel-workspace-shell.role-marketing .marketing-review .field-agenda-panel { width: calc(100% - 16px) !important; min-height: calc(100dvh - 68px) !important; margin: 8px !important; border-radius: 15px !important; }
   .panel-workspace-shell.role-marketing .marketing-review .field-agenda-panel > header { padding: 14px !important; }
   .panel-workspace-shell.role-marketing .marketing-review .field-agenda-panel > header h2 { font-size: 17px !important; }
