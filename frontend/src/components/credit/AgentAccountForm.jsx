@@ -4,10 +4,10 @@ import {createManagedAgent} from '../../services/authService'
 
 const initial={name:'',store_name:'',phone:'',email:'',username:'',password:''}
 
-export default function AgentAccountForm({onClose}){
+export default function AgentAccountForm({onClose,onCreated}){
   const [form,setForm]=useState(initial),[message,setMessage]=useState(''),[created,setCreated]=useState(null)
   const update=event=>setForm({...form,[event.target.name]:event.target.value})
-  const submit=async event=>{event.preventDefault();setMessage('');try{const account=await createManagedAgent(form);setCreated(account);setForm(initial)}catch(error){setMessage(error.message==='sesi berakhir'?'Sesi Marketing sudah habis. Silakan login ulang, lalu data agent dapat disimpan.':error.message)}}
+  const submit=async event=>{event.preventDefault();setMessage('');try{const account=await createManagedAgent(form);setCreated(account);setForm(initial);onCreated?.(account)}catch(error){setMessage(error.message==='sesi berakhir'?'Sesi Marketing sudah habis. Silakan login ulang, lalu data agent dapat disimpan.':error.message)}}
   return <section className="agent-account-form">
     <header><i><UserPlus/></i><div><span>AKUN AGENT BARU</span><h2>Daftarkan agent resmi</h2><p>Catat identitas dan buat akun login Agent KuotaKita dalam satu langkah.</p></div>{onClose&&<button type="button" onClick={onClose} aria-label="Tutup"><X/></button>}</header>
     {created&&<div className="agent-account-success"><CheckCircle2/><div><strong>Akun login agent berhasil dibuat</strong><small>ID Agent: <b>{created.id}</b> · Username: <b>{created.username}</b> · Saldo awal Rp0</small><small>Data ganda diblokir berdasarkan username, WhatsApp, dan email.</small></div></div>}

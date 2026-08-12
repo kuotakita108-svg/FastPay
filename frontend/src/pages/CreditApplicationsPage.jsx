@@ -143,7 +143,7 @@ const paymentSummary = item => {
   const totalPaid = rows.reduce((sum, row) => sum + (row.paid ? row.amount : 0), 0)
   return {paid, total: rows.length, percent: rows.length ? Math.round((paid / rows.length) * 100) : 0, totalPaid}
 }
-const statusGroup = item => item.paymentStatus === 'Lunas' ? 'Lunas' : item.status === 'Disetujui' ? 'Disetujui' : ['Ditolak', 'Ditolak Permanen'].includes(item.status) ? 'Ditolak' : 'Review'
+const statusGroup = item => item.status === 'Belum mengajukan' ? 'Belum mengajukan' : item.paymentStatus === 'Lunas' ? 'Lunas' : item.status === 'Disetujui' ? 'Disetujui' : ['Ditolak', 'Ditolak Permanen'].includes(item.status) ? 'Ditolak' : 'Review'
 const mentoringStage = item => item.paymentStatus === 'Lunas' ? 'Lunas' : item.status === 'Disetujui' ? 'Aktif' : item.status === 'Menunggu keputusan operator' ? 'Operator' : item.status === 'Ditolak' ? 'Ditolak' : 'Survei'
 const firstUnpaidRow = item => paymentRows(item).find(row => !row.paid)
 const agentIdentity = item => String(item?.form?.whatsapp || item?.userId || item?.userName || item?.form?.agentName || '').trim().toLowerCase()
@@ -283,6 +283,7 @@ export default function CreditApplicationsPage() {
   const [manualMessage, setManualMessage] = useState('')
   const [managedAgents, setManagedAgents] = useState([])
   const [managedAgentsLoading, setManagedAgentsLoading] = useState(false)
+  const [managedAgentsRefresh, setManagedAgentsRefresh] = useState(0)
   const [manualSignatureDrawn, setManualSignatureDrawn] = useState(false)
   const [paymentTarget, setPaymentTarget] = useState(null)
   const [paymentMethod, setPaymentMethod] = useState('')
@@ -329,7 +330,7 @@ export default function CreditApplicationsPage() {
       if (active) setManagedAgentsLoading(false)
     })
     return () => { active = false }
-  }, [isMarketing, isAdmin])
+  }, [isMarketing, isAdmin, managedAgentsRefresh])
   useEffect(() => {
     if (['h2h', 'transaksi-agent', 'helpdesk'].includes(view) && !isOwner) {
       setSearchParams({})
@@ -536,8 +537,14 @@ export default function CreditApplicationsPage() {
     if (!selectedAgent) {
       return setManualMessage('Pilih akun agent binaan yang sudah terdaftar terlebih dahulu.')
     }
+    if (agentHasOpenCredit(selectedAgent.id)) return setManualMessage('Agent ini masih memiliki pengajuan atau kredit aktif. Pengajuan baru tersedia setelah kredit sebelumnya selesai.')
     if (!manualSignatureDrawn) return setManualMessage('Agent wajib membubuhkan tanda tangan sebelum pengajuan disimpan.')
-    const amount = Math.min(500000, Math.max(50000, Number(String(manualForm.amount).replace(/\D/g, '') || 0)))
+    if (!/^\d{16}$/.test(String(manualForm.nik || ''))) return setManualMessage('NIK agent harus terdiri dari 16 digit.')
+    if (!manualForm.monthlyTransactions || !manualForm.homeAddress.trim() || !manualForm.storeAddress.trim()) return setManualMessage('Lengkapi transaksi bulanan, alamat rumah, dan alamat toko.')
+    if (!manualForm.familyName.trim() || !manualForm.familyRelation.trim() || String(manualForm.familyWhatsapp).replace(/\D/g, '').length < 10) return setManualMessage('Lengkapi nama, hubungan, dan WhatsApp keluarga yang dapat dihubungi.')
+    const requestedAmount = Number(String(manualForm.amount).replace(/\D/g, '') || 0)
+    if (requestedAmount < 50000 || requestedAmount > 500000) return setManualMessage('Nominal pengajuan harus antara Rp50.000 sampai Rp500.000.')
+    const amount = requestedAmount
     const createdAt = new Date().toISOString()
     const form = {...manualForm, agentName: selectedAgent.name, storeName: selectedAgent.store_name || '', whatsapp: selectedAgent.phone || '', email: selectedAgent.email || '', amount}
     const application = {
@@ -852,6 +859,9 @@ export default function CreditApplicationsPage() {
     paid: items.filter(item => statusGroup(item) === 'Lunas').length,
   }
   const marketingOwnedItems = sortedItems.filter(item => !isMarketing || !(item.marketingId || item.marketingOwnerId) || (item.marketingId || item.marketingOwnerId) === user?.id)
+  const registeredAgentRows = managedAgents.map(agent => ({agent, application: sortedItems.find(item => item.userId === agent.id) || null}))
+  const registeredWithoutApplications = registeredAgentRows.filter(row => !row.application)
+  const agentHasOpenCredit = agentId => sortedItems.some(item => item.userId === agentId && item.paymentStatus !== 'Lunas' && !['Ditolak', 'Ditolak Permanen'].includes(item.status))
   const marketingQueue = marketingOwnedItems.filter(item => ['Menunggu verifikasi marketing', 'Sedang diverifikasi marketing'].includes(item.status))
   const meetingQueue = marketingQueue.filter(item => !marketingReadiness(item).meetingReady)
   const marketingReadyForAnalysis = marketingQueue.filter(item => marketingReadiness(item).readyForAnalysis)
@@ -862,7 +872,7 @@ export default function CreditApplicationsPage() {
     if (item.status === 'Disetujui' && item.paymentStatus === 'Menunggu penagihan offline') return [{item, kind: 'Kunjungan pembayaran', note: 'Konfirmasi jadwal dan catat bukti penerimaan', priority: 3}]
     return []
   }).sort((a, b) => a.priority - b.priority || new Date(a.item.updatedAt || a.item.createdAt) - new Date(b.item.updatedAt || b.item.createdAt))
-  const marketingContacts = marketingOwnedItems.filter(item => `${item.form.agentName} ${item.userName} ${item.form.storeName} ${item.form.whatsapp} ${item.id}`.toLowerCase().includes(query.toLowerCase().trim()))
+  const marketingContacts = registeredAgentRows.filter(({agent, application}) => `${agent.name} ${agent.username} ${agent.store_name} ${agent.phone} ${agent.id} ${application?.id || ''}`.toLowerCase().includes(query.toLowerCase().trim())).map(({agent, application}) => application || {id: agent.id, userId: agent.id, userName: agent.name, status: 'Belum mengajukan', paymentStatus: '', form: {...manualInitial, agentName: agent.name, storeName: agent.store_name || '', whatsapp: agent.phone || '', email: agent.email || ''}})
   const analystQueue = sortedItems.filter(item => item.status === 'Menunggu keputusan operator')
   const analystPendingSignature = analystQueue.filter(item => !item.analisSignature)
   const analystReadyToDecide = analystQueue.filter(item => Boolean(item.analisSignature))
@@ -1016,7 +1026,7 @@ export default function CreditApplicationsPage() {
         <i><WalletCards/></i>
       </div>}
       {view === 'overview' && !operatorTableMode && <div className={`credit-review-stats ${isOperator ? 'operator-summary-stats' : ''}`}>
-        <article><span>Total Peminjam</span><strong>{summary.total}</strong><small>Seluruh pengajuan</small></article>
+        <article><span>{isMarketing ? 'Agent Terdaftar' : 'Total Peminjam'}</span><strong>{isMarketing ? managedAgents.length : summary.total}</strong><small>{isMarketing ? 'Akun agent binaan resmi' : 'Seluruh pengajuan'}</small></article>
         <article><span>Butuh Review</span><strong>{summary.review}</strong><small>Menunggu keputusan</small></article>
         <article><span>Sudah Diterima</span><strong>{summary.approved}</strong><small>Aktif dipantau</small></article>
         <article><span>Lunas</span><strong>{summary.paid}</strong><small>Pembayaran selesai</small></article>
@@ -1026,7 +1036,7 @@ export default function CreditApplicationsPage() {
         <h2>{activeView.title}</h2>
         <p>{activeView.desc}</p>
       </section>}
-      {(isMarketing || isAdmin) && view === 'agent-input' && <AgentAccountForm onClose={() => goToView('overview')}/>}
+      {(isMarketing || isAdmin) && view === 'agent-input' && <><AgentAccountForm onClose={() => goToView('overview')} onCreated={() => setManagedAgentsRefresh(value => value + 1)}/><section className="registered-agent-directory"><header><div><span>AGENT RESMI TERDAFTAR</span><h2>Daftar akun agent binaan</h2><p>Akun yang baru dibuat langsung tersedia untuk Pengajuan Kredit dan dapat login ke aplikasi Agent.</p></div><strong>{managedAgents.length}<small>Agent</small></strong></header><div>{managedAgents.length ? managedAgents.map(agent => {const linked=sortedItems.find(item => item.userId === agent.id);return <article key={agent.id}><span><b>{agent.name}</b><small>{agent.store_name || 'Toko belum dilengkapi'} · {agent.phone}</small></span><code>{agent.id}</code><em>{linked ? (linked.paymentStatus === 'Lunas' ? 'Lunas' : linked.status) : 'Belum mengajukan'}</em><button type="button" disabled={Boolean(linked && agentHasOpenCredit(agent.id))} onClick={() => {setManualForm(current => ({...current,selectedAgentId:agent.id,agentName:agent.name,storeName:agent.store_name || '',whatsapp:agent.phone || '',email:agent.email || ''}));goToView('input')}}>{linked && agentHasOpenCredit(agent.id) ? 'Pengajuan aktif' : 'Buat pengajuan'}</button></article>}) : <p>Belum ada akun agent binaan. Gunakan formulir di atas untuk membuat akun pertama.</p>}</div></section></>}
       {(isOperator || isAdmin) && view === 'marketing-input' && <MarketingAccountForm onClose={() => goToView('overview')}/>}
       {(isMarketing || isAdmin) && view === 'overview' && <section className="marketing-workspace">
         <header>
@@ -1088,6 +1098,7 @@ export default function CreditApplicationsPage() {
             <div className="mentoring-actions"><button type="button" onClick={() => goToView('detail', item.id, 'Semua')}><Eye/>Detail</button>{isMarketing ? <><button type="button" disabled={!payable || !paymentRow} onClick={() => {if(!payable || !paymentRow)return; setPaymentTarget({item:payable,row:paymentRow}); setPaymentMethod(''); setPaymentProof(null)}}><Banknote/>Bayar</button><button type="button" disabled={stage !== 'Aktif' && stage !== 'Lunas'} onClick={() => saveMarketingRecommendation(item)}><TrendingUp/>Rek. Limit</button></> : <button type="button" onClick={() => {setOperatorDrafts(current => ({...current,[item.id]:String(profile.limit)}));setLimitTarget(item)}}><Gauge/>Atur Limit</button>}</div>
           </article>}) : <p className="directory-empty">Agent binaan tidak ditemukan.</p>}
         </div>
+        {isMarketing && registeredWithoutApplications.length > 0 && <section className="unsubmitted-agent-list"><header><div><span>BELUM MENGAJUKAN</span><h3>Agent terdaftar tanpa pengajuan kredit</h3></div><b>{registeredWithoutApplications.length}</b></header><div>{registeredWithoutApplications.map(({agent}) => <article key={agent.id}><span><b>{agent.name}</b><small>{agent.store_name || 'Toko belum dilengkapi'} · {agent.phone}</small></span><code>{agent.id}</code><button type="button" onClick={() => {setManualForm(current => ({...current,selectedAgentId:agent.id,agentName:agent.name,storeName:agent.store_name || '',whatsapp:agent.phone || '',email:agent.email || ''}));goToView('input')}}>Ajukan kredit</button></article>)}</div></section>}
       </section>}
       {limitTarget && <section className="operator-limit-dialog" onMouseDown={event => event.target === event.currentTarget && setLimitTarget(null)}><article><header><div><span>KEPUTUSAN LIMIT OPERATOR</span><h3>{limitTarget.form.agentName || limitTarget.userName}</h3><p>{limitTarget.form.storeName || limitTarget.id}</p></div><button type="button" onClick={() => setLimitTarget(null)}><X/></button></header><div><small>Limit saat ini</small><strong>{rupiah(creditProfile(items,limitTarget).limit)}</strong><label>Limit baru<input inputMode="numeric" value={operatorDrafts[limitTarget.id] ?? ''} onChange={event => setOperatorDrafts(current => ({...current,[limitTarget.id]:event.target.value.replace(/\D/g,'')}))}/></label><p>Minimal mengikuti limit dasar agent dan maksimal Rp2.000.000. Perubahan tercatat atas nama Operator.</p></div><footer><button type="button" onClick={() => setLimitTarget(null)}>Batal</button><button type="button" className="primary" onClick={() => saveOperatorLimit(limitTarget) && setLimitTarget(null)}><CheckCircle2/>Simpan Limit</button></footer></article></section>}
       {(isMarketing || isAdmin) && view === 'agenda' && <section className="field-agenda-panel">
@@ -1172,7 +1183,7 @@ export default function CreditApplicationsPage() {
         <header><CircleHelp/><div><span>PANDUAN MARKETING</span><h2>Standar kerja agent kredit</h2><p>Ikuti tahapan secara berurutan agar data agent lengkap, mudah diperiksa, dan tidak dikembalikan Operator.</p></div></header>
         <div className="guide-workflow">
           <article><i>1</i><div><b>Daftarkan akun agent</b><p>Buka Tambah Agent, isi nama sesuai identitas, nama toko, WhatsApp aktif, email bila tersedia, username, dan kata sandi sementara.</p><small>Pastikan nomor WhatsApp dapat dihubungi sebelum menyimpan akun.</small></div></article>
-          <article><i>2</i><div><b>Bantu pengajuan kredit</b><p>Agent login memakai akun yang dibuat lalu mengisi nominal pengajuan, NIK, alamat toko, aktivitas transaksi, dan kontak keluarga.</p><small>Satu agent hanya boleh memiliki satu kredit berjalan.</small></div></article>
+          <article><i>2</i><div><b>Buat pengajuan bersama agent</b><p>Marketing memilih akun agent yang sudah terdaftar, melengkapi nominal, NIK, alamat, aktivitas transaksi, dan kontak keluarga. Agent membaca kembali data lalu tanda tangan langsung di layar.</p><small>Pengajuan otomatis masuk ke panel agent. Satu agent hanya boleh memiliki satu pengajuan atau kredit berjalan.</small></div></article>
           <article><i>3</i><div><b>Periksa data di lapangan</b><p>Cocokkan nama, NIK, nomor WhatsApp, toko, alamat, dan kontak keluarga dengan kondisi sebenarnya.</p><small>Jangan meneruskan data kosong, berbeda, atau tidak dapat diverifikasi.</small></div></article>
           <article><i>4</i><div><b>Ambil empat foto wajib</b><p>Unggah foto KTP, foto toko, selfie agent memegang KTP, dan selfie agent bersama marketing.</p><small>Foto harus terang, tidak terpotong, tidak buram, dan diambil saat kunjungan.</small></div></article>
           <article><i>5</i><div><b>Kirim kepada Operator</b><p>Periksa ulang data, foto, persetujuan syarat, dan tanda tangan agent. Kirim hanya setelah indikator kelengkapan penuh.</p><small>Operator yang menentukan diterima, direvisi, ditolak, dan besar limit.</small></div></article>
@@ -1226,7 +1237,7 @@ export default function CreditApplicationsPage() {
         <button type="button" className="credit-create-toggle" onClick={() => setShowCreate(value => !value)}><PlusCircle/>{showCreate ? 'Tutup Form Peminjaman' : 'Input Peminjaman'}</button>
         {manualMessage && <p>{manualMessage}</p>}
         {showCreate && <form onSubmit={createManual} className="linked-credit-form">
-          <label className="wide agent-account-picker">Pilih Agent Binaan<select name="selectedAgentId" value={manualForm.selectedAgentId} onChange={chooseManagedAgent} disabled={managedAgentsLoading}><option value="">{managedAgentsLoading ? 'Memuat akun agent...' : 'Pilih akun agent terdaftar'}</option>{managedAgents.map(agent => <option key={agent.id} value={agent.id}>{agent.name} — {agent.store_name || agent.username}</option>)}</select><small>Nama tidak dapat diketik manual agar pengajuan pasti masuk ke akun agent yang benar.</small></label>
+          <label className="wide agent-account-picker">Pilih Agent Binaan<select name="selectedAgentId" value={manualForm.selectedAgentId} onChange={chooseManagedAgent} disabled={managedAgentsLoading}><option value="">{managedAgentsLoading ? 'Memuat akun agent...' : 'Pilih akun agent terdaftar'}</option>{managedAgents.map(agent => {const blocked=agentHasOpenCredit(agent.id);return <option key={agent.id} value={agent.id} disabled={blocked}>{agent.name} — {agent.store_name || agent.username}{blocked ? ' (pengajuan aktif)' : ''}</option>})}</select><small>Nama tidak dapat diketik manual. Agent dengan pengajuan atau kredit aktif otomatis tidak dapat dipilih kembali.</small></label>
           {manualForm.selectedAgentId && <div className="wide selected-agent-summary"><UserCheck/><span><small>AGENT TERHUBUNG</small><b>{manualForm.agentName}</b><em>{manualForm.storeName} · {manualForm.whatsapp}</em></span><strong>{manualForm.selectedAgentId}</strong></div>}
           <label>NIK<input name="nik" value={manualForm.nik} onChange={updateManual} inputMode="numeric" maxLength="16" placeholder="16 digit NIK"/></label>
           <label>Transaksi/Bulan<input name="monthlyTransactions" value={manualForm.monthlyTransactions} onChange={updateManual} inputMode="numeric" placeholder="Contoh: 150"/></label>
