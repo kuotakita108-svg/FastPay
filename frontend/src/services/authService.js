@@ -27,6 +27,10 @@ export async function createManagedAgent(profile){
   return request('/auth/agents',{method:'POST',body:JSON.stringify({name,username,phone,email,password,store_name})})
 }
 
+export async function listManagedAgents(){
+  return request('/auth/agents')
+}
+
 export async function createManagedMarketing(profile){
   const name=String(profile.name||'').trim(),username=String(profile.username||'').toLowerCase().trim(),phone=String(profile.phone||'').trim(),email=String(profile.email||'').toLowerCase().trim(),password=String(profile.password||'')
   if(name.length<3||username.length<3||phone.length<10||password.length<6)throw new Error('Lengkapi nama, WhatsApp, username, dan password marketing minimal 6 karakter.')

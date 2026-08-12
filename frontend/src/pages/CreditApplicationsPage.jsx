@@ -9,6 +9,7 @@ import {request} from '../services/http'
 import AgentAccountForm from '../components/credit/AgentAccountForm'
 import MarketingAccountForm from '../components/credit/MarketingAccountForm'
 import {getPulsa24Balance, getPulsa24Operations, refundPulsa24Order} from '../services/transactionService'
+import {listManagedAgents} from '../services/authService'
 
 const allKey = 'kuotakita_agent_credit_all'
 const userKey = userId => `kuotakita_agent_credit_${userId || 'guest'}`
@@ -23,6 +24,7 @@ const automaticCreditLevels = [
 const defaultCreditTier = automaticCreditLevels[0]
 const filters = ['Semua', 'Review', 'Disetujui', 'Ditolak', 'Lunas']
 const manualInitial = {
+  selectedAgentId: '',
   agentName: '',
   storeName: '',
   nik: '',
@@ -43,10 +45,6 @@ const coreDocumentTypes = [
   {key: 'selfieMarketing', label: 'Selfie Agen bersama Marketing', hint: 'Wajah agen dan marketing terlihat jelas'},
 ]
 const manualDocumentTypes = coreDocumentTypes
-// Seluruh bukti lapangan diambil Marketing saat kunjungan. Agen tidak dapat
-// mengunggah dokumen dari galeri untuk pengajuan kredit.
-const emptyManualDocuments = {ktp: null, store: null, selfieKtp: null, selfieMarketing: null}
-
 // Pengajuan lama yang sudah tersimpan di browser/server bisa belum memiliki
 // seluruh field terbaru. Normalisasi ini menjaga satu data lama tidak membuat
 // seluruh halaman kredit gagal dimuat.
@@ -266,6 +264,8 @@ export default function CreditApplicationsPage() {
   const canvasRef = useRef(null)
   const directoryScrollRef = useRef(null)
   const drawing = useRef(false)
+  const manualSignatureRef = useRef(null)
+  const manualSignatureDrawing = useRef(false)
   // Tampilkan cache lokal segera; server menyegarkan data di belakang layar.
   const [items, setItems] = useState(readAll)
   const [signaturePad, setSignaturePad] = useState(null)
@@ -281,8 +281,9 @@ export default function CreditApplicationsPage() {
   const [showCreate, setShowCreate] = useState(false)
   const [manualForm, setManualForm] = useState(manualInitial)
   const [manualMessage, setManualMessage] = useState('')
-  const [manualDocuments, setManualDocuments] = useState(emptyManualDocuments)
-  const [manualDocumentChoice, setManualDocumentChoice] = useState('')
+  const [managedAgents, setManagedAgents] = useState([])
+  const [managedAgentsLoading, setManagedAgentsLoading] = useState(false)
+  const [manualSignatureDrawn, setManualSignatureDrawn] = useState(false)
   const [paymentTarget, setPaymentTarget] = useState(null)
   const [paymentMethod, setPaymentMethod] = useState('')
   const [paymentProof, setPaymentProof] = useState(null)
@@ -316,6 +317,19 @@ export default function CreditApplicationsPage() {
     setSearchParams(targetView ? {view: targetView, ...(targetView === 'verifikasi' && filter ? {filter} : {})} : {})
     window.scrollTo({top: 0, behavior: 'smooth'})
   }
+  useEffect(() => {
+    if (!isMarketing && !isAdmin) return
+    let active = true
+    setManagedAgentsLoading(true)
+    listManagedAgents().then(rows => {
+      if (active) setManagedAgents(Array.isArray(rows) ? rows : [])
+    }).catch(error => {
+      if (active) setManualMessage(error.message || 'Daftar agent belum dapat dimuat.')
+    }).finally(() => {
+      if (active) setManagedAgentsLoading(false)
+    })
+    return () => { active = false }
+  }, [isMarketing, isAdmin])
   useEffect(() => {
     if (['h2h', 'transaksi-agent', 'helpdesk'].includes(view) && !isOwner) {
       setSearchParams({})
@@ -515,67 +529,99 @@ export default function CreditApplicationsPage() {
     setDecisionNote('')
     refresh()
   }
-  const createManual = event => {
+  const createManual = async event => {
     event.preventDefault()
     if (!isMarketing && !isAdmin) return
-    if (!manualForm.agentName.trim() || !manualForm.storeName.trim() || !manualForm.whatsapp.trim() || !manualForm.amount) {
-      return setManualMessage('Lengkapi nama agent, toko, WA, dan nominal pinjaman dulu.')
+    const selectedAgent = managedAgents.find(agent => agent.id === manualForm.selectedAgentId)
+    if (!selectedAgent) {
+      return setManualMessage('Pilih akun agent binaan yang sudah terdaftar terlebih dahulu.')
     }
-    if (coreDocumentTypes.some(doc => !manualDocuments[doc.key])) return setManualMessage('Lengkapi Foto KTP, Foto Toko, Selfie Agent Pegang KTP, dan Selfie Agent bersama Marketing dulu.')
+    if (!manualSignatureDrawn) return setManualMessage('Agent wajib membubuhkan tanda tangan sebelum pengajuan disimpan.')
     const amount = Math.min(500000, Math.max(50000, Number(String(manualForm.amount).replace(/\D/g, '') || 0)))
+    const createdAt = new Date().toISOString()
+    const form = {...manualForm, agentName: selectedAgent.name, storeName: selectedAgent.store_name || '', whatsapp: selectedAgent.phone || '', email: selectedAgent.email || '', amount}
     const application = {
       id: `KSA-${Date.now().toString().slice(-8)}`,
       status: 'Menunggu verifikasi marketing',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt,
+      updatedAt: createdAt,
       verifyUntil: Date.now(),
       source: 'marketing',
-      userId: `manual-${Date.now()}`,
-      userName: manualForm.agentName.trim(),
+      userId: selectedAgent.id,
+      userName: selectedAgent.name,
       paymentStatus: 'Belum ada pembayaran',
       creditLimit: 500000,
       creditBalance: 0,
       creditOutstanding: 0,
       creditOriginalAmount: 0,
-      form: {...manualForm, amount},
-      documents: Object.fromEntries(coreDocumentTypes.map(doc => [doc.key, {name: manualDocuments[doc.key].name, dataUrl: manualDocuments[doc.key].dataUrl || ''}])),
+      form,
+      documents: {},
       repayments: [],
-      createdBy: {role: user.role, name: reviewerName(user), at: new Date().toISOString()},
+      agentSignature: {name: selectedAgent.name, role: 'agent', at: createdAt, image: manualSignatureRef.current?.toDataURL('image/png') || ''},
+      termsAccepted: true,
+      termsAcceptedAt: createdAt,
+      createdBy: {role: user.role, name: reviewerName(user), at: createdAt},
+      marketingId: user?.id || '',
+      marketingName: reviewerName(user),
       marketingOwnerId: user?.id || '',
       marketingOwnerName: reviewerName(user),
     }
-    // Gunakan satu jalur simpan agar data tidak berbeda antar panel dan tab.
-    saveApplication(application, {})
-    setManualForm(manualInitial)
-    setManualDocuments(emptyManualDocuments)
-    setManualMessage('Pengajuan tersimpan. Lanjutkan dengan ambil selfie pertemuan sebelum berkas dikirim ke Operator.')
-    setShowCreate(false)
-    setExpandedId(application.id)
-    refresh()
-  }
-  const chooseManualDocument = (key, event) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-    if (!file.type.startsWith('image/')) return setManualMessage('Dokumen harus berupa foto/gambar.')
-    if (file.size > 8 * 1024 * 1024) return setManualMessage('Ukuran foto maksimal 8 MB.')
-    const previewUrl = URL.createObjectURL(file)
-    const image = new Image()
-    image.onload = () => {
-      const max = 1200
-      const ratio = Math.min(1, max / Math.max(image.naturalWidth, image.naturalHeight))
-      const canvas = document.createElement('canvas')
-      canvas.width = Math.max(1, Math.round(image.naturalWidth * ratio))
-      canvas.height = Math.max(1, Math.round(image.naturalHeight * ratio))
-      canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height)
-      const dataUrl = canvas.toDataURL('image/jpeg', .82)
-      URL.revokeObjectURL(previewUrl)
-      setManualDocuments(current => ({...current, [key]: {name: file.name, dataUrl}}))
-      setManualMessage('')
+    try {
+      const saved = await request(`/agent-credit/applications/${encodeURIComponent(application.id)}`, {method: 'PUT', body: JSON.stringify(application)})
+      const all = readAll()
+      localStorage.setItem(allKey, JSON.stringify([saved, ...all.filter(item => item.id !== saved.id)].slice(0, 50)))
+      localStorage.setItem(userKey(selectedAgent.id), JSON.stringify([saved]))
+      setManualForm(manualInitial)
+      setManualSignatureDrawn(false)
+      clearManualSignature()
+      setManualMessage('Pengajuan masuk ke akun agent dan antrean survei Marketing. Lengkapi empat foto serta hasil survei sebelum dikirim ke Operator.')
+      setShowCreate(false)
+      setExpandedId(saved.id)
+      window.dispatchEvent(new Event('kuotakita-credit-sync'))
+      refresh()
+    } catch (error) {
+      setManualMessage(error.message || 'Pengajuan belum dapat disimpan ke server.')
     }
-    image.onerror = () => { URL.revokeObjectURL(previewUrl); setManualDocuments(current => ({...current, [key]: {name: file.name}})); setManualMessage('') }
-    image.src = previewUrl
   }
   const updateManual = event => setManualForm({...manualForm, [event.target.name]: event.target.name === 'amount' ? event.target.value.replace(/\D/g, '').slice(0, 8) : event.target.value})
+  const chooseManagedAgent = event => {
+    const selectedAgentId = event.target.value
+    const agent = managedAgents.find(item => item.id === selectedAgentId)
+    setManualForm(current => ({...current, selectedAgentId, agentName: agent?.name || '', storeName: agent?.store_name || '', whatsapp: agent?.phone || '', email: agent?.email || ''}))
+    setManualMessage('')
+  }
+  const manualSignaturePoint = event => {
+    const canvas = manualSignatureRef.current
+    const rect = canvas.getBoundingClientRect()
+    return {x: (event.clientX - rect.left) * (canvas.width / rect.width), y: (event.clientY - rect.top) * (canvas.height / rect.height)}
+  }
+  const startManualSignature = event => {
+    const canvas = manualSignatureRef.current
+    if (!canvas) return
+    event.currentTarget.setPointerCapture?.(event.pointerId)
+    const point = manualSignaturePoint(event)
+    const ctx = canvas.getContext('2d')
+    ctx.beginPath(); ctx.moveTo(point.x, point.y)
+    manualSignatureDrawing.current = true
+  }
+  const drawManualSignature = event => {
+    if (!manualSignatureDrawing.current) return
+    const canvas = manualSignatureRef.current
+    const point = manualSignaturePoint(event)
+    const ctx = canvas.getContext('2d')
+    ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#102c48'
+    ctx.lineTo(point.x, point.y); ctx.stroke()
+    setManualSignatureDrawn(true)
+  }
+  const stopManualSignature = event => {
+    event?.currentTarget?.releasePointerCapture?.(event.pointerId)
+    manualSignatureDrawing.current = false
+  }
+  const clearManualSignature = () => {
+    const canvas = manualSignatureRef.current
+    if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+    setManualSignatureDrawn(false)
+  }
   const markPayment = (item, row) => {
     if (row.paid || item.status !== 'Disetujui' || !paymentMethod || !paymentProof) return
     const submittedAt = new Date().toISOString()
@@ -1179,12 +1225,10 @@ export default function CreditApplicationsPage() {
       {showCreateArea && <section className={`credit-create-box ${view === 'input' ? 'focus' : ''}`}>
         <button type="button" className="credit-create-toggle" onClick={() => setShowCreate(value => !value)}><PlusCircle/>{showCreate ? 'Tutup Form Peminjaman' : 'Input Peminjaman'}</button>
         {manualMessage && <p>{manualMessage}</p>}
-        {showCreate && <form onSubmit={createManual}>
-          <label>Nama Agent<input name="agentName" value={manualForm.agentName} onChange={updateManual} placeholder="Nama lengkap agent"/></label>
-          <label>Nama Toko<input name="storeName" value={manualForm.storeName} onChange={updateManual} placeholder="Nama toko/usaha"/></label>
+        {showCreate && <form onSubmit={createManual} className="linked-credit-form">
+          <label className="wide agent-account-picker">Pilih Agent Binaan<select name="selectedAgentId" value={manualForm.selectedAgentId} onChange={chooseManagedAgent} disabled={managedAgentsLoading}><option value="">{managedAgentsLoading ? 'Memuat akun agent...' : 'Pilih akun agent terdaftar'}</option>{managedAgents.map(agent => <option key={agent.id} value={agent.id}>{agent.name} — {agent.store_name || agent.username}</option>)}</select><small>Nama tidak dapat diketik manual agar pengajuan pasti masuk ke akun agent yang benar.</small></label>
+          {manualForm.selectedAgentId && <div className="wide selected-agent-summary"><UserCheck/><span><small>AGENT TERHUBUNG</small><b>{manualForm.agentName}</b><em>{manualForm.storeName} · {manualForm.whatsapp}</em></span><strong>{manualForm.selectedAgentId}</strong></div>}
           <label>NIK<input name="nik" value={manualForm.nik} onChange={updateManual} inputMode="numeric" maxLength="16" placeholder="16 digit NIK"/></label>
-          <label>Nomor WA<input name="whatsapp" value={manualForm.whatsapp} onChange={updateManual} inputMode="tel" placeholder="08xxxxxxxxxx"/></label>
-          <label>Email<input name="email" value={manualForm.email} onChange={updateManual} type="email" placeholder="Opsional"/></label>
           <label>Transaksi/Bulan<input name="monthlyTransactions" value={manualForm.monthlyTransactions} onChange={updateManual} inputMode="numeric" placeholder="Contoh: 150"/></label>
           <label>Nominal Kredit Diajukan<input name="amount" value={manualForm.amount} onChange={updateManual} inputMode="numeric" placeholder="500000"/></label>
           <label>Kontak Keluarga<input name="familyName" value={manualForm.familyName} onChange={updateManual} placeholder="Nama keluarga"/></label>
@@ -1192,11 +1236,11 @@ export default function CreditApplicationsPage() {
           <label>WA Keluarga<input name="familyWhatsapp" value={manualForm.familyWhatsapp} onChange={updateManual} inputMode="tel" placeholder="08xxxxxxxxxx"/></label>
           <label className="wide">Alamat Rumah<textarea name="homeAddress" value={manualForm.homeAddress} onChange={updateManual} placeholder="Alamat rumah"/></label>
           <label className="wide">Alamat Toko<textarea name="storeAddress" value={manualForm.storeAddress} onChange={updateManual} placeholder="Alamat toko/usaha"/></label>
-          <fieldset className="marketing-document-upload wide"><legend>Dokumen Peminjam</legend><p>Ketuk kartu untuk membuka kamera. Foto harus diambil langsung saat kunjungan, jelas, dan tidak terpotong.</p><div>{coreDocumentTypes.map(doc => <article role="button" tabIndex="0" key={doc.key} className={manualDocuments[doc.key] ? 'uploaded' : ''} onClick={() => setManualDocumentChoice(doc.key)} onKeyDown={event => event.key === 'Enter' && setManualDocumentChoice(doc.key)}><i>{manualDocuments[doc.key] ? <CheckCircle2/> : <Camera/>}</i><span><b>{doc.label}</b><small>{manualDocuments[doc.key]?.name || doc.hint}</small></span><strong>{manualDocuments[doc.key] ? 'Siap dicek' : 'Buka kamera'}</strong></article>)}</div></fieldset>
-          <button type="submit"><PlusCircle/>Simpan Pengajuan</button>
+          <fieldset className="wide agent-signature-entry"><legend>Persetujuan & Tanda Tangan Agent</legend><p>Agent membaca data dan menandatangani langsung di layar HP Marketing. Empat foto survei dilengkapi setelah pengajuan masuk antrean.</p><div><canvas ref={manualSignatureRef} width="900" height="240" onPointerDown={startManualSignature} onPointerMove={drawManualSignature} onPointerUp={stopManualSignature} onPointerCancel={stopManualSignature}/>{!manualSignatureDrawn && <span>Tanda tangan di area ini</span>}</div><button type="button" onClick={clearManualSignature}><Trash2/>Hapus tanda tangan</button></fieldset>
+          <div className="wide credit-flow-note"><CheckCircle2/><span><b>Setelah disimpan</b><small>Pengajuan langsung terlihat di panel Agent → masuk Antrean Survei Marketing → setelah 4 foto dan verifikasi lengkap baru dapat dikirim ke Operator.</small></span></div>
+          <button type="submit"><PlusCircle/>Simpan & Masukkan ke Antrean Survei</button>
         </form>}
       </section>}
-      {showCreate && manualDocumentChoice && <section className="marketing-document-choice" onMouseDown={event => event.target === event.currentTarget && setManualDocumentChoice('')}><div><header><div><span>AMBIL DOKUMEN</span><h3>{coreDocumentTypes.find(doc => doc.key === manualDocumentChoice)?.label}</h3><p>Kamera akan dibuka untuk mengambil foto langsung.</p></div><button type="button" onClick={() => setManualDocumentChoice('')}><X/></button></header><div className="marketing-document-choice-actions one-action"><label><Camera/><b>Buka Kamera</b><small>Foto langsung saat pendampingan</small><input type="file" accept="image/*" capture={['selfieKtp', 'selfieMarketing'].includes(manualDocumentChoice) ? 'user' : 'environment'} onChange={event => {chooseManualDocument(manualDocumentChoice, event); setManualDocumentChoice('')}}/></label></div></div></section>}
       {(isMarketing || isAdmin) && view === 'input' && <section className="marketing-input-history">
         <header><ClipboardCheck/><div><span>RIWAYAT INPUT MARKETING</span><h2>Data yang baru ditambahkan</h2><p>Supaya marketing bisa cepat cek ulang data input peminjaman tanpa masuk daftar besar.</p></div></header>
         <div>{recentManual.length ? recentManual.map(item => <button type="button" key={item.id} onClick={() => goToView('verifikasi', item.id, 'Review')}>

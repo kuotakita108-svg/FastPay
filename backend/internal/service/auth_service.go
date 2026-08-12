@@ -12,6 +12,7 @@ import (
 	"kuotakita/backend/internal/domain"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -41,6 +42,8 @@ type storedUser struct {
 	GoogleID              string    `json:"google_id,omitempty"`
 	InitialBalanceGranted bool      `json:"initial_balance_granted,omitempty"`
 	CreatedAt             time.Time `json:"created_at"`
+	ManagedByID           string    `json:"managed_by_id,omitempty"`
+	ManagedByName         string    `json:"managed_by_name,omitempty"`
 }
 
 type accountFile struct {
@@ -148,14 +151,97 @@ func (s *AuthService) Register(in domain.RegisterInput) (domain.AuthResult, erro
 }
 
 func (s *AuthService) CreateAgent(token string, in domain.RegisterInput) (domain.User, error) {
-	_, role, err := s.session(token)
+	creatorID, role, err := s.session(token)
 	if err != nil {
 		return domain.User{}, err
 	}
 	if role != "marketing" && role != "operator" && role != "analis" && role != "admin" && role != "master" {
 		return domain.User{}, errors.New("hanya marketing atau operator/admin yang dapat membuat akun agent")
 	}
-	return s.createAccount(in, "agent")
+	user, err := s.createAccount(in, "agent")
+	if err != nil {
+		return domain.User{}, err
+	}
+	s.mu.Lock()
+	stored := s.users[user.Username]
+	stored.ManagedByID = creatorID
+	for _, account := range s.users {
+		if account.ID == creatorID {
+			stored.ManagedByName = account.Name
+			break
+		}
+	}
+	s.users[user.Username] = stored
+	err = s.saveLocked()
+	s.mu.Unlock()
+	if err != nil {
+		return domain.User{}, errors.New("penanggung jawab agent belum dapat disimpan")
+	}
+	return user, nil
+}
+
+// ManagedAgents is the authoritative picker used by Marketing when creating a
+// credit application. Marketing sees only accounts it registered. Legacy
+// accounts without ownership remain selectable and are claimed on first use.
+func (s *AuthService) ManagedAgents(token string) ([]domain.User, error) {
+	ownerID, role, err := s.session(token)
+	if err != nil {
+		return nil, err
+	}
+	if role != "marketing" && role != "operator" && role != "analis" && role != "admin" && role != "master" {
+		return nil, errors.New("akun tidak memiliki akses daftar agent")
+	}
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	result := make([]domain.User, 0)
+	for _, account := range s.users {
+		if account.Role != "agent" {
+			continue
+		}
+		if role == "marketing" && account.ManagedByID != "" && account.ManagedByID != ownerID {
+			continue
+		}
+		result = append(result, account.User)
+	}
+	sort.Slice(result, func(i, j int) bool { return result[i].Name < result[j].Name })
+	return result, nil
+}
+
+// ResolveManagedAgent validates the selected server account and binds legacy
+// unowned accounts to the Marketing that first creates their application.
+func (s *AuthService) ResolveManagedAgent(token, agentID string) (domain.User, error) {
+	ownerID, role, err := s.session(token)
+	if err != nil {
+		return domain.User{}, err
+	}
+	if role != "marketing" && role != "operator" && role != "analis" && role != "admin" && role != "master" {
+		return domain.User{}, errors.New("akun tidak dapat memilih agent")
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for username, account := range s.users {
+		if account.ID != strings.TrimSpace(agentID) || account.Role != "agent" {
+			continue
+		}
+		if role == "marketing" && account.ManagedByID != "" && account.ManagedByID != ownerID {
+			return domain.User{}, errors.New("agent bukan binaan marketing ini")
+		}
+		if role == "marketing" && account.ManagedByID == "" {
+			account.ManagedByID = ownerID
+			for _, manager := range s.users {
+				if manager.ID == ownerID {
+					account.ManagedByName = manager.Name
+					break
+				}
+			}
+			s.users[username] = account
+			if err := s.saveLocked(); err != nil {
+				return domain.User{}, errors.New("kepemilikan agent belum dapat disimpan")
+			}
+		}
+		return account.User, nil
+	}
+	return domain.User{}, errors.New("akun agent tidak ditemukan")
 }
 
 func (s *AuthService) CreateMarketing(token string, in domain.RegisterInput) (domain.User, error) {

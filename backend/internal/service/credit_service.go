@@ -74,6 +74,22 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 	if id == "" {
 		return nil, errors.New("id pengajuan tidak valid")
 	}
+	var selectedAgentID string
+	var selectedAgentName string
+	var selectedAgentStore string
+	var selectedAgentPhone string
+	var selectedAgentEmail string
+	if user.Role == "marketing" || isOperatorRole(user.Role) {
+		selectedAgentID = strings.TrimSpace(stringValue(input["userId"]))
+		if selectedAgentID != "" {
+			agent, resolveErr := s.auth.ResolveManagedAgent(token, selectedAgentID)
+			if resolveErr != nil {
+				return nil, resolveErr
+			}
+			selectedAgentName, selectedAgentStore = agent.Name, agent.StoreName
+			selectedAgentPhone, selectedAgentEmail = agent.Phone, agent.Email
+		}
+	}
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -81,6 +97,13 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 	if !exists && user.Role == "agent" {
 		for _, existing := range s.rows {
 			if stringValue(existing["_owner_id"]) == user.ID && blocksNewCredit(existing) {
+				return nil, errors.New("agent masih memiliki pengajuan atau kredit aktif; lunasi kredit sebelum mengajukan kembali")
+			}
+		}
+	}
+	if !exists && selectedAgentID != "" {
+		for _, existing := range s.rows {
+			if stringValue(existing["_owner_id"]) == selectedAgentID && blocksNewCredit(existing) {
 				return nil, errors.New("agent masih memiliki pengajuan atau kredit aktif; lunasi kredit sebelum mengajukan kembali")
 			}
 		}
@@ -98,6 +121,17 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 		row["_owner_id"] = current["_owner_id"]
 	} else {
 		row["_owner_id"] = user.ID
+		if selectedAgentID != "" {
+			row["_owner_id"] = selectedAgentID
+			row["userId"] = selectedAgentID
+			row["userName"] = selectedAgentName
+			if form, ok := row["form"].(map[string]any); ok {
+				form["agentName"] = selectedAgentName
+				form["storeName"] = selectedAgentStore
+				form["whatsapp"] = selectedAgentPhone
+				form["email"] = selectedAgentEmail
+			}
+		}
 		if user.Role == "agent" {
 			row["userId"] = user.ID
 			row["userName"] = user.Name
