@@ -195,7 +195,7 @@ const viewInfo = {
   angsuran: {label: 'Pelunasan Kredit', title: 'Monitor pelunasan penuh', desc: 'Pantau transfer Bank, QRIS, penagihan offline, bukti pembayaran, dan hak refill setelah lunas.'},
   pelunasan: {label: 'Bukti Pelunasan', title: 'Arsip bukti pelunasan', desc: 'Periksa kredit yang sudah lunas beserta nominal, metode, waktu, referensi, penerima, dan bukti pembayarannya.'},
   laporan: {label: 'Laporan Kredit', title: 'Rekap kinerja kredit', desc: 'Lihat total nominal pinjaman, pembayaran masuk, sisa tagihan, dan status seluruh peminjam.'},
-  aktivitas: {label: 'Riwayat Kerja', title: 'Aktivitas marketing', desc: 'Lihat agent yang didaftarkan, progres survei, hasil Operator, dan tindak lanjut terbaru.'},
+  kontak: {label: 'Kontak Agent', title: 'Hubungi agent binaan', desc: 'Cari agent lalu hubungi melalui WhatsApp atau telepon tanpa membuka halaman detail berulang kali.'},
   'kinerja-marketing': {label: 'Audit Tim Lapangan', title: 'Kinerja setiap marketing', desc: 'Lihat jumlah agent yang didaftarkan, hasil survei, persetujuan, kredit aktif, dan risiko per marketing.'},
   'jatuh-tempo': {label: 'Kendali Tagihan', title: 'Jatuh tempo dan tagihan agent', desc: 'Prioritaskan kredit yang segera jatuh tempo atau sudah terlambat, lalu buka detail maupun hentikan akses bila diperlukan.'},
   rekomendasi: {label: 'Rekomendasi Limit', title: 'Rekomendasikan kenaikan limit', desc: 'Marketing memberi catatan lapangan untuk agent binaan. Keputusan limit tetap di tangan Operator.'},
@@ -816,15 +816,7 @@ export default function CreditApplicationsPage() {
     if (item.status === 'Disetujui' && item.paymentStatus === 'Menunggu penagihan offline') return [{item, kind: 'Kunjungan pembayaran', note: 'Konfirmasi jadwal dan catat bukti penerimaan', priority: 3}]
     return []
   }).sort((a, b) => a.priority - b.priority || new Date(a.item.updatedAt || a.item.createdAt) - new Date(b.item.updatedAt || b.item.createdAt))
-  const marketingWorkHistory = marketingOwnedItems.map(item => {
-    const status = statusGroup(item)
-    if (item.paymentStatus === 'Lunas') return {item, label: 'Kredit selesai', note: 'Pembayaran agent telah diverifikasi', tone: 'success'}
-    if (item.status === 'Disetujui') return {item, label: 'Disetujui Operator', note: 'Kredit agent aktif dan perlu dipantau', tone: 'success'}
-    if (String(item.status).includes('Ditolak')) return {item, label: 'Ditolak Operator', note: 'Buka detail untuk melihat hasil keputusan', tone: 'danger'}
-    if (item.status === 'Perlu Revisi Marketing') return {item, label: 'Perlu perbaikan', note: 'Data atau foto perlu dilengkapi kembali', tone: 'warning'}
-    if (item.status === 'Menunggu keputusan operator') return {item, label: 'Dikirim ke Operator', note: 'Berkas sedang menunggu keputusan akhir', tone: 'info'}
-    return {item, label: status === 'Review' ? 'Survei berjalan' : 'Agent didaftarkan', note: 'Data agent tersimpan dan siap ditindaklanjuti', tone: 'neutral'}
-  })
+  const marketingContacts = marketingOwnedItems.filter(item => `${item.form.agentName} ${item.userName} ${item.form.storeName} ${item.form.whatsapp} ${item.id}`.toLowerCase().includes(query.toLowerCase().trim()))
   const analystQueue = sortedItems.filter(item => item.status === 'Menunggu keputusan operator')
   const analystPendingSignature = analystQueue.filter(item => !item.analisSignature)
   const analystReadyToDecide = analystQueue.filter(item => Boolean(item.analisSignature))
@@ -1088,10 +1080,10 @@ export default function CreditApplicationsPage() {
           </article>) : <div className="payment-proof-zero"><i><FileCheck2/></i><b>Belum ada pelunasan terverifikasi</b><span>Bukti pembayaran yang sudah dikonfirmasi akan tersimpan otomatis di halaman ini.</span></div>}
         </div>
       </section>}
-      {(isMarketing || isAdmin) && view === 'aktivitas' && <section className="marketing-work-history">
-        <header><div><span>RIWAYAT KERJA</span><h2>Aktivitas agent binaan</h2><p>Catatan kerja tersusun otomatis dari agent yang didaftarkan sampai keputusan dan penyelesaian kredit.</p></div><strong>{marketingWorkHistory.length}<small>Aktivitas</small></strong></header>
-        <div className="work-history-summary"><article><small>Agent terdaftar</small><strong>{marketingOwnedItems.length}</strong></article><article><small>Menunggu Operator</small><strong>{marketingWorkHistory.filter(row => row.label === 'Dikirim ke Operator').length}</strong></article><article><small>Kredit aktif</small><strong>{marketingActiveAgents.length}</strong></article></div>
-        <div className="work-history-list">{marketingWorkHistory.length ? marketingWorkHistory.map(({item,label,note,tone}) => <article key={item.id}><time>{dateTime(item.updatedAt || item.createdAt)}</time><i className={tone}><Activity/></i><div><b>{label}</b><strong>{item.form.agentName || item.userName}</strong><small>{item.form.storeName || 'Toko belum diisi'} · {item.id}</small><p>{note}</p></div><button type="button" onClick={() => goToView('detail', item.id, statusGroup(item))}><Eye/>Detail</button></article>) : <div className="work-history-empty"><Activity/><b>Belum ada aktivitas agent</b><span>Riwayat akan muncul otomatis setelah marketing mendaftarkan agent pertama.</span></div>}</div>
+      {(isMarketing || isAdmin) && view === 'kontak' && <section className="marketing-contact-book">
+        <header><div><span>KONTAK AGENT</span><h2>Hubungi agent binaan</h2><p>Gunakan daftar ini untuk konfirmasi survei, mengingatkan dokumen, atau mengatur kunjungan tanpa mencari nomor secara manual.</p></div><strong>{marketingContacts.length}<small>Agent</small></strong></header>
+        <label className="contact-agent-search"><Search/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Cari nama agent, toko, WhatsApp, atau ID..."/></label>
+        <div className="contact-agent-list">{marketingContacts.length ? marketingContacts.map(item => { const rawPhone = String(item.form.whatsapp || '').replace(/\D/g,''); const waPhone = rawPhone.startsWith('0') ? `62${rawPhone.slice(1)}` : rawPhone; return <article key={item.id}><div className="contact-agent-avatar">{String(item.form.agentName || item.userName || 'A').slice(0,1).toUpperCase()}</div><div><b>{item.form.agentName || item.userName}</b><strong>{item.form.storeName || 'Toko belum diisi'}</strong><small>{item.form.whatsapp || 'Nomor WhatsApp belum diisi'} · {item.id}</small></div><em className={`contact-status status-${statusGroup(item).toLowerCase()}`}>{item.paymentStatus === 'Lunas' ? 'Lunas' : statusGroup(item)}</em><nav>{rawPhone ? <><a href={`tel:${rawPhone}`}><PhoneCall/>Telepon</a><a href={`https://wa.me/${waPhone}?text=${encodeURIComponent(`Halo ${item.form.agentName || item.userName}, saya dari Marketing KuotaKita ingin menindaklanjuti data agent Anda.`)}`} target="_blank" rel="noreferrer"><Headphones/>WhatsApp</a></> : <span>Nomor belum tersedia</span>}</nav></article> }) : <div className="contact-agent-empty"><PhoneCall/><b>Agent tidak ditemukan</b><span>Ubah kata pencarian atau daftarkan agent baru terlebih dahulu.</span></div>}</div>
       </section>}
       {(isMarketing || isOperator || isAdmin) && view === 'laporan' && <>
         <section className="credit-report-hero"><div><span>RINGKASAN PORTOFOLIO</span><h2>Laporan kredit agent</h2><p>Pantau nilai kredit, pembayaran masuk, dan kondisi setiap agent dari data yang tercatat di sistem.</p></div><div className="credit-report-period"><CalendarDays/><span><small>Diperbarui</small><b>{dateTime(new Date())}</b></span></div></section>

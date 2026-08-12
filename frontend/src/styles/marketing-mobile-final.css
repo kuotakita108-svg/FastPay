@@ -196,6 +196,16 @@
   .panel-workspace-shell.role-marketing .marketing-review .marketing-report-table > header button { align-self: center !important; white-space: nowrap !important; }
   .panel-workspace-shell.role-marketing .marketing-review .credit-report-data > article { grid-template-columns: minmax(0,1fr) auto !important; }
   .panel-workspace-shell.role-marketing .marketing-review .credit-report-data .report-detail-action { grid-column: 2 !important; grid-row: 4 !important; min-height: 30px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .marketing-contact-book { width: calc(100% - 16px) !important; min-height: calc(100dvh - 68px) !important; margin: 8px !important; border-radius: 15px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .marketing-contact-book > header { padding: 14px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .marketing-contact-book > header h2 { font-size: 17px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .marketing-contact-book > header p { font-size: 9px !important; line-height: 1.45 !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .contact-agent-search { margin: 8px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .contact-agent-list { padding: 0 8px 8px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .contact-agent-list > article { grid-template-columns: 34px minmax(0,1fr) auto !important; gap: 7px !important; padding: 10px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .contact-agent-list em { grid-column: 3 !important; grid-row: 1 !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .contact-agent-list nav { grid-column: 1 / -1 !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .contact-agent-list nav a { flex: 1 !important; justify-content: center !important; min-height: 32px !important; }
   .panel-workspace-shell.role-marketing .marketing-review .marketing-work-history { width: calc(100% - 16px) !important; min-height: calc(100dvh - 68px) !important; margin: 8px !important; border-radius: 15px !important; }
   .panel-workspace-shell.role-marketing .marketing-review .marketing-work-history > header { padding: 14px !important; }
   .panel-workspace-shell.role-marketing .marketing-review .marketing-work-history > header h2 { font-size: 17px !important; }

@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useState} from 'react'
 import {Link, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
-import {Activity, BarChart3, BookOpenCheck, CalendarClock, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, Headphones, Landmark, LockKeyhole, LogOut, ShieldCheck, UserPlus, Users, WalletCards, Zap} from 'lucide-react'
+import {Activity, BarChart3, BookOpenCheck, CalendarClock, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, Headphones, Landmark, LockKeyhole, LogOut, PhoneCall, ShieldCheck, UserPlus, Users, WalletCards, Zap} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
 import {request} from '../../services/http'
@@ -26,7 +26,7 @@ const marketingNavigation = [
   {
     section: 'KINERJA',
     items: [
-      {to: '/credit-applications?view=aktivitas', label: 'Riwayat Kerja', icon: Activity},
+      {to: '/credit-applications?view=kontak', label: 'Kontak Agent', icon: PhoneCall},
       {to: '/credit-applications?view=panduan', label: 'Panduan', icon: BookOpenCheck},
     ],
   },
