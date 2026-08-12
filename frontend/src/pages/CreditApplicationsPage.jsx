@@ -1087,7 +1087,7 @@ export default function CreditApplicationsPage() {
           <article className="report-ratio"><span>Tingkat Penyelesaian</span><strong>{items.length ? Math.round((summary.paid / items.length) * 100) : 0}%</strong><small>{summary.paid} dari {items.length} pengajuan lunas</small></article>
         </section>
         <section className="marketing-report-table">
-          <header><div><span>RINCIAN KREDIT</span><h2>Agent dan status pembayaran</h2><p>{isOperator ? 'Periksa keputusan, pembayaran, dan sisa kredit setiap agent.' : 'Lihat perkembangan kredit seluruh agent binaan tanpa membuka halaman detail satu per satu.'}</p></div><button type="button" onClick={exportReport}><BarChart3/>Unduh CSV</button></header>
+          <header><div><span>RINCIAN KREDIT</span><h2>Agent dan status pembayaran</h2><p>{isOperator ? 'Periksa keputusan, pembayaran, dan sisa kredit setiap agent.' : 'Lihat perkembangan kredit seluruh agent binaan tanpa membuka halaman detail satu per satu.'}</p></div>{!isMarketing && <button type="button" onClick={exportReport}><BarChart3/>Unduh CSV</button>}</header>
           <div className="credit-report-data">{!!sortedItems.length && <div className="credit-report-columns"><span>Tanggal</span><span>ID Pengajuan</span><span>Agent</span><span>Nama Toko</span><span>Pinjaman</span><span>Status</span><span>Terbayar</span><span>Sisa Tagihan</span></div>}{sortedItems.length ? sortedItems.map(item => {
             const pay = paymentSummary(item)
             return <article key={item.id}><small className="report-date">{dateTime(item.updatedAt || item.createdAt)}</small><code className="report-id" title={item.id}>{item.id}</code>
