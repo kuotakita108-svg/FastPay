@@ -108,6 +108,30 @@
   .panel-workspace-shell .operator-review .marketing-report-panel>article:nth-child(-n+2){border-bottom:1px solid var(--op-line)!important}
 }
 
+/* Agen & Kredit Aktif: filter benar-benar buka/tutup dan tetap terbaca jelas. */
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory .directory-tools.operator-directory-filters{display:none!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory .directory-tools.operator-directory-filters.mobile-open{display:grid!important;grid-template-columns:minmax(260px,1.7fr) minmax(180px,.85fr) auto auto!important;align-items:center!important;gap:8px!important;margin:0 8px 8px!important;border:1px solid #28526d!important;border-radius:9px!important;background:#081a29!important;padding:9px!important;box-shadow:0 8px 22px #0003!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory .directory-filter-toggle{display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;width:calc(100% - 16px)!important;min-height:38px!important;margin:8px!important;border:1px solid #34718f!important;border-radius:8px!important;background:linear-gradient(90deg,#0a2132,#0b2a3d)!important;color:#f5fbff!important;font-size:10px!important;font-weight:900!important;letter-spacing:.15px!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory .directory-filter-toggle.open{border-color:#40d4e7!important;background:linear-gradient(90deg,#0b3144,#0d4055)!important;color:#fff!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory .directory-filter-toggle svg{color:#66e4f2!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory .operator-directory-filters label{min-height:34px!important;border:1px solid #28526d!important;border-radius:7px!important;background:#061521!important;color:#6de4f2!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory .operator-directory-filters :is(input,select){color:#f1f8fd!important;font-size:9px!important;font-weight:700!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory .operator-directory-filters input::placeholder{color:#a9bdcc!important;opacity:1!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory .operator-directory-filters select option{background:#071522!important;color:#eef8ff!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory .operator-directory-filters>div{display:flex!important;gap:5px!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory .operator-directory-filters button{min-height:32px!important;border:1px solid #2d536c!important;border-radius:7px!important;background:#091a29!important;color:#d9e8f2!important;padding:0 11px!important;font-size:8px!important;font-weight:900!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory .operator-directory-filters button.active{border-color:#35c9dd!important;background:#0c526b!important;color:#fff!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory :is(.mentored-agent-columns,.mentored-agent-row){color:#edf7ff!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory .mentored-agent-columns{color:#eefaff!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory .mentored-agent-row.has-marketing :is(.mentored-agent-no,.mentored-agent-updated,.mentored-agent-phone){color:#d3e3ee!important}
+
+@media(max-width:760px){
+ .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory .directory-tools.operator-directory-filters.mobile-open{grid-template-columns:1fr!important;margin:0 7px 7px!important;padding:8px!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory .operator-directory-filters>div{justify-content:stretch!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory .operator-directory-filters>div button{flex:1!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory .directory-filter-toggle{font-size:11px!important}
+}
+
 /* Mobile Operator final: semua halaman memakai kepadatan aplikasi, bukan layout desktop yang diperkecil. */
 @media(max-width:760px){
  .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review{width:100%!important;max-width:none!important;margin:0!important;background:#050b14!important}
