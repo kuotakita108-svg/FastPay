@@ -51,11 +51,14 @@ func (s *CreditService) List(token string) ([]map[string]any, error) {
 		if user.Role == "agent" && stringValue(row["_owner_id"]) != user.ID {
 			continue
 		}
-		// Marketing only works with agents that it registered or surveyed. Older
-		// records without a marketing id remain visible while they are migrated.
+		// Marketing only sees its own portfolio. Unassigned legacy records stay
+		// available to Operator/Admin and never leak to a new Marketing account.
 		if user.Role == "marketing" {
 			marketingID := stringValue(row["marketingId"])
-			if marketingID != "" && marketingID != user.ID {
+			if marketingID == "" {
+				marketingID = stringValue(row["marketingOwnerId"])
+			}
+			if marketingID != user.ID {
 				continue
 			}
 		}

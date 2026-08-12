@@ -10,7 +10,7 @@ export default function AgentAccountForm({onClose,onCreated}){
   const submit=async event=>{event.preventDefault();setMessage('');try{const account=await createManagedAgent(form);setCreated(account);setForm(initial);onCreated?.(account)}catch(error){setMessage(error.message==='sesi berakhir'?'Sesi Marketing sudah habis. Silakan login ulang, lalu data agent dapat disimpan.':error.message)}}
   return <section className="agent-account-form">
     <header><i><UserPlus/></i><div><span>AKUN AGENT BARU</span><h2>Daftarkan agent resmi</h2><p>Catat identitas dan buat akun login Agent KuotaKita dalam satu langkah.</p></div>{onClose&&<button type="button" onClick={onClose} aria-label="Tutup"><X/></button>}</header>
-    {created&&<div className="agent-account-success"><CheckCircle2/><div><strong>Akun login agent berhasil dibuat</strong><small>ID Agent: <b>{created.id}</b> · Username: <b>{created.username}</b> · Saldo awal Rp0</small><small>Data ganda diblokir berdasarkan username, WhatsApp, dan email.</small></div></div>}
+    {created&&<div className="agent-account-success"><CheckCircle2/><div><strong>Agent baru berhasil ditambahkan</strong><small className="created-account-meta"><span>ID Agent</span><b>{created.id}</b><span>Username</span><b>{created.username}</b></small><small>Akun dapat langsung dipakai login. Agent ini hanya tampil pada portfolio Marketing yang mendaftarkannya.</small></div></div>}
     {message&&<div className="agent-account-error">{message}</div>}
     <form onSubmit={submit}>
       <label><UserRound/>Nama lengkap agent<input name="name" value={form.name} onChange={update} placeholder="Nama sesuai identitas" required/></label>

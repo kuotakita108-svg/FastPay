@@ -862,7 +862,7 @@ export default function CreditApplicationsPage() {
     approved: items.filter(item => statusGroup(item) === 'Disetujui').length,
     paid: items.filter(item => statusGroup(item) === 'Lunas').length,
   }
-  const marketingOwnedItems = sortedItems.filter(item => !isMarketing || !(item.marketingId || item.marketingOwnerId) || (item.marketingId || item.marketingOwnerId) === user?.id)
+  const marketingOwnedItems = sortedItems.filter(item => !isMarketing || (item.marketingId || item.marketingOwnerId) === user?.id)
   const registeredAgentRows = managedAgents.map(agent => ({agent, application: sortedItems.find(item => item.userId === agent.id) || null}))
   const registeredWithoutApplications = registeredAgentRows.filter(row => !row.application)
   const agentHasOpenCredit = agentId => sortedItems.some(item => item.userId === agentId && item.paymentStatus !== 'Lunas' && !['Ditolak', 'Ditolak Permanen'].includes(item.status))
@@ -915,7 +915,7 @@ export default function CreditApplicationsPage() {
   })
   const borrowerRows = sortedItems.map(item => ({item, pay: paymentSummary(item), next: firstUnpaidRow(item), score: dataScore(item)}))
   const mentoredBorrowerRows = borrowerRows.filter(({item}) => {
-    if (isMarketing) return !(item.marketingId || item.marketingOwnerId) || (item.marketingId || item.marketingOwnerId) === user?.id
+    if (isMarketing) return (item.marketingId || item.marketingOwnerId) === user?.id
     if (!isOwner) return ['Disetujui', 'Lunas'].includes(statusGroup(item))
     return true
   })

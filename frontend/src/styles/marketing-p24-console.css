@@ -136,6 +136,12 @@
 .panel-workspace-shell.role-marketing .marketing-review .agent-account-success{border-color:#205c50!important;background:#0a2925!important;color:#69d9b0!important}
 .panel-workspace-shell.role-marketing .marketing-review .agent-account-error{border-color:#633345!important;background:#2b1720!important;color:#ff9bae!important}
 
+/* Konfirmasi akun baru: ringkas, terang, dan mudah disalin petugas. */
+.panel-workspace-shell.role-marketing .marketing-review .agent-account-success{display:grid!important;grid-template-columns:30px minmax(0,1fr)!important;align-items:start!important;gap:9px!important;border:1px solid #20715e!important;border-radius:9px!important;background:linear-gradient(110deg,#092d27,#092033)!important;color:#78e4bd!important;padding:10px!important}
+.panel-workspace-shell.role-marketing .marketing-review .agent-account-success>svg{width:20px!important;color:#64e0b4!important}.panel-workspace-shell.role-marketing .marketing-review .agent-account-success strong{color:#f1fff9!important;font-size:11px!important}.panel-workspace-shell.role-marketing .marketing-review .agent-account-success small{color:#b8d9ce!important;font-size:8px!important}
+.panel-workspace-shell.role-marketing .marketing-review .created-account-meta{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr)!important;gap:4px 7px!important;margin:6px 0!important;border-top:1px solid #206052!important;border-bottom:1px solid #206052!important;padding:6px 0!important}.panel-workspace-shell.role-marketing .marketing-review .created-account-meta span{color:#83aa9e!important}.panel-workspace-shell.role-marketing .marketing-review .created-account-meta b{overflow:hidden;color:#fff!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+@media(max-width:620px){.panel-workspace-shell.role-marketing .marketing-review .created-account-meta{grid-template-columns:auto minmax(0,1fr)!important}}
+
 /* Identitas marketing hanya tampil sekali di Dashboard, mengikuti profil ringkas P24. */
 .panel-workspace-shell.role-marketing .marketing-review .marketing-profile-header{
   display:grid;grid-template-columns:minmax(0,1fr) 38px;align-items:start;gap:16px;

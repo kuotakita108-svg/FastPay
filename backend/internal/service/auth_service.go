@@ -181,8 +181,7 @@ func (s *AuthService) CreateAgent(token string, in domain.RegisterInput) (domain
 }
 
 // ManagedAgents is the authoritative picker used by Marketing when creating a
-// credit application. Marketing sees only accounts it registered. Legacy
-// accounts without ownership remain selectable and are claimed on first use.
+// credit application. Marketing sees only accounts it registered.
 func (s *AuthService) ManagedAgents(token string) ([]domain.User, error) {
 	ownerID, role, err := s.session(token)
 	if err != nil {
@@ -198,7 +197,7 @@ func (s *AuthService) ManagedAgents(token string) ([]domain.User, error) {
 		if account.Role != "agent" {
 			continue
 		}
-		if role == "marketing" && account.ManagedByID != "" && account.ManagedByID != ownerID {
+		if role == "marketing" && account.ManagedByID != ownerID {
 			continue
 		}
 		result = append(result, account.User)
@@ -207,8 +206,8 @@ func (s *AuthService) ManagedAgents(token string) ([]domain.User, error) {
 	return result, nil
 }
 
-// ResolveManagedAgent validates the selected server account and binds legacy
-// unowned accounts to the Marketing that first creates their application.
+// ResolveManagedAgent validates that the selected account belongs to the
+// Marketing currently signed in.
 func (s *AuthService) ResolveManagedAgent(token, agentID string) (domain.User, error) {
 	ownerID, role, err := s.session(token)
 	if err != nil {
@@ -219,25 +218,12 @@ func (s *AuthService) ResolveManagedAgent(token, agentID string) (domain.User, e
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	for username, account := range s.users {
+	for _, account := range s.users {
 		if account.ID != strings.TrimSpace(agentID) || account.Role != "agent" {
 			continue
 		}
-		if role == "marketing" && account.ManagedByID != "" && account.ManagedByID != ownerID {
+		if role == "marketing" && account.ManagedByID != ownerID {
 			return domain.User{}, errors.New("agent bukan binaan marketing ini")
-		}
-		if role == "marketing" && account.ManagedByID == "" {
-			account.ManagedByID = ownerID
-			for _, manager := range s.users {
-				if manager.ID == ownerID {
-					account.ManagedByName = manager.Name
-					break
-				}
-			}
-			s.users[username] = account
-			if err := s.saveLocked(); err != nil {
-				return domain.User{}, errors.New("kepemilikan agent belum dapat disimpan")
-			}
 		}
 		return account.User, nil
 	}
