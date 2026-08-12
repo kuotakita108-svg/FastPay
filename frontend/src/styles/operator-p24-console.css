@@ -132,6 +132,38 @@
  .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .mentoring-directory .directory-filter-toggle{font-size:11px!important}
 }
 
+/* Jatuh tempo: tabel kerja ringkas di desktop, kartu operasional di HP. */
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review>.operator-ledger-workspace{border-color:#23506b!important;background:#071521!important;color:#f2f8fc!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review>.operator-ledger-workspace>header{padding:13px 15px!important;background:linear-gradient(100deg,#092235,#0a1a2a)!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review>.operator-ledger-workspace>header h2{font-size:17px!important;color:#fff!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review>.operator-ledger-workspace>header p{color:#bdd0de!important;font-size:10px!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review>.operator-ledger-workspace .operator-ledger-summary article{background:#081827!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review>.operator-ledger-workspace .operator-ledger-summary :is(small,span){color:#b7cad8!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review>.operator-ledger-workspace .operator-ledger-summary strong{color:#fff!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger :is(.operator-ledger-head,article){grid-template-columns:125px minmax(150px,1.35fr) minmax(125px,1fr) 115px 115px 160px!important;min-width:790px!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger .operator-ledger-head{color:#ecf9ff!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger>article{color:#dfebf4!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger>article>*{text-align:center!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger .due-agent{text-align:left!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger .due-marketing{color:#d7e7f2!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger .due-status{justify-self:center!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger .due-actions{justify-content:center!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-empty{display:grid!important;place-items:center!important;gap:5px!important;padding:28px 14px!important;color:#a9c1d2!important;text-align:center!important}
+.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-empty svg{width:24px;color:#4bd7e9!important}.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-empty b{color:#edf8ff!important}.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-empty span{font-size:9px!important}
+
+@media(max-width:760px){
+ .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review>.operator-ledger-workspace>header{padding:10px 11px!important}.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review>.operator-ledger-workspace>header h2{font-size:14px!important}.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review>.operator-ledger-workspace>header p{margin-top:3px!important;font-size:8px!important;line-height:1.45!important}.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review>.operator-ledger-workspace>header>svg{width:18px!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review>.operator-ledger-workspace .operator-ledger-summary{grid-template-columns:1fr 1fr!important}.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review>.operator-ledger-workspace .operator-ledger-summary article{min-height:56px!important;padding:8px 10px!important}.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review>.operator-ledger-workspace .operator-ledger-summary :is(small,span){font-size:7px!important}.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review>.operator-ledger-workspace .operator-ledger-summary strong{font-size:15px!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger{overflow:visible!important;padding:7px!important}.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger .operator-ledger-head{display:none!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger>article{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px 10px!important;min-width:0!important;margin:0 0 7px!important;border:1px solid #21465f!important;border-radius:8px!important;background:#091a29!important;padding:9px!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger>article>*{grid-column:auto!important;grid-row:auto!important;padding:0!important;text-align:left!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger>article [data-label]::before{display:block;margin-bottom:2px;color:#78a4bc!important;font-size:7px!important;font-style:normal!important;font-weight:800!important;text-transform:uppercase;content:attr(data-label)}
+ .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger .due-agent{grid-column:1/-1!important;border-bottom:1px solid #1b3b52!important;padding-bottom:7px!important}.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger .due-agent b{font-size:11px!important}.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger .due-agent small{font-size:8px!important;color:#a9c0d0!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger :is(.due-date,.due-marketing,.due-amount,.due-status){font-size:9px!important;color:#f0f7fc!important}.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger .due-status{justify-self:stretch!important}.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger .ledger-danger{color:#ff8b9a!important}.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger .ledger-warning{color:#ffd071!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger .due-actions{grid-column:1/-1!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;border-top:1px solid #1b3b52!important;padding-top:7px!important}.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-ledger .due-actions button{justify-content:center!important;min-height:32px!important;font-size:9px!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .due-empty{padding:24px 10px!important}
+}
+
 /* Mobile Operator final: semua halaman memakai kepadatan aplikasi, bukan layout desktop yang diperkecil. */
 @media(max-width:760px){
  .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review{width:100%!important;max-width:none!important;margin:0!important;background:#050b14!important}
