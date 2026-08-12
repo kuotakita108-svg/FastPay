@@ -26,7 +26,7 @@ const marketingNavigation = [
   {
     section: 'KINERJA',
     items: [
-      {to: '/credit-applications?view=laporan', label: 'Laporan', icon: BarChart3},
+      {to: '/credit-applications?view=aktivitas', label: 'Riwayat Kerja', icon: Activity},
       {to: '/credit-applications?view=panduan', label: 'Panduan', icon: BookOpenCheck},
     ],
   },
