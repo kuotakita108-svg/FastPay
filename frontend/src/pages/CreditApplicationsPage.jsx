@@ -1125,12 +1125,14 @@ export default function CreditApplicationsPage() {
           <article><small>Bukti tersedia</small><strong>{paidProofRows.filter(row => row.proof?.dataUrl).length}</strong><span>File dapat diperiksa</span></article>
         </div>
         <div className="payment-proof-list">
+          {!!pendingProofRows.length && <div className="payment-proof-section-title"><span>ANTREAN PEMERIKSAAN</span><b>{pendingProofRows.length} bukti perlu keputusan</b></div>}
           {pendingProofRows.map(({item, payment, proof}) => <article key={`pending-${item.id}`} className="payment-proof-card pending">
             <div className="payment-proof-identity"><i><Clock3/></i><span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id} · menunggu verifikasi</small></span><em>CEK BUKTI</em></div>
             <dl><div><dt>Nominal</dt><dd>{rupiah(payment.amount)}</dd></div><div><dt>Metode</dt><dd>{payment.method === 'qris' ? 'QRIS' : payment.method === 'offline' ? 'Penagihan Offline' : 'Transfer Bank'}</dd></div><div><dt>Dikirim</dt><dd>{dateTime(payment.submittedAt)}</dd></div></dl>
-            {proof?.dataUrl && <button type="button" className="payment-proof-file" onClick={() => setProofPreview({source: proof.dataUrl, name: proof.name || `Bukti ${item.id}`, item})}><img src={proof.dataUrl} alt={`Bukti pembayaran ${item.id}`}/><span><b>Lihat bukti pembayaran</b><small>{proof.name || 'Foto bukti transfer'}</small></span><Eye/></button>}
-            <button type="button" className="approve" onClick={() => confirmFullPayment(item)}><CheckCircle2/>Verifikasi pelunasan</button>
+            {proof?.dataUrl ? <button type="button" className="payment-proof-file" onClick={() => setProofPreview({source: proof.dataUrl, name: proof.name || `Bukti ${item.id}`, item})}><img src={proof.dataUrl} alt={`Bukti pembayaran ${item.id}`}/><span><b>Lihat bukti pembayaran</b><small>{proof.name || 'Foto bukti transfer'}</small></span><Eye/></button> : <div className="payment-proof-empty warning"><Images/><span><b>Bukti belum tersedia</b><small>Minta agent atau Marketing mengunggah ulang bukti pembayaran.</small></span></div>}
+            <button type="button" className="approve" disabled={!proof?.dataUrl} onClick={() => confirmFullPayment(item)}><CheckCircle2/>{proof?.dataUrl ? 'Verifikasi pelunasan' : 'Menunggu bukti'}</button>
           </article>)}
+          {!!paidProofRows.length && <div className="payment-proof-section-title archive"><span>ARSIP PELUNASAN</span><b>{paidProofRows.length} kredit sudah lunas</b></div>}
           {paidProofRows.length ? paidProofRows.map(({item, payment, proof}) => <article key={item.id} className="payment-proof-card">
             <div className="payment-proof-identity"><i><CheckCircle2/></i><span><b>{item.form.agentName || item.userName}</b><small>{item.form.storeName || item.id} · {item.id}</small></span><em>LUNAS</em></div>
             <dl>
