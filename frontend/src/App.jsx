@@ -6,6 +6,7 @@ import UserHomePage from './pages/UserHomePage'
 import HistoryPage from './pages/HistoryPage'
 import ProfilePage from './pages/ProfilePage'
 import AgentCreditPage from './pages/AgentCreditPage'
+import CreditApplicationsPage from './pages/CreditApplicationsPage'
 
 const AppLayout=lazy(()=>import('./components/layout/AppLayout'))
 const ServicePurchasePage=lazy(()=>import('./pages/ServicePurchasePage'))
@@ -26,7 +27,6 @@ const SettingsPage=lazy(()=>import('./pages/SettingsPage'))
 const NotFoundPage=lazy(()=>import('./pages/NotFoundPage'))
 const SecurityPage=lazy(()=>import('./pages/SecurityPage'))
 const AccountFeaturePage=lazy(()=>import('./pages/AccountFeaturePage'))
-const CreditApplicationsPage=lazy(()=>import('./pages/CreditApplicationsPage'))
 
 // Halaman awal dibuat langsung tersedia. Jangan menahan pengguna di splash screen.
 const RouteLoading=()=> <div className="route-loading" role="status" aria-label="Memuat halaman"/>
