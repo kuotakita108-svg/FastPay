@@ -231,6 +231,16 @@
   .panel-workspace-shell.role-marketing .marketing-review .field-agenda-list em { justify-self: end !important; }
   .panel-workspace-shell.role-marketing .marketing-review .field-agenda-list p { grid-column: 1 !important; margin: 2px 0 !important; }
   .panel-workspace-shell.role-marketing .marketing-review .field-agenda-list button { grid-column: 2 !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .marketing-guide-panel { width: calc(100% - 16px) !important; margin: 8px !important; border-radius: 15px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .marketing-guide-panel > header { padding: 13px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .marketing-guide-panel > header h2 { font-size: 17px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .marketing-guide-panel > header p { font-size: 8px !important; line-height: 1.45 !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .guide-workflow { grid-template-columns: 1fr !important; gap: 6px !important; padding: 8px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .guide-workflow article { padding: 9px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .guide-workflow p { font-size: 8px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .guide-reference-grid { grid-template-columns: 1fr !important; gap: 6px !important; padding: 0 8px 8px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .guide-reference-grid > section { padding: 10px !important; }
+  .panel-workspace-shell.role-marketing .marketing-review .guide-escalation { margin: 0 8px 8px !important; }
   .panel-workspace-shell.role-marketing .marketing-review .marketing-guide-panel ol { display: grid !important; grid-template-columns: 1fr !important; gap: 5px !important; margin: 6px 0 0 !important; padding: 0 !important; }
   .panel-workspace-shell.role-marketing .marketing-review .marketing-guide-panel li { display: grid !important; grid-template-columns: 26px minmax(0,1fr) !important; gap: 2px 7px !important; height: auto !important; min-height: 0 !important; padding: 7px !important; }
   .panel-workspace-shell.role-marketing .marketing-review .marketing-guide-panel li::before { grid-row: 1 / 3 !important; width: 26px !important; height: 26px !important; }

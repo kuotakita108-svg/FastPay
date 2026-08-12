@@ -1123,13 +1123,17 @@ export default function CreditApplicationsPage() {
         {operatorMessage && <output className="operator-feedback" aria-live="polite">{operatorMessage}</output>}
       </section>}
       {(isMarketing || isAdmin) && view === 'panduan' && <section className="marketing-guide-panel">
-        <header><CircleHelp/><div><span>PANDUAN MARKETING</span><h2>Alur kerja yang benar</h2></div></header>
-        <ol>
-          <li><b>Input peminjaman</b><small>Masukkan data agent jika pengajuan dilakukan lewat marketing.</small></li>
-          <li><b>Dampingi pengajuan</b><small>Cek WA, NIK, alamat toko, kontak keluarga, dan bantu agent memahami proses kredit.</small></li>
-          <li><b>Selfie pertemuan</b><small>Ambil bukti selfie bersama agent. Berkas otomatis tersedia untuk pemeriksaan Operator.</small></li>
-          <li><b>Catat pelunasan</b><small>Untuk online, periksa bukti Bank/QRIS. Untuk offline, datang menagih dan unggah bukti penerimaan penuh.</small></li>
-        </ol>
+        <header><CircleHelp/><div><span>PANDUAN MARKETING</span><h2>Standar kerja agent kredit</h2><p>Ikuti tahapan secara berurutan agar data agent lengkap, mudah diperiksa, dan tidak dikembalikan Operator.</p></div></header>
+        <div className="guide-workflow">
+          <article><i>1</i><div><b>Daftarkan akun agent</b><p>Buka Tambah Agent, isi nama sesuai identitas, nama toko, WhatsApp aktif, email bila tersedia, username, dan kata sandi sementara.</p><small>Pastikan nomor WhatsApp dapat dihubungi sebelum menyimpan akun.</small></div></article>
+          <article><i>2</i><div><b>Bantu pengajuan kredit</b><p>Agent login memakai akun yang dibuat lalu mengisi nominal pengajuan, NIK, alamat toko, aktivitas transaksi, dan kontak keluarga.</p><small>Satu agent hanya boleh memiliki satu kredit berjalan.</small></div></article>
+          <article><i>3</i><div><b>Periksa data di lapangan</b><p>Cocokkan nama, NIK, nomor WhatsApp, toko, alamat, dan kontak keluarga dengan kondisi sebenarnya.</p><small>Jangan meneruskan data kosong, berbeda, atau tidak dapat diverifikasi.</small></div></article>
+          <article><i>4</i><div><b>Ambil empat foto wajib</b><p>Unggah foto KTP, foto toko, selfie agent memegang KTP, dan selfie agent bersama marketing.</p><small>Foto harus terang, tidak terpotong, tidak buram, dan diambil saat kunjungan.</small></div></article>
+          <article><i>5</i><div><b>Kirim kepada Operator</b><p>Periksa ulang data, foto, persetujuan syarat, dan tanda tangan agent. Kirim hanya setelah indikator kelengkapan penuh.</p><small>Operator yang menentukan diterima, direvisi, ditolak, dan besar limit.</small></div></article>
+          <article><i>6</i><div><b>Pantau agent binaan</b><p>Gunakan Agen Binaan untuk melihat status, Agenda Lapangan untuk tugas berikutnya, dan Kontak Agent untuk menghubungi agent.</p><small>Jika pembayaran offline, unggah bukti penerimaan agar Operator dapat memverifikasi.</small></div></article>
+        </div>
+        <div className="guide-reference-grid"><section><header><Camera/><div><span>CHECKLIST BERKAS</span><h3>Sebelum dikirim</h3></div></header><ul><li><Check/>Identitas dan NIK sesuai</li><li><Check/>WhatsApp agent aktif</li><li><Check/>Empat foto jelas dan benar</li><li><Check/>Tanda tangan agent tersedia</li><li><Check/>Nominal pengajuan sudah dikonfirmasi</li></ul></section><section className="guide-authority"><header><ShieldCheck/><div><span>BATAS WEWENANG</span><h3>Yang tidak boleh dilakukan</h3></div></header><ul><li><X/>Menjanjikan pengajuan pasti diterima</li><li><X/>Menentukan atau mengubah limit sendiri</li><li><X/>Memalsukan data maupun foto survei</li><li><X/>Menandai pembayaran lunas tanpa bukti</li><li><X/>Menggunakan saldo kredit milik agent</li></ul></section></div>
+        <aside className="guide-escalation"><Headphones/><div><b>Jika ada kendala</b><p>Data atau foto dikembalikan: perbaiki dari Dokumen &amp; Survei. Keputusan atau limit tidak sesuai: sampaikan catatan kepada Operator. Masalah login atau sistem: hubungi Admin.</p></div></aside>
       </section>}
       {(isMarketing || isAdmin) && view === 'rekomendasi' && <section className="credit-command-panel marketing-command-panel">
         <header><div><span>REKOMENDASI LAPANGAN</span><h2>Usulkan kenaikan limit agent binaan</h2><p>Marketing hanya memberi catatan kondisi toko dan aktivitas lapangan. Operator tetap memutuskan limit akhir secara manual atau melalui aturan otomatis.</p></div><TrendingUp/></header>
