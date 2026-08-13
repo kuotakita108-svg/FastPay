@@ -275,6 +275,8 @@ export default function CreditApplicationsPage() {
   const [borrowerFilter, setBorrowerFilter] = useState('Semua')
   const [borrowerMarketing, setBorrowerMarketing] = useState('Semua Marketing')
   const [borrowerFiltersOpen, setBorrowerFiltersOpen] = useState(false)
+  const [reportFilter, setReportFilter] = useState('Semua')
+  const [reportMarketing, setReportMarketing] = useState('Semua Marketing')
   const [filter, setFilter] = useState('Semua')
   const [listPage, setListPage] = useState(1)
   const [expandedId, setExpandedId] = useState('')
@@ -867,6 +869,14 @@ export default function CreditApplicationsPage() {
     paid: items.filter(item => statusGroup(item) === 'Lunas').length,
   }
   const marketingOwnedItems = sortedItems.filter(item => !isMarketing || (item.marketingId || item.marketingOwnerId) === user?.id)
+  const reportSourceItems = isMarketing ? marketingOwnedItems : sortedItems
+  const reportMarketingNames = [...new Set(reportSourceItems.map(item => item.marketingOwnerName || item.marketingName || 'Belum ditugaskan'))].sort((a,b) => a.localeCompare(b,'id'))
+  const reportRows = reportSourceItems.filter(item => {
+    const group = item.paymentStatus === 'Lunas' ? 'Lunas' : statusGroup(item)
+    const marketingName = item.marketingOwnerName || item.marketingName || 'Belum ditugaskan'
+    const text = `${item.id} ${item.form.agentName || item.userName} ${item.form.storeName || ''} ${item.form.whatsapp || ''} ${marketingName}`.toLowerCase()
+    return text.includes(query.toLowerCase().trim()) && (reportFilter === 'Semua' || group === reportFilter) && (isMarketing || reportMarketing === 'Semua Marketing' || marketingName === reportMarketing)
+  })
   const registeredAgentRows = managedAgents.map(agent => ({agent, application: sortedItems.find(item => item.userId === agent.id) || null}))
   const registeredWithoutApplications = registeredAgentRows.filter(row => !row.application)
   const agentHasOpenCredit = agentId => sortedItems.some(item => item.userId === agentId && item.paymentStatus !== 'Lunas' && !['Ditolak', 'Ditolak Permanen'].includes(item.status))
@@ -981,10 +991,10 @@ export default function CreditApplicationsPage() {
   // Ringkasan, Direktori Peminjam, dan Angsuran memakai panel khusus masing-masing.
   const showMainList = view === 'verifikasi' || isStandaloneDetail || operatorTableMode
   const exportReport = () => {
-    const header = ['ID', 'Agent', 'Toko', 'WA', 'Status', 'Nominal', 'Terbayar', 'Sisa']
-    const rows = sortedItems.map(item => {
+    const header = ['ID', 'Agent', 'Toko', 'WA', 'Marketing', 'Status', 'Nominal', 'Terbayar', 'Sisa']
+    const rows = reportRows.map(item => {
       const pay = paymentSummary(item)
-      return [item.id, item.form.agentName || item.userName || '', item.form.storeName || '', item.form.whatsapp || '', item.status, item.form.amount || 0, pay.totalPaid, Math.max(0, Number(item.form.amount || 0) - pay.totalPaid)]
+      return [item.id, item.form.agentName || item.userName || '', item.form.storeName || '', item.form.whatsapp || '', item.marketingOwnerName || item.marketingName || '', item.status, item.form.amount || 0, pay.totalPaid, Math.max(0, Number(item.form.amount || 0) - pay.totalPaid)]
     })
     const csv = [header, ...rows].map(row => row.map(value => `"${String(value).replaceAll('"', '""')}"`).join(',')).join('\n')
     const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
@@ -1166,11 +1176,14 @@ export default function CreditApplicationsPage() {
         </section>
         <section className="marketing-report-table">
           <header><div><span>RINCIAN KREDIT</span><h2>Agent dan status pembayaran</h2><p>{isOperator ? 'Periksa keputusan, pembayaran, dan sisa kredit setiap agent.' : 'Tekan detail untuk melihat perkembangan dan tindak lanjut setiap agent binaan.'}</p></div>{(isOperator || isAdmin) && <button type="button" onClick={exportReport}><BarChart3/>Unduh CSV</button>}</header>
-          <div className="credit-report-data">{!!sortedItems.length && <div className="credit-report-columns"><span>Tanggal</span><span>ID Pengajuan</span><span>Agent</span><span>Nama Toko</span><span>Pinjaman</span><span>Status</span><span>Terbayar</span><span>Sisa Tagihan</span><span>Aksi</span></div>}{sortedItems.length ? sortedItems.map(item => {
+          <div className="credit-report-tools"><label><Search/><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Cari agent, toko, WhatsApp, ID..."/></label>{!isMarketing&&<label><UserCheck/><select value={reportMarketing} onChange={event=>setReportMarketing(event.target.value)}><option>Semua Marketing</option>{reportMarketingNames.map(name=><option key={name} value={name}>{name}</option>)}</select></label>}<div>{['Semua','Review','Disetujui','Lunas','Ditolak'].map(name=><button type="button" className={reportFilter===name?'active':''} onClick={()=>setReportFilter(name)} key={name}>{name}</button>)}</div><button type="button" className="report-reset" onClick={()=>{setQuery('');setReportFilter('Semua');setReportMarketing('Semua Marketing')}}>Reset</button></div>
+          <div className="credit-report-result"><span>HASIL LAPORAN</span><b>{reportRows.length} data sesuai filter</b></div>
+          <div className="credit-report-data">{!!reportRows.length && <div className={`credit-report-columns ${!isMarketing?'with-marketing':''}`}><span>Tanggal</span><span>ID Pengajuan</span><span>Agent</span><span>Nama Toko</span>{!isMarketing&&<span>Marketing</span>}<span>Pinjaman</span><span>Status</span><span>Terbayar</span><span>Sisa Tagihan</span><span>Aksi</span></div>}{reportRows.length ? reportRows.map(item => {
             const pay = paymentSummary(item)
-            return <article key={item.id}><small className="report-date">{dateTime(item.updatedAt || item.createdAt)}</small><code className="report-id" title={item.id}>{item.id}</code>
+            return <article className={!isMarketing?'with-marketing':''} key={item.id}><small className="report-date">{dateTime(item.updatedAt || item.createdAt)}</small><code className="report-id" title={item.id}>{item.id}</code>
               <span><b>{item.form.agentName || item.userName}</b><small>{item.id} · {item.form.storeName || 'Tanpa toko'}</small></span>
               <span className="report-store">{item.form.storeName || 'Tanpa toko'}</span>
+              {!isMarketing&&<span className="report-marketing">{item.marketingOwnerName || item.marketingName || 'Belum ditugaskan'}</span>}
               <strong>{rupiah(item.form.amount)}</strong>
               <em className={`report-status report-status-${item.status === 'Disetujui' || item.status === 'Lunas' ? 'approved' : String(item.status).includes('Ditolak') ? 'rejected' : 'pending'}`}>{item.paymentStatus === 'Lunas' ? 'Lunas' : item.status}</em>
               <i><small>Terbayar</small>{rupiah(pay.totalPaid)}</i>
