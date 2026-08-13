@@ -13,20 +13,20 @@ const marketingNavigation = [
       {to: '/credit-applications', label: 'Dashboard', icon: WalletCards},
       {to: '/credit-applications?view=agent-input', label: 'Tambah Agent', icon: UserPlus},
       {to: '/credit-applications?view=input', label: 'Pengajuan Kredit', icon: ClipboardCheck},
-      {to: '/credit-applications?view=verifikasi', label: 'Dokumen & Survei', icon: Camera},
+      {to: '/credit-applications?view=verifikasi', label: 'Validasi Lapangan', icon: Camera},
     ],
   },
   {
     section: 'PORTOFOLIO',
     items: [
-      {to: '/credit-applications?view=peminjam', label: 'Agen Binaan', icon: Users},
-      {to: '/credit-applications?view=agenda', label: 'Agenda Lapangan', icon: CalendarClock},
+      {to: '/credit-applications?view=peminjam', label: 'Portofolio Binaan', icon: Users},
+      {to: '/credit-applications?view=agenda', label: 'Tugas Lapangan', icon: CalendarClock},
     ],
   },
   {
     section: 'KINERJA',
     items: [
-      {to: '/credit-applications?view=kontak', label: 'Kontak Agent', icon: PhoneCall},
+      {to: '/credit-applications?view=kontak', label: 'Hubungi Agent', icon: PhoneCall},
       {to: '/credit-applications?view=panduan', label: 'Panduan', icon: BookOpenCheck},
     ],
   },
@@ -50,7 +50,7 @@ const operatorNavigation = [
     ],
   },
   {section: 'LAPORAN & TIM', items: [
-    {to: '/credit-applications?view=laporan', label: 'Laporan Kredit', icon: BarChart3},
+    {to: '/credit-applications?view=laporan', label: 'Kontrol Portofolio', icon: BarChart3},
     {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Marketing', icon: Users},
   ]},
 ]

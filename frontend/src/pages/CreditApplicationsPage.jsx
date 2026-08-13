@@ -192,7 +192,7 @@ const viewInfo = {
   pembayaran: {label: 'Pelunasan Kredit', title: 'Pelunasan saldo kredit', desc: 'Bayar satu kali penuh melalui Bank, QRIS, atau penagihan langsung oleh marketing.'},
   angsuran: {label: 'Pelunasan Kredit', title: 'Monitor pelunasan penuh', desc: 'Pantau transfer Bank, QRIS, penagihan offline, bukti pembayaran, dan hak refill setelah lunas.'},
   pelunasan: {label: 'Bukti Pelunasan', title: 'Arsip bukti pelunasan', desc: 'Periksa kredit yang sudah lunas beserta nominal, metode, waktu, referensi, penerima, dan bukti pembayarannya.'},
-  laporan: {label: 'Laporan Kredit', title: 'Rekap kinerja kredit', desc: 'Lihat total nominal pinjaman, pembayaran masuk, sisa tagihan, dan status seluruh peminjam.'},
+  laporan: {label: 'Kontrol Portofolio', title: 'Kendali kredit berjalan', desc: 'Temukan kredit yang perlu keputusan, penagihan, verifikasi pembayaran, atau pengamanan akses.'},
   kontak: {label: 'Kontak Agent', title: 'Hubungi agent binaan', desc: 'Cari agent lalu hubungi melalui WhatsApp atau telepon tanpa membuka halaman detail berulang kali.'},
   'kinerja-marketing': {label: 'Audit Tim Lapangan', title: 'Kinerja setiap marketing', desc: 'Lihat jumlah agent yang didaftarkan, hasil survei, persetujuan, kredit aktif, dan risiko per marketing.'},
   'jatuh-tempo': {label: 'Kendali Tagihan', title: 'Jatuh tempo dan tagihan agent', desc: 'Prioritaskan kredit yang segera jatuh tempo atau sudah terlambat, lalu buka detail maupun hentikan akses bila diperlukan.'},
@@ -877,6 +877,14 @@ export default function CreditApplicationsPage() {
     const text = `${item.id} ${item.form.agentName || item.userName} ${item.form.storeName || ''} ${item.form.whatsapp || ''} ${marketingName}`.toLowerCase()
     return text.includes(query.toLowerCase().trim()) && (reportFilter === 'Semua' || group === reportFilter) && (isMarketing || reportMarketing === 'Semua Marketing' || marketingName === reportMarketing)
   })
+  const reportPriority = item => {
+    if (item.agentAccessStatus === 'suspended') return {label:'Periksa akses', tone:'danger', view:'suspend'}
+    if (item.dueAt && item.paymentStatus !== 'Lunas' && new Date(item.dueAt).getTime() < Date.now()) return {label:'Tindak tagihan', tone:'danger', view:'jatuh-tempo'}
+    if (item.paymentStatus === 'Menunggu verifikasi pembayaran') return {label:'Verifikasi bukti', tone:'warning', view:'pelunasan'}
+    if (item.status === 'Menunggu keputusan operator') return {label:'Beri keputusan', tone:'warning', view:'detail'}
+    if (item.paymentStatus === 'Lunas') return {label:'Lihat arsip', tone:'safe', view:'pelunasan'}
+    return {label:'Pantau kredit', tone:'normal', view:'detail'}
+  }
   const registeredAgentRows = managedAgents.map(agent => ({agent, application: sortedItems.find(item => item.userId === agent.id) || null}))
   const registeredWithoutApplications = registeredAgentRows.filter(row => !row.application)
   const agentHasOpenCredit = agentId => sortedItems.some(item => item.userId === agentId && item.paymentStatus !== 'Lunas' && !['Ditolak', 'Ditolak Permanen'].includes(item.status))
@@ -1166,8 +1174,8 @@ export default function CreditApplicationsPage() {
         <div className="contact-agent-list">{marketingContacts.length ? marketingContacts.map(item => { const rawPhone = String(item.form.whatsapp || '').replace(/\D/g,''); const waPhone = rawPhone.startsWith('0') ? `62${rawPhone.slice(1)}` : rawPhone; return <article key={item.id}><div className="contact-agent-avatar">{String(item.form.agentName || item.userName || 'A').slice(0,1).toUpperCase()}</div><div><b>{item.form.agentName || item.userName}</b><strong>{item.form.storeName || 'Toko belum diisi'}</strong><small>{item.form.whatsapp || 'Nomor WhatsApp belum diisi'} · {item.id}</small></div><em className={`contact-status status-${statusGroup(item).toLowerCase()}`}>{item.paymentStatus === 'Lunas' ? 'Lunas' : statusGroup(item)}</em><nav>{rawPhone ? <><a href={`tel:${rawPhone}`}><PhoneCall/>Telepon</a><a href={`https://wa.me/${waPhone}?text=${encodeURIComponent(`Halo ${item.form.agentName || item.userName}, saya dari Marketing KuotaKita ingin menindaklanjuti data agent Anda.`)}`} target="_blank" rel="noreferrer"><Headphones/>WhatsApp</a></> : <span>Nomor belum tersedia</span>}</nav></article> }) : <div className="contact-agent-empty"><PhoneCall/><b>Agent tidak ditemukan</b><span>Ubah kata pencarian atau daftarkan agent baru terlebih dahulu.</span></div>}</div>
       </section>}
       {(isMarketing || isOperator || isAdmin) && view === 'laporan' && <>
-        <section className="credit-report-hero"><div><span>RINGKASAN PORTOFOLIO</span><h2>Laporan kredit agent</h2><p>Pantau nilai kredit, pembayaran masuk, dan kondisi setiap agent dari data yang tercatat di sistem.</p></div><div className="credit-report-period"><CalendarDays/><span><small>Diperbarui</small><b>{dateTime(new Date())}</b></span></div></section>
-        {isMarketing && <section className="credit-report-guide"><Eye/><div><b>Cara menggunakan laporan</b><p>Lihat ringkasan kondisi portofolio, lalu tekan <strong>Buka detail</strong> pada agent untuk memeriksa data, status kredit, dan tindak lanjutnya.</p></div></section>}
+        <section className="credit-report-hero"><div><span>{isMarketing?'PORTOFOLIO BINAAN':'KONTROL PORTOFOLIO'}</span><h2>{isMarketing?'Kesehatan kredit agent binaan':'Prioritas tindakan kredit'}</h2><p>{isMarketing?'Pantau agent milikmu sendiri dan kerjakan tindak lanjut lapangan yang diperlukan.':'Temukan kredit yang perlu keputusan, penagihan, verifikasi bukti, atau pengamanan akses.'}</p></div><div className="credit-report-period"><CalendarDays/><span><small>Diperbarui</small><b>{dateTime(new Date())}</b></span></div></section>
+        {isMarketing && <section className="credit-report-guide"><Eye/><div><b>Fokus kerja Marketing</b><p>Gunakan status tindakan untuk mengetahui agent mana yang perlu dihubungi, disurvei, atau ditagih. Data yang tampil hanya agent binaan akunmu.</p></div></section>}
         <section className="marketing-report-panel">
           <article className="report-total"><span>Total Kredit</span><strong>{rupiah(totalLoan)}</strong><small>Nilai pengajuan tercatat</small></article>
           <article className="report-paid"><span>Pembayaran Masuk</span><strong>{rupiah(totalPaidAmount)}</strong><small>Sudah diterima dan dicatat</small></article>
@@ -1175,11 +1183,12 @@ export default function CreditApplicationsPage() {
           <article className="report-ratio"><span>Tingkat Penyelesaian</span><strong>{items.length ? Math.round((summary.paid / items.length) * 100) : 0}%</strong><small>{summary.paid} dari {items.length} pengajuan lunas</small></article>
         </section>
         <section className="marketing-report-table">
-          <header><div><span>RINCIAN KREDIT</span><h2>Agent dan status pembayaran</h2><p>{isOperator ? 'Periksa keputusan, pembayaran, dan sisa kredit setiap agent.' : 'Tekan detail untuk melihat perkembangan dan tindak lanjut setiap agent binaan.'}</p></div>{(isOperator || isAdmin) && <button type="button" onClick={exportReport}><BarChart3/>Unduh CSV</button>}</header>
+          <header><div><span>MEJA TINDAK LANJUT</span><h2>Agent dan tindakan berikutnya</h2><p>{isOperator ? 'Buka tindakan yang disarankan agar kredit tidak berhenti sebagai laporan pasif.' : 'Buka tindakan untuk melanjutkan pekerjaan agent binaan.'}</p></div>{(isOperator || isAdmin) && <button type="button" onClick={exportReport}><BarChart3/>Arsip CSV</button>}</header>
           <div className="credit-report-tools"><label><Search/><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Cari agent, toko, WhatsApp, ID..."/></label>{!isMarketing&&<label><UserCheck/><select value={reportMarketing} onChange={event=>setReportMarketing(event.target.value)}><option>Semua Marketing</option>{reportMarketingNames.map(name=><option key={name} value={name}>{name}</option>)}</select></label>}<div>{['Semua','Review','Disetujui','Lunas','Ditolak'].map(name=><button type="button" className={reportFilter===name?'active':''} onClick={()=>setReportFilter(name)} key={name}>{name}</button>)}</div><button type="button" className="report-reset" onClick={()=>{setQuery('');setReportFilter('Semua');setReportMarketing('Semua Marketing')}}>Reset</button></div>
           <div className="credit-report-result"><span>HASIL LAPORAN</span><b>{reportRows.length} data sesuai filter</b></div>
-          <div className="credit-report-data">{!!reportRows.length && <div className={`credit-report-columns ${!isMarketing?'with-marketing':''}`}><span>Tanggal</span><span>ID Pengajuan</span><span>Agent</span><span>Nama Toko</span>{!isMarketing&&<span>Marketing</span>}<span>Pinjaman</span><span>Status</span><span>Terbayar</span><span>Sisa Tagihan</span><span>Aksi</span></div>}{reportRows.length ? reportRows.map(item => {
+          <div className="credit-report-data">{!!reportRows.length && <div className={`credit-report-columns ${!isMarketing?'with-marketing':''}`}><span>Tanggal</span><span>ID Pengajuan</span><span>Agent</span><span>Nama Toko</span>{!isMarketing&&<span>Marketing</span>}<span>Pinjaman</span><span>Status</span><span>Terbayar</span><span>Sisa Tagihan</span><span>Tindakan</span></div>}{reportRows.length ? reportRows.map(item => {
             const pay = paymentSummary(item)
+            const priority = reportPriority(item)
             return <article className={!isMarketing?'with-marketing':''} key={item.id}><small className="report-date">{dateTime(item.updatedAt || item.createdAt)}</small><code className="report-id" title={item.id}>{item.id}</code>
               <span><b>{item.form.agentName || item.userName}</b><small>{item.id} · {item.form.storeName || 'Tanpa toko'}</small></span>
               <span className="report-store">{item.form.storeName || 'Tanpa toko'}</span>
@@ -1188,7 +1197,7 @@ export default function CreditApplicationsPage() {
               <em className={`report-status report-status-${item.status === 'Disetujui' || item.status === 'Lunas' ? 'approved' : String(item.status).includes('Ditolak') ? 'rejected' : 'pending'}`}>{item.paymentStatus === 'Lunas' ? 'Lunas' : item.status}</em>
               <i><small>Terbayar</small>{rupiah(pay.totalPaid)}</i>
               <i><small>Sisa</small>{rupiah(Math.max(0, Number(item.form.amount || 0) - pay.totalPaid))}</i>
-              <button type="button" className="report-detail-action" onClick={() => goToView('detail', item.id, statusGroup(item))}><Eye/>Buka detail</button>
+              <button type="button" className={`report-detail-action priority-${priority.tone}`} onClick={() => goToView(priority.view, priority.view === 'detail' ? item.id : '', priority.view === 'detail' ? statusGroup(item) : '')}><Eye/>{priority.label}</button>
             </article>
           }) : <p>Belum ada data laporan kredit.</p>}</div>
         </section>
