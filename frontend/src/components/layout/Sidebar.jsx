@@ -50,7 +50,7 @@ const operatorNavigation = [
     ],
   },
   {section: 'LAPORAN & TIM', items: [
-    {to: '/credit-applications?view=laporan', label: 'Kontrol Portofolio', icon: BarChart3},
+    {to: '/credit-applications?view=laporan', label: 'Audit & Rekonsiliasi', icon: BarChart3},
     {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Marketing', icon: Users},
   ]},
 ]

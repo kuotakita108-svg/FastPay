@@ -192,7 +192,7 @@ const viewInfo = {
   pembayaran: {label: 'Pelunasan Kredit', title: 'Pelunasan saldo kredit', desc: 'Bayar satu kali penuh melalui Bank, QRIS, atau penagihan langsung oleh marketing.'},
   angsuran: {label: 'Pelunasan Kredit', title: 'Monitor pelunasan penuh', desc: 'Pantau transfer Bank, QRIS, penagihan offline, bukti pembayaran, dan hak refill setelah lunas.'},
   pelunasan: {label: 'Bukti Pelunasan', title: 'Arsip bukti pelunasan', desc: 'Periksa kredit yang sudah lunas beserta nominal, metode, waktu, referensi, penerima, dan bukti pembayarannya.'},
-  laporan: {label: 'Kontrol Portofolio', title: 'Kendali kredit berjalan', desc: 'Temukan kredit yang perlu keputusan, penagihan, verifikasi pembayaran, atau pengamanan akses.'},
+  laporan: {label: 'Audit & Rekonsiliasi', title: 'Periksa ketidaksesuaian kredit', desc: 'Temukan data kredit, pelunasan, jatuh tempo, dan akses agent yang tidak sinkron.'},
   kontak: {label: 'Kontak Agent', title: 'Hubungi agent binaan', desc: 'Cari agent lalu hubungi melalui WhatsApp atau telepon tanpa membuka halaman detail berulang kali.'},
   'kinerja-marketing': {label: 'Audit Tim Lapangan', title: 'Kinerja setiap marketing', desc: 'Lihat jumlah agent yang didaftarkan, hasil survei, persetujuan, kredit aktif, dan risiko per marketing.'},
   'jatuh-tempo': {label: 'Kendali Tagihan', title: 'Jatuh tempo dan tagihan agent', desc: 'Prioritaskan kredit yang segera jatuh tempo atau sudah terlambat, lalu buka detail maupun hentikan akses bila diperlukan.'},
@@ -885,6 +885,25 @@ export default function CreditApplicationsPage() {
     if (item.paymentStatus === 'Lunas') return {label:'Lihat arsip', tone:'safe', view:'pelunasan'}
     return {label:'Pantau kredit', tone:'normal', view:'detail'}
   }
+  const creditAuditFindings = sortedItems.flatMap(item => {
+    const paid = Number(paymentSummary(item).totalPaid || 0)
+    const issued = Number(item.creditOriginalAmount || item.form.amount || 0)
+    const outstanding = Number(item.creditOutstanding ?? item.creditBalance ?? Math.max(0, issued - paid))
+    const base = {item, marketing: item.marketingOwnerName || item.marketingName || 'Belum ditugaskan'}
+    if (issued > 0 && paid > issued) return [{...base, level:'Kritis', code:'NOMINAL-LEBIH', title:'Pembayaran melebihi nilai kredit', note:`Selisih ${rupiah(paid - issued)} harus dicocokkan sebelum pembukuan ditutup.`, amount:paid, action:'Cocokkan Ledger', target:'detail'}]
+    if (item.paymentStatus === 'Lunas' && outstanding > 0) return [{...base, level:'Kritis', code:'SALDO-BELUM-NOL', title:'Status lunas tetapi saldo masih berjalan', note:`Masih tercatat ${rupiah(outstanding)} pada saldo kredit agent.`, amount:outstanding, action:'Cocokkan Ledger', target:'detail'}]
+    if (item.paymentStatus !== 'Lunas' && issued > 0 && paid >= issued) return [{...base, level:'Perlu Cek', code:'PELUNASAN-BELUM-TUTUP', title:'Pembayaran penuh belum ditutup', note:'Nominal sudah terpenuhi, tetapi status kredit belum menjadi lunas.', amount:paid, action:'Verifikasi Pelunasan', target:'pelunasan'}]
+    if (item.paymentStatus === 'Menunggu verifikasi pembayaran') return [{...base, level:'Perlu Cek', code:'BUKTI-MENUNGGU', title:'Bukti pembayaran menunggu verifikasi', note:'Periksa nominal, waktu, referensi, dan file bukti sebelum konfirmasi.', amount:paid, action:'Verifikasi Bukti', target:'pelunasan'}]
+    if (item.status === 'Disetujui' && item.paymentStatus !== 'Lunas' && !item.dueAt) return [{...base, level:'Administrasi', code:'JATUH-TEMPO-KOSONG', title:'Kredit aktif tanpa tanggal jatuh tempo', note:'Jadwal penagihan belum dapat dipantau karena tanggal jatuh tempo kosong.', amount:outstanding, action:'Lengkapi Jadwal', target:'detail'}]
+    if (item.agentAccessStatus === 'suspended' && !String(item.agentAccessReason || '').trim()) return [{...base, level:'Administrasi', code:'ALASAN-SUSPEND-KOSONG', title:'Akses dihentikan tanpa catatan', note:'Alasan penghentian akses wajib dilengkapi untuk kebutuhan audit.', amount:outstanding, action:'Periksa Akses', target:'suspend'}]
+    return []
+  })
+  const auditMarketingNames = [...new Set(creditAuditFindings.map(row => row.marketing))].sort((a,b) => a.localeCompare(b,'id'))
+  const auditRows = creditAuditFindings.filter(row => {
+    const item = row.item
+    const text = `${row.code} ${row.title} ${item.id} ${item.form.agentName || item.userName} ${item.form.storeName || ''} ${row.marketing}`.toLowerCase()
+    return text.includes(query.toLowerCase().trim()) && (reportFilter === 'Semua' || row.level === reportFilter) && (reportMarketing === 'Semua Marketing' || row.marketing === reportMarketing)
+  })
   const registeredAgentRows = managedAgents.map(agent => ({agent, application: sortedItems.find(item => item.userId === agent.id) || null}))
   const registeredWithoutApplications = registeredAgentRows.filter(row => !row.application)
   const agentHasOpenCredit = agentId => sortedItems.some(item => item.userId === agentId && item.paymentStatus !== 'Lunas' && !['Ditolak', 'Ditolak Permanen'].includes(item.status))
@@ -1173,7 +1192,25 @@ export default function CreditApplicationsPage() {
         <label className="contact-agent-search"><Search/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Cari nama agent, toko, WhatsApp, atau ID..."/></label>
         <div className="contact-agent-list">{marketingContacts.length ? marketingContacts.map(item => { const rawPhone = String(item.form.whatsapp || '').replace(/\D/g,''); const waPhone = rawPhone.startsWith('0') ? `62${rawPhone.slice(1)}` : rawPhone; return <article key={item.id}><div className="contact-agent-avatar">{String(item.form.agentName || item.userName || 'A').slice(0,1).toUpperCase()}</div><div><b>{item.form.agentName || item.userName}</b><strong>{item.form.storeName || 'Toko belum diisi'}</strong><small>{item.form.whatsapp || 'Nomor WhatsApp belum diisi'} · {item.id}</small></div><em className={`contact-status status-${statusGroup(item).toLowerCase()}`}>{item.paymentStatus === 'Lunas' ? 'Lunas' : statusGroup(item)}</em><nav>{rawPhone ? <><a href={`tel:${rawPhone}`}><PhoneCall/>Telepon</a><a href={`https://wa.me/${waPhone}?text=${encodeURIComponent(`Halo ${item.form.agentName || item.userName}, saya dari Marketing KuotaKita ingin menindaklanjuti data agent Anda.`)}`} target="_blank" rel="noreferrer"><Headphones/>WhatsApp</a></> : <span>Nomor belum tersedia</span>}</nav></article> }) : <div className="contact-agent-empty"><PhoneCall/><b>Agent tidak ditemukan</b><span>Ubah kata pencarian atau daftarkan agent baru terlebih dahulu.</span></div>}</div>
       </section>}
-      {(isMarketing || isOperator || isAdmin) && view === 'laporan' && <>
+      {(isOperator || isAdmin) && view === 'laporan' && <section className="credit-audit-workspace">
+        <header className="credit-audit-hero"><div><span>AUDIT &amp; REKONSILIASI</span><h2>Temuan ketidaksesuaian kredit</h2><p>Halaman ini hanya menampilkan data yang perlu dicocokkan. Kredit yang sehat tidak memenuhi daftar kerja Operator.</p></div><ShieldCheck/></header>
+        <div className="credit-audit-summary">
+          <article><span>Total temuan</span><strong>{creditAuditFindings.length}</strong><small>Perlu ditindaklanjuti</small></article>
+          <article className="critical"><span>Kritis</span><strong>{creditAuditFindings.filter(row=>row.level==='Kritis').length}</strong><small>Berisiko salah saldo</small></article>
+          <article className="review"><span>Perlu cek</span><strong>{creditAuditFindings.filter(row=>row.level==='Perlu Cek').length}</strong><small>Menunggu verifikasi</small></article>
+          <article className="clean"><span>Data sehat</span><strong>{Math.max(0, sortedItems.length - new Set(creditAuditFindings.map(row=>row.item.id)).size)}</strong><small>Tanpa ketidaksesuaian</small></article>
+        </div>
+        <section className="credit-audit-panel">
+          <header><div><span>MEJA REKONSILIASI</span><h3>Selesaikan berdasarkan tingkat risiko</h3><p>Setiap temuan memiliki satu tindakan khusus agar Operator tidak membuka detail yang sama berulang kali.</p></div><strong>{auditRows.length}<small>Temuan</small></strong></header>
+          <div className="credit-audit-tools"><label><Search/><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Cari kode, agent, toko, atau ID..."/></label><label><UserCheck/><select value={reportMarketing} onChange={event=>setReportMarketing(event.target.value)}><option>Semua Marketing</option>{auditMarketingNames.map(name=><option key={name}>{name}</option>)}</select></label><div>{['Semua','Kritis','Perlu Cek','Administrasi'].map(name=><button type="button" className={reportFilter===name?'active':''} onClick={()=>setReportFilter(name)} key={name}>{name}</button>)}</div><button type="button" onClick={()=>{setQuery('');setReportFilter('Semua');setReportMarketing('Semua Marketing')}}>Reset</button></div>
+          <div className="credit-audit-table">
+            {!!auditRows.length && <div className="credit-audit-head"><span>Tingkat</span><span>Temuan</span><span>Agent / Toko</span><span>Marketing</span><span>Nominal terkait</span><span>Tindakan</span></div>}
+            {auditRows.map(row=><article key={`${row.item.id}-${row.code}`}><em className={`audit-level ${row.level.toLowerCase().replace(' ','-')}`}>{row.level}</em><div className="audit-finding"><code>{row.code}</code><b>{row.title}</b><small>{row.note}</small></div><div className="audit-agent"><b>{row.item.form.agentName || row.item.userName}</b><small>{row.item.form.storeName || 'Toko belum diisi'} · {row.item.id}</small></div><span className="audit-marketing">{row.marketing}</span><strong>{rupiah(row.amount)}</strong><button type="button" onClick={()=>goToView(row.target, row.target==='detail'?row.item.id:'', row.target==='detail'?statusGroup(row.item):'')}>{row.action}<ChevronRight/></button></article>)}
+            {!auditRows.length && <div className="credit-audit-empty"><ShieldCheck/><b>Tidak ada ketidaksesuaian pada filter ini</b><span>Data yang sudah sinkron sengaja tidak ditampilkan agar meja kerja tetap fokus.</span></div>}
+          </div>
+        </section>
+      </section>}
+      {isMarketing && view === 'laporan' && <>
         <section className="credit-report-hero"><div><span>{isMarketing?'PORTOFOLIO BINAAN':'KONTROL PORTOFOLIO'}</span><h2>{isMarketing?'Kesehatan kredit agent binaan':'Prioritas tindakan kredit'}</h2><p>{isMarketing?'Pantau agent milikmu sendiri dan kerjakan tindak lanjut lapangan yang diperlukan.':'Temukan kredit yang perlu keputusan, penagihan, verifikasi bukti, atau pengamanan akses.'}</p></div><div className="credit-report-period"><CalendarDays/><span><small>Diperbarui</small><b>{dateTime(new Date())}</b></span></div></section>
         {isMarketing && <section className="credit-report-guide"><Eye/><div><b>Fokus kerja Marketing</b><p>Gunakan status tindakan untuk mengetahui agent mana yang perlu dihubungi, disurvei, atau ditagih. Data yang tampil hanya agent binaan akunmu.</p></div></section>}
         <section className="marketing-report-panel">
