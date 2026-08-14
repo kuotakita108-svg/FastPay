@@ -1,4 +1,4 @@
-import {Activity, AlertTriangle, ArrowRight, BarChart3, CheckCircle2, ClipboardCheck, Headphones, Landmark, LockKeyhole, Settings, ShieldCheck, TrendingUp, UserPlus, Users, WalletCards} from 'lucide-react'
+import {Activity, AlertTriangle, ArrowRight, BarChart3, ClipboardCheck, Headphones, Landmark, ShieldCheck, TrendingUp, Users, WalletCards} from 'lucide-react'
 import {rupiah} from '../../utils/currency'
 
 const statusOf=order=>String(order?.Status||'pending').toLowerCase()
@@ -18,23 +18,23 @@ export default function SuperAdminOverview({user,items=[],agents=[],marketingPer
     {label:'Saldo H2H',value:h2h.balance==null?'Belum tersambung':rupiah(h2h.balance),note:h2h.connected?'Pulsa24Jam terhubung':'Periksa koneksi provider',icon:Landmark,tone:'emerald',view:'h2h'},
     {label:'Transaksi berhasil',value:success,note:`${orders.length} transaksi tercatat`,icon:Activity,tone:'cyan',view:'transaksi-agent'},
     {label:'Kredit berjalan',value:rupiah(outstanding),note:`${activeCredits.length} agent aktif`,icon:WalletCards,tone:'violet',view:'peminjam'},
-    {label:'Perlu keputusan',value:review,note:'Berkas siap diperiksa',icon:ClipboardCheck,tone:'amber',view:'verifikasi'},
-    {label:'Risiko terlambat',value:overdue.length,note:overdue.length?'Perlu tindakan segera':'Portofolio aman',icon:AlertTriangle,tone:'rose',view:'suspend'},
+    {label:'Antrean operator',value:review,note:'Berkas sedang ditangani',icon:ClipboardCheck,tone:'amber',view:'peminjam'},
+    {label:'Risiko terlambat',value:overdue.length,note:overdue.length?'Perlu tindakan segera':'Portofolio aman',icon:AlertTriangle,tone:'rose',view:'jatuh-tempo'},
     {label:'Agent terdaftar',value:agents.length,note:`${marketingPerformance.length} marketing terpantau`,icon:Users,tone:'blue',view:'kinerja-marketing'},
   ]
   const actions=[
-    {title:'Keputusan kredit',note:`${review} pengajuan menunggu keputusan`,icon:ClipboardCheck,view:'verifikasi'},
-    {title:'Kontrol seluruh kredit',note:`${activeCredits.length} kredit sedang berjalan`,icon:WalletCards,view:'peminjam'},
-    {title:'Verifikasi pelunasan',note:'Cocokkan bukti dan nominal pembayaran',icon:CheckCircle2,view:'pelunasan'},
-    {title:'Risiko & akses agent',note:`${overdue.length} agent perlu pengawasan`,icon:LockKeyhole,view:'suspend'},
-    {title:'Tambah marketing',note:'Buat akun kerja tim lapangan baru',icon:UserPlus,view:'marketing-input'},
-    {title:'Helpdesk & refund',note:`${failed+pending} transaksi perlu diperiksa`,icon:Headphones,view:'helpdesk'},
+    {title:'Pantau portofolio kredit',note:`${activeCredits.length} kredit sedang berjalan`,icon:WalletCards,view:'peminjam'},
+    {title:'Pantau tagihan & risiko',note:`${overdue.length} agent melewati jatuh tempo`,icon:AlertTriangle,view:'jatuh-tempo'},
+    {title:'Audit hasil pelunasan',note:'Lihat bukti dan nominal yang telah diperiksa',icon:ClipboardCheck,view:'pelunasan'},
+    {title:'Pantau transaksi agent',note:`${orders.length} transaksi tercatat`,icon:Activity,view:'transaksi-agent'},
+    {title:'Pantau kinerja tim',note:`${marketingPerformance.length} marketing terukur`,icon:Users,view:'kinerja-marketing'},
+    {title:'Audit komplain transaksi',note:`${failed+pending} transaksi perlu perhatian`,icon:Headphones,view:'helpdesk'},
   ]
   const topMarketing=[...marketingPerformance].sort((a,b)=>b.approved-a.approved||b.registered-a.registered).slice(0,4)
 
   return <div className="owner-dashboard">
     <section className="owner-profile">
-      <div><span>PROFIL AKTIF</span><h1>{String(user?.name||'Super Admin KuotaKita').toUpperCase()}</h1><p>Kendali pusat untuk operasional aplikasi, kredit agent, tim lapangan, transaksi, risiko, dan koneksi H2H.</p><footer><b><ShieldCheck/>Super Admin</b><b>Hak akses owner aktif</b></footer></div>
+      <div><span>PROFIL AKTIF</span><h1>{String(user?.name||'Super Admin KuotaKita').toUpperCase()}</h1><p>Pemantauan pusat untuk operasional aplikasi, kredit agent, tim lapangan, transaksi, risiko, dan koneksi H2H.</p><footer><b><ShieldCheck/>Super Admin</b><b>Hak pantau owner aktif</b></footer></div>
       <i><ShieldCheck/></i>
     </section>
 
@@ -44,7 +44,7 @@ export default function SuperAdminOverview({user,items=[],agents=[],marketingPer
     </section>
 
     <section className="owner-section owner-control">
-      <header><div><span>PUSAT TINDAKAN</span><h2>Kerjaan yang membutuhkan kendali owner</h2><p>Buka hanya bagian yang perlu ditangani tanpa menumpuk seluruh data dalam satu layar.</p></div></header>
+      <header><div><span>PUSAT PEMANTAUAN</span><h2>Informasi penting untuk keputusan owner</h2><p>Super Admin memantau hasil kerja tim tanpa mengambil alih pekerjaan Marketing atau Operator.</p></div></header>
       <div className="owner-action-grid">{actions.map(({title,note,icon:Icon,view})=><button type="button" onClick={()=>onOpen(view)} key={title}><i><Icon/></i><span><b>{title}</b><small>{note}</small></span><ArrowRight/></button>)}</div>
     </section>
 
@@ -60,6 +60,6 @@ export default function SuperAdminOverview({user,items=[],agents=[],marketingPer
       </section>
     </div>
 
-    <section className="owner-system-strip"><ShieldCheck/><span><b>Pemisahan tugas tetap aktif</b><small>Marketing mengumpulkan data, Operator mengambil keputusan, dan Super Admin memantau serta mengendalikan seluruh sistem.</small></span><button type="button" onClick={()=>onOpen('settings')}><Settings/>Pengaturan</button><button type="button" onClick={()=>onOpen('analytics')}><BarChart3/>Analitik</button></section>
+    <section className="owner-system-strip"><ShieldCheck/><span><b>Pemisahan tugas tetap aktif</b><small>Marketing mengumpulkan data, Operator memutuskan dan menindaklanjuti kredit, sedangkan Super Admin memantau hasil, risiko, keuangan, dan kesehatan sistem.</small></span><button type="button" onClick={()=>onOpen('kinerja-marketing')}><BarChart3/>Lihat kinerja</button></section>
   </div>
 }

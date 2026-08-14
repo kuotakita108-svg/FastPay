@@ -23,7 +23,7 @@ export default function Topbar({onMenu}) {
   const isCreditPanel = isCreditTeam && location.pathname === '/credit-applications'
   const isMarketingPanel = isCreditPanel
   const notices = isCreditTeam
-    ? [{title: isOwner ? 'Kontrol pusat aktif' : isOperator ? 'Berkas operator siap' : 'Ruang pendampingan siap', desc: isOwner ? 'Pantau keputusan, risiko, H2H, dan operasional dari dashboard owner.' : isOperator ? 'Periksa seluruh berkas lalu beri keputusan akhir.' : 'Dampingi agent dan cek permintaan penagihan terbaru.', action: () => navigate(isOwner?'/credit-applications':'/credit-applications?view=verifikasi'), icon: ClipboardCheck}]
+    ? [{title: isOwner ? 'Pantauan pusat aktif' : isOperator ? 'Berkas operator siap' : 'Ruang pendampingan siap', desc: isOwner ? 'Pantau hasil keputusan, risiko, H2H, dan operasional dari dashboard owner.' : isOperator ? 'Periksa seluruh berkas lalu beri keputusan akhir.' : 'Dampingi agent dan cek permintaan penagihan terbaru.', action: () => navigate(isOwner?'/credit-applications':'/credit-applications?view=verifikasi'), icon: ClipboardCheck}]
     : [{title: 'Transaksi KuotaKita', desc: 'Pantau transaksi dan status pembayaran terbaru.', action: () => navigate('/transactions'), icon: Bell}]
   const submit = event => {
     event.preventDefault()
@@ -39,8 +39,10 @@ export default function Topbar({onMenu}) {
         <button className="icon-button notification" onClick={() => setNoticeOpen(value => !value)} aria-label="Buka notifikasi"><Bell size={18}/><i/></button>
         {noticeOpen && <div className="notification-popover"><header><div><strong>Notifikasi</strong><small>Informasi yang perlu kamu cek</small></div><span>{notices.length}</span></header>{notices.map(({title, desc, action, icon: Icon}) => <button type="button" key={title} onClick={() => {setNoticeOpen(false); action()}}><i><Icon/></i><span><b>{title}</b><small>{desc}</small></span><em>›</em></button>)}</div>}
       </div>
-      {isOperator || isOwner
+      {isOperator
         ? <button className="primary-button add-agent-action" onClick={() => navigate('/credit-applications?view=marketing-input')}><Plus size={17}/><span className="agent-label-wide">Tambah Marketing</span><span className="agent-label-mobile">Marketing</span></button>
+        : isOwner
+        ? null
         : canCreateAgent
         ? <button className="primary-button add-agent-action" onClick={() => navigate('/credit-applications?view=agent-input')}><Plus size={17}/><span className="agent-label-wide">Tambah Agent</span><span className="agent-label-mobile">Agent Baru</span></button>
         : <button className="primary-button" onClick={() => navigate('/topup')}><Plus size={17}/>Transaksi Pulsa</button>}

@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useState} from 'react'
 import {Link, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
-import {Activity, BarChart3, BookOpenCheck, Boxes, CalendarClock, Camera, CheckCircle2, CircleHelp, ClipboardCheck, CreditCard, FileCheck2, Gauge, Headphones, Landmark, LockKeyhole, LogOut, PhoneCall, Settings, ShieldCheck, UserPlus, Users, WalletCards} from 'lucide-react'
+import {Activity, BarChart3, BookOpenCheck, Boxes, CalendarClock, Camera, CheckCircle2, ChevronDown, CircleHelp, ClipboardCheck, CreditCard, FileCheck2, Headphones, Landmark, LockKeyhole, LogOut, PhoneCall, Settings, ShieldCheck, UserPlus, Users, WalletCards} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
 import {request} from '../../services/http'
@@ -56,32 +56,27 @@ const operatorNavigation = [
 ]
 
 const superAdminNavigation = [
-  {section: 'KONTROL PUSAT', items: [
+  {section: 'PANTAUAN UTAMA', items: [
     {to: '/credit-applications', label: 'Dasbor Super Admin', icon: ShieldCheck},
-    {to: '/credit-applications?view=verifikasi', label: 'Antrean Keputusan', icon: ClipboardCheck, badgeKey: 'review'},
-    {to: '/credit-applications?view=peminjam', label: 'Seluruh Kredit Agent', icon: Users, badgeKey: 'active'},
-    {to: '/credit-applications?view=limit', label: 'Limit & Tier', icon: Gauge, badgeKey: 'managed'},
-    {to: '/credit-applications?view=pelunasan', label: 'Verifikasi Pelunasan', icon: FileCheck2, badgeKey: 'payments'},
-    {to: '/credit-applications?view=suspend', label: 'Risiko & Akses', icon: LockKeyhole, badgeKey: 'risk'},
+    {to: '/credit-applications?view=peminjam', label: 'Portofolio Kredit', icon: WalletCards, badgeKey: 'active'},
+    {to: '/credit-applications?view=jatuh-tempo', label: 'Tagihan & Risiko', icon: CalendarClock, badgeKey: 'risk'},
+    {to: '/credit-applications?view=pelunasan', label: 'Audit Pelunasan', icon: FileCheck2, badgeKey: 'payments'},
   ]},
-  {section: 'TIM & LAPANGAN', items: [
-    {to: '/credit-applications?view=marketing-input', label: 'Tambah Marketing', icon: UserPlus},
+  {section: 'TIM & KINERJA', items: [
     {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Marketing', icon: Users},
-    {to: '/credit-applications?view=laporan', label: 'Penugasan Lapangan', icon: ClipboardCheck, badgeKey: 'fieldTasks'},
+    {to: '/credit-applications?view=laporan', label: 'Audit Penugasan', icon: ClipboardCheck, badgeKey: 'fieldTasks'},
   ]},
   {section: 'OPERASIONAL APLIKASI', items: [
     {to: '/transactions', label: 'Seluruh Transaksi', icon: Activity},
     {to: '/products', label: 'Produk & Harga', icon: Boxes},
     {to: '/customers', label: 'Pelanggan & Akun', icon: Users},
-    {to: '/analytics', label: 'Analitik Bisnis', icon: BarChart3},
     {to: '/payment-methods', label: 'Kanal Pembayaran', icon: CreditCard},
-    {to: '/settings', label: 'Pengaturan Sistem', icon: Settings},
   ]},
-  {section: 'RAHASIA OWNER', items: [
-    {to: '/credit-applications?view=h2h', label: 'Saldo & Transaksi H2H', icon: Landmark},
+  {section: 'SISTEM & PROVIDER', items: [
+    {to: '/credit-applications?view=h2h', label: 'Monitor H2H', icon: Landmark},
     {to: '/credit-applications?view=transaksi-agent', label: 'Monitor Transaksi Agen', icon: Activity},
-    {to: '/credit-applications?view=helpdesk', label: 'Helpdesk & Refund', icon: Headphones},
-    {to: '/credit-applications?view=kinerja-marketing', label: 'Audit Tim', icon: BarChart3},
+    {to: '/credit-applications?view=helpdesk', label: 'Audit Komplain', icon: Headphones},
+    {to: '/settings', label: 'Pengaturan Sistem', icon: Settings},
   ]},
 ]
 
@@ -98,6 +93,7 @@ export default function Sidebar({open, onClose}) {
   const isSuperAdmin = role === 'master'
   const isCreditAdmin = isOperator || role === 'admin' || role === 'master'
   const [workCounts, setWorkCounts] = useState({})
+  const [ownerSections, setOwnerSections] = useState({'PANTAUAN UTAMA': true})
   useEffect(() => {
     if (!isCreditAdmin && !isMarketing) return undefined
     let active = true
@@ -133,7 +129,7 @@ export default function Sidebar({open, onClose}) {
     ? {eyebrow: 'MODE MARKETING', title: 'Validasi lapangan', description: 'Daftarkan agent, lengkapi empat foto wajib, pantau agent binaan, dan kerjakan tugas Operator.'}
     : isCreditAdmin
       ? isSuperAdmin
-        ? {eyebrow: 'MODE SUPER ADMIN', title: 'Kontrol pusat & H2H', description: 'Akses owner untuk modal, H2H, audit, dan seluruh operasional kredit.'}
+        ? {eyebrow: 'MODE SUPER ADMIN', title: 'Pantauan pusat & H2H', description: 'Ringkasan owner untuk modal, H2H, audit, dan kesehatan operasional.'}
         : {eyebrow: 'MODE OPERATOR', title: 'Keputusan akhir kredit', description: 'Fokus memeriksa berkas, menentukan limit, memantau kredit, pelunasan, dan risiko agent.'}
       : null
 
@@ -147,12 +143,12 @@ export default function Sidebar({open, onClose}) {
       <strong>{rolePanel.title}</strong>
       <small>Bagian aktif: {activeLabel}</small>
     </div>}
-    <nav className={rolePanel ? 'workspace-nav' : ''}>{visibleNavigation.map(group => <div key={group.section}>
-      <p className="nav-label">{group.section}</p>
-      {group.items.map(({to, label, icon: Icon, badge}) => <Link className={`nav-item nav-${label.toLowerCase().replace(/[^a-z]+/g, '-')} ${active(to) ? 'active' : ''}`} to={to} key={to} onClick={onClose}>
+    <nav className={`${rolePanel ? 'workspace-nav' : ''}${isSuperAdmin ? ' owner-workspace-nav' : ''}`}>{visibleNavigation.map(group => {const sectionOpen=ownerSections[group.section]??group.items.some(item=>active(item.to));return <div className={isSuperAdmin && !sectionOpen ? 'section-collapsed' : ''} key={group.section}>
+      {isSuperAdmin ? <button type="button" className="nav-section-toggle" aria-expanded={sectionOpen} onClick={() => setOwnerSections(current => ({...current, [group.section]: !sectionOpen}))}><span>{group.section}</span><ChevronDown/></button> : <p className="nav-label">{group.section}</p>}
+      <div className="nav-section-items">{group.items.map(({to, label, icon: Icon, badge}) => <Link className={`nav-item nav-${label.toLowerCase().replace(/[^a-z]+/g, '-')} ${active(to) ? 'active' : ''}`} to={to} key={to} onClick={onClose}>
         <Icon size={18}/><span>{label}</span>{active(to) && label === 'Ringkasan Kerja' && <b className="nav-current">AKTIF</b>}{badge && <b>{badge}</b>}
-      </Link>)}
-    </div>)}</nav>
+      </Link>)}</div>
+    </div>})}</nav>
     <div className="sidebar-bottom">
       <div className="help-card"><CircleHelp/><strong>Pusat Bantuan</strong><small>Tim KuotaKita siap membantu 24/7</small><button>Hubungi Support</button></div>
       <div className="user-card"><span className="avatar coral">{initials(user.name)}</span><div><strong>{user.name}</strong><small>{roleLabel}</small></div><button onClick={signOut} title="Keluar"><LogOut size={16}/></button></div>
