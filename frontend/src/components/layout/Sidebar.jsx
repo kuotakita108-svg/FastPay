@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useState} from 'react'
 import {Link, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
-import {Activity, BarChart3, BookOpenCheck, CalendarClock, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, Headphones, Landmark, LockKeyhole, LogOut, PhoneCall, ShieldCheck, UserPlus, Users, WalletCards} from 'lucide-react'
+import {Activity, BarChart3, BookOpenCheck, Boxes, CalendarClock, Camera, CheckCircle2, CircleHelp, ClipboardCheck, CreditCard, FileCheck2, Gauge, Headphones, Landmark, LockKeyhole, LogOut, PhoneCall, Settings, ShieldCheck, UserPlus, Users, WalletCards} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
 import {request} from '../../services/http'
@@ -64,11 +64,24 @@ const superAdminNavigation = [
     {to: '/credit-applications?view=pelunasan', label: 'Verifikasi Pelunasan', icon: FileCheck2, badgeKey: 'payments'},
     {to: '/credit-applications?view=suspend', label: 'Risiko & Akses', icon: LockKeyhole, badgeKey: 'risk'},
   ]},
+  {section: 'TIM & LAPANGAN', items: [
+    {to: '/credit-applications?view=marketing-input', label: 'Tambah Marketing', icon: UserPlus},
+    {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Marketing', icon: Users},
+    {to: '/credit-applications?view=laporan', label: 'Penugasan Lapangan', icon: ClipboardCheck, badgeKey: 'fieldTasks'},
+  ]},
+  {section: 'OPERASIONAL APLIKASI', items: [
+    {to: '/transactions', label: 'Seluruh Transaksi', icon: Activity},
+    {to: '/products', label: 'Produk & Harga', icon: Boxes},
+    {to: '/customers', label: 'Pelanggan & Akun', icon: Users},
+    {to: '/analytics', label: 'Analitik Bisnis', icon: BarChart3},
+    {to: '/payment-methods', label: 'Kanal Pembayaran', icon: CreditCard},
+    {to: '/settings', label: 'Pengaturan Sistem', icon: Settings},
+  ]},
   {section: 'RAHASIA OWNER', items: [
     {to: '/credit-applications?view=h2h', label: 'Saldo & Transaksi H2H', icon: Landmark},
     {to: '/credit-applications?view=transaksi-agent', label: 'Monitor Transaksi Agen', icon: Activity},
     {to: '/credit-applications?view=helpdesk', label: 'Helpdesk & Refund', icon: Headphones},
-    {to: '/credit-applications?view=laporan', label: 'Laporan & Audit', icon: BarChart3},
+    {to: '/credit-applications?view=kinerja-marketing', label: 'Audit Tim', icon: BarChart3},
   ]},
 ]
 

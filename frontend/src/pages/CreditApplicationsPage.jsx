@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from 'react'
-import {useSearchParams} from 'react-router-dom'
+import {useNavigate,useSearchParams} from 'react-router-dom'
 import {Activity, AlertCircle, ArrowRight, Ban, Banknote, BarChart3, CalendarClock, CalendarDays, Camera, Check, CheckCircle2, ChevronRight, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, FileCheck2, Filter, Gauge, HandCoins, Headphones, Images, LockKeyhole, PenLine, PhoneCall, PlusCircle, Printer, QrCode, Search, ShieldCheck, Stamp, Trash2, TrendingUp, Upload, UserCheck, UserPlus, WalletCards, X, XCircle} from 'lucide-react'
 import {QRCodeSVG} from 'qrcode.react'
 import PageHeader from '../components/common/PageHeader'
@@ -8,6 +8,7 @@ import {rupiah} from '../utils/currency'
 import {request} from '../services/http'
 import AgentAccountForm from '../components/credit/AgentAccountForm'
 import MarketingAccountForm from '../components/credit/MarketingAccountForm'
+import SuperAdminOverview from '../components/credit/SuperAdminOverview'
 import {getPulsa24Balance, getPulsa24Operations, refundPulsa24Order} from '../services/transactionService'
 import {listManagedAgents} from '../services/authService'
 
@@ -260,6 +261,7 @@ function SignatureStep({title, note, signed, icon: Icon}) {
 
 export default function CreditApplicationsPage() {
   const {user} = useAuth()
+  const navigate = useNavigate()
   const [params, setSearchParams] = useSearchParams()
   const canvasRef = useRef(null)
   const directoryScrollRef = useRef(null)
@@ -1085,6 +1087,7 @@ export default function CreditApplicationsPage() {
 
   return <>
     <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''} ${isMarketing ? 'marketing-review' : ''} ${(isOperator || isAdmin) ? 'analyst-review operator-review' : ''}`}>
+      {view === 'overview' && isOwner && <SuperAdminOverview user={user} items={items} agents={managedAgents} marketingPerformance={marketingPerformance} h2h={h2hMonitor} onOpen={next=>['settings','analytics'].includes(next)?navigate(`/${next}`):goToView(next)}/>}
       {view === 'overview' && isMarketing && <section className="marketing-profile-header">
         <div><span>PROFIL AKTIF</span><h1>{String(user?.name || 'Marketing KuotaKita').toUpperCase()}</h1><p>Akun marketing aktif untuk pendampingan agent, survei lapangan, dokumen, dan pemantauan kredit.</p><footer><b><CheckCircle2/>Marketing</b><b><ShieldCheck/>Role aktif di sesi ini</b></footer></div>
         <i><UserCheck/></i>
@@ -1093,7 +1096,7 @@ export default function CreditApplicationsPage() {
         <div><span>PROFIL AKTIF</span><h1>{String(user?.name || 'Operator KuotaKita').toUpperCase()}</h1><p>Akun Operator aktif untuk keputusan akhir, pengaturan limit, verifikasi pelunasan, dan pengamanan kredit agent.</p><footer><b><ClipboardCheck/>Operator</b><b><ShieldCheck/>Role aktif di sesi ini</b></footer></div>
         <i><ClipboardCheck/></i>
       </section>}
-      {view === 'overview' && !operatorTableMode && !isMarketing && !isOperator && <div className="credit-review-hero">
+      {view === 'overview' && !operatorTableMode && !isMarketing && !isOperator && !isOwner && <div className="credit-review-hero">
         <div>
           <span>{isOperator ? 'RUANG KEPUTUSAN OPERATOR' : 'RUANG DATA PEMINJAM'}</span>
           <h2>{isOperator ? 'Kontrol Keputusan Kredit' : 'Monitoring Kredit Agent'}</h2>
@@ -1101,7 +1104,7 @@ export default function CreditApplicationsPage() {
         </div>
         <i><WalletCards/></i>
       </div>}
-      {view === 'overview' && !operatorTableMode && <div className={`credit-review-stats ${isOperator ? 'operator-summary-stats' : ''}`}>
+      {view === 'overview' && !operatorTableMode && !isOwner && <div className={`credit-review-stats ${isOperator ? 'operator-summary-stats' : ''}`}>
         <article><span>{isMarketing ? 'Agent Terdaftar' : 'Total Peminjam'}</span><strong>{isMarketing ? managedAgents.length : summary.total}</strong><small>{isMarketing ? 'Akun agent binaan resmi' : 'Seluruh pengajuan'}</small></article>
         <article><span>Butuh Review</span><strong>{summary.review}</strong><small>Menunggu keputusan</small></article>
         <article><span>Sudah Diterima</span><strong>{summary.approved}</strong><small>Aktif dipantau</small></article>
@@ -1114,7 +1117,7 @@ export default function CreditApplicationsPage() {
       </section>}
       {(isMarketing || isAdmin) && view === 'agent-input' && <><AgentAccountForm onClose={() => goToView('overview')} onCreated={() => setManagedAgentsRefresh(value => value + 1)}/><section className="registered-agent-directory"><header><div><span>AGENT RESMI TERDAFTAR</span><h2>Daftar akun agent binaan</h2><p>Akun yang baru dibuat langsung tersedia untuk Pengajuan Kredit dan dapat login ke aplikasi Agent.</p></div><strong>{managedAgents.length}<small>Agent</small></strong></header><div>{managedAgents.length ? managedAgents.map(agent => {const linked=sortedItems.find(item => item.userId === agent.id);return <article key={agent.id}><span><b>{agent.name}</b><small>{agent.store_name || 'Toko belum dilengkapi'} · {agent.phone}</small></span><code>{agent.id}</code><em>{linked ? (linked.paymentStatus === 'Lunas' ? 'Lunas' : linked.status) : 'Belum mengajukan'}</em><button type="button" disabled={Boolean(linked && agentHasOpenCredit(agent.id))} onClick={() => {setManualForm(current => ({...current,selectedAgentId:agent.id,agentName:agent.name,storeName:agent.store_name || '',whatsapp:agent.phone || '',email:agent.email || ''}));goToView('input')}}>{linked && agentHasOpenCredit(agent.id) ? 'Pengajuan aktif' : 'Buat pengajuan'}</button></article>}) : <p>Belum ada akun agent binaan. Gunakan formulir di atas untuk membuat akun pertama.</p>}</div></section></>}
       {(isOperator || isAdmin) && view === 'marketing-input' && <MarketingAccountForm onClose={() => goToView('overview')}/>}
-      {(isMarketing || isAdmin) && view === 'overview' && <section className="marketing-workspace">
+      {(isMarketing || isAdmin) && !isOwner && view === 'overview' && <section className="marketing-workspace">
         <header>
           <div><span>MEJA KERJA MARKETING</span><h2>Kerjakan yang paling penting</h2><p>Agent mengisi pengajuan sendiri. Marketing mengambil antrean, memeriksa data, menyelesaikan empat foto survei, lalu mengirim berkas lengkap ke Operator.</p></div>
         </header>
@@ -1133,7 +1136,7 @@ export default function CreditApplicationsPage() {
           <button type="button" onClick={() => goToView('peminjam')}><Banknote/><span><b>Kredit aktif</b><small>{paymentToday.length ? `${paymentToday.length} kredit menunggu lunas` : 'Tidak ada kredit aktif'}</small></span><strong>→</strong></button>
         </div>
       </section>}
-      {(isOperator || isAdmin) && view === 'overview' && !operatorTableMode && <section className="marketing-workspace analyst-workspace operator-workspace">
+      {(isOperator || isAdmin) && !isOwner && view === 'overview' && !operatorTableMode && <section className="marketing-workspace analyst-workspace operator-workspace">
         <header>
           <div><span>MEJA KERJA OPERATOR</span><h2>Kontrol limit, akses, dan keputusan</h2><p>Daftar dibuat ringkas untuk banyak agent. Buka detail hanya saat perlu memeriksa berkas, mengubah limit, menghentikan akses, atau mencetak pengajuan.</p></div>
         </header>

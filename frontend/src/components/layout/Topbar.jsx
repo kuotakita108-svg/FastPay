@@ -13,6 +13,7 @@ export default function Topbar({onMenu}) {
   const [noticeOpen, setNoticeOpen] = useState(false)
   const isMarketing = user?.role === 'marketing'
   const isOperator = ['operator', 'analis'].includes(user?.role)
+  const isOwner = user?.role === 'master'
   const canCreateAgent = ['marketing', 'admin', 'master'].includes(user?.role)
   const isCreditTeam = isMarketing || isOperator || ['admin', 'master'].includes(user?.role)
   // Admin/master memakai ruang kerja marketing juga. Semua role yang dapat
@@ -22,7 +23,7 @@ export default function Topbar({onMenu}) {
   const isCreditPanel = isCreditTeam && location.pathname === '/credit-applications'
   const isMarketingPanel = isCreditPanel
   const notices = isCreditTeam
-    ? [{title: isOperator ? 'Berkas operator siap' : 'Ruang pendampingan siap', desc: isOperator ? 'Periksa seluruh berkas lalu beri keputusan akhir.' : 'Dampingi agent dan cek permintaan penagihan terbaru.', action: () => navigate('/credit-applications?view=verifikasi'), icon: ClipboardCheck}]
+    ? [{title: isOwner ? 'Kontrol pusat aktif' : isOperator ? 'Berkas operator siap' : 'Ruang pendampingan siap', desc: isOwner ? 'Pantau keputusan, risiko, H2H, dan operasional dari dashboard owner.' : isOperator ? 'Periksa seluruh berkas lalu beri keputusan akhir.' : 'Dampingi agent dan cek permintaan penagihan terbaru.', action: () => navigate(isOwner?'/credit-applications':'/credit-applications?view=verifikasi'), icon: ClipboardCheck}]
     : [{title: 'Transaksi KuotaKita', desc: 'Pantau transaksi dan status pembayaran terbaru.', action: () => navigate('/transactions'), icon: Bell}]
   const submit = event => {
     event.preventDefault()
@@ -38,7 +39,7 @@ export default function Topbar({onMenu}) {
         <button className="icon-button notification" onClick={() => setNoticeOpen(value => !value)} aria-label="Buka notifikasi"><Bell size={18}/><i/></button>
         {noticeOpen && <div className="notification-popover"><header><div><strong>Notifikasi</strong><small>Informasi yang perlu kamu cek</small></div><span>{notices.length}</span></header>{notices.map(({title, desc, action, icon: Icon}) => <button type="button" key={title} onClick={() => {setNoticeOpen(false); action()}}><i><Icon/></i><span><b>{title}</b><small>{desc}</small></span><em>›</em></button>)}</div>}
       </div>
-      {isOperator
+      {isOperator || isOwner
         ? <button className="primary-button add-agent-action" onClick={() => navigate('/credit-applications?view=marketing-input')}><Plus size={17}/><span className="agent-label-wide">Tambah Marketing</span><span className="agent-label-mobile">Marketing</span></button>
         : canCreateAgent
         ? <button className="primary-button add-agent-action" onClick={() => navigate('/credit-applications?view=agent-input')}><Plus size={17}/><span className="agent-label-wide">Tambah Agent</span><span className="agent-label-mobile">Agent Baru</span></button>
