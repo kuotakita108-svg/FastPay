@@ -8,7 +8,7 @@ import {request} from '../../services/http'
 
 const marketingNavigation = [
   {
-    section: 'AKTIVITAS',
+    section: 'KEPUTUSAN',
     items: [
       {to: '/credit-applications', label: 'Dashboard', icon: WalletCards},
       {to: '/credit-applications?view=agent-input', label: 'Tambah Agent', icon: UserPlus},
@@ -17,7 +17,7 @@ const marketingNavigation = [
     ],
   },
   {
-    section: 'PORTOFOLIO',
+    section: 'KONTROL KREDIT',
     items: [
       {to: '/credit-applications?view=peminjam', label: 'Portofolio Binaan', icon: Users},
       {to: '/credit-applications?view=agenda', label: 'Tugas Lapangan', icon: CalendarClock, badgeKey: 'fieldTasks'},
@@ -49,7 +49,7 @@ const operatorNavigation = [
       {to: '/credit-applications?view=suspend', label: 'Risiko & Akses', icon: LockKeyhole, badgeKey: 'risk'},
     ],
   },
-  {section: 'KINERJA', items: [
+  {section: 'TIM & PENGAWASAN', items: [
     {to: '/credit-applications?view=laporan', label: 'Penugasan Lapangan', icon: BarChart3, badgeKey: 'fieldTasks'},
     {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Marketing', icon: Users},
   ]},
@@ -126,8 +126,8 @@ export default function Sidebar({open, onClose}) {
 
   return <aside className={`sidebar ${open ? 'open' : ''}${rolePanel ? ' credit-sidebar' : ''}`}>
     <Link className="brand console-brand" to={home} onClick={onClose} aria-label="KuotaKita">
-      <span className="console-brand-mark"><Zap size={20}/></span>
-      <span className="console-brand-copy"><b>KuotaKita</b>{rolePanel && <small>{isMarketing ? 'Marketing Console' : isSuperAdmin ? 'Owner Console' : 'Operator Console'}</small>}</span>
+      <div className="console-brand-mark"><Zap size={20}/></div>
+      <div className="console-brand-copy"><b>KuotaKita</b>{rolePanel && <small>{isMarketing ? 'Marketing Console' : isSuperAdmin ? 'Owner Console' : 'Operator Console'}</small>}</div>
     </Link>
     {rolePanel && <div className={`sidebar-role-panel ${isCreditAdmin ? 'analis-role-panel' : ''}`}>
       <span>{rolePanel.eyebrow}</span>

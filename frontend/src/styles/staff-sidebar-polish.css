@@ -9,6 +9,8 @@
   border-bottom:1px solid #17344b!important;
   color:#f5fbff!important;
   text-decoration:none!important;
+  visibility:visible!important;
+  opacity:1!important;
 }
 .panel-workspace-shell .credit-sidebar .console-brand-mark{
   display:grid!important;
@@ -21,6 +23,7 @@
   background:linear-gradient(145deg,#0c5973,#12304f)!important;
   color:#55e4f5!important;
   box-shadow:inset 0 0 18px #33d8ed12,0 8px 20px #0005!important;
+  visibility:visible!important;
 }
 .panel-workspace-shell .credit-sidebar .console-brand-mark svg{
   width:20px!important;
@@ -33,6 +36,7 @@
   min-width:0!important;
   gap:2px!important;
   line-height:1!important;
+  visibility:visible!important;
 }
 .panel-workspace-shell .credit-sidebar .console-brand-copy b{
   color:#fff!important;
@@ -64,8 +68,9 @@
   border-top:1px solid #132d41!important;
 }
 .panel-workspace-shell .credit-sidebar .workspace-nav .nav-label{
+  display:block!important;
   margin:0 10px 6px!important;
-  color:#6f91aa!important;
+  color:#72b4ca!important;
   font-size:7px!important;
   font-weight:900!important;
   letter-spacing:1.35px!important;
