@@ -277,6 +277,8 @@ export default function CreditApplicationsPage() {
   const [borrowerFiltersOpen, setBorrowerFiltersOpen] = useState(false)
   const [reportFilter, setReportFilter] = useState('Semua')
   const [reportMarketing, setReportMarketing] = useState('Semua Marketing')
+  const [performanceQuery, setPerformanceQuery] = useState('')
+  const [performanceRisk, setPerformanceRisk] = useState('Semua')
   const [fieldTaskDraft, setFieldTaskDraft] = useState({marketing:'', applicationId:'', type:'Verifikasi ulang data agent', note:'', dueAt:''})
   const [filter, setFilter] = useState('Semua')
   const [listPage, setListPage] = useState(1)
@@ -1036,6 +1038,11 @@ export default function CreditApplicationsPage() {
     if (!groups[name].lastActivity || new Date(item.updatedAt || item.createdAt || 0) > new Date(groups[name].lastActivity)) groups[name].lastActivity = item.updatedAt || item.createdAt
     return groups
   }, {})).map(row => ({...row, surveyRate: row.registered ? Math.round((row.visits / row.registered) * 100) : 0, approvalRate: (row.approved + row.rejected) ? Math.round((row.approved / (row.approved + row.rejected)) * 100) : 0, npl: row.turnover ? Math.round((row.overdue / row.turnover) * 100) : 0})).sort((a, b) => b.approved - a.approved || b.registered - a.registered)
+  const visibleMarketingPerformance = marketingPerformance.filter(row => {
+    const matchesQuery = row.name.toLowerCase().includes(performanceQuery.trim().toLowerCase())
+    const matchesRisk = performanceRisk === 'Semua' || (performanceRisk === 'Aman' ? row.npl <= 5 : row.npl > 5)
+    return matchesQuery && matchesRisk
+  })
   const recentManual = sortedItems.filter(item => item.source === 'marketing').slice(0, 5)
   const paymentToday = approvedActive.filter(item => Boolean(firstUnpaidRow(item)))
   const showCreateArea = (isMarketing || isAdmin) && view === 'input'
@@ -1239,7 +1246,7 @@ export default function CreditApplicationsPage() {
       </>}
       {(isOperator || isAdmin) && view === 'kinerja-marketing' && <section className="marketing-performance-workspace">
         <header><div><span>KONTROL TIM LAPANGAN</span><h2>Kinerja Marketing</h2><p>Pantau produktivitas, penyelesaian survei, hasil keputusan, nilai kredit aktif, dan risiko setiap marketing.</p></div><ShieldCheck/></header>
-        <section className="marketing-scoreboard"><header><div><span>RAPOR PER MARKETING</span><h3>Produktivitas &amp; kualitas portofolio</h3></div><small>Risiko tinggi jika NPL melebihi 5%</small></header><div className="marketing-scoreboard-scroll"><div className="marketing-scoreboard-head"><span>Marketing</span><span>Agent</span><span>Survei</span><span>Antrean</span><span>Disetujui</span><span>Kredit Aktif</span><span>Tunggakan</span><span>Risiko</span></div>{marketingPerformance.map((row, index) => <article className={row.npl > 5 ? 'high-risk' : ''} key={row.name}><span className="marketing-identity"><i>{index + 1}</i><b>{row.name}</b><small>Aktif {dateTime(row.lastActivity)}</small></span><strong>{row.registered}</strong><span><b>{row.visits}</b><small>{row.surveyRate}% selesai</small></span><span><b>{row.pending}</b><small>Menunggu Operator</small></span><span><b>{row.approved}</b><small>{row.approvalRate}% approval</small></span><span><b>{row.active} agent</b><small>{rupiah(row.turnover)}</small></span><strong className={row.overdue > 0 ? 'amount-danger' : ''}>{rupiah(row.overdue)}</strong><em className={row.npl > 5 ? 'risk-high' : 'risk-safe'}>{row.npl > 5 ? 'Perlu perhatian' : 'Aman'}<small>NPL {row.npl}%</small></em></article>)}{!marketingPerformance.length && <p>Belum ada aktivitas marketing yang tercatat.</p>}</div></section>
+        <section className="marketing-scoreboard"><header><div><span>RAPOR PER MARKETING</span><h3>Produktivitas &amp; kualitas portofolio</h3></div><small>Risiko tinggi jika NPL melebihi 5%</small></header><div className="marketing-performance-tools"><label><Search/><input value={performanceQuery} onChange={event => setPerformanceQuery(event.target.value)} placeholder="Cari nama Marketing..."/></label><div>{['Semua', 'Aman', 'Perlu perhatian'].map(name => <button type="button" className={performanceRisk === name ? 'active' : ''} onClick={() => setPerformanceRisk(name)} key={name}>{name}</button>)}</div></div><div className="marketing-scoreboard-scroll"><div className="marketing-scoreboard-head"><span>Marketing</span><span>Agent</span><span>Survei</span><span>Antrean</span><span>Disetujui</span><span>Kredit Aktif</span><span>Tunggakan</span><span>Risiko</span></div>{visibleMarketingPerformance.map((row, index) => <article className={row.npl > 5 ? 'high-risk' : ''} key={row.name}><span className="marketing-identity"><i>{index + 1}</i><b>{row.name}</b><small>Aktif {dateTime(row.lastActivity)}</small></span><strong>{row.registered}</strong><span><b>{row.visits}</b><small>{row.surveyRate}% selesai</small></span><span><b>{row.pending}</b><small>Menunggu Operator</small></span><span><b>{row.approved}</b><small>{row.approvalRate}% approval</small></span><span><b>{row.active} agent</b><small>{rupiah(row.turnover)}</small></span><strong className={row.overdue > 0 ? 'amount-danger' : ''}>{rupiah(row.overdue)}</strong><em className={row.npl > 5 ? 'risk-high' : 'risk-safe'}>{row.npl > 5 ? 'Perlu perhatian' : 'Aman'}<small>NPL {row.npl}%</small></em></article>)}{!visibleMarketingPerformance.length && <p>Tidak ada Marketing yang sesuai pencarian atau filter.</p>}</div></section>
       </section>}
       {(isOperator || isAdmin) && view === 'jatuh-tempo' && <section className="operator-ledger-workspace">
         <header><div><span>KENDALI TAGIHAN</span><h2>Jatuh Tempo &amp; Tagihan Agent</h2><p>Urutan dimulai dari tanggal terdekat agar Operator langsung menangani tagihan paling mendesak.</p></div><CalendarDays/></header>

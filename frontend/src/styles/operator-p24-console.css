@@ -108,6 +108,25 @@
   .panel-workspace-shell .operator-review .marketing-report-panel>article:nth-child(-n+2){border-bottom:1px solid var(--op-line)!important}
 }
 
+/* Kinerja Marketing: fokus ke rapor satu baris dan tetap dapat digeser di HP. */
+.marketing-performance-tools{display:flex;align-items:center;gap:8px;padding:9px 10px;border-bottom:1px solid #1b4058;background:#071725}
+.marketing-performance-tools label{display:flex;align-items:center;gap:7px;min-width:220px;flex:1;padding:8px 10px;border:1px solid #1d4661;border-radius:7px;background:#061522}
+.marketing-performance-tools label svg{width:15px;color:#47d8ec}.marketing-performance-tools input{width:100%;border:0;outline:0;background:transparent;color:#eef8ff;font-size:10px}
+.marketing-performance-tools>div{display:flex;gap:6px}.marketing-performance-tools button{border:1px solid #214b67;border-radius:7px;background:#091a2b;color:#bfd2e0;padding:8px 11px;font-size:9px;font-weight:800;white-space:nowrap}.marketing-performance-tools button.active{border-color:#1c789c;background:#0a4867;color:#fff}
+@media(max-width:760px){
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-performance-tools{display:flex!important;align-items:center!important;gap:6px!important;padding:7px!important;overflow-x:auto!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-performance-tools label{min-width:190px!important;flex:0 0 190px!important;padding:7px 9px!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-performance-tools>div{flex:0 0 auto!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll{overflow-x:auto!important;padding:0!important;-webkit-overflow-scrolling:touch!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-head{display:grid!important;grid-template-columns:160px 54px 82px 92px 86px 110px 100px 100px!important;min-width:784px!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article{display:grid!important;grid-template-columns:160px 54px 82px 92px 86px 110px 100px 100px!important;align-items:center!important;gap:0!important;min-width:784px!important;width:784px!important;margin:0!important;padding:0!important;border:0!important;border-bottom:1px solid #17344c!important;border-radius:0!important;background:#071725!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article>*{min-width:0!important;padding:8px 9px!important;border:0!important;border-radius:0!important;background:transparent!important;text-align:left!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll .marketing-identity{grid-column:auto!important;padding:8px 9px!important;border:0!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article>*::before{display:none!important;content:none!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article :is(b,strong,em){font-size:9px!important;white-space:nowrap!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article small{font-size:7px!important;white-space:nowrap!important}
+}
+
 /* Laporan kredit: filter audit, tabel terang, dan kartu ringkas di HP. */
 .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .credit-report-hero{border-color:#27516b!important;background:radial-gradient(circle at 100% 0,#0d4557 0,transparent 38%),linear-gradient(110deg,#092337,#071522)!important;color:#f3f9fd!important}.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .credit-report-hero p{display:block!important;color:#b5cad8!important;font-size:9px!important}
 .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .marketing-report-panel{border:1px solid #244b64!important;background:#244b64!important}.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .marketing-report-panel article{background:#091a29!important}.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .marketing-report-panel :is(span,small){color:#b8cbd8!important}.panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .marketing-report-panel strong{color:#fff!important}
@@ -417,4 +436,16 @@
   .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article>*:nth-child(8)::before{content:'Status risiko'}
   .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article :is(b,strong,em){font-size:11px!important;line-height:1.3!important}
   .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article small{font-size:8px!important;line-height:1.3!important;white-space:normal}
+}
+
+/* Override akhir: rapor HP tetap satu baris dan digeser horizontal. */
+@media(max-width:760px){
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll{overflow-x:auto!important;padding:0!important;-webkit-overflow-scrolling:touch!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-head{display:grid!important;grid-template-columns:160px 54px 82px 92px 86px 110px 100px 100px!important;min-width:784px!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article{display:grid!important;grid-template-columns:160px 54px 82px 92px 86px 110px 100px 100px!important;align-items:center!important;gap:0!important;min-width:784px!important;width:784px!important;margin:0!important;padding:0!important;border:0!important;border-bottom:1px solid #17344c!important;border-radius:0!important;background:#071725!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article>*{min-width:0!important;padding:8px 9px!important;border:0!important;border-radius:0!important;background:transparent!important;text-align:left!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll .marketing-identity{grid-column:auto!important;padding:8px 9px!important;border:0!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article>*::before{display:none!important;content:none!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article :is(b,strong,em){font-size:9px!important;white-space:nowrap!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article small{font-size:7px!important;white-space:nowrap!important}
 }
