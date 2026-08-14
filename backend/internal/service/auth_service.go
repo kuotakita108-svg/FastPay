@@ -31,9 +31,10 @@ type AccountSeed struct {
 	// InitialBalance is granted just once to the matching seed account. It is
 	// useful for an operator-provided opening balance, never for top-up mocks.
 	InitialBalance int64
-	// SyncPassword is reserved for an explicitly configured disposable test
-	// account. Normal seeded staff accounts never have their password replaced.
+	// SyncPassword makes an explicitly configured account follow the environment.
+	// SyncRole additionally keeps the configured name and role canonical.
 	SyncPassword bool
+	SyncRole     bool
 }
 
 type storedUser struct {
@@ -554,12 +555,26 @@ func (s *AuthService) applySeed(seed AccountSeed) bool {
 		}
 		return true
 	}
+	changed := false
 	if seed.SyncPassword && bcrypt.CompareHashAndPassword([]byte(item.PasswordHash), []byte(seed.Password)) != nil {
 		hash, err := bcrypt.GenerateFromPassword([]byte(seed.Password), bcrypt.DefaultCost)
 		if err != nil {
-			panic(fmt.Errorf("gagal memperbarui akun tester: %w", err))
+			panic(fmt.Errorf("gagal memperbarui akun konfigurasi: %w", err))
 		}
 		item.PasswordHash = string(hash)
+		changed = true
+	}
+	if seed.SyncRole {
+		if seed.Name != "" && item.Name != seed.Name {
+			item.Name = seed.Name
+			changed = true
+		}
+		if seed.Role != "" && item.Role != seed.Role {
+			item.Role = seed.Role
+			changed = true
+		}
+	}
+	if changed {
 		s.users[username] = item
 		return true
 	}

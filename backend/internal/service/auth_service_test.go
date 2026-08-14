@@ -55,3 +55,24 @@ func TestH2HTesterPasswordFollowsEnvironmentSeed(t *testing.T) {
 		t.Fatal("password lama seharusnya sudah ditolak")
 	}
 }
+
+func TestConfiguredMasterFollowsPasswordAndRole(t *testing.T) {
+	dataFile := filepath.Join(t.TempDir(), "accounts.json")
+	initial := NewPersistentAuthService("test-secret", dataFile, []AccountSeed{
+		{Username: "admin", Password: "password-lama", Name: "Akun Lama", Role: "user"},
+	})
+	if _, err := initial.Login("admin", "password-lama"); err != nil {
+		t.Fatalf("login awal gagal: %v", err)
+	}
+
+	restarted := NewPersistentAuthService("test-secret", dataFile, []AccountSeed{
+		{Username: "admin", Password: "password-baru", Name: "Master KuotaKita", Role: "master", SyncPassword: true, SyncRole: true},
+	})
+	result, err := restarted.Login("admin", "password-baru")
+	if err != nil {
+		t.Fatalf("login master tersinkron gagal: %v", err)
+	}
+	if result.User.Role != "master" || result.User.Name != "Master KuotaKita" {
+		t.Fatalf("identitas master tidak tersinkron: role=%s name=%s", result.User.Role, result.User.Name)
+	}
+}
