@@ -34,14 +34,14 @@ const marketingNavigation = [
 
 const operatorNavigation = [
   {
-    section: 'PUSAT KERJA',
+    section: 'AKTIVITAS',
     items: [
       {to: '/credit-applications', label: 'Dashboard Operator', icon: ShieldCheck},
       {to: '/credit-applications?view=verifikasi', label: 'Antrean Keputusan', icon: ClipboardCheck, badgeKey: 'review'},
     ],
   },
   {
-    section: 'PENGAWASAN KREDIT',
+    section: 'PORTOFOLIO',
     items: [
       {to: '/credit-applications?view=peminjam', label: 'Agen & Kredit Aktif', icon: CheckCircle2, badgeKey: 'active'},
       {to: '/credit-applications?view=jatuh-tempo', label: 'Jatuh Tempo', icon: CalendarClock, badgeKey: 'due'},
@@ -49,7 +49,7 @@ const operatorNavigation = [
       {to: '/credit-applications?view=suspend', label: 'Risiko & Akses', icon: LockKeyhole, badgeKey: 'risk'},
     ],
   },
-  {section: 'LAPORAN & TIM', items: [
+  {section: 'KINERJA', items: [
     {to: '/credit-applications?view=laporan', label: 'Penugasan Lapangan', icon: BarChart3, badgeKey: 'fieldTasks'},
     {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Marketing', icon: Users},
   ]},
@@ -125,7 +125,10 @@ export default function Sidebar({open, onClose}) {
       : null
 
   return <aside className={`sidebar ${open ? 'open' : ''}${rolePanel ? ' credit-sidebar' : ''}`}>
-    <Link className="brand" to={home} onClick={onClose}><span><Zap size={20}/></span>KuotaKita</Link>
+    <Link className="brand console-brand" to={home} onClick={onClose} aria-label="KuotaKita">
+      <span className="console-brand-mark"><Zap size={20}/></span>
+      <span className="console-brand-copy"><b>KuotaKita</b>{rolePanel && <small>{isMarketing ? 'Marketing Console' : isSuperAdmin ? 'Owner Console' : 'Operator Console'}</small>}</span>
+    </Link>
     {rolePanel && <div className={`sidebar-role-panel ${isCreditAdmin ? 'analis-role-panel' : ''}`}>
       <span>{rolePanel.eyebrow}</span>
       <strong>{rolePanel.title}</strong>

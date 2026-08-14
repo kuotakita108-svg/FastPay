@@ -1,0 +1,102 @@
+/* Identitas dan navigasi konsol staf: padat seperti panel H2H, tetapi setiap
+   kelompok kerja Marketing dan Operator tetap mudah dipindai. */
+.panel-workspace-shell .credit-sidebar .console-brand{
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  min-height:66px!important;
+  padding:10px 12px!important;
+  border-bottom:1px solid #17344b!important;
+  color:#f5fbff!important;
+  text-decoration:none!important;
+}
+.panel-workspace-shell .credit-sidebar .console-brand-mark{
+  display:grid!important;
+  flex:0 0 38px!important;
+  place-items:center!important;
+  width:38px!important;
+  height:38px!important;
+  border:1px solid #1b7794!important;
+  border-radius:11px!important;
+  background:linear-gradient(145deg,#0c5973,#12304f)!important;
+  color:#55e4f5!important;
+  box-shadow:inset 0 0 18px #33d8ed12,0 8px 20px #0005!important;
+}
+.panel-workspace-shell .credit-sidebar .console-brand-mark svg{
+  width:20px!important;
+  height:20px!important;
+  fill:#55e4f51a!important;
+  stroke-width:2.4!important;
+}
+.panel-workspace-shell .credit-sidebar .console-brand-copy{
+  display:grid!important;
+  min-width:0!important;
+  gap:2px!important;
+  line-height:1!important;
+}
+.panel-workspace-shell .credit-sidebar .console-brand-copy b{
+  color:#fff!important;
+  font-size:15px!important;
+  font-weight:900!important;
+  letter-spacing:-.2px!important;
+}
+.panel-workspace-shell .credit-sidebar .console-brand-copy small{
+  color:#61d8e9!important;
+  font-size:7px!important;
+  font-weight:800!important;
+  letter-spacing:.8px!important;
+  text-transform:uppercase!important;
+}
+.panel-workspace-shell .credit-sidebar .workspace-nav{
+  display:grid!important;
+  gap:0!important;
+  padding:10px 7px 15px!important;
+}
+.panel-workspace-shell .credit-sidebar .workspace-nav>div{
+  display:grid!important;
+  gap:3px!important;
+  margin:0!important;
+  padding:0 0 10px!important;
+}
+.panel-workspace-shell .credit-sidebar .workspace-nav>div+div{
+  margin-top:5px!important;
+  padding-top:10px!important;
+  border-top:1px solid #132d41!important;
+}
+.panel-workspace-shell .credit-sidebar .workspace-nav .nav-label{
+  margin:0 10px 6px!important;
+  color:#6f91aa!important;
+  font-size:7px!important;
+  font-weight:900!important;
+  letter-spacing:1.35px!important;
+  line-height:1.2!important;
+}
+.panel-workspace-shell .credit-sidebar .workspace-nav .nav-item{
+  display:flex!important;
+  align-items:center!important;
+  min-height:34px!important;
+  margin:0!important;
+  padding:0 10px!important;
+  border:1px solid transparent!important;
+  border-radius:7px!important;
+  color:#c5d8e6!important;
+  font-size:9px!important;
+  font-weight:800!important;
+}
+.panel-workspace-shell .credit-sidebar .workspace-nav .nav-item:hover{
+  border-color:#1c4058!important;
+  background:#0a2133!important;
+  color:#fff!important;
+}
+.panel-workspace-shell .credit-sidebar .workspace-nav .nav-item.active{
+  border-color:#1880a0!important;
+  background:linear-gradient(90deg,#0b3550,#102943)!important;
+  color:#fff!important;
+  box-shadow:inset 3px 0 #43d8ec,0 6px 18px #0003!important;
+}
+
+@media(max-width:760px){
+  .panel-workspace-shell .credit-sidebar .console-brand{min-height:62px!important;padding:9px 11px!important}
+  .panel-workspace-shell .credit-sidebar .workspace-nav{padding-top:9px!important}
+  .panel-workspace-shell .credit-sidebar .workspace-nav .nav-item{min-height:36px!important;font-size:10px!important}
+}
