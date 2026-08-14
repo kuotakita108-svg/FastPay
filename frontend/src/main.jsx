@@ -19,6 +19,14 @@ heroPreload.href=heroImage
 heroPreload.fetchPriority='high'
 document.head.appendChild(heroPreload)
 
+// PWA KuotaKita memakai service worker berversi agar manifest dan ikon instalasi
+// terbaru menggantikan aset lama pada perangkat yang sudah pernah membuka app.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js?v=3').then(registration => registration.update()).catch(() => {})
+  }, {once: true})
+}
+
 function StableApp(){
   const location=useLocation()
   return <AppErrorBoundary resetKey={`${location.pathname}${location.search}`}><App/></AppErrorBoundary>
