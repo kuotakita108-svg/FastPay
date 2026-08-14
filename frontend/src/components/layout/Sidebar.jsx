@@ -64,7 +64,6 @@ const superAdminNavigation = [
   ]},
   {section: 'TIM & KINERJA', items: [
     {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Marketing', icon: Users},
-    {to: '/credit-applications?view=laporan', label: 'Audit Penugasan', icon: ClipboardCheck, badgeKey: 'fieldTasks'},
   ]},
   {section: 'OPERASIONAL APLIKASI', items: [
     {to: '/transactions', label: 'Seluruh Transaksi', icon: Activity},

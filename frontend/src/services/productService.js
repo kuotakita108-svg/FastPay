@@ -1,3 +1,21 @@
 import {request} from './http'
 
-export const getProducts=service=>request(`/products${service?`?service=${encodeURIComponent(service)}`:''}`)
+const cache = new Map()
+
+export const getProducts = async service => {
+  const key = service || 'all'
+  const existing = cache.get(key)
+  if (existing?.data && Date.now() - existing.savedAt < 120000) return existing.data
+  if (existing?.promise) return existing.promise
+  const promise = request(`/products${service ? `?service=${encodeURIComponent(service)}` : ''}`)
+    .then(data => {
+      cache.set(key, {data, savedAt: Date.now()})
+      return data
+    })
+    .catch(error => {
+      cache.delete(key)
+      throw error
+    })
+  cache.set(key, {promise})
+  return promise
+}

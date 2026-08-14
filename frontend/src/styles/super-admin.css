@@ -24,3 +24,6 @@
   .owner-review .directory-agent-list,.owner-review .operator-ledger-table,.owner-review .safe-log-table,.owner-review .h2h-ledger{overflow-x:auto;overscroll-behavior-inline:contain}
   .owner-review .credit-review-card{border-radius:11px;padding:10px}
 }
+
+.owner-review .owner-monitor-list{min-height:0!important;border:1px solid #1d4059!important;border-radius:12px!important;background:#071827!important;box-shadow:none!important}.owner-review .owner-monitor-list>header{min-height:0!important;padding:13px 15px!important}.owner-review .owner-monitor-list>header h2{font-size:16px!important}.owner-review .owner-monitor-list>header p{max-width:760px;color:#9cb4c6!important}.owner-review .owner-monitor-list :is(button,a){box-shadow:none!important}.owner-review .owner-monitor-list .mentoring-actions button:not(:first-child){display:none!important}
+@media(max-width:760px){.owner-review .owner-monitor-list>header{padding:10px!important}.owner-review .owner-monitor-list>header h2{font-size:14px!important}.owner-review .owner-monitor-list>header p{display:block!important;font-size:8px!important;line-height:1.4!important}.owner-review .owner-monitor-list .directory-tools{padding:0!important}.owner-review .owner-monitor-list .directory-agent-list{border-radius:8px}}
