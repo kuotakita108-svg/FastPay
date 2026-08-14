@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useState} from 'react'
 import {Link, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
-import {Activity, BarChart3, BookOpenCheck, CalendarClock, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, Headphones, Landmark, LockKeyhole, LogOut, PhoneCall, ShieldCheck, UserPlus, Users, WalletCards, Zap} from 'lucide-react'
+import {Activity, BarChart3, BookOpenCheck, CalendarClock, Camera, CheckCircle2, CircleHelp, ClipboardCheck, FileCheck2, Gauge, Headphones, Landmark, LockKeyhole, LogOut, PhoneCall, ShieldCheck, UserPlus, Users, WalletCards} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
 import {request} from '../../services/http'
@@ -126,8 +126,8 @@ export default function Sidebar({open, onClose}) {
 
   return <aside className={`sidebar ${open ? 'open' : ''}${rolePanel ? ' credit-sidebar' : ''}`}>
     <Link className="brand console-brand" to={home} onClick={onClose} aria-label="KuotaKita">
-      <div className="console-brand-mark"><Zap size={20}/></div>
-      <div className="console-brand-copy"><b>KuotaKita</b>{rolePanel && <small>{isMarketing ? 'Marketing Console' : isSuperAdmin ? 'Owner Console' : 'Operator Console'}</small>}</div>
+      <img className="console-brand-image" src="/branding/kuotakita-console-logo.png" alt="KuotaKita"/>
+      {rolePanel && <small className="console-brand-role">{isMarketing ? 'Marketing Console' : isSuperAdmin ? 'Owner Console' : 'Operator Console'}</small>}
     </Link>
     {rolePanel && <div className={`sidebar-role-panel ${isCreditAdmin ? 'analis-role-panel' : ''}`}>
       <span>{rolePanel.eyebrow}</span>
