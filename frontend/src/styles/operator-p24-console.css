@@ -381,3 +381,40 @@
   .field-assignment-history article time{white-space:normal}
   .field-assignment-empty{min-height:140px;padding:18px 12px}
 }
+/* Kinerja Marketing di HP: kartu rapor, bukan tabel lebar. */
+@media(max-width:760px){
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-performance-workspace{width:100%;min-width:0;padding:0!important;gap:9px!important;overflow:hidden}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-performance-workspace>header{align-items:flex-start!important;min-height:0!important;padding:13px 14px!important;border-radius:10px!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-performance-workspace>header>div{min-width:0}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-performance-workspace>header h2{font-size:18px!important;line-height:1.2!important;margin:4px 0!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-performance-workspace>header p{display:block!important;font-size:10px!important;line-height:1.4!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-performance-workspace>header svg{width:23px!important;height:23px!important;flex:0 0 auto}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-performance-summary{display:grid!important;grid-template-columns:1fr 1fr!important;gap:1px!important;width:100%;background:#1a405b!important;border-radius:10px!important;overflow:hidden!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-performance-summary article{min-width:0!important;min-height:72px!important;padding:10px 11px!important;border:0!important;background:#081a29!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-performance-summary article:nth-child(2){background:#092031!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-performance-summary article:nth-child(3){background:#08261f!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-performance-summary article:nth-child(4){background:#201b31!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-performance-summary :is(span,small){font-size:9px!important;line-height:1.3!important;white-space:normal}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-performance-summary strong{font-size:18px!important;margin:4px 0!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard{width:100%;min-width:0;border-radius:10px!important;overflow:hidden!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard>header{align-items:flex-start!important;padding:12px!important;gap:7px!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard>header h3{font-size:15px!important;line-height:1.25!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard>header>small{display:block!important;max-width:105px;text-align:right;font-size:8px!important;line-height:1.35!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll{width:100%;min-width:0;overflow:visible!important;padding:8px!important;box-sizing:border-box}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-head{display:none!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important;min-width:0!important;width:100%!important;box-sizing:border-box;margin:0 0 8px!important;padding:10px!important;border:1px solid #1c4058!important;border-radius:9px!important;background:#081a29!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article>*{min-width:0;padding:7px 8px!important;border-radius:7px;background:#0a2133;text-align:left!important;box-sizing:border-box}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll .marketing-identity{grid-column:1/-1!important;padding:0 0 9px!important;border:0!important;border-bottom:1px solid #1b4058!important;border-radius:0;background:transparent!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll .marketing-identity b{font-size:12px!important;color:#fff!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll .marketing-identity small{font-size:9px!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article>*:not(.marketing-identity)::before{display:block;margin-bottom:3px;color:#789bb3;font-size:8px;font-weight:700}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article>*:nth-child(2)::before{content:'Agent terdaftar'}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article>*:nth-child(3)::before{content:'Survei selesai'}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article>*:nth-child(4)::before{content:'Menunggu Operator'}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article>*:nth-child(5)::before{content:'Disetujui'}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article>*:nth-child(6)::before{content:'Kredit aktif'}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article>*:nth-child(7)::before{content:'Tunggakan'}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article>*:nth-child(8)::before{content:'Status risiko'}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article :is(b,strong,em){font-size:11px!important;line-height:1.3!important}
+  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article small{font-size:8px!important;line-height:1.3!important;white-space:normal}
+}
