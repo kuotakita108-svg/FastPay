@@ -336,3 +336,48 @@
 @media(max-width:760px){.operator-field-assignment{gap:8px}.operator-field-assignment>header{padding:14px;border-radius:10px}.operator-field-assignment>header h2{font-size:18px}.operator-field-assignment>header p{font-size:11px;line-height:1.4}.field-assignment-summary{grid-template-columns:repeat(3,1fr)}.field-assignment-summary article{padding:9px}.field-assignment-summary small,.field-assignment-summary span{font-size:9px}.field-assignment-summary strong{font-size:18px}.field-assignment-form{padding:12px;border-radius:10px}.field-assignment-fields{grid-template-columns:1fr}.field-assignment-fields .assignment-note{grid-column:auto}.field-assignment-history{border-radius:10px}.field-assignment-history>header{padding:12px}.field-assignment-history>header p{font-size:10px}.field-assignment-history>div{padding:7px}.field-assignment-history>div>article{grid-template-columns:1fr auto;gap:6px;padding:10px;border:1px solid #18384e;border-radius:8px;margin-bottom:7px}.field-assignment-history article>div,.field-assignment-history article p{grid-column:1/-1}.field-assignment-history article time{grid-column:1}.field-assignment-history article>strong{grid-column:2}.field-agenda-list article nav{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr}.field-agenda-list article nav button{width:100%}}
 .field-assignment-fields label>small{color:#7893aa;font-size:9px;line-height:1.4}.field-assignment-fields select:disabled{opacity:.55;cursor:not-allowed}.field-assignment-fields .assignment-type{grid-column:1/-1}.field-assignment-form>button:disabled{opacity:.45;cursor:not-allowed;filter:saturate(.45)}
 @media(max-width:760px){.field-assignment-fields .assignment-type{grid-column:auto}}
+/* Penugasan lapangan: tata letak HP yang padat tanpa overflow. */
+@media(max-width:760px){
+  .operator-field-assignment{width:100%;min-width:0;gap:10px;overflow:hidden}
+  .operator-field-assignment>header{align-items:flex-start;padding:14px 15px;gap:10px}
+  .operator-field-assignment>header>div{min-width:0}
+  .operator-field-assignment>header span{font-size:9px;letter-spacing:.13em}
+  .operator-field-assignment>header h2{font-size:18px;line-height:1.2;margin:5px 0 6px}
+  .operator-field-assignment>header p{font-size:11px;line-height:1.45;max-width:100%}
+  .operator-field-assignment>header svg{width:24px;height:24px;flex:0 0 auto}
+  .field-assignment-summary{grid-template-columns:1fr 1fr;border-radius:10px}
+  .field-assignment-summary article{min-width:0;min-height:72px;padding:10px 12px;border-right:1px solid #173852;border-bottom:1px solid #173852}
+  .field-assignment-summary article:nth-child(2){border-right:0}
+  .field-assignment-summary article:last-child{grid-column:1/-1;border:0;min-height:62px}
+  .field-assignment-summary small,.field-assignment-summary span{font-size:9px;white-space:normal}
+  .field-assignment-summary strong{font-size:19px;line-height:1;margin:5px 0}
+  .field-assignment-form{width:100%;box-sizing:border-box;padding:13px 12px;overflow:hidden}
+  .field-assignment-form>header{align-items:flex-start;gap:8px;margin-bottom:12px}
+  .field-assignment-form>header>div{min-width:0}
+  .field-assignment-form>header h3{font-size:16px;line-height:1.25;margin:4px 0}
+  .field-assignment-form>header p{font-size:10px;line-height:1.4}
+  .field-assignment-form>header svg{width:21px;height:21px;flex:0 0 auto}
+  .field-assignment-fields{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;width:100%}
+  .field-assignment-fields label,.field-assignment-fields .assignment-type,.field-assignment-fields .assignment-note{grid-column:1;min-width:0;width:100%}
+  .field-assignment-fields label>span{font-size:10px;color:#dceaf5}
+  .field-assignment-fields label>small{font-size:9px;line-height:1.35}
+  .field-assignment-fields select,.field-assignment-fields input,.field-assignment-fields textarea{display:block;min-width:0;max-width:100%;width:100%;font-size:12px;line-height:1.25;padding:11px 10px;border-radius:8px}
+  .field-assignment-fields select,.field-assignment-fields input{height:44px}
+  .field-assignment-fields textarea{min-height:86px}
+  .field-assignment-form>button{min-height:44px;margin-top:11px;padding:10px 12px;font-size:12px;line-height:1.25}
+  .operator-feedback{font-size:10px;line-height:1.4;padding:9px 10px}
+  .field-assignment-history{width:100%;min-width:0;overflow:hidden}
+  .field-assignment-history>header{align-items:flex-start;gap:8px}
+  .field-assignment-history>header>div{min-width:0}
+  .field-assignment-history>header h3{font-size:15px;line-height:1.25;margin:4px 0}
+  .field-assignment-history>header p{font-size:10px;line-height:1.4}
+  .field-assignment-history>header>strong{font-size:18px;flex:0 0 auto}
+  .field-assignment-history>div{padding:8px}
+  .field-assignment-history>div>article{grid-template-columns:minmax(0,1fr) auto;gap:7px;width:100%;box-sizing:border-box;padding:11px;margin:0 0 8px}
+  .field-assignment-history article>div,.field-assignment-history article p{grid-column:1/-1;min-width:0}
+  .field-assignment-history article>div b{font-size:12px}
+  .field-assignment-history article small,.field-assignment-history article time,.field-assignment-history article em,.field-assignment-history article p,.field-assignment-history article>strong{font-size:10px;line-height:1.4}
+  .field-assignment-history article p{margin:2px 0;color:#c2d2df}
+  .field-assignment-history article time{white-space:normal}
+  .field-assignment-empty{min-height:140px;padding:18px 12px}
+}
