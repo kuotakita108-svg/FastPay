@@ -14,25 +14,25 @@ import {useToast} from '../context/ToastContext'
 import {getFavoriteContacts,loadFavoriteContacts,normalizeNumber,removeFavoriteContact,saveFavoriteContact} from '../services/contactFavorites'
 import ServiceEmblem from '../components/mobile/ServiceEmblem'
 import ProviderLogo from '../components/mobile/ProviderLogo'
-import communicationHero from '../assets/service-heroes/communication.png'
-import financeHero from '../assets/service-heroes/finance.png'
-import healthHero from '../assets/service-heroes/health.png'
-import utilitiesHero from '../assets/service-heroes/utilities.png'
-import entertainmentHero from '../assets/service-heroes/entertainment.png'
-import educationHero from '../assets/service-heroes/education.png'
-import vehicleHero from '../assets/service-heroes/vehicle.png'
-import propertyHero from '../assets/service-heroes/property.png'
-import travelHero from '../assets/service-heroes/travel.png'
-import dataHero from '../assets/service-heroes/data.png'
-import pascabayarHero from '../assets/service-heroes/pascabayar.png'
-import bankHero from '../assets/service-heroes/bank.png'
-import insuranceHero from '../assets/service-heroes/insurance.png'
-import pdamHero from '../assets/service-heroes/pdam.png'
-import gasHero from '../assets/service-heroes/gas.png'
-import internetHero from '../assets/service-heroes/internet.png'
-import telkomHero from '../assets/service-heroes/telkom.png'
-import tvHero from '../assets/service-heroes/tv.png'
-import voucherHero from '../assets/service-heroes/voucher.png'
+import communicationHero from '../assets/service-heroes/communication.webp'
+import financeHero from '../assets/service-heroes/finance.webp'
+import healthHero from '../assets/service-heroes/health.webp'
+import utilitiesHero from '../assets/service-heroes/utilities.webp'
+import entertainmentHero from '../assets/service-heroes/entertainment.webp'
+import educationHero from '../assets/service-heroes/education.webp'
+import vehicleHero from '../assets/service-heroes/vehicle.webp'
+import propertyHero from '../assets/service-heroes/property.webp'
+import travelHero from '../assets/service-heroes/travel.webp'
+import dataHero from '../assets/service-heroes/data.webp'
+import pascabayarHero from '../assets/service-heroes/pascabayar.webp'
+import bankHero from '../assets/service-heroes/bank.webp'
+import insuranceHero from '../assets/service-heroes/insurance.webp'
+import pdamHero from '../assets/service-heroes/pdam.webp'
+import gasHero from '../assets/service-heroes/gas.webp'
+import internetHero from '../assets/service-heroes/internet.webp'
+import telkomHero from '../assets/service-heroes/telkom.webp'
+import tvHero from '../assets/service-heroes/tv.webp'
+import voucherHero from '../assets/service-heroes/voucher.webp'
 
 const automatic=['pulsa','data']
 const custom=['pulsa','ewallet']
@@ -122,7 +122,7 @@ export default function ServicePurchasePage(){
  const checkout=()=>{const backgroundLocation={...location,state:{...location.state,catalog:true,purchase:purchaseSnapshot()}};navigate('/app/checkout',{state:{backgroundLocation,order:{type,title:type==='pln'&&plnMode==='bill'?'Bayar Tagihan PLN':config.title,target,provider:type==='pln'&&plnMode==='bill'?'PLN Pascabayar':provider,product:type==='pln'&&plnMode==='bill'?`Tagihan PLN ${plnBill?.idpel}`:selected?.name||((mode==='custom'||selectedVariable)?`${config.title} ${rupiah(amount)}`:config.title),amount:selectedVariable?amount+Number(selected?.price||0):amount,nominal:type==='pln'&&plnMode==='bill'?amount:((mode==='custom'||selectedVariable)?amount:(selected?.nominal||amount)),providerFee:selectedVariable?Number(selected?.price||0):0,sku:type==='pln'&&plnMode==='bill'?plnBill?.sku:selected?.sku,qty:type==='pln'&&plnMode==='bill'?amount:((mode==='custom'||selectedVariable)?amount:1),detail:type==='pln'&&plnMode==='bill'?plnBill:null}}})}
  if(catalog)return <main className={`mobile-app product-catalog-page service-${type} catalog-provider-${providerIndex}`}>
   <header className="catalog-page-head"><button onClick={closeCatalog}><ArrowLeft/></button><div><strong>Produk {provider}</strong><small>{config.title} · {products.length} pilihan tersedia</small></div></header>
-  <section className="catalog-provider-hero"><div><span>PROVIDER TERPILIH</span><h1>{provider}</h1><p>Pilih produk atau nominal yang paling sesuai dengan kebutuhanmu.</p></div><ProviderLogo name={provider} className="catalog-provider-logo"/></section>
+  <section className="catalog-provider-hero"><div><span>PROVIDER TERPILIH</span><h1>{provider}</h1><p>Pilih produk atau nominal yang paling sesuai dengan kebutuhanmu.</p></div><ProviderLogo name={provider} className="catalog-provider-logo" priority/></section>
   <section className="catalog-page-body">
    {custom.includes(type)&&<div className="modern-tabs catalog-tabs"><button className={mode==='product'?'active':''} onClick={()=>setMode('product')}>Pilihan Nominal</button><button className={mode==='custom'?'active':''} onClick={()=>setMode('custom')}>Nominal Lain</button></div>}
    <div className="catalog-summary"><span><CheckCircle2/>Produk resmi</span><span><Zap/>Proses instan</span><span><ShieldCheck/>Pembayaran aman</span></div>
@@ -140,7 +140,7 @@ export default function ServicePurchasePage(){
    <section className="number-panel"><div className="number-title"><i className="service-input-emblem"><ServiceEmblem type={type} label={config.title}/></i><div><strong>{type==='pln'&&plnMode==='bill'?'ID Pelanggan / Nomor Meter':config.input}</strong><small>{type==='pln'&&plnMode==='bill'?'Masukkan ID PLN untuk cek tagihan otomatis':'Pastikan data tujuan sudah benar'}</small></div><span className="verified-service"><ShieldCheck/> Resmi</span></div><label><span className="target-prefix">{type==='pln'&&plnMode==='bill'?'IDPEL':inputPrefix}</span><input value={target} onChange={event=>changeTarget(event.target.value)} placeholder={type==='pln'&&plnMode==='bill'?'Contoh: 535123456789':inputPlaceholder} inputMode={inputMode}/>{provider&&automatic.includes(type)&&<CheckCircle2/>}</label>{supportsContacts&&<><div className="contact-target-tools"><button type="button" onClick={pickContact}><ContactRound/> Pilih dari kontak</button><button type="button" className={favorite?'active':''} onClick={toggleFavorite} aria-pressed={favorite}><Star fill={favorite?'currentColor':'none'}/> {favorite?'Tersimpan':'Simpan favorit'}</button></div>{matchingFavorites.length>0&&<div className="contact-favorites"><small>Nomor favorit</small><div>{matchingFavorites.map(item=><button type="button" key={item.id} onClick={()=>changeTarget(item.number)}><span>{item.label}</span><b>{item.number}</b></button>)}</div></div>}{contactHint&&<p className="contact-hint">{contactHint}</p>}</>}{automatic.includes(type)&&<p>{provider?<>Nomor terdeteksi sebagai <b>{provider}</b></>:'Operator terpilih otomatis berdasarkan nomor.'}</p>}{type==='pln'&&plnMode==='bill'&&<><button type="button" className="pln-check-button" onClick={checkPlnBill} disabled={checkingBill||target.replace(/\D/g,'').length<6}><ReceiptText/> {checkingBill?'Memeriksa tagihan...':'Cek Tagihan PLN'}</button>{billError&&<p className="contact-hint">{billError}</p>}</>}</section>
    <section className="service-confidence"><div><Zap/><span><b>Proses instan</b><small>Diproses otomatis</small></span></div><div><LockKeyhole/><span><b>Data aman</b><small>Terenkripsi</small></span></div><div><Clock3/><span><b>Aktif 24 jam</b><small>Setiap hari</small></span></div></section>
    {type==='pln'&&plnMode==='bill'&&plnBill&&<section className="pln-bill-card"><header><div><BadgeCheck/><span>Tagihan ditemukan dari Pulsa24Jam</span></div><strong>{rupiah(plnBill.total)}</strong></header><div className="pln-bill-owner"><ProviderLogo name="PLN"/><div><b>{plnBill.data?.customer_name||plnBill.data?.customer||'Nama pelanggan tidak dikirim provider'}</b><small>IDPEL {plnBill.idpel}</small></div></div><dl><div><dt>Nominal tagihan</dt><dd>{rupiah(plnBill.total)}</dd></div><div><dt>Status inquiry</dt><dd>{plnBill.status||'pending'}</dd></div><div><dt>Ref cek</dt><dd>{plnBill.refid}</dd></div></dl><button type="button" onClick={checkout}>Lanjut Bayar Tagihan <ChevronRight/></button></section>}
-   {!(type==='pln'&&plnMode==='bill')&&<section className="provider-panel"><header><div><strong>{type==='pln'?'Pilih Produk PLN':'Pilih Penyedia'}</strong><small>{type==='pln'?'Token listrik resmi PLN':`${availableProviders.length} penyedia H2H tersedia`}</small></div>{provider&&<span>Terpilih</span>}</header>{availableProviders.length>9&&<label className="provider-search"><Search/><input value={providerQuery} onChange={event=>{setProviderQuery(event.target.value);setProviderLimit(18)}} placeholder="Cari penyedia"/><span>{matchingProviders.length}</span></label>}<div className="modern-provider-grid">{visibleProviders.map((name,index)=><button className={`${provider===name?'active':''} tone-${index%5}`} onClick={()=>{setProvider(name);closeCatalog();setSelected(null)}} key={name}><ProviderLogo name={name}/><span>{name}</span>{provider===name&&<CheckCircle2/>}</button>)}</div>{visibleProviders.length<matchingProviders.length&&<button type="button" className="provider-load-more" onClick={()=>setProviderLimit(limit=>limit+18)}>Tampilkan penyedia lainnya <ChevronRight/></button>}<button className="show-products" onClick={()=>{openCatalog();window.scrollTo({top:0,behavior:'smooth'})}} disabled={target.length<4||!provider}>Lihat Produk & Nominal <ChevronRight/></button></section>}
+   {!(type==='pln'&&plnMode==='bill')&&<section className="provider-panel"><header><div><strong>{type==='pln'?'Pilih Produk PLN':'Pilih Penyedia'}</strong><small>{type==='pln'?'Token listrik resmi PLN':`${availableProviders.length} penyedia H2H tersedia`}</small></div>{provider&&<span>Terpilih</span>}</header>{availableProviders.length>9&&<label className="provider-search"><Search/><input value={providerQuery} onChange={event=>{setProviderQuery(event.target.value);setProviderLimit(18)}} placeholder="Cari penyedia"/><span>{matchingProviders.length}</span></label>}<div className="modern-provider-grid">{visibleProviders.map((name,index)=><button className={`${provider===name?'active':''} tone-${index%5}`} onClick={()=>{setProvider(name);closeCatalog();setSelected(null)}} key={name}><ProviderLogo name={name} priority={index<9}/><span>{name}</span>{provider===name&&<CheckCircle2/>}</button>)}</div>{visibleProviders.length<matchingProviders.length&&<button type="button" className="provider-load-more" onClick={()=>setProviderLimit(limit=>limit+18)}>Tampilkan penyedia lainnya <ChevronRight/></button>}<button className="show-products" onClick={()=>{openCatalog();window.scrollTo({top:0,behavior:'smooth'})}} disabled={target.length<4||!provider}>Lihat Produk & Nominal <ChevronRight/></button></section>}
    <p className="modern-secure"><ShieldCheck/>Transaksi dilindungi sistem keamanan KuotaKita</p>
   </section><MobileNav/>
  </main>

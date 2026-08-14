@@ -7,7 +7,7 @@ import {ToastProvider} from './context/ToastContext'
 import {AuthProvider} from './context/AuthContext'
 import {env} from './config/env'
 import AppErrorBoundary from './components/common/AppErrorBoundary'
-import heroImage from './assets/images/kuotakita-ppob-hero-v4.png'
+import heroImage from './assets/images/kuotakita-ppob-hero-v4.webp'
 import './styles/global.css'
 
 // Hero adalah gambar pertama yang terlihat pada login dan beranda.
@@ -23,7 +23,7 @@ document.head.appendChild(heroPreload)
 // terbaru menggantikan aset lama pada perangkat yang sudah pernah membuka app.
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js?v=3').then(registration => registration.update()).catch(() => {})
+    navigator.serviceWorker.register('/sw.js?v=4').then(registration => registration.update()).catch(() => {})
   }, {once: true})
 }
 

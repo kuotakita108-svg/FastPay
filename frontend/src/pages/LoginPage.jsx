@@ -4,7 +4,7 @@ import {ArrowRight, CheckCircle2, Eye, EyeOff, LockKeyhole, Mail, Phone, ShieldC
 import {useAuth} from '../context/AuthContext'
 import {googleLogin, resetPassword as resetPasswordRequest} from '../services/authService'
 import KuotaKitaLogo from '../components/common/KuotaKitaLogo'
-import loginHero from '../assets/images/kuotakita-ppob-hero-v4.png'
+import loginHero from '../assets/images/kuotakita-ppob-hero-v4.webp'
 
 const loginInitial = {username: '', password: ''}
 const registerInitial = {name: '', username: '', phone: '', email: '', password: '', account_type: 'user'}

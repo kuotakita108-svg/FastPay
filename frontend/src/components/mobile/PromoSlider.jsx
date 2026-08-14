@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Gamepad2, Gift, Timer, WalletCards, Wifi, Zap } from 'lucide-react'
-import promoPulsa from '../../assets/promos/promo-pulsa.png'
-import promoData from '../../assets/promos/promo-data.png'
-import promoWallet from '../../assets/promos/promo-wallet.png'
-import promoBills from '../../assets/promos/promo-bills.png'
-import promoGame from '../../assets/promos/promo-game.png'
+import promoPulsa from '../../assets/promos/promo-pulsa.webp'
+import promoData from '../../assets/promos/promo-data.webp'
+import promoWallet from '../../assets/promos/promo-wallet.webp'
+import promoBills from '../../assets/promos/promo-bills.webp'
+import promoGame from '../../assets/promos/promo-game.webp'
 
 const promos = [
   { tag: 'PENGGUNA BARU', title: 'Cashback hingga 10%', text: 'Transaksi pulsa pertamamu jadi lebih hemat.', action: 'Ambil Promo', icon: Gift, tone: 'midnight', image: promoPulsa, position: '76%', to: '/app/buy/pulsa' },
@@ -49,7 +49,8 @@ export default function PromoSlider() {
             src={promo.image}
             alt=""
             aria-hidden="true"
-            loading="lazy"
+            loading={index === 0 ? 'eager' : 'lazy'}
+            fetchPriority={index === 0 ? 'high' : 'auto'}
             decoding="async"
             style={{ objectPosition: `${promo.position} center` }}
           />

@@ -4,7 +4,7 @@ import { Bell, Eye, EyeOff, MessageCircle, Plus } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { rupiah } from '../../utils/currency'
 import KuotaKitaLogo from '../common/KuotaKitaLogo'
-import heroImage from '../../assets/images/kuotakita-ppob-hero-v4.png'
+import heroImage from '../../assets/images/kuotakita-ppob-hero-v4.webp'
 
 export default function MobileHeader() {
   const { user } = useAuth()

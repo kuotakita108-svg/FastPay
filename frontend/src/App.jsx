@@ -1,17 +1,24 @@
-import {lazy,Suspense} from 'react'
+import {lazy,Suspense,useEffect} from 'react'
 import {Navigate,Route,Routes,useLocation} from 'react-router-dom'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
-import UserHomePage from './pages/UserHomePage'
-import HistoryPage from './pages/HistoryPage'
-import ProfilePage from './pages/ProfilePage'
-import AgentCreditPage from './pages/AgentCreditPage'
-import CreditApplicationsPage from './pages/CreditApplicationsPage'
 
+const loadUserHome=()=>import('./pages/UserHomePage')
+const loadHistory=()=>import('./pages/HistoryPage')
+const loadProfile=()=>import('./pages/ProfilePage')
+const loadAgentCredit=()=>import('./pages/AgentCreditPage')
+const loadCreditApplications=()=>import('./pages/CreditApplicationsPage')
+const loadServicePurchase=()=>import('./pages/ServicePurchasePage')
+const loadAllServices=()=>import('./pages/AllServicesPage')
+const UserHomePage=lazy(loadUserHome)
+const HistoryPage=lazy(loadHistory)
+const ProfilePage=lazy(loadProfile)
+const AgentCreditPage=lazy(loadAgentCredit)
+const CreditApplicationsPage=lazy(loadCreditApplications)
 const AppLayout=lazy(()=>import('./components/layout/AppLayout'))
-const ServicePurchasePage=lazy(()=>import('./pages/ServicePurchasePage'))
+const ServicePurchasePage=lazy(loadServicePurchase)
 const CheckoutPage=lazy(()=>import('./pages/CheckoutPage'))
-const AllServicesPage=lazy(()=>import('./pages/AllServicesPage'))
+const AllServicesPage=lazy(loadAllServices)
 const BalancePage=lazy(()=>import('./pages/BalancePage'))
 const WalletTopUpPage=lazy(()=>import('./pages/WalletTopUpPage'))
 const TransferPage=lazy(()=>import('./pages/TransferPage'))
@@ -38,6 +45,14 @@ const ReviewOnly=({children})=> <ProtectedRoute roles={['master','admin','market
 
 export default function App(){
  const location=useLocation(),backgroundLocation=location.state?.backgroundLocation
+ useEffect(()=>{
+  const warmRoutes=()=>{
+   if(location.pathname.startsWith('/app'))[loadUserHome,loadHistory,loadProfile,loadAgentCredit,loadAllServices,loadServicePurchase].forEach(load=>load())
+   if(location.pathname.includes('credit-applications'))loadCreditApplications()
+  }
+  if('requestIdleCallback' in window){const id=window.requestIdleCallback(warmRoutes,{timeout:1800});return()=>window.cancelIdleCallback(id)}
+  const timer=window.setTimeout(warmRoutes,700);return()=>window.clearTimeout(timer)
+ },[location.pathname])
  return <Suspense fallback={<RouteLoading/>}><Routes location={backgroundLocation||location}>
  <Route path="/login" element={<LoginPage/>}/>
  <Route path="/app" element={<User><UserHomePage/></User>}/>
