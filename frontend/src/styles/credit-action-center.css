@@ -1,0 +1,31 @@
+/* Aksi agent dibuat satu pintu: Marketing untuk tindak lanjut lapangan,
+   Operator untuk keputusan limit, akses, dan arsip. */
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory :is(.mentored-agent-columns,.mentored-agent-row){
+  grid-template-columns:28px 88px 92px 112px 104px 86px 52px 76px 82px 250px!important;
+  min-width:1060px!important;
+}
+.panel-workspace-shell.role-marketing .marketing-review .mentoring-directory .mentoring-actions{
+  min-width:250px!important;
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .mentoring-directory :is(.mentored-agent-columns,.mentored-agent-row).has-marketing{
+  grid-template-columns:34px 116px 118px 132px 120px 108px 118px 70px 98px 98px 250px!important;
+  min-width:1164px!important;
+}
+.panel-workspace-shell .operator-review .mentoring-directory .mentoring-actions{
+  min-width:250px!important;
+}
+.panel-workspace-shell .operator-review .mentoring-directory .mentoring-actions .suspend{color:#ff9a9f!important}
+.panel-workspace-shell .operator-review .mentoring-directory .mentoring-actions .restore{color:#66e1b2!important}
+
+@media(max-width:760px){
+  .panel-workspace-shell.role-marketing .marketing-review .mentoring-directory :is(.mentored-agent-columns,.mentored-agent-row){
+    grid-template-columns:28px 102px 105px 115px 115px 105px 70px 95px 95px 250px!important;
+    width:1080px!important;
+    min-width:1080px!important;
+  }
+  .panel-workspace-shell .mentoring-directory .mentoring-actions button{
+    min-height:28px!important;
+    padding:0 7px!important;
+    font-size:8px!important;
+  }
+}
