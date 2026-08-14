@@ -13,14 +13,14 @@ const marketingNavigation = [
       {to: '/credit-applications', label: 'Dashboard', icon: WalletCards},
       {to: '/credit-applications?view=agent-input', label: 'Tambah Agent', icon: UserPlus},
       {to: '/credit-applications?view=input', label: 'Pengajuan Kredit', icon: ClipboardCheck},
-      {to: '/credit-applications?view=verifikasi', label: 'Validasi Lapangan', icon: Camera},
+      {to: '/credit-applications?view=verifikasi', label: 'Validasi Lapangan', icon: Camera, badgeKey: 'marketingReview'},
     ],
   },
   {
     section: 'PORTOFOLIO',
     items: [
       {to: '/credit-applications?view=peminjam', label: 'Portofolio Binaan', icon: Users},
-      {to: '/credit-applications?view=agenda', label: 'Tugas Lapangan', icon: CalendarClock},
+      {to: '/credit-applications?view=agenda', label: 'Tugas Lapangan', icon: CalendarClock, badgeKey: 'fieldTasks'},
     ],
   },
   {
@@ -50,7 +50,7 @@ const operatorNavigation = [
     ],
   },
   {section: 'LAPORAN & TIM', items: [
-    {to: '/credit-applications?view=laporan', label: 'Penugasan Lapangan', icon: BarChart3},
+    {to: '/credit-applications?view=laporan', label: 'Penugasan Lapangan', icon: BarChart3, badgeKey: 'fieldTasks'},
     {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Marketing', icon: Users},
   ]},
 ]
@@ -86,7 +86,7 @@ export default function Sidebar({open, onClose}) {
   const isCreditAdmin = isOperator || role === 'admin' || role === 'master'
   const [workCounts, setWorkCounts] = useState({})
   useEffect(() => {
-    if (!isCreditAdmin) return undefined
+    if (!isCreditAdmin && !isMarketing) return undefined
     let active = true
     const load = () => request('/agent-credit/applications').then(rows => {
       if (!active || !Array.isArray(rows)) return
@@ -98,13 +98,15 @@ export default function Sidebar({open, onClose}) {
         due: rows.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas' && item.dueAt && new Date(item.dueAt).getTime() <= now + (7 * 86400000)).length,
         payments: rows.filter(item => (item.repayments || []).some(payment => payment.status === 'Menunggu verifikasi')).length,
         risk: rows.filter(item => item.agentAccessStatus === 'suspended' || (item.status === 'Disetujui' && item.paymentStatus !== 'Lunas' && item.dueAt && new Date(item.dueAt).getTime() < now)).length,
+        marketingReview: rows.filter(item => ['Menunggu verifikasi marketing', 'Sedang diverifikasi marketing', 'Perlu Revisi Marketing'].includes(item.status)).length,
+        fieldTasks: rows.reduce((total, item) => total + (Array.isArray(item.operatorTasks) ? item.operatorTasks.filter(task => task.status !== 'Selesai').length : 0), 0),
       }
       setWorkCounts(current => Object.keys(nextCounts).every(key => current[key] === nextCounts[key]) ? current : nextCounts)
     }).catch(() => {})
     load()
     const timer = window.setInterval(load, 45000)
     return () => { active = false; window.clearInterval(timer) }
-  }, [isCreditAdmin])
+  }, [isCreditAdmin, isMarketing])
   const visibleNavigation = useMemo(() => {
     const source = isMarketing ? marketingNavigation : isSuperAdmin ? superAdminNavigation : isCreditAdmin ? operatorNavigation : navigation
     return source.map(group => ({...group, items: group.items.map(item => ({...item, badge: item.badgeKey && workCounts[item.badgeKey] > 0 ? workCounts[item.badgeKey] : item.badge}))}))
@@ -115,7 +117,7 @@ export default function Sidebar({open, onClose}) {
   const active = to => current === to || (!to.includes('?') && location.pathname === to && !location.search)
   const activeLabel = visibleNavigation.flatMap(group => group.items).find(item => active(item.to))?.label || (isCreditAdmin ? 'Dashboard' : 'Ringkasan Kerja')
   const rolePanel = isMarketing
-    ? {eyebrow: 'MODE MARKETING', title: 'Validasi lapangan', description: 'Daftarkan agent, ambil tiga foto langsung, pantau agen binaan, dan kirim rekomendasi limit.'}
+    ? {eyebrow: 'MODE MARKETING', title: 'Validasi lapangan', description: 'Daftarkan agent, lengkapi empat foto wajib, pantau agent binaan, dan kerjakan tugas Operator.'}
     : isCreditAdmin
       ? isSuperAdmin
         ? {eyebrow: 'MODE SUPER ADMIN', title: 'Kontrol pusat & H2H', description: 'Akses owner untuk modal, H2H, audit, dan seluruh operasional kredit.'}
