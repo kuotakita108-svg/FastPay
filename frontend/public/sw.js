@@ -1,4 +1,4 @@
-const CACHE='kuotakita-v4-fast-assets';
+const CACHE='kuotakita-v5-stable-assets';
 const CORE=['/','/login','/manifest.webmanifest?v=3','/icons/icon-192.png?v=3','/icons/icon-512.png?v=3','/icons/apple-touch-icon.png?v=3','/icons/favicon-32.png?v=3'];
 const STATIC_FILE=/\.(?:js|css|png|jpe?g|webp|svg|ico|woff2?)$/i;
 
@@ -16,7 +16,12 @@ self.addEventListener('fetch',event=>{
   if(STATIC_FILE.test(url.pathname)||url.pathname.startsWith('/assets/')||url.pathname.startsWith('/icons/')){
     event.respondWith(caches.match(request).then(cached=>{
       const update=fetch(request).then(response=>{
-        if(response.ok)caches.open(CACHE).then(cache=>cache.put(request,response.clone()));
+        // Clone harus dibuat sebelum response dikembalikan ke browser. Jika clone
+        // menunggu caches.open(), body bisa telanjur dipakai oleh halaman.
+        if(response.ok){
+          const copy=response.clone();
+          caches.open(CACHE).then(cache=>cache.put(request,copy)).catch(()=>{});
+        }
         return response;
       }).catch(()=>cached);
       return cached||update;
@@ -26,7 +31,10 @@ self.addEventListener('fetch',event=>{
 
   if(request.mode==='navigate')event.respondWith(
     fetch(request).then(response=>{
-      if(response.ok)caches.open(CACHE).then(cache=>cache.put(request,response.clone()));
+      if(response.ok){
+        const copy=response.clone();
+        caches.open(CACHE).then(cache=>cache.put(request,copy)).catch(()=>{});
+      }
       return response;
     }).catch(()=>caches.match(request).then(cached=>cached||caches.match('/')))
   );

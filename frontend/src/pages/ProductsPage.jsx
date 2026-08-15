@@ -12,19 +12,20 @@ const text = value => String(value || '').trim()
 
 export default function ProductsPage() {
   const {data = [], loading, error, reload} = useAsync(getProducts)
+  const products = Array.isArray(data) ? data : []
   const [query, setQuery] = useState('')
   const [service, setService] = useState('')
   const [operator, setOperator] = useState('')
   const [page, setPage] = useState(1)
   const deferredQuery = useDeferredValue(query.toLowerCase())
 
-  const services = useMemo(() => [...new Set(data.map(item => text(item.category)).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'id')), [data])
-  const operators = useMemo(() => [...new Set(data.filter(item => !service || text(item.category) === service).map(item => text(item.operator)).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'id')), [data, service])
-  const items = useMemo(() => data
+  const services = useMemo(() => [...new Set(products.map(item => text(item.category)).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'id')), [products])
+  const operators = useMemo(() => [...new Set(products.filter(item => !service || text(item.category) === service).map(item => text(item.operator)).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'id')), [products, service])
+  const items = useMemo(() => products
     .filter(item => (!service || text(item.category) === service) && (!operator || text(item.operator) === operator))
     .filter(item => !deferredQuery || `${text(item.name)} ${text(item.operator)} ${text(item.category)}`.toLowerCase().includes(deferredQuery))
     .sort((a, b) => text(a.category).localeCompare(text(b.category), 'id') || text(a.operator).localeCompare(text(b.operator), 'id') || Number(a.price || 0) - Number(b.price || 0) || text(a.name).localeCompare(text(b.name), 'id')),
-  [data, deferredQuery, operator, service])
+  [products, deferredQuery, operator, service])
   const pageCount = Math.max(1, Math.ceil(items.length / PAGE_SIZE))
   const visible = items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 

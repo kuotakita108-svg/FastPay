@@ -12,18 +12,20 @@ import './styles/global.css'
 
 // Hero adalah gambar pertama yang terlihat pada login dan beranda.
 // Preload membuatnya mulai diunduh tanpa menunggu komponen selesai dirender.
-const heroPreload=document.createElement('link')
-heroPreload.rel='preload'
-heroPreload.as='image'
-heroPreload.href=heroImage
-heroPreload.fetchPriority='high'
-document.head.appendChild(heroPreload)
+if (window.location.pathname === '/login') {
+  const heroPreload=document.createElement('link')
+  heroPreload.rel='preload'
+  heroPreload.as='image'
+  heroPreload.href=heroImage
+  heroPreload.fetchPriority='high'
+  document.head.appendChild(heroPreload)
+}
 
 // PWA KuotaKita memakai service worker berversi agar manifest dan ikon instalasi
 // terbaru menggantikan aset lama pada perangkat yang sudah pernah membuka app.
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js?v=4').then(registration => registration.update()).catch(() => {})
+    navigator.serviceWorker.register('/sw.js?v=5').then(registration => registration.update()).catch(() => {})
   }, {once: true})
 }
 
