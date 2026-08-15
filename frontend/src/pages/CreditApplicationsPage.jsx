@@ -202,7 +202,7 @@ const viewInfo = {
   komisi: {label: 'Kantong Komisi', title: 'Insentif marketing', desc: 'Komisi hanya tercatat dari transaksi H2H sukses yang sudah dikirim oleh sistem pusat.'},
   limit: {label: 'Tier & Limit Agent', title: 'Manajemen tier dan limit', desc: 'Operator dapat melihat rekomendasi marketing dan menyesuaikan limit secara manual tanpa menghapus aturan otomatis.'},
   suspend: {label: 'Suspend & Tunggakan', title: 'Kontrol akses agent', desc: 'Akses agent yang menunggak atau tokonya tutup dapat dihentikan sementara sampai diselesaikan.'},
-  'transaksi-agent': {label: 'Monitor Transaksi Agen', title: 'Log transaksi 24 jam', desc: 'Pantau waktu, agent, nomor tujuan, dan status transaksi tanpa membuka saldo H2H atau harga modal supplier.'},
+  'transaksi-agent': {label: 'Transaksi Khusus Agent', title: 'Log transaksi akun Agent', desc: 'Hanya menampilkan transaksi akun ber-role Agent. Transaksi User biasa dipantau melalui menu Transaksi Pengguna.'},
   helpdesk: {label: 'Tiket Bantuan & Komplain', title: 'Penanganan kendala transaksi', desc: 'Periksa transaksi gagal dan kembalikan saldo hanya setelah status gagal terbukti pada server.'},
   h2h: {label: 'Monitor Saldo H2H', title: 'Kesiapan bridge Pulsa24Jam', desc: 'Pantau kesiapan saldo induk sebelum transaksi agent diteruskan ke API H2H Pulsa24Jam.'},
   panduan: {label: 'Panduan Marketing', title: 'Panduan kerja marketing', desc: 'Daftarkan agent, bantu pengajuan, ambil selfie pertemuan, dan catat pelunasan offline secara tertib.'},
@@ -961,6 +961,8 @@ export default function CreditApplicationsPage() {
     const application = sortedItems.find(item => item.userId === order.UserID)
     return application?.form?.agentName || application?.userName || 'Agent KuotaKita'
   }
+  const agentUserIds = new Set(managedAgents.map(agent => String(agent.id || '')).filter(Boolean))
+  const agentOrders = h2hMonitor.orders.filter(order => String(order.UserRole || '').toLowerCase() === 'agent' || (!order.UserRole && agentUserIds.has(String(order.UserID || ''))))
   const analystApprovedActive = sortedItems.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas')
   const operatorIssuedAmount = analystApprovedActive.reduce((sum, item) => sum + Number(item.creditOriginalAmount || item.form.amount || 0), 0)
   const operatorRemainingAmount = analystApprovedActive.reduce((sum, item) => sum + Number(item.creditOutstanding ?? item.creditBalance ?? item.creditOriginalAmount ?? item.form.amount ?? 0), 0)
@@ -1151,7 +1153,7 @@ export default function CreditApplicationsPage() {
           <article className={nplRatio > 5 ? 'risk-alarm' : ''}><i><AlertCircle/></i><span>Rasio Kredit Macet</span><strong>{nplRatio}%</strong><small>{nplCount} agent lewat jatuh tempo</small></article>
           <article><i><ClipboardCheck/></i><span>Antrean KYC</span><strong>{analystQueue.length}</strong><small>Siap diperiksa Operator</small></article>
         </div>
-        {isOwner && <section className="operator-live-traffic safe-agent-log"><header><div><span>LOG TRANSAKSI 24 JAM</span><h3>Aktivitas transaksi agent</h3></div><button type="button" onClick={() => goToView('transaksi-agent')}>Lihat semua</button></header><div className="operator-traffic-head"><span>Waktu</span><span>Nama Agent</span><span>Nomor Tujuan</span><span>Status</span></div>{h2hMonitor.orders.slice(0, 6).map(order => <article key={order.RefID}><small>{dateTime(order.CreatedAt)}</small><b>{agentNameForOrder(order)}</b><span>{order.Destination || '-'}</span><em className={`h2h-status ${String(order.Status || 'pending').toLowerCase()}`}>{order.Status === 'success' ? 'Berhasil' : order.Status === 'failed' ? 'Gagal' : 'Diproses'}</em></article>)}{!h2hMonitor.orders.length && <p>Belum ada transaksi agent yang tercatat.</p>}</section>}
+        {isOwner && <section className="operator-live-traffic safe-agent-log"><header><div><span>LOG KHUSUS ROLE AGENT</span><h3>Aktivitas transaksi agent</h3></div><button type="button" onClick={() => goToView('transaksi-agent')}>Lihat semua</button></header><div className="operator-traffic-head"><span>Waktu</span><span>Nama Agent</span><span>Nomor Tujuan</span><span>Status</span></div>{agentOrders.slice(0, 6).map(order => <article key={order.RefID}><small>{dateTime(order.CreatedAt)}</small><b>{agentNameForOrder(order)}</b><span>{order.Destination || '-'}</span><em className={`h2h-status ${String(order.Status || 'pending').toLowerCase()}`}>{order.Status === 'success' ? 'Berhasil' : order.Status === 'failed' ? 'Gagal' : 'Diproses'}</em></article>)}{!agentOrders.length && <p>Belum ada transaksi dari akun ber-role Agent.</p>}</section>}
         <section className="operator-priority-board">
           <header><div><span>PRIORITAS HARI INI</span><h3>Tugas yang perlu ditangani</h3></div><small>Diperbarui dari data kredit</small></header>
           <div>
@@ -1303,8 +1305,8 @@ export default function CreditApplicationsPage() {
         {operatorMessage && <output className="operator-feedback" aria-live="polite">{operatorMessage}</output>}
       </section>}
       {isOwner && view === 'transaksi-agent' && <section className="credit-command-panel operator-command-panel agent-transaction-monitor">
-        <header><div><span>MONITOR TRANSAKSI AGEN</span><h2>Log transaksi 24 jam</h2><p>Operator hanya melihat data operasional agent. Saldo induk H2H dan harga modal supplier disembunyikan.</p></div><Activity/></header>
-        <div className="safe-log-table"><div><span>Waktu</span><span>Nama Agent</span><span>Nomor Tujuan</span><span>Status</span></div>{h2hMonitor.orders.map(order => <article key={order.RefID}><small>{dateTime(order.CreatedAt)}</small><b>{agentNameForOrder(order)}</b><span>{order.Destination || '-'}</span><em className={`h2h-status ${String(order.Status || 'pending').toLowerCase()}`}>{order.Status === 'success' ? 'Berhasil' : order.Status === 'failed' ? 'Gagal' : 'Diproses'}</em></article>)}{!h2hMonitor.orders.length && <p>Belum ada transaksi agent dalam log server.</p>}</div>
+        <header><div><span>LOG KHUSUS ROLE AGENT</span><h2>Transaksi khusus akun Agent</h2><p>Daftar ini hanya berisi transaksi akun Agent. Pembelian akun User biasa tetap berada di menu Transaksi Pengguna.</p></div><Activity/></header>
+        <div className="safe-log-table"><div><span>Waktu</span><span>Nama Agent</span><span>Nomor Tujuan</span><span>Status</span></div>{agentOrders.map(order => <article key={order.RefID}><small>{dateTime(order.CreatedAt)}</small><b>{agentNameForOrder(order)}</b><span>{order.Destination || '-'}</span><em className={`h2h-status ${String(order.Status || 'pending').toLowerCase()}`}>{order.Status === 'success' ? 'Berhasil' : order.Status === 'failed' ? 'Gagal' : 'Diproses'}</em></article>)}{!agentOrders.length && <p>Belum ada transaksi dari akun ber-role Agent dalam log server.</p>}</div>
       </section>}
       {isOwner && view === 'helpdesk' && <section className="credit-command-panel operator-command-panel helpdesk-monitor">
         <header><div><span>HELPDESK 24 JAM</span><h2>Tiket bantuan &amp; komplain transaksi</h2><p>Refund hanya tersedia untuk transaksi yang sudah berstatus gagal di server dan tidak pernah dikembalikan sebelumnya.</p></div><Headphones/></header>

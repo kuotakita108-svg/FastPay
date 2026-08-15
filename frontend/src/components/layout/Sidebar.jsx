@@ -60,7 +60,7 @@ const superAdminNavigation = [
     {to: '/credit-applications', label: 'Dasbor Super Admin', icon: ShieldCheck},
   ]},
   {section: 'BISNIS APLIKASI', items: [
-    {to: '/transactions', label: 'Seluruh Transaksi', icon: Activity},
+    {to: '/transactions', label: 'Transaksi Pengguna', icon: Activity},
     {to: '/products', label: 'Katalog Produk', icon: Boxes},
     {to: '/customers', label: 'Pengguna & Akun', icon: Users},
   ]},
@@ -77,7 +77,7 @@ const superAdminNavigation = [
     {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Marketing', icon: Users},
   ]},
   {section: 'KEAMANAN & SISTEM', items: [
-    {to: '/credit-applications?view=transaksi-agent', label: 'Monitor Transaksi Agen', icon: Activity},
+    {to: '/credit-applications?view=transaksi-agent', label: 'Transaksi Khusus Agent', icon: Activity},
     {to: '/credit-applications?view=helpdesk', label: 'Audit Komplain', icon: Headphones},
     {to: '/settings', label: 'Pengaturan Sistem', icon: Settings},
   ]},

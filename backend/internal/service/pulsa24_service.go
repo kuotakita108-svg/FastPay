@@ -31,7 +31,7 @@ type Pulsa24Service struct {
 }
 
 type Pulsa24Order struct {
-	RefID, UserID, ClientRequestID, Product, Destination, TransactionID string
+	RefID, UserID, UserRole, ClientRequestID, Product, Destination, TransactionID string
 	Qty, Amount, MainUsed, CreditUsed                                   int64
 	Status, SN, Message, CustomerName                                   string
 	Debited, Refunded, DirectH2H                                        bool

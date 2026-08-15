@@ -142,7 +142,7 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 	refID := h.pulsa24.NewRefID()
 	tx := domain.Transaction{ID: fmt.Sprintf("PP-%d", now.UnixMilli()), Customer: in.Target, Email: in.Email, Method: method, Amount: in.Amount, Status: "Diproses", Target: in.Target, Provider: in.Provider, Title: in.Title, Product: in.Product, OrderNumber: refID, CreatedAt: now}
 	h.append(id, tx)
-	existing, created, recordErr := h.pulsa24.RecordUnique(service.Pulsa24Order{RefID: refID, UserID: id, ClientRequestID: strings.TrimSpace(in.RequestID), Product: in.SKU, Destination: in.Target, TransactionID: tx.ID, Qty: qty, Amount: in.Amount, MainUsed: mainUsed, CreditUsed: creditUsed, Status: "pending", Debited: !current.H2HDirect, DirectH2H: current.H2HDirect, CreatedAt: now})
+	existing, created, recordErr := h.pulsa24.RecordUnique(service.Pulsa24Order{RefID: refID, UserID: id, UserRole: current.Role, ClientRequestID: strings.TrimSpace(in.RequestID), Product: in.SKU, Destination: in.Target, TransactionID: tx.ID, Qty: qty, Amount: in.Amount, MainUsed: mainUsed, CreditUsed: creditUsed, Status: "pending", Debited: !current.H2HDirect, DirectH2H: current.H2HDirect, CreatedAt: now})
 	if recordErr != nil {
 		h.restoreFunds(id, mainUsed, creditUsed)
 		h.updateTransaction(id, tx.ID, "Gagal", "", "")
