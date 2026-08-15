@@ -307,6 +307,8 @@ export default function CreditApplicationsPage() {
   const [h2hRefresh, setH2hRefresh] = useState(0)
   const [h2hPage, setH2hPage] = useState(1)
   const [h2hSelected, setH2hSelected] = useState(null)
+  const [helpdeskFilter, setHelpdeskFilter] = useState('Semua')
+  const [helpdeskQuery, setHelpdeskQuery] = useState('')
   const isMarketing = user?.role === 'marketing'
   // Existing "analis" accounts are the legacy name for Operator. Keeping the
   // alias prevents existing staff from being locked out during the migration.
@@ -963,6 +965,21 @@ export default function CreditApplicationsPage() {
   }
   const agentUserIds = new Set(managedAgents.map(agent => String(agent.id || '')).filter(Boolean))
   const agentOrders = h2hMonitor.orders.filter(order => String(order.UserRole || '').toLowerCase() === 'agent' || (!order.UserRole && agentUserIds.has(String(order.UserID || ''))))
+  const helpdeskOrders = h2hMonitor.orders.filter(order => {
+    const serverStatus = String(order.Status || '').toLowerCase()
+    if (!['failed', 'pending'].includes(serverStatus)) return false
+    const ticketStatus = order.Refunded ? 'Selesai' : serverStatus === 'failed' ? 'Perlu Refund' : 'Menunggu Provider'
+    const matchesFilter = helpdeskFilter === 'Semua' || ticketStatus === helpdeskFilter
+    const haystack = `${order.RefID} ${order.Product} ${order.Destination} ${order.Message} ${agentNameForOrder(order)}`.toLowerCase()
+    return matchesFilter && haystack.includes(helpdeskQuery.trim().toLowerCase())
+  })
+  const helpdeskCounts = h2hMonitor.orders.reduce((counts, order) => {
+    const serverStatus = String(order.Status || '').toLowerCase()
+    if (serverStatus === 'pending') counts.pending += 1
+    if (serverStatus === 'failed' && !order.Refunded) counts.refund += 1
+    if (serverStatus === 'failed' && order.Refunded) counts.done += 1
+    return counts
+  }, {pending: 0, refund: 0, done: 0})
   const analystApprovedActive = sortedItems.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas')
   const operatorIssuedAmount = analystApprovedActive.reduce((sum, item) => sum + Number(item.creditOriginalAmount || item.form.amount || 0), 0)
   const operatorRemainingAmount = analystApprovedActive.reduce((sum, item) => sum + Number(item.creditOutstanding ?? item.creditBalance ?? item.creditOriginalAmount ?? item.form.amount ?? 0), 0)
@@ -1309,9 +1326,11 @@ export default function CreditApplicationsPage() {
         <div className="safe-log-table"><div><span>Waktu</span><span>Nama Agent</span><span>Nomor Tujuan</span><span>Status</span></div>{agentOrders.map(order => <article key={order.RefID}><small>{dateTime(order.CreatedAt)}</small><b>{agentNameForOrder(order)}</b><span>{order.Destination || '-'}</span><em className={`h2h-status ${String(order.Status || 'pending').toLowerCase()}`}>{order.Status === 'success' ? 'Berhasil' : order.Status === 'failed' ? 'Gagal' : 'Diproses'}</em></article>)}{!agentOrders.length && <p>Belum ada transaksi dari akun ber-role Agent dalam log server.</p>}</div>
       </section>}
       {isOwner && view === 'helpdesk' && <section className="credit-command-panel operator-command-panel helpdesk-monitor">
-        <header><div><span>HELPDESK 24 JAM</span><h2>Tiket bantuan &amp; komplain transaksi</h2><p>Refund hanya tersedia untuk transaksi yang sudah berstatus gagal di server dan tidak pernah dikembalikan sebelumnya.</p></div><Headphones/></header>
+        <header><div><span>PUSAT PENANGANAN TRANSAKSI</span><h2>Tiket bantuan &amp; komplain</h2><p>Setiap tiket berasal dari status transaksi server. Refund hanya terbuka setelah provider menyatakan transaksi gagal.</p></div><Headphones/></header>
         {operatorMessage && <output className="operator-feedback" aria-live="polite">{operatorMessage}</output>}
-        <div className="helpdesk-list">{h2hMonitor.orders.filter(order => order.Status === 'failed' || order.Status === 'pending').map(order => <article key={order.RefID}><div><b>{agentNameForOrder(order)}</b><small>{order.Destination || '-'} · {dateTime(order.CreatedAt)}</small><code>{order.RefID}</code></div><span><em className={`h2h-status ${order.Status}`}>{order.Status === 'failed' ? 'Gagal terverifikasi' : 'Menunggu server'}</em>{order.Message && <small>{order.Message}</small>}</span>{!isOwner&&<button type="button" disabled={order.Status !== 'failed' || order.Refunded} onClick={() => processFailedRefund(order)}>{order.Refunded ? 'Sudah direfund' : order.Status === 'failed' ? 'Refund saldo' : 'Belum dapat direfund'}</button>}</article>)}{!h2hMonitor.orders.some(order => order.Status === 'failed' || order.Status === 'pending') && <p>Tidak ada komplain transaksi yang perlu ditangani.</p>}</div>
+        <div className="helpdesk-summary"><article><small>Menunggu provider</small><strong>{helpdeskCounts.pending}</strong></article><article><small>Perlu refund</small><strong>{helpdeskCounts.refund}</strong></article><article><small>Selesai</small><strong>{helpdeskCounts.done}</strong></article></div>
+        <div className="helpdesk-tools"><label><Search/><input value={helpdeskQuery} onChange={event=>setHelpdeskQuery(event.target.value)} placeholder="Cari Ref ID, produk, tujuan, atau agent..."/></label><nav>{['Semua','Menunggu Provider','Perlu Refund','Selesai'].map(name=><button type="button" className={helpdeskFilter===name?'active':''} onClick={()=>setHelpdeskFilter(name)} key={name}>{name}</button>)}</nav></div>
+        <div className="helpdesk-list"><div className="helpdesk-columns"><span>Waktu</span><span>Agent / Tujuan</span><span>Produk / Ref ID</span><span>Kendala</span><span>Status</span><span>Aksi</span></div>{helpdeskOrders.map(order => {const ticketStatus=order.Refunded?'Selesai':order.Status==='failed'?'Perlu Refund':'Menunggu Provider';return <article key={order.RefID}><time>{dateTime(order.CreatedAt)}</time><div><b>{agentNameForOrder(order)}</b><small>{order.Destination || '-'}</small></div><div><b>{order.Product || '-'}</b><code>{order.RefID}</code></div><p>{order.Message || (order.Status==='pending'?'Menunggu hasil akhir dari provider.':'Transaksi ditolak provider.')}</p><em className={`h2h-status ${order.Refunded?'success':order.Status}`}>{ticketStatus}</em><nav><button type="button" onClick={()=>setH2hSelected(order)}><Eye/>Detail</button><button type="button" onClick={()=>printH2HOrder(order)}><Printer/>Cetak</button><button type="button" className="refund" disabled={order.Status!=='failed'||order.Refunded} onClick={()=>processFailedRefund(order)}>{order.Refunded?'Direfund':order.Status==='failed'?'Refund':'Tunggu'}</button></nav></article>})}{!helpdeskOrders.length && <p>Tidak ada tiket yang sesuai pencarian atau filter.</p>}</div>
       </section>}
       {isOwner && view === 'h2h' && <section className="credit-command-panel operator-command-panel">
         <header><div><span>PULSA24JAM OPERATIONS</span><h2>Saldo dan transaksi H2H langsung dari server</h2><p>Saldo dibaca melalui perintah SALDO. Daftar transaksi berasal dari setiap PAY KuotaKita yang benar-benar tercatat pada bridge Pulsa24Jam.</p></div><Landmark/></header>
