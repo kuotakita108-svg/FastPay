@@ -5,9 +5,8 @@ const CACHE_TTL = 60000
 
 export function useAsync(fn) {
   const initial = resultCache.get(fn)
-  const freshInitial = initial && Date.now() - initial.savedAt < CACHE_TTL
-  const [data, setData] = useState(freshInitial ? initial.data : null)
-  const [loading, setLoading] = useState(!freshInitial)
+  const [data, setData] = useState(initial?.data ?? null)
+  const [loading, setLoading] = useState(!initial)
   const [error, setError] = useState(null)
   const execute = useCallback(async (force = false) => {
     const cached = resultCache.get(fn)
@@ -17,7 +16,7 @@ export function useAsync(fn) {
       setLoading(false)
       return cached.data
     }
-    if (!cached?.data) setLoading(true)
+    if (cached?.data === undefined) setLoading(true)
     setError(null)
     try {
       const next = await fn()
@@ -25,7 +24,9 @@ export function useAsync(fn) {
       setData(next)
       return next
     } catch (currentError) {
-      setError(currentError.message)
+      // Data lama tetap ditampilkan ketika refresh latar belakang terganggu.
+      // Layar error hanya dipakai jika halaman memang belum pernah punya data.
+      if (cached?.data === undefined) setError(currentError.message)
     } finally {
       setLoading(false)
     }
