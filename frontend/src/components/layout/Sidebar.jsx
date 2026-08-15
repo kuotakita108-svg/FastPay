@@ -101,7 +101,11 @@ export default function Sidebar({open, onClose}) {
   const roleLabel = role === 'master' ? 'Super Admin / Owner' : role === 'marketing' ? 'Marketing Kredit' : isOperator || role === 'admin' ? 'Operator Kredit' : 'Panel Administrator'
   const current = `${location.pathname}${location.search}`
   const active = to => current === to || (!to.includes('?') && location.pathname === to && !location.search)
-  const [openWorkspaceSection, setOpenWorkspaceSection] = useState(() => visibleNavigation.find(group => group.items.some(item => active(item.to)))?.section || visibleNavigation[0]?.section || '')
+  const activeWorkspaceSection = visibleNavigation.find(group => group.items.some(item => active(item.to)))?.section
+  const [openWorkspaceSections, setOpenWorkspaceSections] = useState(() => ({
+    [visibleNavigation[0]?.section || '']: true,
+    ...(activeWorkspaceSection ? {[activeWorkspaceSection]: true} : {}),
+  }))
   const activeLabel = visibleNavigation.flatMap(group => group.items).find(item => active(item.to))?.label || (isCreditAdmin ? 'Dashboard' : 'Ringkasan Kerja')
   const rolePanel = isMarketing
     ? {eyebrow: 'MODE MARKETING', title: 'Validasi lapangan', description: 'Daftarkan agent, lengkapi empat foto wajib, pantau agent binaan, dan kerjakan tugas Operator.'}
@@ -121,8 +125,8 @@ export default function Sidebar({open, onClose}) {
       <strong>{rolePanel.title}</strong>
       <small>Bagian aktif: {activeLabel}</small>
     </div>}
-    <nav className={`${rolePanel ? 'workspace-nav' : ''}${isSuperAdmin ? ' owner-workspace-nav' : ''}`}>{visibleNavigation.map(group => {const sectionOpen=!rolePanel||openWorkspaceSection===group.section;return <div className={rolePanel && !sectionOpen ? 'section-collapsed' : ''} key={group.section}>
-      {rolePanel ? <button type="button" className="nav-section-toggle" aria-expanded={sectionOpen} aria-controls={`sidebar-${group.section.toLowerCase().replace(/[^a-z]+/g, '-')}`} onClick={() => setOpenWorkspaceSection(currentSection => currentSection === group.section ? '' : group.section)}><span>{group.section}</span><ChevronDown/></button> : <p className="nav-label">{group.section}</p>}
+    <nav className={`${rolePanel ? 'workspace-nav' : ''}${isSuperAdmin ? ' owner-workspace-nav' : ''}`}>{visibleNavigation.map(group => {const sectionOpen=!rolePanel||Boolean(openWorkspaceSections[group.section]);return <div className={rolePanel && !sectionOpen ? 'section-collapsed' : ''} key={group.section}>
+      {rolePanel ? <button type="button" className="nav-section-toggle" aria-expanded={sectionOpen} aria-controls={`sidebar-${group.section.toLowerCase().replace(/[^a-z]+/g, '-')}`} onClick={() => setOpenWorkspaceSections(currentSections => ({...currentSections,[group.section]:!currentSections[group.section]}))}><span>{group.section}</span><ChevronDown/></button> : <p className="nav-label">{group.section}</p>}
       <div className="nav-section-items" id={`sidebar-${group.section.toLowerCase().replace(/[^a-z]+/g, '-')}`}>{group.items.map(({to, label, icon: Icon}) => <Link className={`nav-item nav-${label.toLowerCase().replace(/[^a-z]+/g, '-')} ${active(to) ? 'active' : ''}`} to={to} key={to} onClick={onClose}>
         <Icon size={18}/><span>{label}</span>
       </Link>)}</div>
