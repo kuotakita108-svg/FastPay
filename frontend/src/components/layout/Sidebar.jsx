@@ -56,23 +56,27 @@ const operatorNavigation = [
 ]
 
 const superAdminNavigation = [
-  {section: 'PANTAUAN UTAMA', items: [
+  {section: 'RINGKASAN', items: [
     {to: '/credit-applications', label: 'Dasbor Super Admin', icon: ShieldCheck},
+  ]},
+  {section: 'BISNIS APLIKASI', items: [
+    {to: '/transactions', label: 'Seluruh Transaksi', icon: Activity},
+    {to: '/products', label: 'Katalog Produk', icon: Boxes},
+    {to: '/customers', label: 'Pengguna & Akun', icon: Users},
+  ]},
+  {section: 'KEUANGAN', items: [
+    {to: '/analytics', label: 'Analitik Bisnis', icon: BarChart3},
+    {to: '/invoices', label: 'Invoice & Pembayaran', icon: FileCheck2},
+    {to: '/payment-methods', label: 'Kanal Pembayaran', icon: CreditCard},
+    {to: '/credit-applications?view=h2h', label: 'Saldo & Provider H2H', icon: Landmark},
+  ]},
+  {section: 'TIM & KREDIT', items: [
     {to: '/credit-applications?view=peminjam', label: 'Portofolio Kredit', icon: WalletCards, badgeKey: 'active'},
     {to: '/credit-applications?view=jatuh-tempo', label: 'Tagihan & Risiko', icon: CalendarClock, badgeKey: 'risk'},
     {to: '/credit-applications?view=pelunasan', label: 'Audit Pelunasan', icon: FileCheck2, badgeKey: 'payments'},
-  ]},
-  {section: 'TIM & KINERJA', items: [
     {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Marketing', icon: Users},
   ]},
-  {section: 'OPERASIONAL APLIKASI', items: [
-    {to: '/transactions', label: 'Seluruh Transaksi', icon: Activity},
-    {to: '/products', label: 'Produk & Harga', icon: Boxes},
-    {to: '/customers', label: 'Pelanggan & Akun', icon: Users},
-    {to: '/payment-methods', label: 'Kanal Pembayaran', icon: CreditCard},
-  ]},
-  {section: 'SISTEM & PROVIDER', items: [
-    {to: '/credit-applications?view=h2h', label: 'Monitor H2H', icon: Landmark},
+  {section: 'KEAMANAN & SISTEM', items: [
     {to: '/credit-applications?view=transaksi-agent', label: 'Monitor Transaksi Agen', icon: Activity},
     {to: '/credit-applications?view=helpdesk', label: 'Audit Komplain', icon: Headphones},
     {to: '/settings', label: 'Pengaturan Sistem', icon: Settings},
@@ -92,7 +96,7 @@ export default function Sidebar({open, onClose}) {
   const isSuperAdmin = role === 'master'
   const isCreditAdmin = isOperator || role === 'admin' || role === 'master'
   const [workCounts, setWorkCounts] = useState({})
-  const [ownerSections, setOwnerSections] = useState({'PANTAUAN UTAMA': true})
+  const [ownerSections, setOwnerSections] = useState({'RINGKASAN': true})
   useEffect(() => {
     if (!isCreditAdmin && !isMarketing) return undefined
     let active = true
@@ -128,7 +132,7 @@ export default function Sidebar({open, onClose}) {
     ? {eyebrow: 'MODE MARKETING', title: 'Validasi lapangan', description: 'Daftarkan agent, lengkapi empat foto wajib, pantau agent binaan, dan kerjakan tugas Operator.'}
     : isCreditAdmin
       ? isSuperAdmin
-        ? {eyebrow: 'MODE SUPER ADMIN', title: 'Pantauan pusat & H2H', description: 'Ringkasan owner untuk modal, H2H, audit, dan kesehatan operasional.'}
+        ? {eyebrow: 'MODE SUPER ADMIN', title: 'Kontrol seluruh sistem', description: 'Pantau bisnis, keuangan, pengguna, produk, tim, provider, dan keamanan aplikasi.'}
         : {eyebrow: 'MODE OPERATOR', title: 'Keputusan akhir kredit', description: 'Fokus memeriksa berkas, menentukan limit, memantau kredit, pelunasan, dan risiko agent.'}
       : null
 

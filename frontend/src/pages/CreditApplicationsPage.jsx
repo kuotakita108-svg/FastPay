@@ -1091,7 +1091,7 @@ export default function CreditApplicationsPage() {
 
   return <>
     <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''} ${isMarketing ? 'marketing-review' : ''} ${(isOperator || isAdmin) ? 'analyst-review operator-review' : ''} ${isOwner ? 'owner-review' : ''}`}>
-      {view === 'overview' && isOwner && <SuperAdminOverview user={user} items={items} agents={managedAgents} marketingPerformance={marketingPerformance} h2h={h2hMonitor} onOpen={next=>['settings','analytics'].includes(next)?navigate(`/${next}`):goToView(next)}/>}
+      {view === 'overview' && isOwner && <SuperAdminOverview user={user} items={items} agents={managedAgents} marketingPerformance={marketingPerformance} h2h={h2hMonitor} onOpen={next=>String(next).startsWith('/')?navigate(next):goToView(next)}/>}
       {view === 'overview' && isMarketing && <section className="marketing-profile-header">
         <div><span>PROFIL AKTIF</span><h1>{String(user?.name || 'Marketing KuotaKita').toUpperCase()}</h1><p>Akun marketing aktif untuk pendampingan agent, survei lapangan, dokumen, dan pemantauan kredit.</p><footer><b><CheckCircle2/>Marketing</b><b><ShieldCheck/>Role aktif di sesi ini</b></footer></div>
         <i><UserCheck/></i>
