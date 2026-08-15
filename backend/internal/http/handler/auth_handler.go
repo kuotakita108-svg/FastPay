@@ -112,6 +112,30 @@ func (h *AuthHandler) Accounts(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, users)
 }
 
+func (h *AuthHandler) SetAccountAccess(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Suspended bool `json:"suspended"`
+	}
+	if json.NewDecoder(r.Body).Decode(&input) != nil {
+		response.Error(w, http.StatusBadRequest, "status akun tidak valid")
+		return
+	}
+	user, err := h.service.SetAccountAccess(r.Header.Get("Authorization"), r.PathValue("id"), input.Suspended)
+	if err != nil {
+		response.Error(w, http.StatusForbidden, err.Error())
+		return
+	}
+	response.JSON(w, http.StatusOK, user)
+}
+
+func (h *AuthHandler) DeleteAccount(w http.ResponseWriter, r *http.Request) {
+	if err := h.service.DeleteAccount(r.Header.Get("Authorization"), r.PathValue("id")); err != nil {
+		response.Error(w, http.StatusForbidden, err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func (h *AuthHandler) CreateMarketing(w http.ResponseWriter, r *http.Request) {
 	var in domain.RegisterInput
 	if json.NewDecoder(r.Body).Decode(&in) != nil {

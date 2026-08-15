@@ -129,8 +129,8 @@ func (s *AuthService) Login(identity, password string) (domain.AuthResult, error
 	if account.ID == "" || account.PasswordHash == "" || bcrypt.CompareHashAndPassword([]byte(account.PasswordHash), []byte(password)) != nil {
 		return domain.AuthResult{}, errors.New("username atau password salah")
 	}
-	if account.Role == "agent" && account.AccessStatus == "suspended" {
-		message := "akses agent sedang dinonaktifkan Operator"
+	if account.AccessStatus == "suspended" {
+		message := "akses akun sedang dinonaktifkan"
 		if account.AccessReason != "" {
 			message += ": " + account.AccessReason
 		}
@@ -234,6 +234,68 @@ func (s *AuthService) AllAccounts(token string) ([]domain.AccountSummary, error)
 		return result[i].CreatedAt > result[j].CreatedAt
 	})
 	return result, nil
+}
+
+func (s *AuthService) SetAccountAccess(token, accountID string, suspended bool) (domain.User, error) {
+	ownerID, role, err := s.session(token)
+	if err != nil {
+		return domain.User{}, err
+	}
+	if role != "master" {
+		return domain.User{}, errors.New("hanya Super Admin yang dapat mengubah akses akun")
+	}
+	accountID = strings.TrimSpace(accountID)
+	if accountID == ownerID {
+		return domain.User{}, errors.New("akun Super Admin yang sedang dipakai tidak dapat dinonaktifkan")
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for key, account := range s.users {
+		if account.ID != accountID {
+			continue
+		}
+		original := account
+		account.AccessStatus, account.AccessReason = "active", ""
+		if suspended {
+			account.AccessStatus, account.AccessReason = "suspended", "Dinonaktifkan Super Admin"
+		}
+		account.AccessUpdatedAt = time.Now().UTC().Format(time.RFC3339)
+		s.users[key] = account
+		if err := s.saveLocked(); err != nil {
+			s.users[key] = original
+			return domain.User{}, errors.New("status akun belum dapat disimpan")
+		}
+		return account.User, nil
+	}
+	return domain.User{}, errors.New("akun tidak ditemukan")
+}
+
+func (s *AuthService) DeleteAccount(token, accountID string) error {
+	ownerID, role, err := s.session(token)
+	if err != nil {
+		return err
+	}
+	if role != "master" {
+		return errors.New("hanya Super Admin yang dapat menghapus akun")
+	}
+	accountID = strings.TrimSpace(accountID)
+	if accountID == ownerID {
+		return errors.New("akun Super Admin yang sedang dipakai tidak dapat dihapus")
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for key, account := range s.users {
+		if account.ID != accountID {
+			continue
+		}
+		delete(s.users, key)
+		if err := s.saveLocked(); err != nil {
+			s.users[key] = account
+			return errors.New("akun belum dapat dihapus dari server")
+		}
+		return nil
+	}
+	return errors.New("akun tidak ditemukan")
 }
 
 // ResolveManagedAgent validates that the selected account belongs to the
@@ -405,8 +467,8 @@ func (s *AuthService) CurrentUser(token string) (domain.User, error) {
 	defer s.mu.RUnlock()
 	for _, item := range s.users {
 		if item.ID == id {
-			if item.Role == "agent" && item.AccessStatus == "suspended" {
-				return domain.User{}, errors.New("akses agent sedang dinonaktifkan Operator")
+			if item.AccessStatus == "suspended" {
+				return domain.User{}, errors.New("akses akun sedang dinonaktifkan")
 			}
 			return withH2HDirect(item.User), nil
 		}
