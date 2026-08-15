@@ -7,7 +7,6 @@ import {getCustomers} from '../../services/customerService'
 
 const statusOf=order=>String(order?.Status||'pending').toLowerCase()
 
-const dashboardBootTime=Date.now()
 const loadOwnerSnapshot=async()=>{
   const [dashboard,products,customers]=await Promise.allSettled([getDashboard(),getProducts(),getCustomers()])
   return {dashboard:dashboard.status==='fulfilled'?dashboard.value:{},products:products.status==='fulfilled'?products.value:[],customers:customers.status==='fulfilled'?customers.value:[]}
@@ -20,7 +19,7 @@ export default function SuperAdminOverview({user,items=[],agents=[],marketingPer
   const customers=Array.isArray(snapshot?.customers)?snapshot.customers:[]
   const activeCredits=items.filter(item=>item.status==='Disetujui'&&item.paymentStatus!=='Lunas')
   const review=items.filter(item=>item.status==='Menunggu keputusan operator').length
-  const overdue=activeCredits.filter(item=>item.dueAt&&new Date(item.dueAt).getTime()<dashboardBootTime)
+  const overdue=activeCredits.filter(item=>item.dueAt&&new Date(item.dueAt).getTime()<Date.now())
   const outstanding=activeCredits.reduce((total,item)=>total+Number(item.creditOutstanding??item.creditBalance??item.creditOriginalAmount??item.form?.amount??0),0)
   const orders=Array.isArray(h2h.orders)?h2h.orders:[]
   const success=orders.filter(order=>statusOf(order)==='success').length
@@ -32,7 +31,7 @@ export default function SuperAdminOverview({user,items=[],agents=[],marketingPer
     {label:'Produk tersedia',value:products.length,note:'Seluruh katalog layanan',icon:Boxes,tone:'blue',route:'/products'},
     {label:'Saldo provider H2H',value:h2h.balance==null?'Belum tersambung':rupiah(h2h.balance),note:h2h.connected?'Pulsa24Jam terhubung':'Periksa koneksi provider',icon:Landmark,tone:'amber',view:'h2h'},
     {label:'Kredit berjalan',value:rupiah(outstanding),note:`${activeCredits.length} agent aktif`,icon:WalletCards,tone:'violet',view:'peminjam'},
-    {label:'Risiko sistem',value:overdue.length+failed,note:overdue.length||failed?'Perlu dipantau':'Operasional aman',icon:AlertTriangle,tone:'rose',view:'jatuh-tempo'},
+    {label:'Tagihan berisiko',value:overdue.length,note:overdue.length?`${overdue.length} agent lewat jatuh tempo`:'Tidak ada tunggakan',icon:AlertTriangle,tone:'rose',view:'jatuh-tempo'},
   ]
   const actions=[
     {title:'Transaksi seluruh aplikasi',note:'Status pembelian pengguna dan agent',icon:Activity,route:'/transactions'},
