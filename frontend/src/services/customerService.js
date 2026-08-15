@@ -1,1 +1,1 @@
-import {request} from './http';export const getCustomers=()=>request('/customers');
+import {request} from './http';export const getCustomers=()=>request('/auth/accounts');

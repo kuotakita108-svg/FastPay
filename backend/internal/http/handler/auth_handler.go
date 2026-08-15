@@ -103,6 +103,15 @@ func (h *AuthHandler) ManagedAgents(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, users)
 }
 
+func (h *AuthHandler) Accounts(w http.ResponseWriter, r *http.Request) {
+	users, err := h.service.AllAccounts(r.Header.Get("Authorization"))
+	if err != nil {
+		response.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+	response.JSON(w, http.StatusOK, users)
+}
+
 func (h *AuthHandler) CreateMarketing(w http.ResponseWriter, r *http.Request) {
 	var in domain.RegisterInput
 	if json.NewDecoder(r.Body).Decode(&in) != nil {

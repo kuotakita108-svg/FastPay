@@ -207,6 +207,35 @@ func (s *AuthService) ManagedAgents(token string) ([]domain.User, error) {
 	return result, nil
 }
 
+// AllAccounts is the owner directory. It is deliberately separate from the
+// Marketing agent list so staff cannot enumerate unrelated user accounts.
+func (s *AuthService) AllAccounts(token string) ([]domain.AccountSummary, error) {
+	_, role, err := s.session(token)
+	if err != nil {
+		return nil, err
+	}
+	if role != "master" {
+		return nil, errors.New("daftar seluruh akun hanya dapat dilihat Super Admin")
+	}
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	result := make([]domain.AccountSummary, 0, len(s.users))
+	for _, account := range s.users {
+		provider := "Password"
+		if account.GoogleID != "" {
+			provider = "Google"
+		}
+		result = append(result, domain.AccountSummary{User: account.User, LoginProvider: provider, CreatedAt: account.CreatedAt.Format(time.RFC3339)})
+	}
+	sort.Slice(result, func(i, j int) bool {
+		if result[i].CreatedAt == result[j].CreatedAt {
+			return result[i].Name < result[j].Name
+		}
+		return result[i].CreatedAt > result[j].CreatedAt
+	})
+	return result, nil
+}
+
 // ResolveManagedAgent validates that the selected account belongs to the
 // Marketing currently signed in.
 func (s *AuthService) ResolveManagedAgent(token, agentID string) (domain.User, error) {

@@ -42,3 +42,9 @@ type AuthResult struct {
 	Token string `json:"token"`
 	User  User   `json:"user"`
 }
+
+type AccountSummary struct {
+	User
+	LoginProvider string `json:"login_provider"`
+	CreatedAt     string `json:"created_at,omitempty"`
+}
