@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from 'react'
 import {useLocation,useNavigate} from 'react-router-dom'
 import {QRCodeSVG} from 'qrcode.react'
-import {ArrowRight, CalendarDays, Camera, Check, CheckCircle2, Clock3, Copy, CreditCard, Crown, Eye, EyeOff, FileText, HandCoins, Images, Landmark, Loader2, PenLine, QrCode, Rocket, Search, ShieldCheck, Stamp, Store, Upload, UserRound, X} from 'lucide-react'
+import {ArrowRight, CalendarDays, Camera, Check, CheckCircle2, Clock3, Copy, CreditCard, Crown, Eye, EyeOff, FileText, HandCoins, Images, Landmark, Loader2, PenLine, PlusCircle, QrCode, Rocket, Search, ShieldCheck, Stamp, Store, Upload, UserRound, X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'

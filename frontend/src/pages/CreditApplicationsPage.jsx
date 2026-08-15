@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react'
 import {useNavigate,useSearchParams} from 'react-router-dom'
-import {Activity, AlertCircle, ArrowRight, Ban, Banknote, BarChart3, CalendarClock, CalendarDays, Camera, Check, CheckCircle2, ChevronRight, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, FileCheck2, Filter, Gauge, HandCoins, Headphones, Images, LockKeyhole, PenLine, PhoneCall, PlusCircle, Printer, QrCode, Search, ShieldCheck, Stamp, Trash2, TrendingUp, Upload, UserCheck, UserPlus, WalletCards, X, XCircle} from 'lucide-react'
+import {Activity, AlertCircle, ArrowRight, Ban, Banknote, BarChart3, CalendarClock, CalendarDays, Camera, Check, CheckCircle2, ChevronRight, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, FileCheck2, Filter, Gauge, HandCoins, Headphones, Images, Landmark, LockKeyhole, PenLine, PhoneCall, PlusCircle, Printer, QrCode, Search, ShieldCheck, Stamp, Trash2, TrendingUp, Upload, UserCheck, UserPlus, WalletCards, X, XCircle} from 'lucide-react'
 import {QRCodeSVG} from 'qrcode.react'
 import PageHeader from '../components/common/PageHeader'
 import {useAuth} from '../context/AuthContext'
@@ -132,6 +132,7 @@ function saveApplication(target, changes) {
 const reviewerName = user => user?.name || (user?.role === 'analis' ? 'Operator KuotaKita' : 'Marketing KuotaKita')
 const stampPayload = (user, image) => ({name: reviewerName(user), role: user?.role || 'reviewer', at: new Date().toISOString(), image})
 const dateTime = iso => iso ? new Date(iso).toLocaleString('id-ID', {day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'}) : 'Belum tanda tangan'
+const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[character]))
 const paymentRows = item => {
   const key = `${item.id}-pelunasan`
   const payment = (item.repayments || []).find(row => row.key === key)
