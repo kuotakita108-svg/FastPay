@@ -7,50 +7,52 @@ import {initials} from '../../utils/name'
 
 const marketingNavigation = [
   {
-    section: 'KEPUTUSAN',
+    section: 'OPERASIONAL LAPANGAN',
     items: [
-      {to: '/credit-applications', label: 'Dashboard Marketing', icon: WalletCards},
-      {to: '/credit-applications?view=agent-input', label: 'Registrasi Agent', icon: UserPlus},
-      {to: '/credit-applications?view=input', label: 'Pengajuan Kredit', icon: ClipboardCheck},
-      {to: '/credit-applications?view=verifikasi', label: 'Survei & Dokumen', icon: Camera},
+      {to: '/credit-applications', label: 'Ringkasan Hari Ini', icon: WalletCards},
+      {to: '/credit-applications?view=agent-input', label: 'Daftarkan Agent', icon: UserPlus},
+      {to: '/credit-applications?view=input', label: 'Buat Pengajuan Kredit', icon: ClipboardCheck},
     ],
   },
   {
-    section: 'KONTROL KREDIT',
+    section: 'SURVEI & VALIDASI',
     items: [
-      {to: '/credit-applications?view=peminjam', label: 'Agent Binaan', icon: Users},
-      {to: '/credit-applications?view=agenda', label: 'Agenda Lapangan', icon: CalendarClock},
+      {to: '/credit-applications?view=verifikasi', label: 'Antrean Survei Agent', icon: Camera},
+      {to: '/credit-applications?view=agenda', label: 'Agenda Kunjungan', icon: CalendarClock},
     ],
   },
   {
-    section: 'KINERJA',
+    section: 'PORTOFOLIO AGENT',
     items: [
-      {to: '/credit-applications?view=kontak', label: 'Kontak Agent', icon: PhoneCall},
-      {to: '/credit-applications?view=panduan', label: 'Panduan Kerja', icon: BookOpenCheck},
+      {to: '/credit-applications?view=peminjam', label: 'Pantau Agent Binaan', icon: Users},
+      {to: '/credit-applications?view=kontak', label: 'Hubungi Agent', icon: PhoneCall},
     ],
   },
+  {section: 'BANTUAN KERJA', items: [
+    {to: '/credit-applications?view=panduan', label: 'SOP Marketing', icon: BookOpenCheck},
+  ]},
 ]
 
 const operatorNavigation = [
   {
-    section: 'AKTIVITAS',
+    section: 'KEPUTUSAN KREDIT',
     items: [
-      {to: '/credit-applications', label: 'Dashboard Operator', icon: ShieldCheck},
-      {to: '/credit-applications?view=verifikasi', label: 'Verifikasi Pengajuan', icon: ClipboardCheck},
+      {to: '/credit-applications', label: 'Ringkasan Operasional', icon: ShieldCheck},
+      {to: '/credit-applications?view=verifikasi', label: 'Antrean Keputusan', icon: ClipboardCheck},
     ],
   },
   {
-    section: 'PORTOFOLIO',
+    section: 'MONITOR KREDIT',
     items: [
-      {to: '/credit-applications?view=peminjam', label: 'Kredit Agent Aktif', icon: CheckCircle2},
-      {to: '/credit-applications?view=jatuh-tempo', label: 'Jadwal Tagihan', icon: CalendarClock},
-      {to: '/credit-applications?view=pelunasan', label: 'Verifikasi Pelunasan', icon: FileCheck2},
-      {to: '/credit-applications?view=suspend', label: 'Kontrol Akses Agent', icon: LockKeyhole},
+      {to: '/credit-applications?view=peminjam', label: 'Kredit Berjalan', icon: CheckCircle2},
+      {to: '/credit-applications?view=jatuh-tempo', label: 'Jatuh Tempo & Tagihan', icon: CalendarClock},
+      {to: '/credit-applications?view=pelunasan', label: 'Verifikasi Pembayaran', icon: FileCheck2},
+      {to: '/credit-applications?view=suspend', label: 'Risiko & Akses Agent', icon: LockKeyhole},
     ],
   },
-  {section: 'TIM & PENGAWASAN', items: [
+  {section: 'KOORDINASI LAPANGAN', items: [
     {to: '/credit-applications?view=laporan', label: 'Penugasan Marketing', icon: BarChart3},
-    {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Marketing', icon: Users},
+    {to: '/credit-applications?view=kinerja-marketing', label: 'Performa Marketing', icon: Users},
   ]},
 ]
 
@@ -59,26 +61,26 @@ const superAdminNavigation = [
     {to: '/credit-applications', label: 'Dashboard Super Admin', icon: ShieldCheck},
   ]},
   {section: 'BISNIS APLIKASI', items: [
-    {to: '/transactions', label: 'Transaksi Pengguna', icon: Activity},
-    {to: '/products', label: 'Katalog Layanan', icon: Boxes},
-    {to: '/customers', label: 'Manajemen Pengguna', icon: Users},
+    {to: '/transactions', label: 'Monitor Transaksi User', icon: Activity},
+    {to: '/products', label: 'Kelola Produk & Harga', icon: Boxes},
+    {to: '/customers', label: 'Kelola Akun & Role', icon: Users},
   ]},
   {section: 'KEUANGAN', items: [
-    {to: '/analytics', label: 'Ringkasan Bisnis', icon: BarChart3},
-    {to: '/invoices', label: 'Arsip Pembayaran', icon: FileCheck2},
-    {to: '/payment-methods', label: 'Metode Pembayaran', icon: CreditCard},
-    {to: '/credit-applications?view=h2h', label: 'Provider H2H', icon: Landmark},
+    {to: '/analytics', label: 'Arus Keuangan', icon: BarChart3},
+    {to: '/invoices', label: 'Invoice & Refund', icon: FileCheck2},
+    {to: '/payment-methods', label: 'Kanal Pembayaran', icon: CreditCard},
+    {to: '/credit-applications?view=h2h', label: 'Saldo Provider H2H', icon: Landmark},
   ]},
   {section: 'TIM & KREDIT', items: [
-    {to: '/credit-applications?view=peminjam', label: 'Kredit Agent', icon: WalletCards},
-    {to: '/credit-applications?view=jatuh-tempo', label: 'Risiko Kredit', icon: CalendarClock},
-    {to: '/credit-applications?view=pelunasan', label: 'Rekonsiliasi Pelunasan', icon: FileCheck2},
-    {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Marketing', icon: Users},
+    {to: '/credit-applications?view=peminjam', label: 'Monitor Kredit Agent', icon: WalletCards},
+    {to: '/credit-applications?view=jatuh-tempo', label: 'Tagihan & Risiko', icon: CalendarClock},
+    {to: '/credit-applications?view=pelunasan', label: 'Audit Pelunasan', icon: FileCheck2},
+    {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Tim Lapangan', icon: Users},
   ]},
   {section: 'KEAMANAN & SISTEM', items: [
-    {to: '/credit-applications?view=transaksi-agent', label: 'Transaksi Agent', icon: Activity},
-    {to: '/credit-applications?view=helpdesk', label: 'Pusat Komplain', icon: Headphones},
-    {to: '/settings', label: 'Konfigurasi Aplikasi', icon: Settings},
+    {to: '/credit-applications?view=transaksi-agent', label: 'Log Transaksi Agent', icon: Activity},
+    {to: '/credit-applications?view=helpdesk', label: 'Tiket Komplain', icon: Headphones},
+    {to: '/settings', label: 'Pengaturan Sistem', icon: Settings},
   ]},
 ]
 
@@ -94,7 +96,7 @@ export default function Sidebar({open, onClose}) {
   const isOperator = role === 'operator' || role === 'analis'
   const isSuperAdmin = role === 'master'
   const isCreditAdmin = isOperator || role === 'admin' || role === 'master'
-  const [ownerSections, setOwnerSections] = useState({'RINGKASAN': true})
+  const [workspaceSections, setWorkspaceSections] = useState({'RINGKASAN': true, 'OPERASIONAL LAPANGAN': true, 'KEPUTUSAN KREDIT': true})
   const visibleNavigation = isMarketing ? marketingNavigation : isSuperAdmin ? superAdminNavigation : isCreditAdmin ? operatorNavigation : navigation
   const home = isMarketing || isCreditAdmin ? '/credit-applications' : '/dashboard'
   const roleLabel = role === 'master' ? 'Super Admin / Owner' : role === 'marketing' ? 'Marketing Kredit' : isOperator || role === 'admin' ? 'Operator Kredit' : 'Panel Administrator'
@@ -119,8 +121,8 @@ export default function Sidebar({open, onClose}) {
       <strong>{rolePanel.title}</strong>
       <small>Bagian aktif: {activeLabel}</small>
     </div>}
-    <nav className={`${rolePanel ? 'workspace-nav' : ''}${isSuperAdmin ? ' owner-workspace-nav' : ''}`}>{visibleNavigation.map(group => {const sectionOpen=ownerSections[group.section]??group.items.some(item=>active(item.to));return <div className={isSuperAdmin && !sectionOpen ? 'section-collapsed' : ''} key={group.section}>
-      {isSuperAdmin ? <button type="button" className="nav-section-toggle" aria-expanded={sectionOpen} onClick={() => setOwnerSections(current => ({...current, [group.section]: !sectionOpen}))}><span>{group.section}</span><ChevronDown/></button> : <p className="nav-label">{group.section}</p>}
+    <nav className={`${rolePanel ? 'workspace-nav' : ''}${isSuperAdmin ? ' owner-workspace-nav' : ''}`}>{visibleNavigation.map(group => {const sectionOpen=workspaceSections[group.section]??group.items.some(item=>active(item.to));return <div className={rolePanel && !sectionOpen ? 'section-collapsed' : ''} key={group.section}>
+      {rolePanel ? <button type="button" className="nav-section-toggle" aria-expanded={sectionOpen} onClick={() => setWorkspaceSections(current => ({...current, [group.section]: !sectionOpen}))}><span>{group.section}</span><ChevronDown/></button> : <p className="nav-label">{group.section}</p>}
       <div className="nav-section-items">{group.items.map(({to, label, icon: Icon}) => <Link className={`nav-item nav-${label.toLowerCase().replace(/[^a-z]+/g, '-')} ${active(to) ? 'active' : ''}`} to={to} key={to} onClick={onClose}>
         <Icon size={18}/><span>{label}</span>
       </Link>)}</div>
