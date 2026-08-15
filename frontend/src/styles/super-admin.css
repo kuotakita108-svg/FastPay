@@ -65,22 +65,27 @@
 
 /* Tipografi tabel staf dibuat seterang panel P24. Seluruh data memakai ukuran
    dan bobot yang konsisten; warna aksen hanya membedakan status. */
-.panel-workspace-shell:is(.role-marketing,.role-operator,.role-analis,.role-admin,.role-master) :is(.marketing-review,.operator-review,.owner-review) :is(.mentored-agent-row,.safe-log-table article,.operator-live-traffic article,.operator-ledger-table>article,.credit-report-data>article,.marketing-scoreboard-scroll>article)>:is(span,small,strong,b,code,time),.owner-system-shell :is(.transaction-table,.safe-log-table) :is(td,article)>:is(span,small,strong,b,code,time){color:#f1f7fb!important;font-size:9px!important;font-weight:700!important;line-height:1.35!important;opacity:1!important;text-shadow:0 0 1px #ffffff26}
+.panel-workspace-shell:is(.role-marketing,.role-operator,.role-analis,.role-admin,.role-master) :is(.marketing-review,.operator-review,.owner-review) :is(.mentored-agent-row,.safe-log-table article,.operator-live-traffic article,.operator-ledger-table>article,.credit-report-data>article,.marketing-scoreboard-scroll>article)>:is(span,small,strong,b,code,time),.owner-system-shell :is(.transaction-table,.safe-log-table) :is(td,article)>:is(span,small,strong,b,code,time){color:#e7eef5!important;font-size:8px!important;font-weight:500!important;line-height:1.35!important;opacity:1!important;text-shadow:none!important}
 .panel-workspace-shell:is(.role-marketing,.role-operator,.role-analis,.role-admin,.role-master) :is(.marketing-review,.operator-review,.owner-review) :is(.mentored-agent-row,.safe-log-table article,.operator-live-traffic article,.operator-ledger-table>article,.credit-report-data>article,.marketing-scoreboard-scroll>article) :is(small,code,time){color:#d9e9f3!important}
-.panel-workspace-shell:is(.role-marketing,.role-operator,.role-analis,.role-admin,.role-master) :is(.marketing-review,.operator-review,.owner-review) :is(.mentoring-stage,.h2h-status,.due-status,.contact-status),.owner-system-shell :is(.h2h-status,.status-badge){font-size:9px!important;font-weight:900!important;opacity:1!important;filter:saturate(1.35) brightness(1.2)}
+.panel-workspace-shell:is(.role-marketing,.role-operator,.role-analis,.role-admin,.role-master) :is(.marketing-review,.operator-review,.owner-review) :is(.mentoring-stage,.h2h-status,.due-status,.contact-status),.owner-system-shell :is(.h2h-status,.status-badge){font-size:8px!important;font-weight:700!important;line-height:1.35!important;opacity:1!important;filter:saturate(1.2) brightness(1.15)}
 .panel-workspace-shell:is(.role-marketing,.role-operator,.role-analis,.role-admin,.role-master) :is(.marketing-review,.operator-review,.owner-review) :is(.stage-aktif,.ledger-success,.h2h-status.success,.status-success){color:#42f0ae!important;text-shadow:0 0 8px #18d68b55}
 .panel-workspace-shell:is(.role-marketing,.role-operator,.role-analis,.role-admin,.role-master) :is(.marketing-review,.operator-review,.owner-review) :is(.ledger-danger,.h2h-status.failed,.status-failed){color:#ff7084!important;text-shadow:0 0 8px #ff526d44}
 .panel-workspace-shell:is(.role-marketing,.role-operator,.role-analis,.role-admin,.role-master) :is(.marketing-review,.operator-review,.owner-review) :is(.ledger-warning,.h2h-status.pending,.status-pending){color:#ffd066!important;text-shadow:0 0 8px #ffbf3f44}
-.panel-workspace-shell:is(.role-marketing,.role-operator,.role-analis,.role-admin,.role-master) :is(.marketing-review,.operator-review,.owner-review) :is(.mentored-agent-columns,.operator-ledger-head,.operator-traffic-head,.safe-log-table>div:first-child,.credit-report-columns)>span,.owner-system-shell .transaction-table th{color:#f3f9fd!important;font-size:9px!important;font-weight:900!important;line-height:1.35!important;opacity:1!important}
+.panel-workspace-shell:is(.role-marketing,.role-operator,.role-analis,.role-admin,.role-master) :is(.marketing-review,.operator-review,.owner-review) :is(.mentored-agent-columns,.operator-ledger-head,.operator-traffic-head,.safe-log-table>div:first-child,.credit-report-columns)>span,.owner-system-shell .transaction-table th{color:#dce8f2!important;font-size:8px!important;font-weight:700!important;line-height:1.35!important;letter-spacing:0!important;opacity:1!important}
 
 /* Nilai yang ditulis langsung di sel tabel juga harus mengikuti kontras yang
    sama. Status tetap memakai hijau/merah/kuning agar cepat dipindai. */
 .panel-workspace-shell:is(.role-marketing,.role-operator,.role-analis,.role-admin,.role-master) :is(.marketing-review,.operator-review,.owner-review) :is(.mentored-agent-row,.safe-log-table article,.operator-live-traffic article,.operator-ledger-table>article,.credit-report-data>article,.marketing-scoreboard-scroll>article)>:is(span,small,strong,b,code,time):not(.mentoring-stage),
 .owner-system-shell .transaction-table td{
-  color:#f1f7fb!important;
-  font-size:9px!important;
-  font-weight:700!important;
+  color:#e7eef5!important;
+  font-size:8px!important;
+  font-weight:500!important;
   line-height:1.35!important;
   opacity:1!important;
 }
-.panel-workspace-shell:is(.role-marketing,.role-operator,.role-analis,.role-admin,.role-master) :is(.marketing-review,.operator-review,.owner-review) :is(.mentored-agent-row,.safe-log-table article,.operator-live-traffic article,.operator-ledger-table>article,.credit-report-data>article,.marketing-scoreboard-scroll>article)>em:not(.h2h-status){color:#f1f7fb!important;font-size:9px!important;font-weight:700!important;opacity:1!important}
+.panel-workspace-shell:is(.role-marketing,.role-operator,.role-analis,.role-admin,.role-master) :is(.marketing-review,.operator-review,.owner-review) :is(.mentored-agent-row,.safe-log-table article,.operator-live-traffic article,.operator-ledger-table>article,.credit-report-data>article,.marketing-scoreboard-scroll>article)>em:not(.h2h-status){color:#e7eef5!important;font-size:8px!important;font-weight:500!important;opacity:1!important}
+
+/* Ritme baris mengikuti ledger H2H: ringkas, rata tengah, dan setiap kolom
+   tetap mudah dipindai walaupun jumlah transaksi sudah banyak. */
+.panel-workspace-shell:is(.role-marketing,.role-operator,.role-analis,.role-admin,.role-master) :is(.marketing-review,.operator-review,.owner-review) :is(.mentored-agent-row,.safe-log-table article,.operator-live-traffic article,.operator-ledger-table>article,.credit-report-data>article){min-height:42px!important;align-items:center!important}
+.owner-system-shell .transaction-table :is(th,td){height:42px!important;padding-block:8px!important;vertical-align:middle!important;white-space:nowrap!important}
