@@ -329,7 +329,7 @@ export default function CreditApplicationsPage() {
     window.scrollTo({top: 0, behavior: 'smooth'})
   }
   useEffect(() => {
-    if (!isMarketing && !isAdmin) return
+    if (!isMarketing && !isOperator && !isAdmin) return
     let active = true
     setManagedAgentsLoading(true)
     listManagedAgents().then(rows => {
@@ -340,7 +340,7 @@ export default function CreditApplicationsPage() {
       if (active) setManagedAgentsLoading(false)
     })
     return () => { active = false }
-  }, [isMarketing, isAdmin, managedAgentsRefresh])
+  }, [isMarketing, isOperator, isAdmin, managedAgentsRefresh])
   useEffect(() => {
     if (isOwner && ['agent-input', 'input', 'verifikasi', 'limit', 'suspend', 'marketing-input', 'laporan'].includes(view)) {
       setSearchParams({})
@@ -359,16 +359,27 @@ export default function CreditApplicationsPage() {
   // Used immediately after a local UI action. The periodic server refresh below
   // replaces this short-lived cache with the saved server response.
   const refresh = () => setItems(readAll())
-  const refreshRemote = () => request('/agent-credit/applications').then(remote => {
+  const refreshRemote = async () => {
+    let remote = await request('/agent-credit/applications')
     if (!Array.isArray(remote)) return
+    // Migrasi aman untuk pengajuan lama yang dahulu hanya tersimpan pada
+    // browser pembuatnya. Hanya ID yang benar-benar belum ada di server yang
+    // dikirim, sehingga data server dari perangkat lain tidak pernah ditimpa.
+    const remoteIds = new Set(remote.map(item => item?.id).filter(Boolean))
+    const missingLocal = readAll().filter(item => item?.id && !remoteIds.has(item.id))
+    if (missingLocal.length) {
+      await Promise.all(missingLocal.map(item => request(`/agent-credit/applications/${encodeURIComponent(item.id)}`, {
+        method: 'PUT',
+        body: JSON.stringify(item),
+      }).catch(() => null)))
+      remote = await request('/agent-credit/applications')
+      if (!Array.isArray(remote)) return
+    }
     // Server data wins. This prevents stale browser cache from overwriting
     // signatures, documents, status and repayments from other users.
     const nextItems = remote.map(normalizeApplication)
     setItems(current => JSON.stringify(current) === JSON.stringify(nextItems) ? current : nextItems)
-  }).catch(() => {
-    const cached = readAll()
-    setItems(current => JSON.stringify(current) === JSON.stringify(cached) ? current : cached)
-  })
+  }
 
   useEffect(() => {
     let active = true
@@ -381,7 +392,10 @@ export default function CreditApplicationsPage() {
     const sync = async () => {
       if (!active || inFlight || document.hidden) return schedule(45000)
       inFlight = true
-      try { await refreshRemote() } finally {
+      try { await refreshRemote() } catch {
+        const cached = readAll()
+        setItems(current => JSON.stringify(current) === JSON.stringify(cached) ? current : cached)
+      } finally {
         inFlight = false
         schedule(45000)
       }
