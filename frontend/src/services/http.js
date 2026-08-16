@@ -1,4 +1,5 @@
 import {env} from '../config/env'
+import {readTabSession} from '../utils/tabSession'
 
 const responseCache=new Map()
 const pendingRequests=new Map()
@@ -20,7 +21,7 @@ async function fetchJSON(url,fetchOptions,token,timeoutMs){
 
 export async function request(path,options={}){
   let token=''
-  try{token=JSON.parse(sessionStorage.getItem('kuotakita_session'))?.token||''}catch{/* belum login */}
+  try{token=readTabSession()?.token||''}catch{/* belum login */}
   const url=new URL(`${env.apiURL}${path}`,window.location.origin).toString()
   const {timeoutMs=12000,noCache=false,...fetchOptions}=options
   const method=(fetchOptions.method||'GET').toUpperCase()

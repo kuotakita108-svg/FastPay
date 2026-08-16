@@ -1,5 +1,6 @@
 import {request} from './http'
-const session=()=>{try{return JSON.parse(sessionStorage.getItem('kuotakita_session'))}catch{return null}}
+import {readTabSession} from '../utils/tabSession'
+const session=()=>readTabSession()
 const isUser=()=>session()?.user?.role==='user'
 const path=()=>isUser()?'/me/transactions':'/transactions'
 export const getTransactions=()=>request(path())
