@@ -28,22 +28,22 @@ const marketingNavigation = [
 
 const operatorNavigation = [
   {
-    section: 'PENGAJUAN MODAL',
+    section: 'OPERASIONAL KEMITRAAN',
     items: [
-      {to: '/credit-applications', label: 'Dashboard Operasional', icon: ShieldCheck},
-      {to: '/credit-applications?view=verifikasi', label: 'Antrean Pengajuan', icon: ClipboardCheck},
+      {to: '/credit-applications', label: 'Pusat Kendali', icon: ShieldCheck},
+      {to: '/credit-applications?view=verifikasi', label: 'Verifikasi Pengajuan', icon: ClipboardCheck},
     ],
   },
   {
-    section: 'AGENT & MODAL',
+    section: 'PENGAWASAN AGENT',
     items: [
-      {to: '/credit-applications?view=peminjam', label: 'Monitoring Agent', icon: CheckCircle2},
-      {to: '/credit-applications?view=suspend', label: 'Kontrol Kemitraan', icon: LockKeyhole},
+      {to: '/credit-applications?view=peminjam', label: 'Portofolio Agent', icon: CheckCircle2},
+      {to: '/credit-applications?view=suspend', label: 'Status & Risiko', icon: LockKeyhole},
     ],
   },
-  {section: 'KOORDINASI LAPANGAN', items: [
-    {to: '/credit-applications?view=laporan', label: 'Instruksi Follow-up', icon: PhoneCall},
-    {to: '/credit-applications?view=kinerja-marketing', label: 'Performa Marketing', icon: Users},
+  {section: 'KOORDINASI TIM', items: [
+    {to: '/credit-applications?view=laporan', label: 'Penugasan Lapangan', icon: PhoneCall},
+    {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Marketing', icon: Users},
   ]},
 ]
 
