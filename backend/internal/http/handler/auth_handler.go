@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"io"
 	"kuotakita/backend/internal/config"
 	"kuotakita/backend/internal/domain"
@@ -101,6 +102,24 @@ func (h *AuthHandler) ManagedAgents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.JSON(w, http.StatusOK, users)
+}
+
+func (h *AuthHandler) UpdateAgentFollowUp(w http.ResponseWriter, r *http.Request) {
+	var in domain.AgentFollowUpInput
+	if json.NewDecoder(r.Body).Decode(&in) != nil {
+		response.Error(w, http.StatusBadRequest, "hasil follow-up tidak valid")
+		return
+	}
+	item, err := h.service.UpdateAgentFollowUp(r.Header.Get("Authorization"), r.PathValue("id"), in)
+	if err != nil {
+		status := http.StatusUnprocessableEntity
+		if errors.Is(err, service.ErrForbidden) {
+			status = http.StatusForbidden
+		}
+		response.Error(w, status, err.Error())
+		return
+	}
+	response.JSON(w, http.StatusOK, item)
 }
 
 func (h *AuthHandler) CreateDownline(w http.ResponseWriter, r *http.Request) {

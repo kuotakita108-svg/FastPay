@@ -85,7 +85,7 @@ export default function App(){
  },[location.pathname])
  return <Suspense fallback={<RouteLoading/>}><Routes location={backgroundLocation||location}>
  <Route path="/login" element={<LoginPage/>}/>
- <Route path="/marketing" element={<Marketing><MarketingAppPage/></Marketing>}/>
+ <Route path="/marketing" element={<Marketing><Navigate to="/app" replace/></Marketing>}/>
  <Route path="/app" element={<User><UserHomePage/></User>}/>
  <Route path="/app/buy/:type" element={<User><ServicePurchasePage/></User>}/>
  <Route path="/app/checkout" element={<User><CheckoutPage/></User>}/>

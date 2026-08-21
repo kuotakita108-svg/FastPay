@@ -45,6 +45,24 @@ type storedUser struct {
 	CreatedAt             time.Time `json:"created_at"`
 	ManagedByID           string    `json:"managed_by_id,omitempty"`
 	ManagedByName         string    `json:"managed_by_name,omitempty"`
+	LastTransactionAt     time.Time `json:"last_transaction_at,omitempty"`
+	PartnershipStatus     string    `json:"partnership_status,omitempty"`
+	FollowUpStatus        string    `json:"follow_up_status,omitempty"`
+	FollowUpNote          string    `json:"follow_up_note,omitempty"`
+	FollowUpUpdatedAt     time.Time `json:"follow_up_updated_at,omitempty"`
+}
+
+// ManagerForUser returns the field Marketing that registered an Agent. It is
+// only used by trusted backend workflows and exposes no financial data.
+func (s *AuthService) ManagerForUser(userID string) (string, string) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	for _, account := range s.users {
+		if account.ID == userID {
+			return account.ManagedByID, account.ManagedByName
+		}
+	}
+	return "", ""
 }
 
 type accountFile struct {
@@ -249,7 +267,13 @@ func (s *AuthService) ManagedDownlines(token string) ([]domain.User, error) {
 		if role == "agent" && account.Role != "user" {
 			continue
 		}
-		result = append(result, account.User)
+		user := account.User
+		// Marketing may monitor identity and activity only. Never serialize an
+		// Agent wallet balance through the field-team endpoint.
+		if role == "marketing" {
+			user.Balance = 0
+		}
+		result = append(result, user)
 	}
 	sort.Slice(result, func(i, j int) bool { return result[i].Name < result[j].Name })
 	return result, nil
@@ -257,7 +281,7 @@ func (s *AuthService) ManagedDownlines(token string) ([]domain.User, error) {
 
 // ManagedAgents is the authoritative picker used by Marketing when creating a
 // credit application. Marketing sees only accounts it registered.
-func (s *AuthService) ManagedAgents(token string) ([]domain.User, error) {
+func (s *AuthService) ManagedAgents(token string) ([]domain.AgentSummary, error) {
 	ownerID, role, err := s.session(token)
 	if err != nil {
 		return nil, err
@@ -267,7 +291,7 @@ func (s *AuthService) ManagedAgents(token string) ([]domain.User, error) {
 	}
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	result := make([]domain.User, 0)
+	result := make([]domain.AgentSummary, 0)
 	for _, account := range s.users {
 		if account.Role != "agent" {
 			continue
@@ -275,10 +299,93 @@ func (s *AuthService) ManagedAgents(token string) ([]domain.User, error) {
 		if role == "marketing" && account.ManagedByID != ownerID {
 			continue
 		}
-		result = append(result, account.User)
+		result = append(result, agentSummary(account, role != "marketing"))
 	}
 	sort.Slice(result, func(i, j int) bool { return result[i].Name < result[j].Name })
 	return result, nil
+}
+
+func agentSummary(account storedUser, includeFinance bool) domain.AgentSummary {
+	now := time.Now().In(time.Local)
+	status, inactiveDays := "NO_TRANSACTION", 0
+	last := ""
+	if !account.LastTransactionAt.IsZero() {
+		last = account.LastTransactionAt.UTC().Format(time.RFC3339)
+		startNow := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		localLast := account.LastTransactionAt.In(now.Location())
+		startLast := time.Date(localLast.Year(), localLast.Month(), localLast.Day(), 0, 0, 0, 0, now.Location())
+		inactiveDays = int(startNow.Sub(startLast).Hours() / 24)
+		if inactiveDays < 0 {
+			inactiveDays = 0
+		}
+		if inactiveDays <= 1 {
+			status = "ACTIVE"
+		} else {
+			status = "NEED_FOLLOW_UP"
+		}
+	}
+	if account.PartnershipStatus == "PARTNERSHIP_ENDED" {
+		status = "PARTNERSHIP_ENDED"
+	}
+	row := domain.AgentSummary{ID: account.ID, Username: account.Username, Name: account.Name, Role: account.Role, Phone: account.Phone, Email: account.Email, StoreName: account.StoreName, Province: account.Province, City: account.City, District: account.District, MarketingID: account.ManagedByID, MarketingName: account.ManagedByName, CreatedAt: account.CreatedAt.UTC().Format(time.RFC3339), LastTransactionAt: last, InactiveDays: inactiveDays, ActivityStatus: status, PartnershipStatus: account.PartnershipStatus, FollowUpStatus: account.FollowUpStatus, FollowUpNote: account.FollowUpNote}
+	if !account.FollowUpUpdatedAt.IsZero() {
+		row.FollowUpUpdatedAt = account.FollowUpUpdatedAt.UTC().Format(time.RFC3339)
+	}
+	if includeFinance {
+		balance := account.Balance
+		row.Balance = &balance
+	}
+	return row
+}
+
+// RecordSuccessfulTransaction updates operational activity without exposing
+// transaction amount or product details to Marketing.
+func (s *AuthService) RecordSuccessfulTransaction(userID string, at time.Time) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for key, account := range s.users {
+		if account.ID != userID {
+			continue
+		}
+		if at.After(account.LastTransactionAt) {
+			account.LastTransactionAt = at
+		}
+		s.users[key] = account
+		return s.saveLocked()
+	}
+	return errors.New("akun agent tidak ditemukan")
+}
+
+func (s *AuthService) UpdateAgentFollowUp(token, agentID string, in domain.AgentFollowUpInput) (domain.AgentSummary, error) {
+	actorID, role, err := s.session(token)
+	if err != nil {
+		return domain.AgentSummary{}, err
+	}
+	if role != "marketing" && role != "operator" && role != "analis" && role != "admin" && role != "master" {
+		return domain.AgentSummary{}, fmt.Errorf("%w: akun tidak dapat memperbarui follow-up", ErrForbidden)
+	}
+	allowed := map[string]bool{"CONTACTED": true, "UNREACHABLE": true, "VISITED": true, "WILL_CONTINUE": true, "WANTS_TO_STOP": true}
+	status := strings.ToUpper(strings.TrimSpace(in.Status))
+	if !allowed[status] {
+		return domain.AgentSummary{}, errors.New("status follow-up tidak valid")
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for key, account := range s.users {
+		if account.ID != strings.TrimSpace(agentID) || account.Role != "agent" {
+			continue
+		}
+		if role == "marketing" && account.ManagedByID != actorID {
+			return domain.AgentSummary{}, fmt.Errorf("%w: agent bukan binaan Marketing ini", ErrForbidden)
+		}
+		account.FollowUpStatus, account.FollowUpNote, account.FollowUpUpdatedAt = status, strings.TrimSpace(in.Note), time.Now().UTC()
+		s.users[key] = account
+		if err := s.saveLocked(); err != nil {
+			return domain.AgentSummary{}, errors.New("hasil follow-up belum dapat disimpan")
+		}
+		return agentSummary(account, role != "marketing"), nil
+	}
+	return domain.AgentSummary{}, errors.New("agent tidak ditemukan")
 }
 
 // AllAccounts is the owner directory. It is deliberately separate from the

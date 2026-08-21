@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"kuotakita/backend/internal/domain"
 	"path/filepath"
 	"testing"
@@ -15,7 +16,7 @@ func TestBlocksNewCredit(t *testing.T) {
 		{"pending application", map[string]any{"status": "Menunggu verifikasi marketing", "creditStatus": "Menunggu keputusan"}, true},
 		{"approved active credit", map[string]any{"status": "Disetujui", "paymentStatus": "Belum lunas"}, true},
 		{"rejected application", map[string]any{"status": "Ditolak"}, false},
-		{"fully paid credit", map[string]any{"status": "Disetujui", "paymentStatus": "Lunas"}, false},
+		{"ended partnership can apply again", map[string]any{"status": "Disetujui", "partnershipStatus": "PARTNERSHIP_ENDED"}, false},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -26,35 +27,95 @@ func TestBlocksNewCredit(t *testing.T) {
 	}
 }
 
-func TestMarketingApplicationBelongsToSelectedAgent(t *testing.T) {
+func TestMarketingCannotAccessCapitalApplications(t *testing.T) {
 	auth := newAuthService("test-secret", "", nil, []AccountSeed{{Username: "marketing-test", Password: "marketing-secret", Name: "Marketing Test", Role: "marketing"}})
 	marketing, err := auth.Login("marketing-test", "marketing-secret")
 	if err != nil {
 		t.Fatal(err)
 	}
-	agent, err := auth.CreateAgent("Bearer "+marketing.Token, domain.RegisterInput{Name: "Agent Terpilih", Username: "agent-terpilih", StoreName: "Toko Terpilih", Phone: "081234567890", Password: "agent-secret"})
+	_, err = auth.CreateAgent("Bearer "+marketing.Token, domain.RegisterInput{Name: "Agent Terpilih", Username: "agent-terpilih", StoreName: "Toko Terpilih", Phone: "081234567890", Password: "agent-secret"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	credit := NewCreditService(filepath.Join(t.TempDir(), "credit.json"), auth)
-	_, err = credit.Save("Bearer "+marketing.Token, map[string]any{
-		"id": "KSA-TEST-1", "userId": agent.ID, "status": "Menunggu verifikasi marketing",
-		"form":           map[string]any{"agentName": "Nama Palsu", "storeName": "Toko Palsu", "amount": 500000},
-		"agentSignature": map[string]any{"name": agent.Name, "image": "data:image/png;base64,test"},
+	_, err = credit.Save("Bearer "+marketing.Token, map[string]any{"id": "KSA-TEST-1", "form": map[string]any{"amount": 500000}})
+	if !errors.Is(err, ErrForbidden) {
+		t.Fatalf("Marketing Save error = %v, want ErrForbidden", err)
+	}
+	_, err = credit.List("Bearer " + marketing.Token)
+	if !errors.Is(err, ErrForbidden) {
+		t.Fatalf("Marketing List error = %v, want ErrForbidden", err)
+	}
+}
+
+func TestOperatorApprovalDisbursesMainBalanceExactlyOnce(t *testing.T) {
+	auth := newAuthService("test-secret", "", nil, []AccountSeed{
+		{Username: "marketing-test", Password: "marketing-secret", Name: "Marketing Test", Role: "marketing"},
+		{Username: "operator-test", Password: "operator-secret", Name: "Operator Test", Role: "operator"},
 	})
+	marketing, _ := auth.Login("marketing-test", "marketing-secret")
+	_, err := auth.CreateAgent("Bearer "+marketing.Token, domain.RegisterInput{Name: "Agent Modal", Username: "agent-modal", StoreName: "Toko Modal", Phone: "081234567890", Password: "agent-secret"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	agentLogin, err := auth.Login("agent-terpilih", "agent-secret")
+	agent, _ := auth.Login("agent-modal", "agent-secret")
+	operator, _ := auth.Login("operator-test", "operator-secret")
+	credit := NewCreditService(filepath.Join(t.TempDir(), "credit.json"), auth)
+	created, err := credit.Save("Bearer "+agent.Token, map[string]any{"id": "KSA-DIRECT-1", "status": "Disetujui", "form": map[string]any{"amount": 500000}})
 	if err != nil {
 		t.Fatal(err)
 	}
-	rows, err := credit.List("Bearer " + agentLogin.Token)
-	if err != nil || len(rows) != 1 {
-		t.Fatalf("pengajuan tidak tampil pada panel agent: rows=%d err=%v", len(rows), err)
+	if created["status"] != "Menunggu keputusan operator" {
+		t.Fatalf("new status = %v", created["status"])
 	}
-	form := rows[0]["form"].(map[string]any)
-	if rows[0]["userId"] != agent.ID || form["agentName"] != agent.Name || form["storeName"] != agent.StoreName {
-		t.Fatalf("identitas agent tidak dikunci dari server: %#v", rows[0])
+	created["status"] = "Disetujui"
+	approved, err := credit.Save("Bearer "+operator.Token, created)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if approved["capitalOutstanding"] != float64(500000) {
+		t.Fatalf("capital outstanding = %#v", approved["capitalOutstanding"])
+	}
+	current, _ := auth.CurrentUser("Bearer " + agent.Token)
+	if current.Balance != 500000 {
+		t.Fatalf("balance after approval = %d", current.Balance)
+	}
+	if _, err = credit.Save("Bearer "+operator.Token, approved); err != nil {
+		t.Fatal(err)
+	}
+	current, _ = auth.CurrentUser("Bearer " + agent.Token)
+	if current.Balance != 500000 {
+		t.Fatalf("duplicate approval changed balance to %d", current.Balance)
+	}
+}
+
+func TestMarketingAgentScopeHidesFinanceAndRejectsCrossOwnership(t *testing.T) {
+	auth := newAuthService("test-secret", "", nil, []AccountSeed{
+		{Username: "marketing-one", Password: "marketing-secret", Name: "Marketing One", Role: "marketing"},
+		{Username: "marketing-two", Password: "marketing-secret", Name: "Marketing Two", Role: "marketing"},
+	})
+	one, _ := auth.Login("marketing-one", "marketing-secret")
+	two, _ := auth.Login("marketing-two", "marketing-secret")
+	agentOne, err := auth.CreateAgent("Bearer "+one.Token, domain.RegisterInput{Name: "Agent One", Username: "agent-one", StoreName: "Toko One", Phone: "081111111111", Password: "agent-secret"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	agentTwo, err := auth.CreateAgent("Bearer "+two.Token, domain.RegisterInput{Name: "Agent Two", Username: "agent-two", StoreName: "Toko Two", Phone: "082222222222", Password: "agent-secret"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows, err := auth.ManagedAgents("Bearer " + one.Token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rows) != 1 || rows[0].ID != agentOne.ID {
+		t.Fatalf("marketing received agents outside ownership: %#v", rows)
+	}
+	if rows[0].Balance != nil {
+		t.Fatal("marketing response exposed agent balance")
+	}
+	_, err = auth.UpdateAgentFollowUp("Bearer "+one.Token, agentTwo.ID, domain.AgentFollowUpInput{Status: "CONTACTED"})
+	if !errors.Is(err, ErrForbidden) {
+		t.Fatalf("cross-marketing follow-up error = %v, want ErrForbidden", err)
 	}
 }

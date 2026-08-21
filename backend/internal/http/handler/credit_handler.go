@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"kuotakita/backend/internal/http/response"
 	"kuotakita/backend/internal/service"
 	"net/http"
@@ -16,7 +17,11 @@ func NewCreditHandler(service *service.CreditService) *CreditHandler {
 func (h *CreditHandler) List(w http.ResponseWriter, r *http.Request) {
 	items, err := h.service.List(r.Header.Get("Authorization"))
 	if err != nil {
-		response.Error(w, http.StatusUnauthorized, err.Error())
+		status := http.StatusUnauthorized
+		if errors.Is(err, service.ErrForbidden) {
+			status = http.StatusForbidden
+		}
+		response.Error(w, status, err.Error())
 		return
 	}
 	response.JSON(w, http.StatusOK, items)
@@ -30,7 +35,11 @@ func (h *CreditHandler) Save(w http.ResponseWriter, r *http.Request) {
 	}
 	item, err := h.service.Save(r.Header.Get("Authorization"), input)
 	if err != nil {
-		response.Error(w, http.StatusUnauthorized, err.Error())
+		status := http.StatusUnauthorized
+		if errors.Is(err, service.ErrForbidden) {
+			status = http.StatusForbidden
+		}
+		response.Error(w, status, err.Error())
 		return
 	}
 	response.JSON(w, http.StatusOK, item)

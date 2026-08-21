@@ -11,6 +11,7 @@ import MarketingAccountForm from '../components/credit/MarketingAccountForm'
 import SuperAdminOverview from '../components/credit/SuperAdminOverview'
 import {getPulsa24Balance, getPulsa24Operations, refundPulsa24Order} from '../services/transactionService'
 import {listManagedAgents} from '../services/authService'
+import OperatorCapitalConsole from './OperatorCapitalConsole'
 
 const allKey = 'kuotakita_agent_credit_all'
 const userKey = userId => `kuotakita_agent_credit_${userId || 'guest'}`
@@ -522,28 +523,14 @@ export default function CreditApplicationsPage() {
       decisionHistory: [{status, note: decisionNote.trim(), by: reviewerName(user), at: decisionAt}, ...(item.decisionHistory || [])],
     }
     if (status === 'Disetujui') Object.assign(changes, {
-      creditLimit: profile.limit,
-      creditTier: profile.name,
-      creditBadge: profile.badge,
-      automaticCreditLimit: profile.automatic.limit,
-      automaticCreditTier: profile.automatic.name,
-      paidCreditCycles: profile.settledCount,
-      creditLimitSource: profile.source,
-      // Credit is a separate wallet. A new approved agent gets usable credit
-      // up to the approved limit; debt only grows when a transaction actually
-      // consumes that wallet after Saldo Utama is empty.
-      creditOriginalAmount: amount,
-      creditBalance: profile.limit,
-      creditOutstanding: 0,
-      creditStatus: 'Aktif',
-      paymentStatus: 'Tidak ada tagihan',
-      repayments: [],
-      // Kredit agent bukan cicilan. Satu tagihan penuh jatuh tempo 14 hari
-      // setelah Operator menerima pengajuan.
-      dueAt: new Date(Date.now() + (14 * 24 * 60 * 60 * 1000)).toISOString(),
+      capitalLimit: profile.limit,
+      approvedCapital: amount,
+      capitalOutstanding: amount,
+      capitalStatus: 'Aktif',
+      partnershipStatus: 'ACTIVE',
     })
-    if (status === 'Perlu Revisi Marketing') Object.assign(changes, {revisionRequestedAt: decisionAt, revisionNote: decisionNote.trim(), creditStatus: 'Perlu revisi'})
-    if (status === 'Ditolak Permanen') Object.assign(changes, {blacklistedAt: decisionAt, blacklistedBy: reviewerName(user), blacklistReason: decisionNote.trim(), agentAccessStatus: 'suspended', creditStatus: 'Ditolak permanen'})
+    if (status === 'Perlu Revisi Agent') Object.assign(changes, {revisionRequestedAt: decisionAt, revisionNote: decisionNote.trim(), capitalStatus: 'Perlu revisi'})
+    if (status === 'Ditolak Permanen') Object.assign(changes, {blacklistedAt: decisionAt, blacklistedBy: reviewerName(user), blacklistReason: decisionNote.trim(), agentAccessStatus: 'suspended', capitalStatus: 'Ditolak permanen'})
     saveApplication(item, changes)
     setDecisionNote('')
     refresh()
@@ -1108,6 +1095,8 @@ export default function CreditApplicationsPage() {
     win.document.write(`<!doctype html><html><head><title>${esc(order.RefID)}</title><style>body{font-family:Arial,sans-serif;max-width:620px;margin:32px auto;color:#172033}h1{font-size:22px;margin:0 0 5px}.sub{color:#6b7688;margin:0 0 22px}.row{display:flex;justify-content:space-between;gap:20px;border-bottom:1px solid #e3e8ef;padding:11px 0}.row span{color:#6b7688}.row b{text-align:right}.ok{color:#087c58}.fail{color:#c84231}</style></head><body><h1>KuotaKita · Transaksi H2H</h1><p class="sub">Bukti transaksi melalui Pulsa24Jam</p><div class="row"><span>Ref ID</span><b>${esc(order.RefID)}</b></div><div class="row"><span>Waktu</span><b>${esc(dateTime(order.CreatedAt))}</b></div><div class="row"><span>Produk</span><b>${esc(order.Product || '-')}</b></div><div class="row"><span>Tujuan</span><b>${esc(order.Destination || '-')}</b></div><div class="row"><span>Nominal</span><b>${esc(rupiah(order.Amount || 0))}</b></div><div class="row"><span>Status</span><b class="${order.Status === 'success' ? 'ok' : 'fail'}">${esc(status)}</b></div><div class="row"><span>SN / Referensi</span><b>${esc(order.SN || '-')}</b></div><script>window.print()</script></body></html>`)
     win.document.close()
   }
+
+  if (isOperator) return <OperatorCapitalConsole/>
 
   return <>
     <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''} ${isMarketing ? 'marketing-review' : ''} ${(isOperator || isAdmin) ? 'analyst-review operator-review' : ''} ${isOwner ? 'owner-review' : ''}`}>

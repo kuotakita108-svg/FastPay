@@ -310,45 +310,19 @@ func (h *UserTransactionHandler) chargeFunds(token string, current domain.User, 
 	if current.H2HDirect {
 		return current, 0, 0, nil
 	}
-	mainUsed := amount
-	if current.Balance < mainUsed {
-		mainUsed = current.Balance
+	if amount <= 0 || current.Balance < amount {
+		return current, 0, 0, fmt.Errorf("saldo utama tidak mencukupi")
 	}
-	if mainUsed < 0 {
-		mainUsed = 0
+	user, err := h.auth.ChangeBalance(token, -amount)
+	if err != nil {
+		return current, 0, 0, err
 	}
-	creditUsed := amount - mainUsed
-	if creditUsed > 0 {
-		if current.Role != "agent" {
-			return current, 0, 0, fmt.Errorf("saldo utama tidak mencukupi")
-		}
-		if h.credit == nil {
-			return current, 0, 0, fmt.Errorf("saldo utama tidak mencukupi")
-		}
-		if _, err := h.credit.SpendAvailableCredit(token, creditUsed); err != nil {
-			return current, 0, 0, err
-		}
-	}
-	user := current
-	if mainUsed > 0 {
-		var err error
-		user, err = h.auth.ChangeBalance(token, -mainUsed)
-		if err != nil {
-			if creditUsed > 0 {
-				_ = h.credit.RestoreAvailableCredit(current.ID, creditUsed)
-			}
-			return current, 0, 0, err
-		}
-	}
-	return user, mainUsed, creditUsed, nil
+	return user, amount, 0, nil
 }
 
 func (h *UserTransactionHandler) restoreFunds(userID string, mainUsed, creditUsed int64) {
 	if mainUsed > 0 {
 		_, _ = h.auth.ChangeBalanceByUserID(userID, mainUsed)
-	}
-	if creditUsed > 0 && h.credit != nil {
-		_ = h.credit.RestoreAvailableCredit(userID, creditUsed)
 	}
 }
 
@@ -407,6 +381,7 @@ func (h *UserTransactionHandler) finalizePulsa24(refID string, result service.Pu
 	switch result.Status {
 	case "success":
 		status = "Berhasil"
+		_ = h.auth.RecordSuccessfulTransaction(order.UserID, time.Now().UTC())
 	case "failed":
 		status = "Gagal"
 		if refund, shouldRefund, refundErr := h.pulsa24.RefundOnce(refID); refundErr == nil && shouldRefund {

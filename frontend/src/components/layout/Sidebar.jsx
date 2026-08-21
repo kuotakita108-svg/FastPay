@@ -7,51 +7,42 @@ import {initials} from '../../utils/name'
 
 const marketingNavigation = [
   {
-    section: 'OPERASIONAL LAPANGAN',
+    section: 'AGENT BINAAN',
     items: [
       {to: '/credit-applications', label: 'Ringkasan Hari Ini', icon: WalletCards},
       {to: '/credit-applications?view=agent-input', label: 'Daftarkan Agent', icon: UserPlus},
-      {to: '/credit-applications?view=input', label: 'Buat Pengajuan Kredit', icon: ClipboardCheck},
+      {to: '/credit-applications?view=peminjam', label: 'Agent Saya', icon: Users},
     ],
   },
   {
-    section: 'SURVEI & VALIDASI',
+    section: 'AKTIVITAS LAPANGAN',
     items: [
-      {to: '/credit-applications?view=verifikasi', label: 'Antrean Survei Agent', icon: Camera},
-      {to: '/credit-applications?view=agenda', label: 'Agenda Kunjungan', icon: CalendarClock},
-    ],
-  },
-  {
-    section: 'PORTOFOLIO AGENT',
-    items: [
-      {to: '/credit-applications?view=peminjam', label: 'Pantau Agent Binaan', icon: Users},
-      {to: '/credit-applications?view=kontak', label: 'Hubungi Agent', icon: PhoneCall},
+      {to: '/credit-applications?view=agenda', label: 'Perlu Follow-up', icon: CalendarClock},
+      {to: '/credit-applications?view=kontak', label: 'Hasil Follow-up', icon: PhoneCall},
     ],
   },
   {section: 'BANTUAN KERJA', items: [
-    {to: '/credit-applications?view=panduan', label: 'SOP Marketing', icon: BookOpenCheck},
+    {to: '/credit-applications?view=panduan', label: 'Panduan Onboarding', icon: BookOpenCheck},
   ]},
 ]
 
 const operatorNavigation = [
   {
-    section: 'KEPUTUSAN KREDIT',
+    section: 'PENGAJUAN MODAL',
     items: [
-      {to: '/credit-applications', label: 'Ringkasan Operasional', icon: ShieldCheck},
-      {to: '/credit-applications?view=verifikasi', label: 'Antrean Keputusan', icon: ClipboardCheck},
+      {to: '/credit-applications', label: 'Dashboard Operasional', icon: ShieldCheck},
+      {to: '/credit-applications?view=verifikasi', label: 'Antrean Pengajuan', icon: ClipboardCheck},
     ],
   },
   {
-    section: 'MONITOR KREDIT',
+    section: 'AGENT & MODAL',
     items: [
-      {to: '/credit-applications?view=peminjam', label: 'Kredit Berjalan', icon: CheckCircle2},
-      {to: '/credit-applications?view=jatuh-tempo', label: 'Jatuh Tempo & Tagihan', icon: CalendarClock},
-      {to: '/credit-applications?view=pelunasan', label: 'Verifikasi Pembayaran', icon: FileCheck2},
-      {to: '/credit-applications?view=suspend', label: 'Risiko & Akses Agent', icon: LockKeyhole},
+      {to: '/credit-applications?view=peminjam', label: 'Monitoring Agent', icon: CheckCircle2},
+      {to: '/credit-applications?view=suspend', label: 'Kontrol Kemitraan', icon: LockKeyhole},
     ],
   },
   {section: 'KOORDINASI LAPANGAN', items: [
-    {to: '/credit-applications?view=laporan', label: 'Penugasan Marketing', icon: BarChart3},
+    {to: '/credit-applications?view=laporan', label: 'Instruksi Follow-up', icon: PhoneCall},
     {to: '/credit-applications?view=kinerja-marketing', label: 'Performa Marketing', icon: Users},
   ]},
 ]
@@ -108,11 +99,11 @@ export default function Sidebar({open, onClose}) {
   }))
   const activeLabel = visibleNavigation.flatMap(group => group.items).find(item => active(item.to))?.label || (isCreditAdmin ? 'Dashboard' : 'Ringkasan Kerja')
   const rolePanel = isMarketing
-    ? {eyebrow: 'MODE MARKETING', title: 'Validasi lapangan', description: 'Daftarkan agent, lengkapi empat foto wajib, pantau agent binaan, dan kerjakan tugas Operator.'}
+    ? {eyebrow: 'MODE MARKETING', title: 'Onboarding lapangan', description: 'Daftarkan Agent dan pantau aktivitas sederhana Agent binaan tanpa akses data finansial.'}
     : isCreditAdmin
       ? isSuperAdmin
         ? {eyebrow: 'MODE SUPER ADMIN', title: 'Kontrol seluruh sistem', description: 'Pantau bisnis, keuangan, pengguna, produk, tim, provider, dan keamanan aplikasi.'}
-        : {eyebrow: 'MODE OPERATOR', title: 'Keputusan akhir kredit', description: 'Fokus memeriksa berkas, menentukan limit, memantau kredit, pelunasan, dan risiko agent.'}
+        : {eyebrow: 'MODE OPERATOR', title: 'Kontrol modal kemitraan', description: 'Periksa pengajuan langsung dari Agent dan kendalikan modal, aktivitas, serta status kemitraan.'}
       : null
 
   return <aside className={`sidebar ${open ? 'open' : ''}${rolePanel ? ' credit-sidebar' : ''}`}>

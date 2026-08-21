@@ -31,6 +31,10 @@ export async function listManagedAgents(){
   return request('/auth/agents')
 }
 
+export async function updateAgentFollowUp(id,status,note=''){
+  return request(`/auth/agents/${encodeURIComponent(id)}/follow-up`,{method:'PATCH',body:JSON.stringify({status,note})})
+}
+
 export async function createManagedDownline(profile){
   const name=String(profile.name||'').trim(),email=String(profile.email||'').toLowerCase().trim(),password=String(profile.password||''),account_type=String(profile.role||'user').toLowerCase()
   if(name.length<3||!email.includes('@')||password.length<6||!['user','agent'].includes(account_type))throw new Error('Lengkapi nama, email, role, dan password minimal 6 karakter.')

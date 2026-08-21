@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"kuotakita/backend/internal/database"
 	"os"
 	"path/filepath"
@@ -27,6 +28,10 @@ type creditFile struct {
 	Applications []map[string]any `json:"applications"`
 }
 
+// ErrForbidden marks an authenticated request that is outside the role's
+// authority. HTTP handlers translate it to 403 Forbidden.
+var ErrForbidden = errors.New("akses ditolak")
+
 func NewCreditService(path string, auth *AuthService) *CreditService {
 	return NewDatabaseCreditService(path, auth, nil)
 }
@@ -43,6 +48,9 @@ func (s *CreditService) List(token string) ([]map[string]any, error) {
 	user, err := s.auth.CurrentUser(token)
 	if err != nil {
 		return nil, err
+	}
+	if user.Role == "marketing" {
+		return nil, fmt.Errorf("%w: Marketing tidak memiliki akses data pengajuan modal", ErrForbidden)
 	}
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -73,6 +81,9 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 	if err != nil {
 		return nil, err
 	}
+	if user.Role == "marketing" {
+		return nil, fmt.Errorf("%w: pengajuan modal dibuat Agent dan diputuskan Operator", ErrForbidden)
+	}
 	id := strings.TrimSpace(stringValue(input["id"]))
 	if id == "" {
 		return nil, errors.New("id pengajuan tidak valid")
@@ -82,7 +93,7 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 	var selectedAgentStore string
 	var selectedAgentPhone string
 	var selectedAgentEmail string
-	if user.Role == "marketing" || isOperatorRole(user.Role) {
+	if isOperatorRole(user.Role) {
 		selectedAgentID = strings.TrimSpace(stringValue(input["userId"]))
 		if selectedAgentID != "" {
 			agent, resolveErr := s.auth.ResolveManagedAgent(token, selectedAgentID)
@@ -138,10 +149,10 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 		if user.Role == "agent" {
 			row["userId"] = user.ID
 			row["userName"] = user.Name
-		}
-		if user.Role == "marketing" {
-			row["marketingId"] = user.ID
-			row["marketingName"] = user.Name
+			if managerID, managerName := s.auth.ManagerForUser(user.ID); managerID != "" {
+				row["marketingId"] = managerID
+				row["marketingName"] = managerName
+			}
 		}
 	}
 	// The browser sends the complete application object. Never let a regular
@@ -149,17 +160,6 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 	// a settled payment by editing values in the browser.
 	if exists && !isOperatorRole(user.Role) {
 		protectCreditDecisionFields(row, current)
-		if user.Role == "marketing" {
-			row["marketingId"] = stringValue(current["marketingId"])
-			if row["marketingId"] == "" {
-				row["marketingId"] = user.ID
-			}
-			row["marketingName"] = user.Name
-			// Marketing can only forward a complete field survey to Operator.
-			if stringValue(row["status"]) == "Disetujui" || stringValue(row["status"]) == "Ditolak" {
-				row["status"] = current["status"]
-			}
-		}
 		if user.Role == "agent" {
 			row["userId"] = current["userId"]
 			row["userName"] = current["userName"]
@@ -176,99 +176,70 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 		delete(row, "creditBadge")
 		row["paymentStatus"] = "Belum ada tagihan"
 		row["creditStatus"] = "Menunggu keputusan"
-		if user.Role == "marketing" {
-			row["status"] = "Menunggu verifikasi marketing"
+		row["status"] = "Menunggu keputusan operator"
+	}
+
+	// Modal uses the existing Saldo Utama. On the first Operator approval the
+	// approved amount is deposited once; only its liability is tracked here.
+	shouldDisburse := exists && isOperatorRole(user.Role) &&
+		stringValue(current["status"]) != "Disetujui" && stringValue(row["status"]) == "Disetujui" &&
+		strings.TrimSpace(stringValue(current["capitalDisbursedAt"])) == ""
+	disbursedAmount := int64(0)
+	if shouldDisburse {
+		disbursedAmount = approvedCapitalAmount(row)
+		if disbursedAmount <= 0 {
+			return nil, errors.New("nominal pencairan modal harus lebih dari Rp 0")
 		}
+		ownerID := stringValue(current["_owner_id"])
+		if _, err := s.auth.ChangeBalanceByUserID(ownerID, disbursedAmount); err != nil {
+			return nil, fmt.Errorf("pencairan ke saldo utama gagal: %w", err)
+		}
+		row["capitalOutstanding"] = disbursedAmount
+		row["capitalOriginalAmount"] = disbursedAmount
+		row["capitalDisbursedAt"] = time.Now().UTC().Format(time.RFC3339)
+		row["capitalDisbursedBy"] = user.Name
+		delete(row, "creditBalance")
+		delete(row, "creditOutstanding")
 	}
 	row["id"] = id
+	// Reject the old conventional-loan shape even when an outdated browser
+	// submits it. KuotaKita keeps one wallet and a separate capital liability.
+	for _, key := range []string{"creditBalance", "creditOutstanding", "dueAt", "repayments", "installments", "settledAt", "lastFullPaymentAt"} {
+		delete(row, key)
+	}
 	if strings.TrimSpace(stringValue(row["createdAt"])) == "" {
 		row["createdAt"] = time.Now().UTC().Format(time.RFC3339)
 	}
 	row["updatedAt"] = time.Now().UTC().Format(time.RFC3339)
 	s.rows[id] = row
 	if err := s.saveLocked(); err != nil {
+		if exists {
+			s.rows[id] = current
+		} else {
+			delete(s.rows, id)
+		}
+		if disbursedAmount > 0 {
+			_, _ = s.auth.ChangeBalanceByUserID(stringValue(row["_owner_id"]), -disbursedAmount)
+		}
 		return nil, errors.New("data kredit belum dapat disimpan ke server")
 	}
 	return publicCredit(row), nil
 }
 
-// SpendAvailableCredit is called by the transaction API after the agent's
-// main wallet has been exhausted. Credit balance represents remaining usable
-// capacity, while creditOutstanding represents the one bill that must be paid
-// in full at the due date.
-func (s *CreditService) SpendAvailableCredit(token string, amount int64) (int64, error) {
-	if amount <= 0 {
-		return 0, nil
-	}
-	user, err := s.auth.CurrentUser(token)
-	if err != nil {
-		return 0, err
-	}
-	if user.Role != "agent" {
-		return 0, errors.New("saldo kredit hanya tersedia untuk akun agent")
-	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	var selected map[string]any
-	for _, row := range s.rows {
-		if stringValue(row["_owner_id"]) != user.ID || stringValue(row["status"]) != "Disetujui" {
-			continue
-		}
-		if stringValue(row["paymentStatus"]) == "Lunas" || stringValue(row["agentAccessStatus"]) == "Ditangguhkan" {
-			continue
-		}
-		if selected == nil || stringValue(row["updatedAt"]) > stringValue(selected["updatedAt"]) {
-			selected = row
-		}
-	}
-	if selected == nil {
-		return 0, errors.New("saldo kredit belum aktif")
-	}
-	available := intValue(selected["creditBalance"])
-	if available < amount {
-		return 0, errors.New("saldo utama dan saldo kredit tidak mencukupi")
-	}
-	selected["creditBalance"] = available - amount
-	selected["creditOutstanding"] = intValue(selected["creditOutstanding"]) + amount
-	selected["creditStatus"] = "Digunakan"
-	selected["paymentStatus"] = "Belum lunas"
-	selected["updatedAt"] = time.Now().UTC().Format(time.RFC3339)
-	if err := s.saveLocked(); err != nil {
-		return 0, errors.New("pemakaian saldo kredit belum dapat disimpan")
-	}
-	return intValue(selected["creditBalance"]), nil
-}
-
-// RestoreAvailableCredit reverses a failed H2H transaction exactly once. The
-// caller keeps the idempotency marker with the H2H order before invoking this.
-func (s *CreditService) RestoreAvailableCredit(userID string, amount int64) error {
-	if amount <= 0 {
-		return nil
-	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	for _, row := range s.rows {
-		if stringValue(row["_owner_id"]) != userID || stringValue(row["status"]) != "Disetujui" {
-			continue
-		}
-		row["creditBalance"] = intValue(row["creditBalance"]) + amount
-		outstanding := intValue(row["creditOutstanding"]) - amount
-		if outstanding < 0 {
-			outstanding = 0
-		}
-		row["creditOutstanding"] = outstanding
-		if outstanding == 0 {
-			row["creditStatus"] = "Aktif"
-			row["paymentStatus"] = "Belum ada tagihan"
-		}
-		row["updatedAt"] = time.Now().UTC().Format(time.RFC3339)
-		return s.saveLocked()
-	}
-	return errors.New("saldo kredit agent tidak ditemukan untuk pengembalian")
-}
-
 func canWorkWithCredit(role string) bool {
-	return role == "agent" || role == "marketing" || role == "operator" || role == "analis" || role == "master" || role == "admin"
+	return role == "agent" || role == "operator" || role == "analis" || role == "master" || role == "admin"
+}
+
+func approvedCapitalAmount(row map[string]any) int64 {
+	for _, key := range []string{"approvedCapital", "capitalApproved", "capitalLimit", "creditLimit"} {
+		if amount := intValue(row[key]); amount > 0 {
+			return amount
+		}
+	}
+	if form, ok := row["form"].(map[string]any); ok {
+		return intValue(form["amount"])
+	}
+	return 0
 }
 
 func isOperatorRole(role string) bool {
@@ -279,14 +250,14 @@ func blocksNewCredit(row map[string]any) bool {
 	if stringValue(row["status"]) == "Ditolak" {
 		return false
 	}
-	return stringValue(row["paymentStatus"]) != "Lunas" && stringValue(row["creditStatus"]) != "Lunas"
+	return stringValue(row["partnershipStatus"]) != "PARTNERSHIP_ENDED"
 }
 
 func protectCreditDecisionFields(target, source map[string]any) {
 	for _, key := range []string{
 		"creditLimit", "creditTier", "creditBadge", "automaticCreditLimit", "automaticCreditTier",
 		"manualCreditLimit", "manualCreditTier", "manualCreditBadge", "manualLimitAt", "manualLimitBy",
-		"creditLimitSource", "creditBalance", "creditOutstanding", "creditOriginalAmount", "creditStatus",
+		"capitalLimit", "approvedCapital", "capitalOutstanding", "capitalOriginalAmount", "capitalStatus",
 		"dueAt", "settledAt", "decidedAt", "analysisDecision", "analisSignature", "operatorSignature",
 		"agentAccessStatus", "agentAccessReason", "agentAccessUpdatedAt",
 		"decisionHistory", "blacklistedAt", "blacklistedBy", "blacklistReason",

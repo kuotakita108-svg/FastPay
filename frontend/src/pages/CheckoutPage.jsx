@@ -114,7 +114,7 @@ export default function CheckoutPage() {
         <div><dt>Invoice</dt><dd>{result.transaction.order_number||result.transaction.id}</dd></div>
         <div><dt>Tujuan</dt><dd>{state.target}</dd></div>
         <div><dt>Status</dt><dd className={failed||expired?'refund-text':''}>{failed?'Dana dikembalikan':result.transaction.status}</dd></div>
-        {directH2H?<div><dt>Sumber dana</dt><dd>Deposit H2H Owner</dd></div>:<><div><dt>{isAgent?'Pakai saldo utama':'Bayar dengan saldo'}</dt><dd>{rupiah(result.main_used||0)}</dd></div>{isAgent&&<div><dt>Pakai saldo kredit</dt><dd>{rupiah(result.credit_used||0)}</dd></div>}</>}
+        {directH2H?<div><dt>Sumber dana</dt><dd>Deposit H2H Owner</dd></div>:<div><dt>{isAgent?'Pakai saldo utama':'Bayar dengan saldo'}</dt><dd>{rupiah(result.main_used||0)}</dd></div>}
         <div><dt>Total bayar</dt><dd className="money-text">{rupiah(state.amount)}</dd></div>
         <div><dt>Metode bayar</dt><dd>{result.funding_source||'Saldo KuotaKita'}</dd></div>
       </dl>
@@ -130,7 +130,7 @@ export default function CheckoutPage() {
       <dl className="checkout-price-box">
         <div><dt>Nominal {state.type==='pulsa'?'pulsa':'produk'}</dt><dd>{rupiah(state.nominal||state.amount)}</dd></div>
         <div><dt>Harga</dt><dd>{rupiah(state.amount)}</dd></div>
-        {directH2H?<div><dt>Sumber dana</dt><dd>Deposit H2H Owner</dd></div>:<><div><dt>{isAgent?'Pakai saldo utama':'Bayar dengan saldo'}</dt><dd>{rupiah(mainPayment)}</dd></div>{isAgent&&<div><dt>Pakai saldo kredit</dt><dd>{rupiah(creditPayment)}</dd></div>}</>}
+        {directH2H?<div><dt>Sumber dana</dt><dd>Deposit H2H Owner</dd></div>:<div><dt>{isAgent?'Pakai saldo utama':'Bayar dengan saldo'}</dt><dd>{rupiah(mainPayment)}</dd></div>}
         <div><dt>{state.providerFee?'Biaya layanan':'Fee admin'}</dt><dd>{rupiah(state.providerFee||0)}</dd></div>
         <div><dt>Total bayar</dt><dd>{rupiah(state.amount)}</dd></div>
       </dl>
