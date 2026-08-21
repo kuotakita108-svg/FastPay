@@ -1,7 +1,9 @@
 import {request} from './http'
 import {readTabSession} from '../utils/tabSession'
 const session=()=>readTabSession()
-const isUser=()=>session()?.user?.role==='user'
+// Semua akun yang memakai aplikasi mobile harus membaca transaksi miliknya
+// sendiri. Endpoint /transactions hanya untuk tabel operasional Admin.
+const isUser=()=>['user','agent','marketing'].includes(session()?.user?.role)
 const path=()=>isUser()?'/me/transactions':'/transactions'
 export const getTransactions=()=>request(path())
 export function makeReceiptNumber(prefix='PP'){return `${prefix}-${Date.now().toString().slice(-8)}-${Math.random().toString(36).slice(2,6).toUpperCase()}`}

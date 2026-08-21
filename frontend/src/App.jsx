@@ -28,6 +28,7 @@ const loadSettings=()=>import('./pages/SettingsPage')
 const loadNotFound=()=>import('./pages/NotFoundPage')
 const loadSecurity=()=>import('./pages/SecurityPage')
 const loadAccountFeature=()=>import('./pages/AccountFeaturePage')
+const loadBalanceMutations=()=>import('./pages/BalanceMutationsPage')
 const UserHomePage=lazy(loadUserHome)
 const HistoryPage=lazy(loadHistory)
 const ProfilePage=lazy(loadProfile)
@@ -53,6 +54,7 @@ const SettingsPage=lazy(loadSettings)
 const NotFoundPage=lazy(loadNotFound)
 const SecurityPage=lazy(loadSecurity)
 const AccountFeaturePage=lazy(loadAccountFeature)
+const BalanceMutationsPage=lazy(loadBalanceMutations)
 
 // Halaman awal dibuat langsung tersedia. Jangan menahan pengguna di splash screen.
 const RouteLoading=()=> <div className="route-loading" role="status" aria-label="Memuat halaman"/>
@@ -89,6 +91,7 @@ export default function App(){
  <Route path="/app/balance/send" element={<User><TransferPage/></User>}/>
  <Route path="/app/balance/withdraw" element={<User><TransferPage/></User>}/>
  <Route path="/app/profile" element={<User><ProfilePage/></User>}/>
+ <Route path="/app/profile/mutations" element={<Marketing><BalanceMutationsPage/></Marketing>}/>
  <Route path="/app/profile/security" element={<User><SecurityPage/></User>}/>
  <Route path="/app/profile/notifications" element={<User><AccountFeaturePage/></User>}/>
  <Route path="/app/profile/help" element={<User><AccountFeaturePage/></User>}/>
