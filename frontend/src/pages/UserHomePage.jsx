@@ -9,12 +9,8 @@ import MobileNav from '../components/mobile/MobileNav'
 import DashboardDiscover from '../components/mobile/DashboardDiscover'
 import { useAsync } from '../hooks/useAsync'
 import { getTransactions } from '../services/transactionService'
-import {useAuth} from '../context/AuthContext'
-import MarketingFieldHome from './MarketingFieldHome'
 
 export default function UserHomePage() {
-  const {user}=useAuth()
-  if(user?.role==='marketing') return <MarketingFieldHome/>
   return <CustomerHome/>
 }
 
