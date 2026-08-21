@@ -31,6 +31,16 @@ export async function listManagedAgents(){
   return request('/auth/agents')
 }
 
+export async function createManagedDownline(profile){
+  const name=String(profile.name||'').trim(),email=String(profile.email||'').toLowerCase().trim(),password=String(profile.password||''),account_type=String(profile.role||'user').toLowerCase()
+  if(name.length<3||!email.includes('@')||password.length<6||!['user','agent'].includes(account_type))throw new Error('Lengkapi nama, email, role, dan password minimal 6 karakter.')
+  return request('/auth/downlines',{method:'POST',body:JSON.stringify({name,email,password,account_type})})
+}
+
+export async function listManagedDownlines(){
+  return request('/auth/downlines',{noCache:true})
+}
+
 export async function createManagedMarketing(profile){
   const name=String(profile.name||'').trim(),username=String(profile.username||'').toLowerCase().trim(),phone=String(profile.phone||'').trim(),email=String(profile.email||'').toLowerCase().trim(),password=String(profile.password||'')
   if(name.length<3||username.length<3||phone.length<10||password.length<6)throw new Error('Lengkapi nama, WhatsApp, username, dan password marketing minimal 6 karakter.')

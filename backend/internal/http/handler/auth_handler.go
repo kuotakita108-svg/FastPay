@@ -103,6 +103,29 @@ func (h *AuthHandler) ManagedAgents(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, users)
 }
 
+func (h *AuthHandler) CreateDownline(w http.ResponseWriter, r *http.Request) {
+	var in domain.RegisterInput
+	if json.NewDecoder(r.Body).Decode(&in) != nil {
+		response.Error(w, http.StatusBadRequest, "data downline tidak valid")
+		return
+	}
+	user, err := h.service.CreateDownline(r.Header.Get("Authorization"), in)
+	if err != nil {
+		response.Error(w, http.StatusUnprocessableEntity, err.Error())
+		return
+	}
+	response.JSON(w, http.StatusCreated, user)
+}
+
+func (h *AuthHandler) ManagedDownlines(w http.ResponseWriter, r *http.Request) {
+	users, err := h.service.ManagedDownlines(r.Header.Get("Authorization"))
+	if err != nil {
+		response.Error(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+	response.JSON(w, http.StatusOK, users)
+}
+
 func (h *AuthHandler) Accounts(w http.ResponseWriter, r *http.Request) {
 	users, err := h.service.AllAccounts(r.Header.Get("Authorization"))
 	if err != nil {

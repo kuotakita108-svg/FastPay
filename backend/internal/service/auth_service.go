@@ -181,6 +181,74 @@ func (s *AuthService) CreateAgent(token string, in domain.RegisterInput) (domain
 	return user, nil
 }
 
+// CreateDownline creates a lightweight retail login owned by the signed-in
+// Marketing account. Privileged staff roles are deliberately rejected.
+func (s *AuthService) CreateDownline(token string, in domain.RegisterInput) (domain.User, error) {
+	creatorID, role, err := s.session(token)
+	if err != nil {
+		return domain.User{}, err
+	}
+	if role != "marketing" {
+		return domain.User{}, errors.New("hanya Marketing yang dapat menambahkan downline")
+	}
+	downlineRole := strings.ToLower(strings.TrimSpace(in.AccountType))
+	if downlineRole != "user" && downlineRole != "agent" {
+		return domain.User{}, errors.New("role downline harus User atau Agent")
+	}
+	in.Email = normalize(in.Email)
+	if !strings.Contains(in.Email, "@") {
+		return domain.User{}, errors.New("email downline tidak valid")
+	}
+	if strings.TrimSpace(in.Username) == "" {
+		base := normalize(strings.Split(in.Email, "@")[0])
+		in.Username = fmt.Sprintf("%s-%d", base, time.Now().UnixNano()%1000000)
+	}
+	if downlineRole == "agent" && strings.TrimSpace(in.StoreName) == "" {
+		in.StoreName = in.Name
+	}
+	user, err := s.createAccount(in, downlineRole)
+	if err != nil {
+		return domain.User{}, err
+	}
+	s.mu.Lock()
+	stored := s.users[user.Username]
+	stored.ManagedByID = creatorID
+	for _, account := range s.users {
+		if account.ID == creatorID {
+			stored.ManagedByName = account.Name
+			break
+		}
+	}
+	s.users[user.Username] = stored
+	err = s.saveLocked()
+	s.mu.Unlock()
+	if err != nil {
+		return domain.User{}, errors.New("jaringan downline belum dapat disimpan")
+	}
+	return user, nil
+}
+
+func (s *AuthService) ManagedDownlines(token string) ([]domain.User, error) {
+	ownerID, role, err := s.session(token)
+	if err != nil {
+		return nil, err
+	}
+	if role != "marketing" {
+		return nil, errors.New("akun tidak memiliki akses jaringan retail")
+	}
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	result := make([]domain.User, 0)
+	for _, account := range s.users {
+		if account.ManagedByID != ownerID || (account.Role != "agent" && account.Role != "user") {
+			continue
+		}
+		result = append(result, account.User)
+	}
+	sort.Slice(result, func(i, j int) bool { return result[i].Name < result[j].Name })
+	return result, nil
+}
+
 // ManagedAgents is the authoritative picker used by Marketing when creating a
 // credit application. Marketing sees only accounts it registered.
 func (s *AuthService) ManagedAgents(token string) ([]domain.User, error) {
@@ -342,7 +410,7 @@ func (s *AuthService) createAccount(in domain.RegisterInput, role string) (domai
 	in.Province = strings.TrimSpace(in.Province)
 	in.City = strings.TrimSpace(in.City)
 	in.District = strings.TrimSpace(in.District)
-	if len(in.Name) < 3 || len(in.Username) < 3 || len(in.Phone) < 10 || len(in.Password) < 6 || (in.Email != "" && !strings.Contains(in.Email, "@")) {
+	if len(in.Name) < 3 || len(in.Username) < 3 || (in.Phone != "" && len(in.Phone) < 10) || len(in.Password) < 6 || (in.Email != "" && !strings.Contains(in.Email, "@")) {
 		return domain.User{}, errors.New("lengkapi data dengan benar; password minimal 6 karakter")
 	}
 	if role == "agent" && len(in.StoreName) < 2 {
@@ -357,7 +425,7 @@ func (s *AuthService) createAccount(in domain.RegisterInput, role string) (domai
 		if in.Email != "" && item.Email == in.Email {
 			return domain.User{}, errors.New("email sudah digunakan")
 		}
-		if item.Phone == in.Phone {
+		if in.Phone != "" && item.Phone == in.Phone {
 			return domain.User{}, errors.New("nomor HP sudah digunakan")
 		}
 	}
