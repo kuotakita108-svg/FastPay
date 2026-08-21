@@ -68,6 +68,7 @@ const Panel=()=> <ProtectedRoute roles={['master','admin','operator','analis']}>
 const Marketing=({children})=> <ProtectedRoute roles={['marketing']}>{children}</ProtectedRoute>
 const User=({children})=> <ProtectedRoute roles={['user','agent','marketing']}>{children}</ProtectedRoute>
 const Agent=({children})=> <ProtectedRoute roles={['agent']}>{children}</ProtectedRoute>
+const RetailRole=({children})=> <ProtectedRoute roles={['marketing','agent']}>{children}</ProtectedRoute>
 const AdminOnly=({children})=> <ProtectedRoute roles={['master','admin']}>{children}</ProtectedRoute>
 const ReviewOnly=({children})=> <ProtectedRoute roles={['master','admin','operator','analis']}>{children}</ProtectedRoute>
 
@@ -97,10 +98,10 @@ export default function App(){
  <Route path="/app/balance/send" element={<User><TransferPage/></User>}/>
  <Route path="/app/balance/withdraw" element={<User><TransferPage/></User>}/>
  <Route path="/app/profile" element={<User><ProfilePage/></User>}/>
- <Route path="/app/profile/mutations" element={<Marketing><BalanceMutationsPage/></Marketing>}/>
- <Route path="/app/profile/retail-fees" element={<Marketing><RetailFeePage/></Marketing>}/>
- <Route path="/app/profile/withdraw-fees" element={<Marketing><RetailFeeWithdrawPage/></Marketing>}/>
- <Route path="/app/profile/retail-network" element={<Marketing><RetailNetworkPage/></Marketing>}/>
+ <Route path="/app/profile/mutations" element={<RetailRole><BalanceMutationsPage/></RetailRole>}/>
+ <Route path="/app/profile/retail-fees" element={<RetailRole><RetailFeePage/></RetailRole>}/>
+ <Route path="/app/profile/withdraw-fees" element={<RetailRole><RetailFeeWithdrawPage/></RetailRole>}/>
+ <Route path="/app/profile/retail-network" element={<RetailRole><RetailNetworkPage/></RetailRole>}/>
  <Route path="/app/profile/security" element={<User><SecurityPage/></User>}/>
  <Route path="/app/profile/notifications" element={<User><AccountFeaturePage/></User>}/>
  <Route path="/app/profile/help" element={<User><AccountFeaturePage/></User>}/>

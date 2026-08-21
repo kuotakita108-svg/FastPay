@@ -3,6 +3,8 @@ package service
 import (
 	"path/filepath"
 	"testing"
+
+	"kuotakita/backend/internal/domain"
 )
 
 func TestLoginRoles(t *testing.T) {
@@ -74,5 +76,33 @@ func TestConfiguredMasterFollowsPasswordAndRole(t *testing.T) {
 	}
 	if result.User.Role != "master" || result.User.Name != "Master KuotaKita" {
 		t.Fatalf("identitas master tidak tersinkron: role=%s name=%s", result.User.Role, result.User.Name)
+	}
+}
+
+func TestAgentCanOnlyCreateUserDownline(t *testing.T) {
+	service := newAuthService("test-secret", "", nil, []AccountSeed{
+		{Username: "agent-test", Password: "agent-secret", Name: "Agent Test", Role: "agent"},
+	})
+	login, err := service.Login("agent-test", "agent-secret")
+	if err != nil {
+		t.Fatalf("login agent gagal: %v", err)
+	}
+	user, err := service.CreateDownline("Bearer "+login.Token, domain.RegisterInput{
+		Name: "Member Test", Email: "member@example.com", Password: "member-secret", AccountType: "user",
+	})
+	if err != nil {
+		t.Fatalf("membuat member gagal: %v", err)
+	}
+	if user.Role != "user" {
+		t.Fatalf("role downline = %q, ingin user", user.Role)
+	}
+	if _, err := service.CreateDownline("Bearer "+login.Token, domain.RegisterInput{
+		Name: "Agent Turunan", Email: "turunan@example.com", Password: "agent-secret", AccountType: "agent",
+	}); err == nil {
+		t.Fatal("Agent seharusnya tidak dapat membuat Agent lain")
+	}
+	rows, err := service.ManagedDownlines("Bearer " + login.Token)
+	if err != nil || len(rows) != 1 || rows[0].Role != "user" {
+		t.Fatalf("daftar member agent tidak sesuai: rows=%v err=%v", rows, err)
 	}
 }

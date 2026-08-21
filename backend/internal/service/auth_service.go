@@ -182,16 +182,19 @@ func (s *AuthService) CreateAgent(token string, in domain.RegisterInput) (domain
 }
 
 // CreateDownline creates a lightweight retail login owned by the signed-in
-// Marketing account. Privileged staff roles are deliberately rejected.
+// Marketing or Agent account. An Agent may only register User members.
 func (s *AuthService) CreateDownline(token string, in domain.RegisterInput) (domain.User, error) {
 	creatorID, role, err := s.session(token)
 	if err != nil {
 		return domain.User{}, err
 	}
-	if role != "marketing" {
-		return domain.User{}, errors.New("hanya Marketing yang dapat menambahkan downline")
+	if role != "marketing" && role != "agent" {
+		return domain.User{}, errors.New("akun tidak dapat menambahkan downline")
 	}
 	downlineRole := strings.ToLower(strings.TrimSpace(in.AccountType))
+	if role == "agent" && downlineRole != "user" {
+		return domain.User{}, errors.New("Agent hanya dapat menambahkan User")
+	}
 	if downlineRole != "user" && downlineRole != "agent" {
 		return domain.User{}, errors.New("role downline harus User atau Agent")
 	}
@@ -233,7 +236,7 @@ func (s *AuthService) ManagedDownlines(token string) ([]domain.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	if role != "marketing" {
+	if role != "marketing" && role != "agent" {
 		return nil, errors.New("akun tidak memiliki akses jaringan retail")
 	}
 	s.mu.RLock()
@@ -241,6 +244,9 @@ func (s *AuthService) ManagedDownlines(token string) ([]domain.User, error) {
 	result := make([]domain.User, 0)
 	for _, account := range s.users {
 		if account.ManagedByID != ownerID || (account.Role != "agent" && account.Role != "user") {
+			continue
+		}
+		if role == "agent" && account.Role != "user" {
 			continue
 		}
 		result = append(result, account.User)

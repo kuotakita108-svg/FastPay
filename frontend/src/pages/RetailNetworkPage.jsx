@@ -4,10 +4,12 @@ import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {createManagedDownline,listManagedDownlines} from '../services/authService'
 import {rupiah} from '../utils/currency'
+import {useAuth} from '../context/AuthContext'
 
 const initials=value=>String(value||'AG').split(/\s+/).slice(0,2).map(word=>word[0]).join('').toUpperCase()
 
 export default function RetailNetworkPage(){
+  const {user}=useAuth(),isAgent=user?.role==='agent'
   const [agents,setAgents]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState('')
   const [creating,setCreating]=useState(false),[saving,setSaving]=useState(false),[formError,setFormError]=useState('')
   const [form,setForm]=useState({role:'user',name:'',email:'',password:''})
@@ -16,10 +18,10 @@ export default function RetailNetworkPage(){
   const active=useMemo(()=>agents.filter(agent=>String(agent.access_status||'aktif').toLowerCase()!=='suspended').length,[agents])
   const submit=async event=>{event.preventDefault();setSaving(true);setFormError('');try{await createManagedDownline(form);setCreating(false);setForm({role:'user',name:'',email:'',password:''});load()}catch(requestError){setFormError(requestError.message||'Akun belum dapat dibuat.')}finally{setSaving(false)}}
   return <main className="mobile-app retail-network-page">
-    <SubPageHeader title="Jaringan Retail" description="Downline yang terhubung"/>
-    <section className="retail-network-hero"><i><UsersRound/></i><div><span>DOWNLINE</span><h1>Jaringan Retail</h1><p>Kelola User dan Agent yang kamu daftarkan melalui akun Marketing ini.</p></div></section>
+    <SubPageHeader title={isAgent?'Member Retail':'Jaringan Retail'} description="Downline yang terhubung"/>
+    <section className="retail-network-hero"><i><UsersRound/></i><div><span>DOWNLINE</span><h1>{isAgent?'Member Retail':'Jaringan Retail'}</h1><p>{isAgent?'Kelola User/member yang kamu daftarkan melalui akun Agent ini.':'Kelola User dan Agent yang kamu daftarkan melalui akun Marketing ini.'}</p></div></section>
     <section className="retail-network-directory">
-      <header><div><h2>Daftar Agent/User</h2><p>{agents.length} downline terhubung · {active} aktif</p></div><button type="button" onClick={()=>setCreating(true)}><UserPlus/>Tambah</button></header>
+      <header><div><h2>{isAgent?'Daftar User/Member':'Daftar Agent/User'}</h2><p>{agents.length} downline terhubung · {active} aktif</p></div><button type="button" onClick={()=>setCreating(true)}><UserPlus/>Tambah</button></header>
       {loading&&<div className="retail-network-state"><span className="mutation-loader"/><strong>Memuat jaringan retail...</strong></div>}
       {!loading&&error&&<div className="retail-network-state error"><RefreshCw/><strong>Jaringan retail belum dapat dimuat</strong><small>{error}</small><button type="button" onClick={load}>Coba lagi</button></div>}
       {!loading&&!error&&agents.length===0&&<div className="retail-network-state"><Store/><strong>Belum ada downline terhubung</strong><small>Tambahkan akun pertama. Akun tersimpan di server dan dapat langsung digunakan untuk login KuotaKita.</small><button type="button" onClick={()=>setCreating(true)}><UserPlus/>Tambah Akun</button></div>}
@@ -27,7 +29,7 @@ export default function RetailNetworkPage(){
     </section>
     {creating&&<div className="retail-downline-backdrop" onMouseDown={event=>event.target===event.currentTarget&&!saving&&setCreating(false)}><form className="retail-downline-sheet" onSubmit={submit}>
       <header><div><span>TAMBAH DOWNLINE</span><h2>Buat Akun Retail</h2><p>Akun baru akan langsung masuk ke jaringanmu.</p></div><button type="button" onClick={()=>setCreating(false)} disabled={saving}><X/></button></header>
-      <label><span>Role</span><select value={form.role} onChange={event=>setForm({...form,role:event.target.value})}><option value="user">User</option><option value="agent">Agent</option></select></label>
+      <label><span>Role</span><select value={form.role} disabled={isAgent} onChange={event=>setForm({...form,role:event.target.value})}><option value="user">User</option>{!isAgent&&<option value="agent">Agent</option>}</select>{isAgent&&<small>Akun Agent hanya dapat menambahkan User/member.</small>}</label>
       <label><span>Nama</span><input required minLength="3" value={form.name} onChange={event=>setForm({...form,name:event.target.value})} placeholder="Nama lengkap"/></label>
       <label><span>Email</span><input required type="email" value={form.email} onChange={event=>setForm({...form,email:event.target.value})} placeholder="nama@email.com"/></label>
       <label><span>Password</span><input required minLength="6" type="password" value={form.password} onChange={event=>setForm({...form,password:event.target.value})} placeholder="Minimal 6 karakter"/></label>

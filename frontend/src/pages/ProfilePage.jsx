@@ -1,6 +1,6 @@
 import {useEffect,useState} from 'react'
 import {useNavigate} from 'react-router-dom'
-import {Bell,Camera,ChevronRight,FileText,HelpCircle,Landmark,Link2,LockKeyhole,LogOut,Mail,Phone,QrCode,Save,ShieldCheck,UserRound,UsersRound,WalletCards,X} from 'lucide-react'
+import {Bell,Camera,ChevronRight,CreditCard,FileText,HelpCircle,Landmark,Link2,LockKeyhole,LogOut,Mail,Phone,QrCode,Save,ShieldCheck,UserRound,UsersRound,WalletCards,X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
@@ -9,6 +9,7 @@ import {updateProfile} from '../services/authService'
 export default function ProfilePage(){
   const {user,updateUser,logout}=useAuth(),navigate=useNavigate()
   const isMarketing=user?.role==='marketing'
+  const isAgent=user?.role==='agent'
   const [editing,setEditing]=useState(false)
   const [form,setForm]=useState({name:'',phone:'',email:''})
   const [saving,setSaving]=useState(false)
@@ -24,6 +25,14 @@ export default function ProfilePage(){
     ['Withdraw Fee',Landmark,'violet'],
     ['Jaringan Retail',UsersRound,'orange'],
   ]
+  const agentMenus=[
+    ['Mutasi Saldo',WalletCards,'blue','/app/profile/mutations'],
+    ['Fee Retail',Link2,'green','/app/profile/retail-fees'],
+    ['Topup Saldo',QrCode,'cyan','/app/balance/topup'],
+    ['Withdraw Fee',Landmark,'violet','/app/profile/withdraw-fees'],
+    ['Peminjaman',CreditCard,'violet','/app/balance/credit'],
+    ['Member Retail',UsersRound,'orange','/app/profile/retail-network'],
+  ]
   const openEditor=()=>{setForm({name:user.name||'',phone:user.phone||'',email:user.email||''});setError('');setMessage('');setEditing(true)}
   const submit=async event=>{
     event.preventDefault();setSaving(true);setError('')
@@ -32,12 +41,12 @@ export default function ProfilePage(){
       updateUser(saved);setEditing(false);setMessage('Informasi pribadi berhasil diperbarui.')
     }catch(requestError){setError(requestError.message)}finally{setSaving(false)}
   }
-  if(isMarketing)return <main className="mobile-app profile-page marketing-kuotakita-profile">
+  if(isMarketing||isAgent)return <main className={`mobile-app profile-page marketing-kuotakita-profile ${isAgent?'agent-kuotakita-profile':''}`}>
     <SubPageHeader title="Akun Saya" description="Profil dan pengaturan"/>
-    <section className="profile-hero"><div className="profile-avatar">{(user?.name||'MK').slice(0,2).toUpperCase()}<button type="button" aria-label="Foto profil segera tersedia" title="Foto profil segera tersedia"><Camera/></button></div><strong>{user?.name||'Marketing KuotaKita'}</strong><span>@{user?.username}</span><small><ShieldCheck/>Akun KuotaKita aktif</small></section>
+    <section className="profile-hero"><div className="profile-avatar">{(user?.name||(isAgent?'AG':'MK')).slice(0,2).toUpperCase()}<button type="button" aria-label="Foto profil segera tersedia" title="Foto profil segera tersedia"><Camera/></button></div><strong>{user?.name||(isAgent?'Agent KuotaKita':'Marketing KuotaKita')}</strong><span>@{user?.username}</span><small><ShieldCheck/>Akun KuotaKita aktif</small></section>
     {message&&<div className="profile-saved-message"><ShieldCheck/>{message}</div>}
-    <section className="personal-info"><header><h2>Informasi Pribadi</h2><button type="button" onClick={openEditor}>Edit</button></header><div><UserRound/><span><small>Nama lengkap</small><strong>{user?.name||'Marketing KuotaKita'}</strong></span></div><div><Phone/><span><small>Nomor handphone</small><strong className={!user?.phone?'incomplete':''}>{user?.phone||'Belum dilengkapi'}</strong></span></div><div><Mail/><span><small>Email / Gmail</small><strong className={!user?.email?'incomplete':''}>{user?.email||'Belum dilengkapi'}</strong></span></div></section>
-    <section className="profile-menu marketing-profile-menu"><header><span>MENU AKUN</span></header>{marketingMenus.map(([title,Icon,tone])=><button type="button" key={title} onClick={()=>title==='Mutasi Saldo'?navigate('/app/profile/mutations'):title==='Fee Retail'?navigate('/app/profile/retail-fees'):title==='Topup Saldo'?navigate('/app/balance/topup'):title==='Withdraw Fee'?navigate('/app/profile/withdraw-fees'):title==='Jaringan Retail'?navigate('/app/profile/retail-network'):undefined}><i className={`tone-${tone}`}><Icon/></i><div><strong>{title}</strong></div><ChevronRight/></button>)}</section>
+    <section className="personal-info"><header><h2>Informasi Pribadi</h2><button type="button" onClick={openEditor}>Edit</button></header><div><UserRound/><span><small>Nama lengkap</small><strong>{user?.name||(isAgent?'Agent KuotaKita':'Marketing KuotaKita')}</strong></span></div><div><Phone/><span><small>Nomor handphone</small><strong className={!user?.phone?'incomplete':''}>{user?.phone||'Belum dilengkapi'}</strong></span></div><div><Mail/><span><small>Email / Gmail</small><strong className={!user?.email?'incomplete':''}>{user?.email||'Belum dilengkapi'}</strong></span></div></section>
+    <section className="profile-menu marketing-profile-menu"><header><span>MENU AKUN</span></header>{(isAgent?agentMenus:marketingMenus).map(([title,Icon,tone,path])=><button type="button" key={title} onClick={()=>path?navigate(path):title==='Mutasi Saldo'?navigate('/app/profile/mutations'):title==='Fee Retail'?navigate('/app/profile/retail-fees'):title==='Topup Saldo'?navigate('/app/balance/topup'):title==='Withdraw Fee'?navigate('/app/profile/withdraw-fees'):title==='Jaringan Retail'?navigate('/app/profile/retail-network'):undefined}><i className={`tone-${tone}`}><Icon/></i><div><strong>{title}</strong></div><ChevronRight/></button>)}</section>
     <button className="logout-mobile" onClick={exit}><LogOut/>Keluar dari KuotaKita</button><p className="profile-version">KuotaKita versi 1.0.0</p>
     {editing&&<div className="profile-edit-backdrop" onMouseDown={event=>event.target===event.currentTarget&&!saving&&setEditing(false)}><form className="profile-edit-sheet" onSubmit={submit}>
       <header><div><span>PROFIL AKUN</span><h2>Edit Informasi Pribadi</h2><p>Lengkapi data agar akun lebih mudah dikenali.</p></div><button type="button" onClick={()=>setEditing(false)} disabled={saving}><X/></button></header>
