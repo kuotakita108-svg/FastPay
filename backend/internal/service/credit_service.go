@@ -49,9 +49,6 @@ func (s *CreditService) List(token string) ([]map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if user.Role == "marketing" {
-		return nil, fmt.Errorf("%w: Marketing tidak memiliki akses data pengajuan modal", ErrForbidden)
-	}
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	result := make([]map[string]any, 0, len(s.rows))
@@ -69,6 +66,10 @@ func (s *CreditService) List(token string) ([]map[string]any, error) {
 			if marketingID != user.ID {
 				continue
 			}
+		}
+		if user.Role == "marketing" {
+			result = append(result, marketingCredit(row))
+			continue
 		}
 		result = append(result, publicCredit(row))
 	}
@@ -352,6 +353,21 @@ func publicCredit(row map[string]any) map[string]any {
 	out := cloneCredit(row)
 	delete(out, "_owner_id")
 	return out
+}
+func marketingCredit(row map[string]any) map[string]any {
+	// Marketing only needs operational progress for agents it registered.
+	// Identity numbers, addresses, financial values, photos and signatures stay
+	// inside the Agent–Operator workflow and are never serialized here.
+	return map[string]any{
+		"id":            stringValue(row["id"]),
+		"status":        stringValue(row["status"]),
+		"userId":        stringValue(row["userId"]),
+		"userName":      stringValue(row["userName"]),
+		"marketingId":   stringValue(row["marketingId"]),
+		"marketingName": stringValue(row["marketingName"]),
+		"createdAt":     stringValue(row["createdAt"]),
+		"updatedAt":     stringValue(row["updatedAt"]),
+	}
 }
 func stringValue(value any) string { text, _ := value.(string); return text }
 func intValue(value any) int64 {

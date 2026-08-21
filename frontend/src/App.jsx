@@ -32,6 +32,7 @@ const loadBalanceMutations=()=>import('./pages/BalanceMutationsPage')
 const loadRetailFee=()=>import('./pages/RetailFeePage')
 const loadRetailFeeWithdraw=()=>import('./pages/RetailFeeWithdrawPage')
 const loadRetailNetwork=()=>import('./pages/RetailNetworkPage')
+const loadMarketingApplicationStatus=()=>import('./pages/MarketingApplicationStatusPage')
 const UserHomePage=lazy(loadUserHome)
 const HistoryPage=lazy(loadHistory)
 const ProfilePage=lazy(loadProfile)
@@ -61,6 +62,7 @@ const BalanceMutationsPage=lazy(loadBalanceMutations)
 const RetailFeePage=lazy(loadRetailFee)
 const RetailFeeWithdrawPage=lazy(loadRetailFeeWithdraw)
 const RetailNetworkPage=lazy(loadRetailNetwork)
+const MarketingApplicationStatusPage=lazy(loadMarketingApplicationStatus)
 
 // Halaman awal dibuat langsung tersedia. Jangan menahan pengguna di splash screen.
 const RouteLoading=()=> <div className="route-loading" role="status" aria-label="Memuat halaman"/>
@@ -102,6 +104,7 @@ export default function App(){
  <Route path="/app/profile/retail-fees" element={<RetailRole><RetailFeePage/></RetailRole>}/>
  <Route path="/app/profile/withdraw-fees" element={<RetailRole><RetailFeeWithdrawPage/></RetailRole>}/>
  <Route path="/app/profile/retail-network" element={<RetailRole><RetailNetworkPage/></RetailRole>}/>
+ <Route path="/app/profile/application-status" element={<Marketing><MarketingApplicationStatusPage/></Marketing>}/>
  <Route path="/app/profile/security" element={<User><SecurityPage/></User>}/>
  <Route path="/app/profile/notifications" element={<User><AccountFeaturePage/></User>}/>
  <Route path="/app/profile/help" element={<User><AccountFeaturePage/></User>}/>

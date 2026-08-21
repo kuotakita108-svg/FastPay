@@ -27,7 +27,7 @@ func TestBlocksNewCredit(t *testing.T) {
 	}
 }
 
-func TestMarketingCannotAccessCapitalApplications(t *testing.T) {
+func TestMarketingCanMonitorOwnCapitalApplicationsButCannotWrite(t *testing.T) {
 	auth := newAuthService("test-secret", "", nil, []AccountSeed{{Username: "marketing-test", Password: "marketing-secret", Name: "Marketing Test", Role: "marketing"}})
 	marketing, err := auth.Login("marketing-test", "marketing-secret")
 	if err != nil {
@@ -42,9 +42,26 @@ func TestMarketingCannotAccessCapitalApplications(t *testing.T) {
 	if !errors.Is(err, ErrForbidden) {
 		t.Fatalf("Marketing Save error = %v, want ErrForbidden", err)
 	}
-	_, err = credit.List("Bearer " + marketing.Token)
-	if !errors.Is(err, ErrForbidden) {
-		t.Fatalf("Marketing List error = %v, want ErrForbidden", err)
+	agent, err := auth.Login("agent-terpilih", "agent-secret")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = credit.Save("Bearer "+agent.Token, map[string]any{"id": "KSA-TEST-AGENT", "form": map[string]any{"amount": 500000, "nik": "1234567890123456"}, "documents": map[string]any{"ktp": "secret"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows, err := credit.List("Bearer " + marketing.Token)
+	if err != nil {
+		t.Fatalf("Marketing List error = %v", err)
+	}
+	if len(rows) != 1 || rows[0]["id"] != "KSA-TEST-AGENT" {
+		t.Fatalf("Marketing own application rows = %#v", rows)
+	}
+	if _, exposed := rows[0]["form"]; exposed {
+		t.Fatal("Marketing response exposed identity and financial form")
+	}
+	if _, exposed := rows[0]["documents"]; exposed {
+		t.Fatal("Marketing response exposed application documents")
 	}
 }
 
