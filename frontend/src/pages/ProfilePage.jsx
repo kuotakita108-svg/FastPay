@@ -1,6 +1,6 @@
 import {useEffect,useState} from 'react'
 import {useNavigate} from 'react-router-dom'
-import {Bell,Camera,ChevronRight,ClipboardCheck,CreditCard,FileText,HelpCircle,LockKeyhole,LogOut,Mail,Phone,Save,ShieldCheck,UserPlus,UserRound,UsersRound,WalletCards,X} from 'lucide-react'
+import {Bell,Camera,ChevronRight,ClipboardCheck,CreditCard,FileText,HelpCircle,Landmark,Link2,LockKeyhole,LogOut,Mail,Phone,QrCode,Save,ShieldCheck,UserPlus,UserRound,UsersRound,WalletCards,X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
