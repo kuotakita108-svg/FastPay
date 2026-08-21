@@ -20,9 +20,7 @@ export default function ProfilePage(){
   const menus=[['Keamanan Akun','PIN, sidik jari, dan perangkat',LockKeyhole,'security'],['Notifikasi','Atur informasi transaksi',Bell,'notifications'],['Pusat Bantuan','FAQ dan layanan pelanggan',HelpCircle,'help'],['Syarat & Kebijakan','Ketentuan penggunaan KuotaKita',FileText,'policies']]
   const marketingMenus=[
     ['Mutasi Saldo',WalletCards,'blue','/app/profile/mutations'],
-    ['Fee Retail',Link2,'green','/app/profile/retail-fees'],
     ['Topup Saldo',QrCode,'cyan','/app/balance/topup'],
-    ['Withdraw Fee',Landmark,'violet','/app/profile/withdraw-fees'],
     ['Jaringan Retail',UsersRound,'orange','/app/profile/retail-network'],
   ]
   const agentMenus=[
@@ -46,7 +44,7 @@ export default function ProfilePage(){
     <section className="profile-hero"><div className="profile-avatar">{(user?.name||(isAgent?'AG':'MK')).slice(0,2).toUpperCase()}<button type="button" aria-label="Foto profil segera tersedia" title="Foto profil segera tersedia"><Camera/></button></div><strong>{user?.name||(isAgent?'Agent KuotaKita':'Marketing KuotaKita')}</strong><span>@{user?.username}</span><small><ShieldCheck/>Akun KuotaKita aktif</small></section>
     {message&&<div className="profile-saved-message"><ShieldCheck/>{message}</div>}
     <section className="personal-info"><header><h2>Informasi Pribadi</h2><button type="button" onClick={openEditor}>Edit</button></header><div><UserRound/><span><small>Nama lengkap</small><strong>{user?.name||(isAgent?'Agent KuotaKita':'Marketing KuotaKita')}</strong></span></div><div><Phone/><span><small>Nomor handphone</small><strong className={!user?.phone?'incomplete':''}>{user?.phone||'Belum dilengkapi'}</strong></span></div><div><Mail/><span><small>Email / Gmail</small><strong className={!user?.email?'incomplete':''}>{user?.email||'Belum dilengkapi'}</strong></span></div></section>
-    <section className="profile-menu marketing-profile-menu"><header><span>{isAgent?'LAYANAN AGENT':'MENU AKUN'}</span><small>{isAgent?'Kelola layanan akun dan jaringan retail':'Kelola saldo, fee, dan jaringan retail'}</small></header>{(isAgent?agentMenus:marketingMenus).map(([title,Icon,tone,path,description])=><button type="button" key={title} onClick={()=>path&&navigate(path)}><i className={`tone-${tone}`}><Icon/></i><div><strong>{title}</strong>{description&&<small>{description}</small>}</div><ChevronRight/></button>)}</section>
+    <section className="profile-menu marketing-profile-menu"><header><span>{isAgent?'LAYANAN AGENT':'MENU AKUN'}</span><small>{isAgent?'Kelola layanan akun dan jaringan retail':'Kelola saldo dan jaringan retail yang terhubung'}</small></header>{(isAgent?agentMenus:marketingMenus).map(([title,Icon,tone,path,description])=><button type="button" key={title} onClick={()=>path&&navigate(path)}><i className={`tone-${tone}`}><Icon/></i><div><strong>{title}</strong>{description&&<small>{description}</small>}</div><ChevronRight/></button>)}</section>
     <button className="logout-mobile" onClick={exit}><LogOut/>Keluar dari KuotaKita</button><p className="profile-version">KuotaKita versi 1.0.0</p>
     {editing&&<div className="profile-edit-backdrop" onMouseDown={event=>event.target===event.currentTarget&&!saving&&setEditing(false)}><form className="profile-edit-sheet" onSubmit={submit}>
       <header><div><span>PROFIL AKUN</span><h2>Edit Informasi Pribadi</h2><p>Lengkapi data agar akun lebih mudah dikenali.</p></div><button type="button" onClick={()=>setEditing(false)} disabled={saving}><X/></button></header>
