@@ -1,6 +1,6 @@
 import {useEffect,useState} from 'react'
 import {useNavigate} from 'react-router-dom'
-import {Bell,Camera,ChevronRight,ClipboardCheck,CreditCard,FileText,HelpCircle,Landmark,Link2,LockKeyhole,LogOut,Mail,Phone,QrCode,Save,ShieldCheck,UserRound,UsersRound,WalletCards,X} from 'lucide-react'
+import {Bell,Camera,ChevronRight,ClipboardCheck,CreditCard,FileText,HelpCircle,Landmark,Link2,LockKeyhole,LogOut,Mail,Phone,PhoneCall,QrCode,Save,ShieldCheck,UserRound,UsersRound,WalletCards,X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
@@ -19,10 +19,11 @@ export default function ProfilePage(){
   const exit=()=>{logout();navigate('/login')}
   const menus=[['Keamanan Akun','PIN, sidik jari, dan perangkat',LockKeyhole,'security'],['Notifikasi','Atur informasi transaksi',Bell,'notifications'],['Pusat Bantuan','FAQ dan layanan pelanggan',HelpCircle,'help'],['Syarat & Kebijakan','Ketentuan penggunaan KuotaKita',FileText,'policies']]
   const marketingMenus=[
+    ['Jaringan Agent',UsersRound,'orange','/app/profile/retail-network'],
     ['Status Pengajuan',ClipboardCheck,'green','/app/profile/application-status'],
+    ['Tindak Lanjut Agent',PhoneCall,'cyan','/app/profile/follow-up'],
     ['Mutasi Saldo',WalletCards,'blue','/app/profile/mutations'],
     ['Topup Saldo',QrCode,'cyan','/app/balance/topup'],
-    ['Jaringan Retail',UsersRound,'orange','/app/profile/retail-network'],
   ]
   const agentMenus=[
     ['Mutasi Saldo',WalletCards,'blue','/app/profile/mutations'],
