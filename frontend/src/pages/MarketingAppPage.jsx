@@ -1,5 +1,5 @@
 import {useEffect,useMemo,useState} from 'react'
-import {useNavigate,useSearchParams} from 'react-router-dom'
+import {Navigate,useNavigate,useSearchParams} from 'react-router-dom'
 import {BookOpenCheck,ChevronRight,ClipboardCheck,Eye,EyeOff,FileCheck2,Home,LogOut,PlusCircle,ShieldCheck,UserPlus,UsersRound,WalletCards} from 'lucide-react'
 import KuotaKitaLogo from '../components/common/KuotaKitaLogo'
 import CreditApplicationsPage from './CreditApplicationsPage'
@@ -25,6 +25,7 @@ export default function MarketingAppPage(){
     ['Survei & Dokumen','Lengkapi empat foto sebelum dikirim',FileCheck2,'survey','verifikasi'],
     ['Panduan Kerja','Pelajari alur marketing KuotaKita',BookOpenCheck,'guide','panduan'],
   ]
+  if(!requestedView)return <Navigate to="/app/profile" replace/>
   const isWorkspace=Boolean(view)&&tab!=='account'&&tab!=='home'
   return <main className={`marketing-mobile-app${isWorkspace?' workspace-open':''}`}>
     <header className="marketing-app-header"><KuotaKitaLogo compact/><span className="marketing-app-role"><ShieldCheck/>Marketing</span><button type="button" onClick={()=>open('account')}><span>{initials}</span><small>Akun</small></button></header>

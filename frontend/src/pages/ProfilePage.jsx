@@ -1,6 +1,6 @@
 import {useEffect,useState} from 'react'
 import {useNavigate} from 'react-router-dom'
-import {Bell,Camera,ChevronRight,FileText,HelpCircle,LockKeyhole,LogOut,Mail,Phone,Save,ShieldCheck,UserRound,X} from 'lucide-react'
+import {Bell,BookOpenCheck,Camera,ChevronRight,ClipboardCheck,FileCheck2,FileText,HelpCircle,LockKeyhole,LogOut,Mail,Phone,Save,ShieldCheck,UserPlus,UserRound,UsersRound,X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
@@ -8,6 +8,7 @@ import {updateProfile} from '../services/authService'
 
 export default function ProfilePage(){
   const {user,updateUser,logout}=useAuth(),navigate=useNavigate()
+  const isMarketing=user?.role==='marketing'
   const [editing,setEditing]=useState(false)
   const [form,setForm]=useState({name:'',phone:'',email:''})
   const [saving,setSaving]=useState(false)
@@ -16,6 +17,13 @@ export default function ProfilePage(){
   useEffect(()=>setForm({name:user?.name||'',phone:user?.phone||'',email:user?.email||''}),[user])
   const exit=()=>{logout();navigate('/login')}
   const menus=[['Keamanan Akun','PIN, sidik jari, dan perangkat',LockKeyhole,'security'],['Notifikasi','Atur informasi transaksi',Bell,'notifications'],['Pusat Bantuan','FAQ dan layanan pelanggan',HelpCircle,'help'],['Syarat & Kebijakan','Ketentuan penggunaan KuotaKita',FileText,'policies']]
+  const marketingMenus=[
+    ['Agent Binaan','Lihat agent yang kamu daftarkan',UsersRound,'peminjam'],
+    ['Tambah Agent','Daftarkan akun agent baru',UserPlus,'agent-input'],
+    ['Pengajuan Kredit','Buat dan pantau pengajuan agent',ClipboardCheck,'input'],
+    ['Survei & Dokumen','Lengkapi empat foto wajib',FileCheck2,'verifikasi'],
+    ['Panduan Marketing','Pelajari alur kerja lapangan',BookOpenCheck,'panduan'],
+  ]
   const openEditor=()=>{setForm({name:user.name||'',phone:user.phone||'',email:user.email||''});setError('');setMessage('');setEditing(true)}
   const submit=async event=>{
     event.preventDefault();setSaving(true);setError('')
@@ -26,9 +34,10 @@ export default function ProfilePage(){
   }
   return <main className="mobile-app profile-page">
     <SubPageHeader title="Akun Saya" description="Profil dan pengaturan"/>
-    <section className="profile-hero"><div className="profile-avatar">{(user?.name||'KK').slice(0,2).toUpperCase()}<button type="button" aria-label="Foto profil segera tersedia" title="Foto profil segera tersedia"><Camera/></button></div><strong>{user.name}</strong><span>@{user.username}</span><small><ShieldCheck/>Akun KuotaKita aktif</small></section>
+    <section className="profile-hero"><div className="profile-avatar">{(user?.name||'KK').slice(0,2).toUpperCase()}<button type="button" aria-label="Foto profil segera tersedia" title="Foto profil segera tersedia"><Camera/></button></div><strong>{user.name}</strong><span>@{user.username}</span><small><ShieldCheck/>{isMarketing?'Akun Marketing aktif':'Akun KuotaKita aktif'}</small></section>
     {message&&<div className="profile-saved-message"><ShieldCheck/>{message}</div>}
     <section className="personal-info"><header><h2>Informasi Pribadi</h2><button type="button" onClick={openEditor}>Edit</button></header><div><UserRound/><span><small>Nama lengkap</small><strong>{user.name}</strong></span></div><div><Phone/><span><small>Nomor handphone</small><strong className={!user.phone?'incomplete':''}>{user.phone||'Belum dilengkapi'}</strong></span></div><div><Mail/><span><small>Email / Gmail</small><strong className={!user.email?'incomplete':''}>{user.email||'Belum dilengkapi'}</strong></span></div></section>
+    {isMarketing&&<section className="profile-menu marketing-profile-menu"><header><span>MENU MARKETING</span><small>Kelola pekerjaan lapangan dari akun ini</small></header>{marketingMenus.map(([title,desc,Icon,view])=><button onClick={()=>navigate(`/marketing?view=${view}`)} key={title}><i><Icon/></i><div><strong>{title}</strong><small>{desc}</small></div><ChevronRight/></button>)}</section>}
     <section className="profile-menu">{menus.map(([title,desc,Icon,path])=><button onClick={()=>navigate(`/app/profile/${path}`)} key={title}><i><Icon/></i><div><strong>{title}</strong><small>{desc}</small></div><ChevronRight/></button>)}</section>
     <button className="logout-mobile" onClick={exit}><LogOut/>Keluar dari KuotaKita</button><p className="profile-version">KuotaKita versi 1.0.0</p>
 

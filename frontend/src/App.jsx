@@ -58,7 +58,7 @@ const AccountFeaturePage=lazy(loadAccountFeature)
 const RouteLoading=()=> <div className="route-loading" role="status" aria-label="Memuat halaman"/>
 const Panel=()=> <ProtectedRoute roles={['master','admin','operator','analis']}><AppLayout/></ProtectedRoute>
 const Marketing=({children})=> <ProtectedRoute roles={['marketing']}>{children}</ProtectedRoute>
-const User=({children})=> <ProtectedRoute roles={['user','agent']}>{children}</ProtectedRoute>
+const User=({children})=> <ProtectedRoute roles={['user','agent','marketing']}>{children}</ProtectedRoute>
 const Agent=({children})=> <ProtectedRoute roles={['agent']}>{children}</ProtectedRoute>
 const AdminOnly=({children})=> <ProtectedRoute roles={['master','admin']}>{children}</ProtectedRoute>
 const ReviewOnly=({children})=> <ProtectedRoute roles={['master','admin','operator','analis']}>{children}</ProtectedRoute>
