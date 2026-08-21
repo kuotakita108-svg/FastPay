@@ -1,6 +1,6 @@
 import {useEffect,useState} from 'react'
 import {useNavigate} from 'react-router-dom'
-import {Bell,BookOpenCheck,Camera,ChevronRight,ClipboardCheck,FileCheck2,FileText,HelpCircle,LockKeyhole,LogOut,Mail,Phone,Save,ShieldCheck,UserPlus,UserRound,UsersRound,X} from 'lucide-react'
+import {Bell,Camera,ChevronRight,Eye,EyeOff,FileText,HelpCircle,Landmark,Link2,LockKeyhole,LogOut,Mail,Phone,QrCode,Save,ShieldCheck,UserRound,UsersRound,WalletCards,X} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {useAuth} from '../context/AuthContext'
@@ -14,15 +14,16 @@ export default function ProfilePage(){
   const [saving,setSaving]=useState(false)
   const [error,setError]=useState('')
   const [message,setMessage]=useState('')
+  const [marketingBalanceVisible,setMarketingBalanceVisible]=useState(false)
   useEffect(()=>setForm({name:user?.name||'',phone:user?.phone||'',email:user?.email||''}),[user])
   const exit=()=>{logout();navigate('/login')}
   const menus=[['Keamanan Akun','PIN, sidik jari, dan perangkat',LockKeyhole,'security'],['Notifikasi','Atur informasi transaksi',Bell,'notifications'],['Pusat Bantuan','FAQ dan layanan pelanggan',HelpCircle,'help'],['Syarat & Kebijakan','Ketentuan penggunaan KuotaKita',FileText,'policies']]
   const marketingMenus=[
-    ['Agent Binaan','Lihat agent yang kamu daftarkan',UsersRound,'peminjam'],
-    ['Tambah Agent','Daftarkan akun agent baru',UserPlus,'agent-input'],
-    ['Pengajuan Kredit','Buat dan pantau pengajuan agent',ClipboardCheck,'input'],
-    ['Survei & Dokumen','Lengkapi empat foto wajib',FileCheck2,'verifikasi'],
-    ['Panduan Marketing','Pelajari alur kerja lapangan',BookOpenCheck,'panduan'],
+    ['Mutasi Saldo',WalletCards,'blue'],
+    ['Fee Retail',Link2,'green'],
+    ['Topup Saldo',QrCode,'cyan'],
+    ['Withdraw Fee',Landmark,'violet'],
+    ['Jaringan Retail',UsersRound,'orange'],
   ]
   const openEditor=()=>{setForm({name:user.name||'',phone:user.phone||'',email:user.email||''});setError('');setMessage('');setEditing(true)}
   const submit=async event=>{
@@ -32,12 +33,22 @@ export default function ProfilePage(){
       updateUser(saved);setEditing(false);setMessage('Informasi pribadi berhasil diperbarui.')
     }catch(requestError){setError(requestError.message)}finally{setSaving(false)}
   }
+  if(isMarketing)return <main className="mobile-app profile-page marketing-account-new">
+    <SubPageHeader title="Akun Marketing" description="Profil dan layanan retail"/>
+    <section className="marketing-identity-card">
+      <span className="marketing-account-kicker">AKUN</span>
+      <div className="marketing-identity-main"><i>{(user?.name||'MK').split(/\s+/).slice(0,2).map(word=>word[0]).join('').toUpperCase()}</i><p><strong>{user?.name||'Marketing KuotaKita'}</strong><small>{user?.email||`@${user?.username}`}</small></p></div>
+      <div className="marketing-balance-row"><span>Saldo</span><strong>{marketingBalanceVisible?`Rp ${Number(user?.balance||0).toLocaleString('id-ID')}`:'Rp •••••••'}<button type="button" aria-label={marketingBalanceVisible?'Sembunyikan saldo':'Tampilkan saldo'} onClick={()=>setMarketingBalanceVisible(value=>!value)}>{marketingBalanceVisible?<EyeOff/>:<Eye/>}</button></strong></div>
+    </section>
+    <section className="marketing-simple-menu"><header>MENU AKUN</header>{marketingMenus.map(([title,Icon,tone])=><button type="button" key={title}><i className={`tone-${tone}`}><Icon/></i><strong>{title}</strong><ChevronRight/></button>)}</section>
+    <button className="logout-mobile marketing-account-logout" onClick={exit}><LogOut/>Keluar</button>
+    <MobileNav/>
+  </main>
   return <main className="mobile-app profile-page">
     <SubPageHeader title="Akun Saya" description="Profil dan pengaturan"/>
     <section className="profile-hero"><div className="profile-avatar">{(user?.name||'KK').slice(0,2).toUpperCase()}<button type="button" aria-label="Foto profil segera tersedia" title="Foto profil segera tersedia"><Camera/></button></div><strong>{user.name}</strong><span>@{user.username}</span><small><ShieldCheck/>{isMarketing?'Akun Marketing aktif':'Akun KuotaKita aktif'}</small></section>
     {message&&<div className="profile-saved-message"><ShieldCheck/>{message}</div>}
     <section className="personal-info"><header><h2>Informasi Pribadi</h2><button type="button" onClick={openEditor}>Edit</button></header><div><UserRound/><span><small>Nama lengkap</small><strong>{user.name}</strong></span></div><div><Phone/><span><small>Nomor handphone</small><strong className={!user.phone?'incomplete':''}>{user.phone||'Belum dilengkapi'}</strong></span></div><div><Mail/><span><small>Email / Gmail</small><strong className={!user.email?'incomplete':''}>{user.email||'Belum dilengkapi'}</strong></span></div></section>
-    {isMarketing&&<section className="profile-menu marketing-profile-menu"><header><span>MENU MARKETING</span><small>Kelola pekerjaan lapangan dari akun ini</small></header>{marketingMenus.map(([title,desc,Icon,view])=><button onClick={()=>navigate(`/marketing?view=${view}`)} key={title}><i><Icon/></i><div><strong>{title}</strong><small>{desc}</small></div><ChevronRight/></button>)}</section>}
     <section className="profile-menu">{menus.map(([title,desc,Icon,path])=><button onClick={()=>navigate(`/app/profile/${path}`)} key={title}><i><Icon/></i><div><strong>{title}</strong><small>{desc}</small></div><ChevronRight/></button>)}</section>
     <button className="logout-mobile" onClick={exit}><LogOut/>Keluar dari KuotaKita</button><p className="profile-version">KuotaKita versi 1.0.0</p>
 
