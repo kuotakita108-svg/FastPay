@@ -32,7 +32,6 @@ func New(cfg config.Config) *App {
 	products := service.NewProductService(store)
 	auth := service.NewDatabaseAuthService(cfg.JWTSecret, filepath.Join(cfg.DataDir, "accounts.json"), state, []service.AccountSeed{
 		{Username: cfg.MasterUsername, Password: cfg.MasterPassword, Name: "Master KuotaKita", Role: "master", SyncPassword: true, SyncRole: true},
-		{Username: cfg.AgentUsername, Password: cfg.AgentPassword, Name: "Agent KuotaKita", Role: "agent", InitialBalance: cfg.AgentInitialBalance},
 		{Username: cfg.MarketingUsername, Password: cfg.MarketingPassword, Name: "Marketing KuotaKita", Role: "marketing"},
 		{Username: cfg.AnalisUsername, Password: cfg.AnalisPassword, Name: "Analis KuotaKita", Role: "analis"},
 		{Username: cfg.H2HTestUsername, Password: cfg.H2HTestPassword, Name: "Owner Test H2H", Role: "user", SyncPassword: true},
