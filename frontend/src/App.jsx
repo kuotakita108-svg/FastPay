@@ -8,6 +8,7 @@ const loadHistory=()=>import('./pages/HistoryPage')
 const loadProfile=()=>import('./pages/ProfilePage')
 const loadAgentCredit=()=>import('./pages/AgentCreditPage')
 const loadCreditApplications=()=>import('./pages/CreditApplicationsPage')
+const loadMarketingApp=()=>import('./pages/MarketingAppPage')
 const loadServicePurchase=()=>import('./pages/ServicePurchasePage')
 const loadAllServices=()=>import('./pages/AllServicesPage')
 const loadAppLayout=()=>import('./components/layout/AppLayout')
@@ -32,6 +33,7 @@ const HistoryPage=lazy(loadHistory)
 const ProfilePage=lazy(loadProfile)
 const AgentCreditPage=lazy(loadAgentCredit)
 const CreditApplicationsPage=lazy(loadCreditApplications)
+const MarketingAppPage=lazy(loadMarketingApp)
 const AppLayout=lazy(loadAppLayout)
 const ServicePurchasePage=lazy(loadServicePurchase)
 const CheckoutPage=lazy(loadCheckout)
@@ -54,24 +56,27 @@ const AccountFeaturePage=lazy(loadAccountFeature)
 
 // Halaman awal dibuat langsung tersedia. Jangan menahan pengguna di splash screen.
 const RouteLoading=()=> <div className="route-loading" role="status" aria-label="Memuat halaman"/>
-const Panel=()=> <ProtectedRoute roles={['master','admin','marketing','operator','analis']}><AppLayout/></ProtectedRoute>
+const Panel=()=> <ProtectedRoute roles={['master','admin','operator','analis']}><AppLayout/></ProtectedRoute>
+const Marketing=({children})=> <ProtectedRoute roles={['marketing']}>{children}</ProtectedRoute>
 const User=({children})=> <ProtectedRoute roles={['user','agent']}>{children}</ProtectedRoute>
 const Agent=({children})=> <ProtectedRoute roles={['agent']}>{children}</ProtectedRoute>
 const AdminOnly=({children})=> <ProtectedRoute roles={['master','admin']}>{children}</ProtectedRoute>
-const ReviewOnly=({children})=> <ProtectedRoute roles={['master','admin','marketing','operator','analis']}>{children}</ProtectedRoute>
+const ReviewOnly=({children})=> <ProtectedRoute roles={['master','admin','operator','analis']}>{children}</ProtectedRoute>
 
 export default function App(){
  const location=useLocation(),backgroundLocation=location.state?.backgroundLocation
  useEffect(()=>{
   const warmRoutes=()=>{
    if(location.pathname.startsWith('/app'))[loadUserHome,loadHistory,loadProfile,loadAgentCredit,loadAllServices,loadServicePurchase].forEach(load=>load())
-   if(!location.pathname.startsWith('/app') && location.pathname !== '/login') [loadAppLayout,loadCreditApplications,loadDashboard,loadProducts,loadTransactions,loadCustomers,loadAnalytics,loadPaymentMethods,loadInvoices,loadSettings].forEach(load=>load())
+   if(location.pathname.startsWith('/marketing'))[loadMarketingApp,loadCreditApplications].forEach(load=>load())
+   if(!location.pathname.startsWith('/app') && !location.pathname.startsWith('/marketing') && location.pathname !== '/login') [loadAppLayout,loadCreditApplications,loadDashboard,loadProducts,loadTransactions,loadCustomers,loadAnalytics,loadPaymentMethods,loadInvoices,loadSettings].forEach(load=>load())
   }
   if('requestIdleCallback' in window){const id=window.requestIdleCallback(warmRoutes,{timeout:1800});return()=>window.cancelIdleCallback(id)}
   const timer=window.setTimeout(warmRoutes,700);return()=>window.clearTimeout(timer)
  },[location.pathname])
  return <Suspense fallback={<RouteLoading/>}><Routes location={backgroundLocation||location}>
  <Route path="/login" element={<LoginPage/>}/>
+ <Route path="/marketing" element={<Marketing><MarketingAppPage/></Marketing>}/>
  <Route path="/app" element={<User><UserHomePage/></User>}/>
  <Route path="/app/buy/:type" element={<User><ServicePurchasePage/></User>}/>
  <Route path="/app/checkout" element={<User><CheckoutPage/></User>}/>

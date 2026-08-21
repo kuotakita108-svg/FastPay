@@ -55,7 +55,7 @@ export default function LoginPage() {
         return
       }
       const result = mode === 'login' ? await login(form) : await register(form)
-      navigate(['user','agent'].includes(result.user.role) ? '/app' : ['master','marketing','operator','analis'].includes(result.user.role) ? '/credit-applications' : '/dashboard', {replace: true})
+      navigate(result.user.role === 'marketing' ? '/marketing' : ['user','agent'].includes(result.user.role) ? '/app' : ['master','operator','analis'].includes(result.user.role) ? '/credit-applications' : '/dashboard', {replace: true})
     } catch (current) {
       setError(current.message)
     } finally {
