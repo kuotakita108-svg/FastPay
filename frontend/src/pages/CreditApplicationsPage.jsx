@@ -70,24 +70,23 @@ const normalizeApplication = item => ({
 })
 
 const readAll = () => {
-  const merged = new Map()
   try {
-    ;(JSON.parse(localStorage.getItem(allKey)) || []).forEach(item => merged.set(item.id, item))
-  } catch {/* data kosong */}
+    const rows = JSON.parse(localStorage.getItem(allKey))
+    return (Array.isArray(rows) ? rows : []).map(normalizeApplication).sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+  } catch { return [] }
+}
+
+const replaceCreditCache = rows => {
   try {
+    const staleKeys = []
     for (let index = 0; index < localStorage.length; index += 1) {
       const key = localStorage.key(index)
-      if (!key?.startsWith('kuotakita_agent_credit_') || key === allKey || key.includes('repayments')) continue
-      const userId = key.replace('kuotakita_agent_credit_', '')
-      const rows = JSON.parse(localStorage.getItem(key)) || []
-      rows.forEach(item => {
-        if (item?.id && !merged.has(item.id)) merged.set(item.id, normalizeApplication({...item, userId: item.userId || userId}))
-      })
+      if (key?.startsWith('kuotakita_agent_credit_') && key !== allKey && !key.includes('repayments')) staleKeys.push(key)
     }
-  } catch {/* abaikan data lokal yang rusak */}
-  const list = [...merged.values()].map(normalizeApplication).sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
-  if (list.length) localStorage.setItem(allKey, JSON.stringify(list.slice(0, 50)))
-  return list
+    staleKeys.forEach(key => localStorage.removeItem(key))
+    if (rows.length) localStorage.setItem(allKey, JSON.stringify(rows.slice(0, 50)))
+    else localStorage.removeItem(allKey)
+  } catch {/* penyimpanan browser tidak tersedia */}
 }
 
 const mergeDocuments = (remote = {}, local = {}) => {
@@ -269,8 +268,9 @@ export default function CreditApplicationsPage() {
   const drawing = useRef(false)
   const manualSignatureRef = useRef(null)
   const manualSignatureDrawing = useRef(false)
-  // Tampilkan cache lokal segera; server menyegarkan data di belakang layar.
-  const [items, setItems] = useState(readAll)
+  // Kredit resmi selalu berasal dari server agar cache perangkat lama tidak
+  // menampilkan kembali data uji yang sudah dihapus.
+  const [items, setItems] = useState([])
   const [signaturePad, setSignaturePad] = useState(null)
   const [signatureDrawn, setSignatureDrawn] = useState(false)
   const [query, setQuery] = useState('')
@@ -360,24 +360,10 @@ export default function CreditApplicationsPage() {
   // replaces this short-lived cache with the saved server response.
   const refresh = () => setItems(readAll())
   const refreshRemote = async () => {
-    let remote = await request('/agent-credit/applications')
+    const remote = await request('/agent-credit/applications')
     if (!Array.isArray(remote)) return
-    // Migrasi aman untuk pengajuan lama yang dahulu hanya tersimpan pada
-    // browser pembuatnya. Hanya ID yang benar-benar belum ada di server yang
-    // dikirim, sehingga data server dari perangkat lain tidak pernah ditimpa.
-    const remoteIds = new Set(remote.map(item => item?.id).filter(Boolean))
-    const missingLocal = readAll().filter(item => item?.id && !remoteIds.has(item.id))
-    if (missingLocal.length) {
-      await Promise.all(missingLocal.map(item => request(`/agent-credit/applications/${encodeURIComponent(item.id)}`, {
-        method: 'PUT',
-        body: JSON.stringify(item),
-      }).catch(() => null)))
-      remote = await request('/agent-credit/applications')
-      if (!Array.isArray(remote)) return
-    }
-    // Server data wins. This prevents stale browser cache from overwriting
-    // signatures, documents, status and repayments from other users.
     const nextItems = remote.map(normalizeApplication)
+    replaceCreditCache(nextItems)
     setItems(current => JSON.stringify(current) === JSON.stringify(nextItems) ? current : nextItems)
   }
 
@@ -393,8 +379,8 @@ export default function CreditApplicationsPage() {
       if (!active || inFlight || document.hidden) return schedule(45000)
       inFlight = true
       try { await refreshRemote() } catch {
-        const cached = readAll()
-        setItems(current => JSON.stringify(current) === JSON.stringify(cached) ? current : cached)
+        // Pertahankan tampilan terakhir pada gangguan jaringan, tetapi jangan
+        // memulihkan atau mengirim ulang cache kredit lama ke server.
       } finally {
         inFlight = false
         schedule(45000)

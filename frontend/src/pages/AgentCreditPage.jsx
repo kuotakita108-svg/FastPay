@@ -46,35 +46,6 @@ const terms = [
 const defaultRank = {name: 'Agent Pemula', limit: 500000, badge: 'BRONZE', tone: 'bronze'}
 const finalCreditStatus = ['Disetujui', 'Ditolak']
 
-const readJSON = (key, fallback = []) => {
-  try { return JSON.parse(localStorage.getItem(key)) || fallback } catch { return fallback }
-}
-
-// Older releases used the account id in the local-storage key. Once the
-// persistent server account was created its id changed, so look for the old
-// records by agent identity as well. This runs only to import the current
-// agent's own historical applications, never records from another agent.
-const legacyApplicationsFor = user => {
-  const found = new Map()
-  const identity = [user?.id, user?.username, user?.name].filter(Boolean).map(value => String(value).trim().toLowerCase())
-  const belongsToUser = item => {
-    const values = [item?.userId, item?.userName, item?.form?.agentName].filter(Boolean).map(value => String(value).trim().toLowerCase())
-    return values.some(value => identity.includes(value))
-  }
-  const add = rows => (Array.isArray(rows) ? rows : []).forEach(item => {
-    if (item?.id && belongsToUser(item)) found.set(item.id, item)
-  })
-  add(readJSON('kuotakita_agent_credit_all'))
-  try {
-    for (let index = 0; index < localStorage.length; index += 1) {
-      const key = localStorage.key(index)
-      if (!key?.startsWith('kuotakita_agent_credit_') || key.includes('repayments') || key.endsWith('_all')) continue
-      add(readJSON(key))
-    }
-  } catch {/* browser storage unavailable */}
-  return [...found.values()]
-}
-
 function DocUpload({item, value, onOpenCamera}) {
   const state = value?.status || ''
   return <button type="button" className={`agent-doc-upload ${state === 'ok' ? 'filled' : ''} ${state === 'error' ? 'error' : ''} ${state === 'checking' ? 'checking' : ''}`} onClick={() => onOpenCamera(item)}>
@@ -216,25 +187,17 @@ export default function AgentCreditPage() {
   }, [cameraDoc])
 
   useEffect(() => {
-    const legacy = legacyApplicationsFor(user)
-    request('/me/agent-credit').then(async remote => {
+    request('/me/agent-credit').then(remote => {
       if (!Array.isArray(remote)) return
-      // Import only missing historical records. Existing server records win,
-      // so an old browser cache cannot overwrite decisions or repayments.
-      const remoteIDs = new Set(remote.map(item => item?.id))
-      const missingLegacy = legacy.filter(item => item?.id && !remoteIDs.has(item.id))
-      if (missingLegacy.length) {
-        await Promise.all(missingLegacy.map(item => request('/me/agent-credit', {method: 'POST', body: JSON.stringify(item)}).catch(() => null)))
-        remote = await request('/me/agent-credit')
-      }
-      const rows = Array.isArray(remote) ? remote : []
+      // PostgreSQL adalah sumber data kredit resmi. Cache browser lama tidak
+      // boleh menghidupkan kembali pengajuan uji yang sudah dihapus di server.
+      const rows = remote
       setApplications(rows)
       setApplication(rows[0] || null)
       setShowForm(false)
     }).catch(() => {
-      // Offline display only; once online the server always replaces this cache.
-      setApplications(legacy)
-      setApplication(legacy[0] || null)
+      setApplications([])
+      setApplication(null)
       setShowForm(false)
     })
   }, [user?.id])
