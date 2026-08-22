@@ -7,6 +7,7 @@ import {ToastProvider} from './context/ToastContext'
 import {AuthProvider} from './context/AuthContext'
 import {env} from './config/env'
 import AppErrorBoundary from './components/common/AppErrorBoundary'
+import {clearRecoveryMarker,recoverApplication} from './utils/recoverApplication'
 import heroImage from './assets/images/kuotakita-ppob-hero-v4.webp'
 import './styles/global.css'
 
@@ -23,9 +24,17 @@ if (window.location.pathname === '/login') {
 
 // PWA KuotaKita memakai service worker berversi agar manifest dan ikon instalasi
 // terbaru menggantikan aset lama pada perangkat yang sudah pernah membuka app.
+// Vite memancarkan event ini ketika HTML lama meminta chunk yang sudah diganti
+// saat deploy. Pulihkan cache satu kali tanpa menjebak pengguna di reload loop.
+window.addEventListener('vite:preloadError',event=>{
+  event.preventDefault()
+  recoverApplication({automatic:true})
+})
+window.setTimeout(clearRecoveryMarker,12000)
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js?v=5').then(registration => registration.update()).catch(() => {})
+    navigator.serviceWorker.register('/sw.js?v=6').then(registration => registration.update()).catch(() => {})
   }, {once: true})
 }
 
