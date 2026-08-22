@@ -1,7 +1,7 @@
 import {useState} from 'react'
 import {Link, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
-import {Activity, BarChart3, BookOpenCheck, Boxes, CalendarClock, Camera, CheckCircle2, ChevronDown, CircleHelp, ClipboardCheck, CreditCard, FileCheck2, Headphones, Landmark, LockKeyhole, LogOut, PhoneCall, Settings, ShieldCheck, UserPlus, Users, WalletCards} from 'lucide-react'
+import {Activity, BarChart3, BookOpenCheck, Boxes, CalendarClock, Camera, CheckCircle2, ChevronDown, CircleHelp, ClipboardCheck, CreditCard, FileCheck2, Headphones, Landmark, LockKeyhole, LogOut, PhoneCall, Settings, ShieldCheck, UserCheck, UserPlus, Users, WalletCards} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
 
@@ -28,22 +28,27 @@ const marketingNavigation = [
 
 const operatorNavigation = [
   {
-    section: 'OPERASIONAL KEMITRAAN',
+    section: 'KENDALI OPERASIONAL',
     items: [
-      {to: '/credit-applications', label: 'Pusat Kendali', icon: ShieldCheck},
-      {to: '/credit-applications?view=verifikasi', label: 'Verifikasi Pengajuan', icon: ClipboardCheck},
+      {to: '/credit-applications', label: 'Dashboard', icon: ShieldCheck},
+      {to: '/credit-applications?view=agent', label: 'Data Agent', icon: Users},
+      {to: '/credit-applications?view=pengajuan-modal', label: 'Pengajuan Modal', icon: ClipboardCheck},
+      {to: '/credit-applications?view=modal-limit', label: 'Modal & Limit', icon: WalletCards},
     ],
   },
   {
-    section: 'PENGAWASAN AGENT',
+    section: 'AKTIVITAS & RISIKO',
     items: [
-      {to: '/credit-applications?view=peminjam', label: 'Portofolio Agent', icon: CheckCircle2},
-      {to: '/credit-applications?view=suspend', label: 'Status & Risiko', icon: LockKeyhole},
+      {to: '/credit-applications?view=transaksi-agent', label: 'Transaksi Agent', icon: Activity},
+      {to: '/credit-applications?view=monitoring-agent', label: 'Monitoring Agent', icon: BarChart3},
+      {to: '/credit-applications?view=follow-up', label: 'Follow-up Marketing', icon: PhoneCall},
+      {to: '/credit-applications?view=penagihan', label: 'Penagihan & Putus Mitra', icon: LockKeyhole},
     ],
   },
-  {section: 'KOORDINASI TIM', items: [
-    {to: '/credit-applications?view=laporan', label: 'Penugasan Lapangan', icon: PhoneCall},
-    {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Marketing', icon: Users},
+  {section: 'TIM & SISTEM', items: [
+    {to: '/credit-applications?view=marketing', label: 'Data Marketing', icon: UserCheck},
+    {to: '/credit-applications?view=audit', label: 'Riwayat & Audit Log', icon: FileCheck2},
+    {to: '/credit-applications?view=pengaturan', label: 'Pengaturan Operator', icon: Settings},
   ]},
 ]
 
