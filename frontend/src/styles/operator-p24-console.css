@@ -108,6 +108,36 @@
   .panel-workspace-shell .operator-review .marketing-report-panel>article:nth-child(-n+2){border-bottom:1px solid var(--op-line)!important}
 }
 
+/* Pinjaman retail: satu akun, beberapa riwayat, mengikuti pola konsol P24. */
+.operator-review .operator-loan-accounts{display:grid;gap:14px;margin-top:16px}
+.operator-review .operator-loan-account{overflow:hidden;border:1px solid #cbdce8;border-radius:18px;background:#f7fbff;box-shadow:0 14px 34px rgba(0,31,54,.12)}
+.operator-review .operator-loan-account-head{display:flex;width:100%;min-height:82px;align-items:center;justify-content:space-between;gap:24px;padding:18px 22px;border:0;background:linear-gradient(135deg,#fff 0%,#edf8ff 100%);color:#102b40;text-align:left;cursor:pointer}
+.operator-review .operator-loan-account-head>span{display:grid;gap:4px;min-width:0}
+.operator-review .operator-loan-account-head b{font-size:17px;line-height:1.25;text-transform:uppercase}
+.operator-review .operator-loan-account-head small{overflow:hidden;color:#698298;font-size:11px;text-overflow:ellipsis;white-space:nowrap}
+.operator-review .operator-loan-account-head em{color:#168fc5;font-size:11px;font-style:normal;font-weight:800}
+.operator-review .operator-loan-account-head svg{width:20px;flex:0 0 20px;color:#52748e;transition:transform .2s ease}
+.operator-review .operator-loan-account.open .operator-loan-account-head svg{transform:rotate(180deg)}
+.operator-review .operator-loan-account-body{padding:0 22px 8px;background:#fff}
+.operator-review .operator-loan-history{padding:18px 0;border-top:1px solid #dbe7ef}
+.operator-review .operator-loan-history-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,auto);gap:28px;align-items:start}
+.operator-review .operator-loan-history-main,.operator-review .operator-loan-history-finance{display:grid;gap:5px;min-width:0}
+.operator-review .operator-loan-history-main b{overflow-wrap:anywhere;color:#112c42;font-size:13px}
+.operator-review .operator-loan-history-main small,.operator-review .operator-loan-history-main span{color:#70879a;font-size:10px}
+.operator-review .operator-loan-history-main span{margin-top:4px;color:#344f64;font-weight:700}
+.operator-review .operator-loan-history-finance{text-align:right;justify-items:end}
+.operator-review .operator-loan-history-finance strong{color:#102b40;font-size:15px}
+.operator-review .operator-loan-history-finance small,.operator-review .operator-loan-history-finance time{color:#7d91a2;font-size:9px}
+.operator-review .operator-loan-history-finance em{padding:5px 9px;border-radius:999px;font-size:9px;font-style:normal;font-weight:900;text-transform:uppercase}
+.operator-review .operator-loan-history-finance em.success{background:#dcf8e9;color:#087b50}.operator-review .operator-loan-history-finance em.failed{background:#ffe8ec;color:#c93850}.operator-review .operator-loan-history-finance em.pending{background:#fff0cc;color:#aa6a00}
+.operator-review .operator-loan-history-actions{display:flex;gap:9px;margin-top:14px}
+.operator-review .operator-loan-history-actions button{min-height:36px;padding:0 15px;border:1px solid #b8d5e7;border-radius:9px;background:#fff;color:#24506b;font-size:10px;font-weight:800;cursor:pointer}
+.operator-review .operator-loan-history-actions button:first-child{border-color:#129dd5;background:#129dd5;color:#fff}
+.operator-review .operator-loan-inline-note{display:flex;gap:9px;align-items:center;margin-top:10px;padding:10px 12px;border-radius:9px;background:#eef8fd;color:#527086;font-size:9px}.operator-review .operator-loan-inline-note b{color:#173c54}
+@media(max-width:760px){
+ .operator-review .operator-loan-accounts{gap:10px;margin-top:10px}.operator-review .operator-loan-account{border-radius:12px}.operator-review .operator-loan-account-head{min-height:70px;gap:12px;padding:14px}.operator-review .operator-loan-account-head b{font-size:13px}.operator-review .operator-loan-account-head small,.operator-review .operator-loan-account-head em{font-size:9px}.operator-review .operator-loan-account-body{padding:0 14px 4px}.operator-review .operator-loan-history{padding:14px 0}.operator-review .operator-loan-history-row{grid-template-columns:1fr;gap:11px}.operator-review .operator-loan-history-finance{grid-template-columns:1fr auto;align-items:center;text-align:left;justify-items:start}.operator-review .operator-loan-history-finance strong,.operator-review .operator-loan-history-finance small{grid-column:1}.operator-review .operator-loan-history-finance em,.operator-review .operator-loan-history-finance time{grid-column:2}.operator-review .operator-loan-history-finance em{grid-row:1}.operator-review .operator-loan-history-finance time{grid-row:2}.operator-review .operator-loan-history-actions{display:grid;grid-template-columns:1fr 1fr}.operator-review .operator-loan-history-actions button{padding:0 8px;font-size:9px}.operator-review .operator-loan-inline-note{align-items:flex-start;flex-direction:column}
+}
+
 /* Accordion pinjaman retail: override aturan kartu lama agar susunan tetap rapi. */
 .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-loan-groups>.operator-loan-card{
   display:block!important;overflow:hidden!important;margin:0!important;padding:0!important;border:1px solid #d5e3ed!important;border-radius:13px!important;background:#f7fbfe!important;color:#10283a!important;box-shadow:0 7px 20px rgba(0,0,0,.08)!important

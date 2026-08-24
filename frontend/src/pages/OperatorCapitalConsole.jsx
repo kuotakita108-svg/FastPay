@@ -18,6 +18,25 @@ const OPERATOR_VIEW_ALIASES={
 }
 const OPERATOR_VIEWS=new Set(['overview','pinjaman-retail','konter-tidak-transaksi','bank','mapping-provider','transaksi-retail','transaksi-provider','audit-provider'])
 
+function RetailLoanWorkspaceP24({applications,agents,onRefresh}){
+ const[q,setQ]=useState(''),[tab,setTab]=useState('PENGAJUAN'),[status,setStatus]=useState('MENUNGGU'),[openId,setOpenId]=useState(''),[detailMode,setDetailMode]=useState('')
+ const names=new Map(agents.map(agent=>[agent.id,agent.name]))
+ const rows=applications.filter(item=>{const form=formOf(item),state=String(item.status||'').toUpperCase();return(status==='SEMUA'||state.includes(status))&&`${item.id} ${form.agentName||names.get(item.userId)||''} ${form.email||''}`.toLowerCase().includes(q.toLowerCase())})
+ const groups=[...rows.reduce((map,item)=>{const form=formOf(item),name=form.agentName||names.get(item.userId)||'Agent',contact=form.email||form.whatsapp||'Kontak belum dilengkapi',master=form.marketingName||item.marketingOwnerName||'Marketing belum ditentukan',key=String(item.userId||contact||name);if(!map.has(key))map.set(key,{key,name,contact,master,items:[]});map.get(key).items.push(item);return map},new Map()).values()]
+ return <section className="operator-retail-loans">
+  <header className="operator-p24-page-head"><span>RETAIL AGENT CREDIT</span><h2>Pinjaman Modal Retail</h2><p>Verifikasi dokumen dan review pengajuan modal Agent tanpa bunga dan tanpa tempo.</p></header>
+  <div className="operator-loan-toolbar"><nav><button className={tab==='PENGAJUAN'?'active':''} onClick={()=>setTab('PENGAJUAN')}>Pengajuan</button><button className={tab==='DOKUMEN'?'active':''} onClick={()=>setTab('DOKUMEN')}>Dokumen</button></nav><select value={status} onChange={event=>setStatus(event.target.value)}><option value="MENUNGGU">Pending</option><option value="DISETUJUI">Disetujui</option><option value="DITOLAK">Ditolak</option><option value="SEMUA">Semua</option></select><label><Search/><input value={q} onChange={event=>setQ(event.target.value)} placeholder="Cari ref, Agent, atau email"/></label><button className="operator-p24-refresh" onClick={onRefresh}>Refresh</button></div>
+  {tab==='DOKUMEN'?<DocumentWorkspace rows={rows} names={names}/>:<div className="operator-loan-accounts">{groups.map(group=>{const isOpen=openId===group.key;return <article className={`operator-loan-account ${isOpen?'open':''}`} key={group.key}>
+   <button type="button" className="operator-loan-account-head" aria-expanded={isOpen} onClick={()=>{setOpenId(isOpen?'':group.key);setDetailMode('')}}><span><b>{group.name}</b><small>{group.contact} · Master: {group.master}</small><em>{group.items.length} riwayat pinjaman</em></span><ChevronDown/></button>
+   {isOpen&&<div className="operator-loan-account-body">{group.items.map(item=>{const form=formOf(item),state=String(item.status||'Menunggu'),paid=Number(item.paidAmount||0),total=Number(item.approvedCapital||form.amount||0),remaining=Math.max(0,total-paid),statusClass=state.toLowerCase().includes('tolak')?'failed':state.toLowerCase().includes('setuju')?'success':'pending',mode=detailMode.startsWith(`${item.id}:`)?detailMode.split(':')[1]:'';return <section className="operator-loan-history" key={item.id}>
+    <div className="operator-loan-history-row"><div className="operator-loan-history-main"><b>{item.id} · {group.name}</b><small>{group.contact} · Master: {group.master}</small><span>Tujuan: {form.purpose||form.businessPurpose||form.tujuan||'-'}</span></div><div className="operator-loan-history-finance"><strong>{rupiah(total)}</strong><small>Dibayar {rupiah(paid)} · Sisa {rupiah(remaining)}</small><em className={statusClass}>{state}</em><time>{dt(item.createdAt||item.created_at)}</time></div></div>
+    <div className="operator-loan-history-actions"><button type="button" onClick={()=>setDetailMode(mode==='payment'?'':`${item.id}:payment`)}>Catat Pembayaran</button><button type="button" onClick={()=>setDetailMode(mode==='history'?'':`${item.id}:history`)}>Riwayat Pembayaran</button></div>
+    {mode==='payment'&&<div className="operator-loan-inline-note"><b>Pencatatan pembayaran</b><span>Gunakan menu verifikasi pelunasan agar nominal dan bukti pembayaran tercatat resmi.</span></div>}{mode==='history'&&<div className="operator-loan-inline-note"><b>Riwayat pembayaran</b><span>{paid>0?`Total pembayaran tercatat ${rupiah(paid)}.`:'Belum ada pembayaran yang tercatat.'}</span></div>}
+   </section>})}</div>}
+  </article>})}{!groups.length&&<p className="operator-p24-empty-row">Tidak ada pengajuan untuk filter ini.</p>}</div>}
+ </section>
+}
+
 export default function OperatorCapitalConsole(){
  const [params]=useSearchParams(),requestedView=params.get('view')||'overview'
  const resolvedView=OPERATOR_VIEW_ALIASES[requestedView]||requestedView
@@ -65,7 +84,7 @@ export default function OperatorCapitalConsole(){
   {view==='penagihan'&&<CollectionWorkspace agents={agents} appByAgent={appByAgent} onFollowUp={followUp}/>}
   {view==='marketing'&&<MarketingPerformance agents={agents}/>}
   {view==='pengaturan'&&<OperatorSettings/>}
-  {view==='pinjaman-retail'&&<RetailLoanWorkspace applications={applications} agents={agents} onRefresh={load} onInspect={item=>{setSelected(item);setAmount(String(formOf(item).amount||item.approvedCapital||''))}}/>}
+  {view==='pinjaman-retail'&&<RetailLoanWorkspaceP24 applications={applications} agents={agents} onRefresh={load}/>}
   {view==='konter-tidak-transaksi'&&<AgentHealth agents={agents} appByAgent={appByAgent} onFollowUp={followUp} onRefresh={load}/>}
   {view==='bank'&&<ProviderCatalog products={providerProducts} loading={providerLoading} bankOnly/>}
   {view==='mapping-provider'&&<ProviderCatalog products={providerProducts} loading={providerLoading}/>}
