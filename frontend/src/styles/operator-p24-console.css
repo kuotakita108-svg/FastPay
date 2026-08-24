@@ -351,6 +351,85 @@
 @media(max-width:900px){.operator-inactive-toolbar{grid-template-columns:1fr 1fr}.operator-inactive-toolbar nav,.operator-inactive-toolbar .search{grid-column:1/-1}.operator-document-row{grid-template-columns:1fr auto}.operator-document-row>span{grid-column:1/-1}}
 @media(max-width:560px){.operator-inactive-toolbar{grid-template-columns:1fr}.operator-inactive-toolbar nav,.operator-inactive-toolbar .search{grid-column:auto}.operator-inactive-toolbar nav{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}.operator-inactive-toolbar nav button{flex:0 0 auto}.operator-inactive-summary{font-size:12px}.operator-document-groups>article>header,.operator-document-row{padding:14px}}
 
+/* Kredit Retail final: identitas visual dan alur kerja khusus, tidak memakai
+   bentuk tabel/monitoring dari menu Operator lain. */
+.operator-capital-console .operator-retail-summary{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));overflow:hidden;
+  border:1px solid #1c405a;border-radius:12px;background:#071827
+}
+.operator-capital-console .operator-retail-summary>span{
+  display:grid;gap:4px;min-height:68px;box-sizing:border-box;padding:13px 16px;
+  border-right:1px solid #1c405a
+}
+.operator-capital-console .operator-retail-summary>span:last-child{border-right:0}
+.operator-capital-console .operator-retail-summary b{color:#f5fbff;font-size:19px;line-height:1.15}
+.operator-capital-console .operator-retail-summary small{color:#91abc0;font-size:9px;font-weight:700}
+.operator-capital-console .operator-loan-accounts{display:grid;gap:10px;margin:0}
+.operator-capital-console .operator-loan-account{
+  overflow:hidden;border:1px solid #1b405b;border-radius:12px;background:#081a29;
+  box-shadow:0 10px 26px rgba(0,0,0,.16)
+}
+.operator-capital-console .operator-loan-account-head{
+  display:flex;width:100%;min-height:72px;box-sizing:border-box;align-items:center;
+  justify-content:space-between;gap:18px;padding:14px 17px;border:0;
+  background:linear-gradient(110deg,#0a2133,#0c2940);color:#fff;text-align:left;cursor:pointer
+}
+.operator-capital-console .operator-loan-account-head>span{display:grid;gap:3px;min-width:0}
+.operator-capital-console .operator-loan-account-head b{color:#fff;font-size:13px;line-height:1.25}
+.operator-capital-console .operator-loan-account-head small{
+  overflow:hidden;color:#a9c0d2;font-size:9px;text-overflow:ellipsis;white-space:nowrap
+}
+.operator-capital-console .operator-loan-account-head em{color:#56d9ef;font-size:9px;font-style:normal;font-weight:800}
+.operator-capital-console .operator-loan-account-head svg{width:18px;flex:0 0 18px;color:#78a7c3;transition:transform .2s ease}
+.operator-capital-console .operator-loan-account.open .operator-loan-account-head svg{transform:rotate(180deg)}
+.operator-capital-console .operator-loan-account-body{padding:0 17px 4px;background:#071725}
+.operator-capital-console .operator-loan-history{padding:15px 0;border-top:1px solid #18384f}
+.operator-capital-console .operator-loan-history-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:22px;align-items:start}
+.operator-capital-console :is(.operator-loan-history-main,.operator-loan-history-finance){display:grid;gap:4px;min-width:0}
+.operator-capital-console .operator-loan-history-main b{overflow-wrap:anywhere;color:#f4f9fd;font-size:11px}
+.operator-capital-console .operator-loan-history-main :is(small,span){color:#9ab1c3;font-size:9px}
+.operator-capital-console .operator-loan-history-main span{margin-top:3px;color:#d0dfeb;font-weight:700}
+.operator-capital-console .operator-loan-history-finance{text-align:right;justify-items:end}
+.operator-capital-console .operator-loan-history-finance strong{color:#fff;font-size:13px}
+.operator-capital-console .operator-loan-history-finance :is(small,time){color:#91a9bb;font-size:8px}
+.operator-capital-console .operator-loan-history-finance em{padding:4px 8px;border-radius:999px;font-size:8px;font-style:normal;font-weight:900;text-transform:uppercase}
+.operator-capital-console .operator-loan-history-finance em.success{background:#123e35;color:#53e3aa}
+.operator-capital-console .operator-loan-history-finance em.failed{background:#431d29;color:#ff949c}
+.operator-capital-console .operator-loan-history-finance em.pending{background:#493719;color:#f8c866}
+.operator-capital-console .operator-loan-history-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.operator-capital-console .operator-loan-history-actions button{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:0 12px;
+  border:1px solid #28506c;border-radius:8px;background:#0b2133;color:#cfe1ed;font-size:9px;font-weight:800;cursor:pointer
+}
+.operator-capital-console .operator-loan-history-actions button.primary{
+  border-color:#1dbfe6;background:linear-gradient(135deg,#18bde4,#167fd5);color:#fff
+}
+.operator-capital-console .operator-loan-history-actions button svg{width:13px;height:13px}
+.operator-capital-console .operator-loan-inline-note{display:flex;gap:8px;align-items:center;margin-top:9px;padding:9px 11px;border-radius:8px;background:#0b2538;color:#a8bfd0;font-size:9px}
+.operator-capital-console .operator-loan-inline-note b{color:#fff}
+.operator-capital-console .operator-monitoring-ok{color:#50dda7;font-size:9px;font-weight:900}
+
+@media(max-width:760px){
+  .operator-capital-console .operator-retail-summary{grid-template-columns:1fr 1fr;border-radius:9px}
+  .operator-capital-console .operator-retail-summary>span{min-height:57px;padding:10px 12px}
+  .operator-capital-console .operator-retail-summary>span:nth-child(2){border-right:0}
+  .operator-capital-console .operator-retail-summary>span:nth-child(-n+2){border-bottom:1px solid #1c405a}
+  .operator-capital-console .operator-retail-summary b{font-size:16px}
+  .operator-capital-console .operator-loan-account-head{min-height:64px;padding:12px;gap:10px}
+  .operator-capital-console .operator-loan-account-body{padding:0 12px 3px}
+  .operator-capital-console .operator-loan-history{padding:12px 0}
+  .operator-capital-console .operator-loan-history-row{grid-template-columns:1fr;gap:9px}
+  .operator-capital-console .operator-loan-history-finance{grid-template-columns:1fr auto;text-align:left;justify-items:start}
+  .operator-capital-console .operator-loan-history-finance :is(strong,small){grid-column:1}
+  .operator-capital-console .operator-loan-history-finance :is(em,time){grid-column:2}
+  .operator-capital-console .operator-loan-history-finance em{grid-row:1}
+  .operator-capital-console .operator-loan-history-finance time{grid-row:2}
+  .operator-capital-console .operator-loan-history-actions{display:grid;grid-template-columns:1fr 1fr}
+  .operator-capital-console .operator-loan-history-actions .primary{grid-column:1/-1}
+  .operator-capital-console .operator-loan-history-actions button{padding:0 7px}
+  .operator-capital-console .operator-loan-inline-note{align-items:flex-start;flex-direction:column}
+}
+
 /* Dashboard role: kartu operasional lebih cerah seperti panel P24, tanpa mengurangi keterbacaan. */
 .panel-workspace-shell.role-marketing .marketing-review .marketing-workspace .marketing-task-grid>article:nth-child(1),
 .panel-workspace-shell:is(.role-operator,.role-analis) .operator-review .operator-workspace .marketing-task-grid>article:nth-child(1){border-color:#16745f!important;background:linear-gradient(135deg,#075444 0%,#07362f 48%,#091a26 100%)!important;box-shadow:inset 0 1px #56e6bd24,0 9px 24px #00b8891c!important}
