@@ -45,7 +45,6 @@ const operatorNavigation = [
     ],
   },
   {section: 'AUDIT', items: [
-    {to: '/credit-applications?view=audit-pinjaman', label: 'Audit Pinjaman', icon: FileCheck2},
     {to: '/credit-applications?view=audit-provider', label: 'Audit Status Provider', icon: ShieldCheck},
   ]},
 ]
