@@ -111,9 +111,24 @@
 /* Data Agent: kolom operasional lengkap dan aksi tetap sejajar. */
 .panel-workspace-shell .operator-review .operator-agent-portfolio .operator-agent-table .head,
 .panel-workspace-shell .operator-review .operator-agent-portfolio .operator-agent-table > article {
-  min-width: 1380px !important;
-  grid-template-columns: 44px minmax(145px, 1.05fr) minmax(155px, 1.1fr) minmax(135px, .95fr) minmax(125px, .88fr) minmax(135px, .92fr) minmax(125px, .88fr) minmax(145px, 1fr) minmax(292px, 1.85fr) !important;
-  column-gap: 14px !important;
+  min-width: 1240px !important;
+  grid-template-columns: 36px minmax(125px, 1fr) minmax(130px, 1.05fr) minmax(110px, .88fr) minmax(105px, .84fr) minmax(112px, .9fr) minmax(110px, .88fr) minmax(120px, .96fr) minmax(245px, 1.65fr) !important;
+  column-gap: 10px !important;
+}
+
+.panel-workspace-shell .operator-review .operator-agent-portfolio .operator-agent-table .head {
+  padding: 9px 12px !important;
+  font-size: 9px !important;
+}
+
+.panel-workspace-shell .operator-review .operator-agent-portfolio .operator-agent-table > article {
+  min-height: 52px !important;
+  padding: 10px 12px !important;
+}
+
+.panel-workspace-shell .operator-review .operator-agent-portfolio .operator-agent-table > article > :not(.operator-agent-actions) {
+  font-size: 9px !important;
+  line-height: 1.35 !important;
 }
 
 .panel-workspace-shell .operator-review .operator-agent-portfolio .operator-agent-table > article > code {
