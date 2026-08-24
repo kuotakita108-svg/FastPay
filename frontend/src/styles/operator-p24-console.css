@@ -108,6 +108,90 @@
   .panel-workspace-shell .operator-review .marketing-report-panel>article:nth-child(-n+2){border-bottom:1px solid var(--op-line)!important}
 }
 
+/* Data Agent: kolom operasional lengkap dan aksi tetap sejajar. */
+.panel-workspace-shell .operator-review .operator-agent-portfolio .operator-agent-table .head,
+.panel-workspace-shell .operator-review .operator-agent-portfolio .operator-agent-table > article {
+  min-width: 1380px !important;
+  grid-template-columns: 44px minmax(145px, 1.05fr) minmax(155px, 1.1fr) minmax(135px, .95fr) minmax(125px, .88fr) minmax(135px, .92fr) minmax(125px, .88fr) minmax(145px, 1fr) minmax(292px, 1.85fr) !important;
+  column-gap: 14px !important;
+}
+
+.panel-workspace-shell .operator-review .operator-agent-portfolio .operator-agent-table > article > code {
+  color: #43d9ec;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.panel-workspace-shell .operator-review .operator-agent-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+}
+
+.panel-workspace-shell .operator-review .operator-agent-actions button {
+  display: inline-flex !important;
+  width: auto !important;
+  min-height: 30px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  padding: 0 9px !important;
+  border: 1px solid #24617f !important;
+  border-radius: 7px !important;
+  background: #0a3047 !important;
+  color: #edf9ff !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+}
+
+.panel-workspace-shell .operator-review .operator-agent-actions button svg {
+  width: 12px;
+  height: 12px;
+}
+
+.panel-workspace-shell .operator-review .operator-agent-actions button.danger {
+  border-color: #743447 !important;
+  background: #321822 !important;
+  color: #ffb8c3 !important;
+}
+
+.panel-workspace-shell .operator-review .operator-agent-actions button:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
+@media (max-width: 760px) {
+  .panel-workspace-shell .operator-review .operator-agent-portfolio .operator-agent-table > article {
+    min-width: 0 !important;
+    grid-template-columns: 1fr 1fr !important;
+    column-gap: 0 !important;
+  }
+
+  .panel-workspace-shell .operator-review .operator-agent-actions {
+    grid-column: 1 / -1 !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    min-height: 48px !important;
+    padding: 7px !important;
+    border-right: 0 !important;
+  }
+
+  .panel-workspace-shell .operator-review .operator-agent-actions::before {
+    display: none !important;
+  }
+
+  .panel-workspace-shell .operator-review .operator-agent-actions button {
+    width: 100% !important;
+    min-height: 34px !important;
+    padding: 0 5px !important;
+    font-size: 8px !important;
+  }
+}
+
 /* Pinjaman retail: satu akun, beberapa riwayat, mengikuti pola konsol P24. */
 .operator-review .operator-loan-accounts{display:grid;gap:14px;margin-top:16px}
 .operator-review .operator-loan-account{overflow:hidden;border:1px solid #cbdce8;border-radius:18px;background:#f7fbff;box-shadow:0 14px 34px rgba(0,31,54,.12)}
