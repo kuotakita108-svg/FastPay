@@ -552,3 +552,71 @@
   .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article :is(b,strong,em){font-size:9px!important;white-space:nowrap!important}
   .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin,.role-master) .operator-review .marketing-scoreboard-scroll>article small{font-size:7px!important;white-space:nowrap!important}
 }
+
+/* Final Pinjaman Retail — mengikuti susunan P24: banner, filter satu baris, hasil langsung. */
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans{
+  display:grid!important;gap:16px!important;padding:0!important;border:0!important;background:transparent!important;overflow:visible!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans>.operator-p24-page-head{
+  display:block!important;box-sizing:border-box!important;min-height:118px!important;margin:0!important;padding:25px 28px!important;
+  border:1px solid #183750!important;border-radius:14px!important;
+  background:linear-gradient(108deg,#081a2a 0%,#0b172c 58%,#172651 100%)!important;
+  box-shadow:0 14px 36px rgba(0,0,0,.2)!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans>.operator-p24-page-head>span{
+  display:block!important;color:#51dced!important;font-size:10px!important;font-weight:900!important;letter-spacing:.2em!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans>.operator-p24-page-head h2{
+  margin:7px 0 8px!important;color:#fff!important;font-size:25px!important;line-height:1.1!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans>.operator-p24-page-head p{
+  display:block!important;margin:0!important;color:#a9bfd1!important;font-size:12px!important;line-height:1.4!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans>.operator-loan-toolbar{
+  display:grid!important;grid-template-columns:auto 150px minmax(260px,1fr) auto!important;align-items:center!important;gap:9px!important;
+  box-sizing:border-box!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-toolbar nav{
+  display:flex!important;gap:7px!important;min-width:max-content!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-toolbar :is(button,select,label){
+  box-sizing:border-box!important;min-height:41px!important;border:1px solid #294965!important;border-radius:10px!important;background:#0a1830!important;color:#e7f1f9!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-toolbar button{
+  padding:0 18px!important;font-size:10px!important;font-weight:800!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-toolbar button.active{
+  border-color:#24c9ef!important;background:linear-gradient(135deg,#19bce5,#1587dc)!important;color:#fff!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-toolbar select{
+  width:100%!important;padding:0 13px!important;font-size:10px!important;font-weight:800!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-toolbar label{
+  display:flex!important;align-items:center!important;gap:9px!important;min-width:0!important;padding:0 14px!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-toolbar label input{
+  width:100%!important;min-width:0!important;border:0!important;outline:0!important;background:transparent!important;color:#fff!important;font-size:10px!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-toolbar .operator-p24-refresh{
+  margin:0!important;border-color:#24c9ef!important;background:linear-gradient(135deg,#19bce5,#1587dc)!important;color:#fff!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-groups{
+  display:block!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-p24-empty-row{
+  display:block!important;box-sizing:border-box!important;width:100%!important;min-height:48px!important;margin:0!important;padding:15px 18px!important;
+  border:1px solid #d7e5f0!important;border-radius:11px!important;background:#f1f7fd!important;color:#7c91a5!important;font-size:11px!important;line-height:1.5!important
+}
+
+@media(max-width:760px){
+ .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans{gap:10px!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans>.operator-p24-page-head{min-height:0!important;padding:15px!important;border-radius:10px!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans>.operator-p24-page-head h2{font-size:18px!important;margin:5px 0!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans>.operator-p24-page-head p{font-size:9px!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans>.operator-loan-toolbar{grid-template-columns:minmax(0,1fr) auto!important;gap:7px!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-toolbar nav{grid-column:1/-1!important;overflow-x:auto!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-toolbar select{grid-column:1!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-toolbar label{grid-column:1/-1!important;grid-row:auto!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-toolbar .operator-p24-refresh{grid-column:2!important;grid-row:2!important}
+ .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-p24-empty-row{min-height:43px!important;padding:13px 14px!important;font-size:9px!important;border-radius:8px!important}
+}
