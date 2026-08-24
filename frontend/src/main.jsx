@@ -10,9 +10,6 @@ import AppErrorBoundary from './components/common/AppErrorBoundary'
 import {clearRecoveryMarker,recoverApplication} from './utils/recoverApplication'
 import heroImage from './assets/images/kuotakita-ppob-hero-v4.webp'
 import './styles/global.css'
-// Loaded after the legacy stylesheet bundle so the final Operator theme cannot
-// be partially overwritten by older dark-console rules.
-import './styles/operator-workspace-light.css'
 
 // Hero adalah gambar pertama yang terlihat pada login dan beranda.
 // Preload membuatnya mulai diunduh tanpa menunggu komponen selesai dirender.

@@ -484,8 +484,9 @@ func (h *UserTransactionHandler) Pulsa24Balance(w http.ResponseWriter, r *http.R
 	response.JSON(w, http.StatusOK, map[string]any{"balance": result.Balance, "updated_at": time.Now()})
 }
 
-// Pulsa24Operations exposes the real server-side order ledger to Operator and
-// Admin. API keys and the provider PIN never leave the backend.
+// Pulsa24Operations exposes the real server-side order ledger to the Owner and
+// Operator. API keys, provider PIN, and the owner deposit balance never leave the
+// backend. Refund remains restricted to the Owner endpoint below.
 func (h *UserTransactionHandler) Pulsa24Operations(w http.ResponseWriter, r *http.Request) {
 	current, err := h.auth.CurrentUser(r.Header.Get("Authorization"))
 	if err != nil {
@@ -493,8 +494,8 @@ func (h *UserTransactionHandler) Pulsa24Operations(w http.ResponseWriter, r *htt
 		return
 	}
 	role := strings.ToLower(strings.TrimSpace(current.Role))
-	if role != "master" {
-		response.Error(w, http.StatusForbidden, "monitor H2H hanya dapat diakses Super Admin")
+	if role != "master" && role != "operator" {
+		response.Error(w, http.StatusForbidden, "log operasi H2H hanya dapat diakses Operator atau Super Admin")
 		return
 	}
 	if h.pulsa24 == nil || !h.pulsa24.Enabled() {

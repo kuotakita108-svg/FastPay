@@ -28,27 +28,25 @@ const marketingNavigation = [
 
 const operatorNavigation = [
   {
-    section: 'KENDALI OPERASIONAL',
+    section: 'OPERASIONAL',
     items: [
       {to: '/credit-applications', label: 'Dashboard', icon: ShieldCheck},
-      {to: '/credit-applications?view=agent', label: 'Data Agent', icon: Users},
-      {to: '/credit-applications?view=pengajuan-modal', label: 'Pengajuan Modal', icon: ClipboardCheck},
-      {to: '/credit-applications?view=modal-limit', label: 'Modal & Limit', icon: WalletCards},
+      {to: '/credit-applications?view=pinjaman-retail', label: 'Pinjaman Retail', icon: ClipboardCheck},
+      {to: '/credit-applications?view=konter-tidak-transaksi', label: 'Konter Tidak Transaksi', icon: Users},
+      {to: '/credit-applications?view=bank', label: 'Bank', icon: Landmark},
+      {to: '/credit-applications?view=mapping-provider', label: 'Mapping Provider', icon: Boxes},
     ],
   },
   {
-    section: 'AKTIVITAS & RISIKO',
+    section: 'TRANSAKSI',
     items: [
-      {to: '/credit-applications?view=transaksi-agent', label: 'Transaksi Agent', icon: Activity},
-      {to: '/credit-applications?view=monitoring-agent', label: 'Monitoring Agent', icon: BarChart3},
-      {to: '/credit-applications?view=follow-up', label: 'Follow-up Marketing', icon: PhoneCall},
-      {to: '/credit-applications?view=penagihan', label: 'Penagihan & Putus Mitra', icon: LockKeyhole},
+      {to: '/credit-applications?view=transaksi-retail', label: 'Transaksi Retail', icon: Activity},
+      {to: '/credit-applications?view=transaksi-provider', label: 'Transaksi Provider', icon: BarChart3},
     ],
   },
-  {section: 'TIM & SISTEM', items: [
-    {to: '/credit-applications?view=marketing', label: 'Data Marketing', icon: UserCheck},
-    {to: '/credit-applications?view=audit', label: 'Riwayat & Audit Log', icon: FileCheck2},
-    {to: '/credit-applications?view=pengaturan', label: 'Pengaturan Operator', icon: Settings},
+  {section: 'AUDIT', items: [
+    {to: '/credit-applications?view=audit-pinjaman', label: 'Audit Pinjaman', icon: FileCheck2},
+    {to: '/credit-applications?view=audit-provider', label: 'Audit Status Provider', icon: ShieldCheck},
   ]},
 ]
 
