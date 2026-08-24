@@ -108,6 +108,141 @@
   .panel-workspace-shell .operator-review .marketing-report-panel>article:nth-child(-n+2){border-bottom:1px solid var(--op-line)!important}
 }
 
+/* Final workspace operator: target the component itself (it is not always
+   rendered below .operator-review). Keep both retail screens visually equal. */
+.operator-capital-console :is(.operator-retail-loans,.operator-inactive-workspace){
+  display:grid!important;
+  gap:16px!important;
+  width:100%!important;
+  min-width:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+}
+.operator-capital-console :is(.operator-retail-loans,.operator-inactive-workspace)>.operator-p24-page-head{
+  display:flex!important;
+  align-items:center!important;
+  gap:16px!important;
+  box-sizing:border-box!important;
+  min-height:116px!important;
+  margin:0!important;
+  padding:24px 28px!important;
+  border:1px solid #1b405b!important;
+  border-radius:14px!important;
+  background:linear-gradient(108deg,#081b2b 0%,#0a1b35 58%,#172a57 100%)!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.22)!important;
+}
+.operator-capital-console .operator-retail-loans>.operator-p24-page-head{
+  display:block!important;
+}
+.operator-capital-console .operator-p24-page-head>i{
+  display:grid!important;
+  place-items:center!important;
+  flex:0 0 48px!important;
+  width:48px!important;
+  height:48px!important;
+  border-radius:13px!important;
+  background:linear-gradient(145deg,#ffd33d,#ef9410)!important;
+  color:#101a28!important;
+  box-shadow:0 9px 22px rgba(239,155,18,.22)!important;
+}
+.operator-capital-console .operator-p24-page-head>i svg{width:24px!important;height:24px!important}
+.operator-capital-console .operator-p24-page-head span{
+  display:block!important;color:#58dff0!important;font-size:10px!important;font-weight:900!important;letter-spacing:.18em!important
+}
+.operator-capital-console .operator-p24-page-head h2{
+  margin:6px 0!important;color:#fff!important;font-size:25px!important;line-height:1.15!important
+}
+.operator-capital-console .operator-p24-page-head p{
+  display:block!important;margin:0!important;color:#b0c6d7!important;font-size:12px!important;line-height:1.45!important
+}
+.operator-capital-console .operator-loan-toolbar,
+.operator-capital-console .operator-inactive-toolbar{
+  display:grid!important;
+  grid-template-columns:auto 154px minmax(250px,1fr) auto!important;
+  align-items:center!important;
+  gap:10px!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  margin:0!important;
+  padding:13px 14px!important;
+  border:1px solid #1a3d56!important;
+  border-radius:12px!important;
+  background:#071827!important;
+}
+.operator-capital-console .operator-inactive-toolbar{
+  grid-template-columns:minmax(440px,auto) 150px minmax(250px,1fr) auto!important;
+}
+.operator-capital-console :is(.operator-loan-toolbar,.operator-inactive-toolbar)>nav{
+  display:flex!important;align-items:center!important;gap:7px!important;min-width:0!important
+}
+.operator-capital-console :is(.operator-loan-toolbar,.operator-inactive-toolbar) button,
+.operator-capital-console .operator-loan-toolbar select{
+  box-sizing:border-box!important;min-height:40px!important;padding:0 17px!important;
+  border:1px solid #2a506c!important;border-radius:10px!important;background:#0b2032!important;
+  color:#eaf4fb!important;font-size:10px!important;font-weight:800!important;white-space:nowrap!important
+}
+.operator-capital-console :is(.operator-loan-toolbar,.operator-inactive-toolbar) button.active{
+  border-color:#24cbed!important;background:linear-gradient(135deg,#18bfe5,#168bd8)!important;color:#fff!important
+}
+.operator-capital-console .operator-custom-days{
+  display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;
+  min-height:40px!important;overflow:hidden!important;border:1px solid #2a506c!important;border-radius:10px!important;background:#091c2e!important
+}
+.operator-capital-console .operator-custom-days input{
+  min-width:0!important;width:100%!important;height:38px!important;box-sizing:border-box!important;padding:0 12px!important;
+  border:0!important;outline:0!important;background:transparent!important;color:#fff!important;font-size:10px!important
+}
+.operator-capital-console .operator-custom-days button{
+  min-height:38px!important;border:0!important;border-left:1px solid #2a506c!important;border-radius:0!important;padding:0 14px!important
+}
+.operator-capital-console :is(.operator-loan-toolbar,.operator-inactive-toolbar)>label{
+  display:flex!important;align-items:center!important;gap:9px!important;box-sizing:border-box!important;
+  min-width:0!important;min-height:40px!important;padding:0 13px!important;border:1px solid #2a506c!important;
+  border-radius:10px!important;background:#091c2e!important;color:#54d9ed!important
+}
+.operator-capital-console :is(.operator-loan-toolbar,.operator-inactive-toolbar)>label input{
+  min-width:0!important;width:100%!important;border:0!important;outline:0!important;background:transparent!important;color:#fff!important;font-size:10px!important
+}
+.operator-capital-console :is(.operator-loan-toolbar,.operator-inactive-toolbar) .operator-p24-refresh{
+  margin:0!important;border-color:#20c3e9!important;background:linear-gradient(135deg,#18bce2,#168ad8)!important;color:#fff!important
+}
+.operator-capital-console .operator-inactive-summary{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;gap:15px!important;
+  min-height:42px!important;padding:0 3px!important;color:#e9f4fb!important
+}
+.operator-capital-console .operator-inactive-summary b{font-size:11px!important}
+.operator-capital-console .operator-inactive-summary span{color:#53dcef!important;font-size:11px!important;font-weight:800!important}
+.operator-capital-console :is(.operator-retail-loans,.operator-inactive-workspace) .operator-p24-empty-row{
+  display:flex!important;align-items:center!important;box-sizing:border-box!important;width:100%!important;min-height:54px!important;
+  margin:0!important;padding:15px 18px!important;border:1px solid #d8e6f1!important;border-radius:11px!important;
+  background:#f3f8fd!important;color:#71879a!important;font-size:11px!important;line-height:1.45!important
+}
+
+@media(max-width:760px){
+  .operator-capital-console :is(.operator-retail-loans,.operator-inactive-workspace){gap:10px!important}
+  .operator-capital-console :is(.operator-retail-loans,.operator-inactive-workspace)>.operator-p24-page-head{
+    min-height:0!important;padding:15px!important;border-radius:10px!important;gap:10px!important
+  }
+  .operator-capital-console .operator-p24-page-head>i{flex-basis:39px!important;width:39px!important;height:39px!important;border-radius:10px!important}
+  .operator-capital-console .operator-p24-page-head>i svg{width:19px!important;height:19px!important}
+  .operator-capital-console .operator-p24-page-head h2{font-size:18px!important;margin:4px 0!important}
+  .operator-capital-console .operator-p24-page-head p{font-size:9px!important}
+  .operator-capital-console .operator-loan-toolbar,
+  .operator-capital-console .operator-inactive-toolbar{
+    grid-template-columns:minmax(0,1fr) auto!important;gap:7px!important;padding:10px!important;border-radius:9px!important
+  }
+  .operator-capital-console :is(.operator-loan-toolbar,.operator-inactive-toolbar)>nav{
+    grid-column:1/-1!important;overflow-x:auto!important;padding-bottom:2px!important
+  }
+  .operator-capital-console .operator-custom-days{grid-column:1!important}
+  .operator-capital-console .operator-loan-toolbar>select{grid-column:1!important}
+  .operator-capital-console :is(.operator-loan-toolbar,.operator-inactive-toolbar)>label{grid-column:1/-1!important;grid-row:auto!important}
+  .operator-capital-console :is(.operator-loan-toolbar,.operator-inactive-toolbar) .operator-p24-refresh{grid-column:2!important;grid-row:2!important}
+  .operator-capital-console .operator-inactive-summary{min-height:36px!important;padding:0 2px!important}
+  .operator-capital-console :is(.operator-retail-loans,.operator-inactive-workspace) .operator-p24-empty-row{min-height:46px!important;padding:13px!important;font-size:9px!important;border-radius:8px!important}
+}
+
 /* Operator P24 workspace: halaman kerja langsung, ringkas, dan tanpa kartu pembuka ganda. */
 .operator-review .operator-retail-loans,.operator-review .operator-inactive-workspace{display:grid;gap:14px;background:transparent;border:0;padding:0;overflow:visible}
 .operator-review .operator-p24-page-head{box-sizing:border-box;min-height:112px;padding:24px 28px;border:1px solid #193b55;border-radius:13px;background:linear-gradient(105deg,#081a2b 0%,#0b1830 54%,#122349 100%);box-shadow:0 12px 35px rgba(0,0,0,.16)}
