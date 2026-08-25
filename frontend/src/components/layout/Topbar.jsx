@@ -23,7 +23,7 @@ export default function Topbar({onMenu}) {
   const isCreditPanel = isCreditTeam && location.pathname === '/credit-applications'
   const isMarketingPanel = isCreditPanel
   const notices = isCreditTeam
-    ? [{title: isOwner ? 'Pantauan pusat aktif' : isOperator ? 'Berkas operator siap' : 'Ruang pendampingan siap', desc: isOwner ? 'Pantau hasil keputusan, risiko, H2H, dan operasional dari dashboard owner.' : isOperator ? 'Periksa seluruh berkas lalu beri keputusan akhir.' : 'Dampingi agent dan cek permintaan penagihan terbaru.', action: () => navigate(isOwner?'/credit-applications':'/credit-applications?view=pengajuan-modal'), icon: ClipboardCheck}]
+    ? [{title: isOwner ? 'Pantauan pusat aktif' : isOperator ? 'Berkas operator siap' : 'Ruang pendampingan siap', desc: isOwner ? 'Pantau hasil keputusan, risiko, H2H, dan operasional dari dashboard owner.' : isOperator ? 'Periksa seluruh berkas lalu beri keputusan akhir.' : 'Dampingi agent dan cek permintaan penagihan terbaru.', action: () => navigate(isOwner?'/credit-applications':'/credit-applications?view=pinjaman-retail'), icon: ClipboardCheck}]
     : [{title: 'Transaksi KuotaKita', desc: 'Pantau transaksi dan status pembayaran terbaru.', action: () => navigate('/transactions'), icon: Bell}]
   const submit = event => {
     event.preventDefault()

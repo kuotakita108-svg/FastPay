@@ -1,7 +1,7 @@
 import {useState} from 'react'
 import {Link, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
-import {Activity, BarChart3, BookOpenCheck, Boxes, CalendarClock, Camera, CheckCircle2, ChevronDown, CircleHelp, ClipboardCheck, CreditCard, FileCheck2, Headphones, Landmark, LockKeyhole, LogOut, PhoneCall, Settings, ShieldCheck, UserCheck, UserPlus, Users, WalletCards} from 'lucide-react'
+import {Activity, BarChart3, BookOpenCheck, Boxes, CalendarClock, Camera, CheckCircle2, ChevronDown, CircleHelp, CreditCard, FileCheck2, Headphones, Landmark, LockKeyhole, LogOut, PhoneCall, Settings, ShieldCheck, UserCheck, UserPlus, Users, WalletCards} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
 
@@ -32,18 +32,15 @@ const operatorNavigation = [
     items: [
       {to: '/credit-applications', label: 'Dashboard', icon: ShieldCheck},
       {to: '/credit-applications?view=agent', label: 'Data Agent', icon: Users},
-      {to: '/credit-applications?view=pengajuan-modal', label: 'Pengajuan Modal', icon: ClipboardCheck},
-      {to: '/credit-applications?view=modal-limit', label: 'Modal & Limit', icon: WalletCards},
       {to: '/credit-applications?view=pinjaman-retail', label: 'Kredit Retail', icon: CreditCard},
+      {to: '/credit-applications?view=modal-limit', label: 'Pengaturan Limit', icon: WalletCards},
     ],
   },
   {
     section: 'AKTIVITAS & RISIKO',
     items: [
       {to: '/credit-applications?view=transaksi-agent', label: 'Transaksi Agent', icon: Activity},
-      {to: '/credit-applications?view=monitoring-agent', label: 'Monitoring Agent', icon: BarChart3},
       {to: '/credit-applications?view=konter-tidak-transaksi', label: 'Konter Tidak Transaksi', icon: CalendarClock},
-      {to: '/credit-applications?view=follow-up', label: 'Follow-up Marketing', icon: PhoneCall},
       {to: '/credit-applications?view=penagihan', label: 'Penagihan & Putus Mitra', icon: LockKeyhole},
     ],
   },
