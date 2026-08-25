@@ -1,26 +1,45 @@
 import {useEffect,useMemo,useState} from 'react'
-import {CheckCircle2,Clock3,FileSearch,RefreshCw,ShieldCheck,XCircle} from 'lucide-react'
+import {ChevronDown,FileCheck2,FileSearch,RefreshCw,XCircle} from 'lucide-react'
 import SubPageHeader from '../components/mobile/SubPageHeader'
 import MobileNav from '../components/mobile/MobileNav'
 import {request} from '../services/http'
+import {rupiah} from '../utils/currency'
+import '../styles/marketing-credit.css'
 
-const statusOf=value=>{
-  const status=String(value||'').toLowerCase()
-  if(status.includes('disetujui')||status.includes('diterima'))return {key:'accepted',label:'Diterima',Icon:CheckCircle2}
-  if(status.includes('ditolak'))return {key:'rejected',label:'Ditolak',Icon:XCircle}
-  return {key:'processing',label:'Diproses Operator',Icon:Clock3}
+const documentTypes=[['ktp','KTP pemilik konter'],['store','Foto konter'],['marketing','Foto bersama marketing'],['application','Dokumen pengajuan kredit']]
+const statusOf=value=>{const status=String(value||'').toLowerCase();if(status.includes('disetujui')||status.includes('diterima')||status.includes('aktif'))return {key:'accepted',label:'Aktif'};if(status.includes('ditolak'))return {key:'rejected',label:'Ditolak'};return {key:'processing',label:'Diproses'}}
+const agentName=item=>item?.form?.agentName||item?.userName||item?.form?.storeName||'Agent KuotaKita'
+const agentKey=item=>item?.userId||item?._owner_id||item?.form?.email||item?.form?.whatsapp||agentName(item)
+const approvedAmount=item=>Number(item?.approvedCapital||item?.approvedAmount||item?.creditOriginalAmount||item?.form?.amount||0)
+const decisionNote=item=>item?.operatorDecision?.note||item?.reviewNote||item?.note||'Belum ada catatan reviewer.'
+
+function EmptyState({loading,error,onRetry}){
+  if(loading)return <div className="marketing-status-empty"><span className="mutation-loader"/><strong>Memuat data agent...</strong></div>
+  if(error)return <div className="marketing-status-empty"><XCircle/><strong>Data belum dapat dimuat</strong><small>{error}</small><button type="button" onClick={onRetry}>Coba lagi</button></div>
+  return <div className="marketing-status-empty"><FileSearch/><strong>Belum ada pengajuan agent</strong><small>Dokumen dan pengajuan agent binaan akan tampil otomatis setelah dikirim ke Operator.</small></div>
 }
 
 export default function MarketingApplicationStatusPage(){
-  const [items,setItems]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState('')
+  const [items,setItems]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[expanded,setExpanded]=useState('')
   const load=()=>{setLoading(true);setError('');request('/agent-credit/applications',{noCache:true}).then(rows=>setItems(Array.isArray(rows)?rows:[])).catch(err=>setError(err.message||'Status pengajuan belum dapat dimuat.')).finally(()=>setLoading(false))}
   useEffect(load,[])
-  const counts=useMemo(()=>items.reduce((result,item)=>{result[statusOf(item.status).key]++;return result},{processing:0,accepted:0,rejected:0}),[items])
+  const agents=useMemo(()=>{const groups=new Map();items.forEach(item=>{const key=agentKey(item);if(!groups.has(key))groups.set(key,{key,name:agentName(item),applications:[]});groups.get(key).applications.push(item)});return [...groups.values()].map(group=>({...group,latest:group.applications[0]}))},[items])
+  const empty=loading||error||items.length===0
+
   return <main className="mobile-app marketing-status-page">
-    <SubPageHeader title="Status Pengajuan" description="Pantau pengajuan agent binaan" back/>
-    <section className="marketing-status-summary"><header><div><span>MONITOR PENGAJUAN</span><h1>Keputusan Operator</h1><p>Pengajuan dikirim Agent langsung ke Operator. Marketing hanya memantau hasil agent yang didaftarkannya.</p></div><i><ShieldCheck/></i></header><div><article><b>{counts.processing}</b><small>Diproses</small></article><article><b>{counts.accepted}</b><small>Diterima</small></article><article><b>{counts.rejected}</b><small>Ditolak</small></article></div></section>
-    <section className="marketing-status-list"><header><div><span>AGENT BINAAN</span><h2>Riwayat Pengajuan</h2></div><button type="button" onClick={load} disabled={loading} aria-label="Muat ulang"><RefreshCw/></button></header>
-      {loading?<div className="marketing-status-empty"><span className="mutation-loader"/><strong>Memuat status...</strong></div>:error?<div className="marketing-status-empty"><XCircle/><strong>Data belum dapat dimuat</strong><small>{error}</small><button onClick={load}>Coba lagi</button></div>:items.length===0?<div className="marketing-status-empty"><FileSearch/><strong>Belum ada pengajuan</strong><small>Pengajuan Agent yang kamu daftarkan akan otomatis tampil di sini.</small></div>:items.map(item=>{const state=statusOf(item.status),Icon=state.Icon;return <article key={item.id}><i className={state.key}><Icon/></i><div><strong>{item.userName||'Agent KuotaKita'}</strong><small>{item.id}</small><span>{item.updatedAt?new Date(item.updatedAt).toLocaleString('id-ID'):'Status tercatat di server'}</span></div><b className={state.key}>{state.label}</b></article>})}
+    <SubPageHeader title="Kredit Modal" description="Dokumen dan pengajuan agent binaan" back/>
+    <section className="marketing-credit-section marketing-agent-documents">
+      <header><FileCheck2/><h1>Dokumen Agent</h1><button type="button" onClick={load} disabled={loading} aria-label="Muat ulang"><RefreshCw/></button></header>
+      {!empty&&agents.map(group=>{const item=group.latest,documents=item?.documents||{},hasSignature=Boolean(item?.agentConsent?.signature),count=documentTypes.filter(([key])=>Boolean(documents[key])).length+(hasSignature?1:0),state=statusOf(item?.status),open=expanded===group.key;return <article className={`marketing-agent-document ${open?'open':''}`} key={group.key}>
+        <button type="button" className="marketing-agent-document-toggle" onClick={()=>setExpanded(open?'':group.key)} aria-expanded={open}><span><strong>{group.name}</strong><small>{count} dokumen · klik untuk melihat semua</small></span><b className={state.key}>{state.key==='accepted'?'Disetujui':state.label}</b><i><ChevronDown/></i></button>
+        {open&&<div className="marketing-document-details">{documentTypes.map(([key,label])=><div key={key}><span>{label}</span><b className={documents[key]?'ready':'missing'}>{documents[key]?'Tersedia':'Belum ada'}</b></div>)}<div><span>Tanda tangan agent</span><b className={hasSignature?'ready':'missing'}>{hasSignature?'Tersedia':'Belum ada'}</b></div></div>}
+      </article>})}
+      {empty&&<EmptyState loading={loading} error={error} onRetry={load}/>}
+    </section>
+    <section className="marketing-credit-section marketing-agent-applications">
+      <header><h2>Pengajuan Agent</h2></header>
+      {!empty&&items.map(item=>{const state=statusOf(item.status),amount=approvedAmount(item);return <article key={item.id}><div className="marketing-application-top"><strong>{item.id} · {agentName(item)}</strong><span><b>{rupiah(amount)}</b><em className={state.key}>{state.label}</em></span></div><p>{state.key==='accepted'?'Kredit modal disetujui Operator':state.key==='rejected'?'Pengajuan tidak disetujui Operator':'Menunggu pemeriksaan Operator'}</p>{state.key==='accepted'&&<div className="marketing-approved-amount">Disetujui: {rupiah(amount)}</div>}<small>Catatan review: {decisionNote(item)}</small></article>})}
+      {empty&&<EmptyState loading={loading} error={error} onRetry={load}/>}
     </section><MobileNav/>
   </main>
 }
