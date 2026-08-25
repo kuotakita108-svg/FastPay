@@ -58,14 +58,14 @@ export default function OperatorCapitalConsole(){
  const openLimit=item=>{if(!item?.id)return setMessage('Agent ini belum memiliki pengajuan yang dapat diberi limit.');setLimitItem(item);setLimitAmount(String(item.capitalLimit||item.approvedCapital||0))}
  const saveLimit=async()=>{const next=Number(limitAmount);if(!limitItem||next<=0)return setMessage('Masukkan nominal limit yang benar.');setMessage('Menyimpan limit Agent...');try{await request(`/agent-credit/applications/${encodeURIComponent(limitItem.id)}`,{method:'PUT',body:JSON.stringify({...limitItem,capitalLimit:next,limitUpdatedAt:new Date().toISOString()})});setLimitItem(null);setLimitAmount('');setMessage('Limit Agent berhasil diperbarui tanpa menambah Saldo Utama.');load()}catch(err){setMessage(err.message||'Limit Agent belum dapat diperbarui.')}}
  const followUp=async(agent,status)=>{try{await updateAgentFollowUp(agent.id,status,`Instruksi Operator: ${status}`);setMessage('Status tindak lanjut berhasil diperbarui.');load()}catch(err){setMessage(err.message||'Status belum dapat diperbarui.')}}
- if(loading)return <section className="operator-capital-state">Memuat ruang kerja Operator...</section>
+ if(loading&&view!=='migrasi-data')return <section className="operator-capital-state">Memuat ruang kerja Operator...</section>
  return <section className="operator-review operator-capital-console">
-  {view!=='overview'&&view!=='pinjaman-retail'&&<header className="operator-capital-hero"><div><span>RUANG KERJA OPERATOR</span><h1>{viewTitle}</h1><p>Kontrol Agent, pengajuan modal, aktivitas, risiko, dan koordinasi lapangan dalam alur kerja KuotaKita.</p></div><i><ShieldCheck/></i></header>}
+  {view!=='overview'&&view!=='pinjaman-retail'&&view!=='migrasi-data'&&<header className="operator-capital-hero"><div><span>RUANG KERJA OPERATOR</span><h1>{viewTitle}</h1><p>Kontrol Agent, pengajuan modal, aktivitas, risiko, dan koordinasi lapangan dalam alur kerja KuotaKita.</p></div><i><ShieldCheck/></i></header>}
   {error&&<p className="operator-capital-alert error">{error}</p>}{message&&<p className="operator-capital-alert">{message}</p>}
   {view==='overview'&&<OperatorDashboard name={user?.name||user?.full_name||user?.fullName||user?.displayName||user?.username||'Operator KuotaKita'}/>}
   {view==='pinjaman-retail'&&<RetailLoanWorkspaceP24 applications={applications} agents={agents} onRefresh={load} onInspect={item=>{setSelected(item);setAmount(String(formOf(item).amount||''))}}/>}
   {view==='konter-tidak-transaksi'&&<AgentHealth agents={agents} appByAgent={appByAgent} onRefresh={load}/>}
-  {view==='migrasi-data'&&<OperatorFeatureShell title="Migrasi Data Lama" description="Ruang migrasi data Agent lama ke struktur KuotaKita. Format, validasi, dan proses impornya akan mengikuti arahan operasional berikutnya."/>}
+  {view==='migrasi-data'&&<LegacyMigrationWorkspace/>}
   {view==='perputaran-uang'&&<OperatorFeatureShell title="Perputaran Uang Konter" description="Ruang pemantauan arus transaksi dan perputaran dana setiap konter. Rincian indikator dan tindakan akan diterapkan setelah alurnya ditetapkan."/>}
   {view==='bank'&&<ProviderCatalog products={providerProducts} loading={providerLoading} bankOnly/>}
   {view==='mapping-provider'&&<ProviderCatalog products={providerProducts} loading={providerLoading}/>}
@@ -78,6 +78,15 @@ export default function OperatorCapitalConsole(){
 }
 
 function OperatorFeatureShell({title,description}){return <section className="operator-capital-block"><BlockTitle icon={FileCheck2} title={title} note={description}/><div className="operator-empty"><FileCheck2/><b>Ruang kerja siap disusun</b><span>Belum ada tindakan aktif pada menu ini.</span></div></section>}
+
+function LegacyMigrationWorkspace(){
+ const [masterQuery,setMasterQuery]=useState(''),[searchResult,setSearchResult]=useState('')
+ const searchMaster=event=>{event.preventDefault();const value=masterQuery.trim();setSearchResult(value?`Belum ada data master yang cocok dengan “${value}”.`:'Masukkan nama atau email master terlebih dahulu.')}
+ return <section className="operator-legacy-migration">
+  <header><span>LEGACY DATA</span><h2>Migrasi Data Lama</h2><p>Migrasi profil pemilik, dokumen, dan kredit lama tanpa memengaruhi saldo agent.</p></header>
+  <form onSubmit={searchMaster} noValidate><b>Cari Master</b><div><input value={masterQuery} onChange={event=>{setMasterQuery(event.target.value);if(searchResult)setSearchResult('')}} placeholder="Nama atau email master" autoComplete="off"/><button type="submit">Cari Master</button></div>{searchResult&&<small>{searchResult}</small>}</form>
+ </section>
+}
 
 function OperatorDashboard({name}){return <div className="operator-dashboard-p24">
  <section className="operator-dashboard-profile"><div><span>PROFIL AKTIF</span><h1>{name}</h1><p>Akun operator kredit aktif untuk menangani pengajuan, pemantauan, dan pembayaran kredit retail.</p><footer><b><CheckCircle2/> Operator Kredit</b><em><ShieldCheck/> Role aktif di sesi ini</em></footer></div><i><UserCheck/></i></section>
