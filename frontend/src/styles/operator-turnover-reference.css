@@ -20,3 +20,10 @@
 .operator-review.operator-capital-console .operator-turnover-list footer b.paid{color:#008e68!important}
 .operator-review.operator-capital-console .operator-turnover-list footer b.due{color:#dc214d!important}
 .operator-review.operator-capital-console .operator-turnover-loading{background:#fff!important;color:#607d91!important;opacity:1!important}
+.panel-workspace-shell .operator-review.operator-capital-console .operator-turnover-list>article>header{background:#fff!important;color:#10283a!important;opacity:1!important}
+.panel-workspace-shell .operator-review.operator-capital-console .operator-turnover-list>article>header dl{color:#10283a!important;opacity:1!important}
+.panel-workspace-shell .operator-review.operator-capital-console .operator-turnover-list>article>header dl>div{color:#10283a!important;opacity:1!important}
+.panel-workspace-shell .operator-review.operator-capital-console .operator-turnover-list>article>header dt{color:#607d91!important;-webkit-text-fill-color:#607d91!important;font-size:9px!important;font-weight:600!important;line-height:1.35!important;opacity:1!important}
+.panel-workspace-shell .operator-review.operator-capital-console .operator-turnover-list>article>header dd{color:#102b40!important;-webkit-text-fill-color:#102b40!important;font-size:11px!important;font-weight:900!important;line-height:1.35!important;opacity:1!important}
+.panel-workspace-shell .operator-review.operator-capital-console .operator-turnover-list>article>header dd.up{color:#008e68!important;-webkit-text-fill-color:#008e68!important}
+.panel-workspace-shell .operator-review.operator-capital-console .operator-turnover-list>article>header dd.down{color:#d62d4d!important;-webkit-text-fill-color:#d62d4d!important}
