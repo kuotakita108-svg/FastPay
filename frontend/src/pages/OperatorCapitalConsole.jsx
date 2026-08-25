@@ -60,7 +60,7 @@ export default function OperatorCapitalConsole(){
  const followUp=async(agent,status)=>{try{await updateAgentFollowUp(agent.id,status,`Instruksi Operator: ${status}`);setMessage('Status tindak lanjut berhasil diperbarui.');load()}catch(err){setMessage(err.message||'Status belum dapat diperbarui.')}}
  if(loading)return <section className="operator-capital-state">Memuat ruang kerja Operator...</section>
  return <section className="operator-review operator-capital-console">
-  {view!=='overview'&&<header className="operator-capital-hero"><div><span>RUANG KERJA OPERATOR</span><h1>{viewTitle}</h1><p>Kontrol Agent, pengajuan modal, aktivitas, risiko, dan koordinasi lapangan dalam alur kerja KuotaKita.</p></div><i><ShieldCheck/></i></header>}
+  {view!=='overview'&&view!=='pinjaman-retail'&&<header className="operator-capital-hero"><div><span>RUANG KERJA OPERATOR</span><h1>{viewTitle}</h1><p>Kontrol Agent, pengajuan modal, aktivitas, risiko, dan koordinasi lapangan dalam alur kerja KuotaKita.</p></div><i><ShieldCheck/></i></header>}
   {error&&<p className="operator-capital-alert error">{error}</p>}{message&&<p className="operator-capital-alert">{message}</p>}
   {view==='overview'&&<OperatorDashboard name={user?.name||user?.full_name||user?.fullName||user?.displayName||user?.username||'Operator KuotaKita'}/>}
   {view==='pinjaman-retail'&&<RetailLoanWorkspaceP24 applications={applications} agents={agents} onRefresh={load} onInspect={item=>{setSelected(item);setAmount(String(formOf(item).amount||''))}}/>}
