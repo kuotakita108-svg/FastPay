@@ -108,8 +108,8 @@ export default function Sidebar({open, onClose}) {
       <strong>{rolePanel.title}</strong>
       <small>Bagian aktif: {activeLabel}</small>
     </div>}
-    <nav className={`${rolePanel ? 'workspace-nav' : ''}${isSuperAdmin ? ' owner-workspace-nav' : ''}`}>{visibleNavigation.map(group => {const sectionOpen=!rolePanel||Boolean(openWorkspaceSections[group.section]);return <div className={rolePanel && !sectionOpen ? 'section-collapsed' : ''} key={group.section}>
-      {rolePanel ? <button type="button" className="nav-section-toggle" aria-expanded={sectionOpen} aria-controls={`sidebar-${group.section.toLowerCase().replace(/[^a-z]+/g, '-')}`} onClick={() => setOpenWorkspaceSections(currentSections => ({...currentSections,[group.section]:!currentSections[group.section]}))}><span>{group.section}</span><ChevronDown/></button> : <p className="nav-label">{group.section}</p>}
+    <nav className={`${rolePanel ? 'workspace-nav' : ''}${isSuperAdmin ? ' owner-workspace-nav' : ''}`}>{visibleNavigation.map(group => {const hasSection=Boolean(group.section);const sectionOpen=!rolePanel||!hasSection||Boolean(openWorkspaceSections[group.section]);return <div className={rolePanel && !sectionOpen ? 'section-collapsed' : ''} key={group.section||'main-navigation'}>
+      {hasSection&&(rolePanel ? <button type="button" className="nav-section-toggle" aria-expanded={sectionOpen} aria-controls={`sidebar-${group.section.toLowerCase().replace(/[^a-z]+/g, '-')}`} onClick={() => setOpenWorkspaceSections(currentSections => ({...currentSections,[group.section]:!currentSections[group.section]}))}><span>{group.section}</span><ChevronDown/></button> : <p className="nav-label">{group.section}</p>)}
       <div className="nav-section-items" id={`sidebar-${group.section.toLowerCase().replace(/[^a-z]+/g, '-')}`}>{group.items.map(({to, label, icon: Icon}) => <Link className={`nav-item nav-${label.toLowerCase().replace(/[^a-z]+/g, '-')} ${active(to) ? 'active' : ''}`} to={to} key={to} onClick={onClose}>
         <Icon size={18}/><span>{label}</span>
       </Link>)}</div>
