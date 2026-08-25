@@ -28,27 +28,15 @@ const marketingNavigation = [
 
 const operatorNavigation = [
   {
-    section: 'KENDALI OPERASIONAL',
+    section: '',
     items: [
       {to: '/credit-applications', label: 'Dashboard', icon: ShieldCheck},
-      {to: '/credit-applications?view=agent', label: 'Data Agent', icon: Users},
       {to: '/credit-applications?view=pinjaman-retail', label: 'Kredit Retail', icon: CreditCard},
-      {to: '/credit-applications?view=modal-limit', label: 'Pengaturan Limit', icon: WalletCards},
-    ],
-  },
-  {
-    section: 'AKTIVITAS & RISIKO',
-    items: [
-      {to: '/credit-applications?view=transaksi-agent', label: 'Transaksi Agent', icon: Activity},
+      {to: '/credit-applications?view=migrasi-data', label: 'Migrasi Data Lama', icon: FileCheck2},
       {to: '/credit-applications?view=konter-tidak-transaksi', label: 'Konter Tidak Transaksi', icon: CalendarClock},
-      {to: '/credit-applications?view=penagihan', label: 'Penagihan & Putus Mitra', icon: LockKeyhole},
+      {to: '/credit-applications?view=perputaran-uang', label: 'Perputaran Uang Konter', icon: Activity},
     ],
   },
-  {section: 'TIM & SISTEM', items: [
-    {to: '/credit-applications?view=marketing', label: 'Data Marketing', icon: UserCheck},
-    {to: '/credit-applications?view=audit', label: 'Riwayat & Audit Log', icon: FileCheck2},
-    {to: '/credit-applications?view=pengaturan', label: 'Pengaturan Operator', icon: Settings},
-  ]},
 ]
 
 const superAdminNavigation = [
