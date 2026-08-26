@@ -12,6 +12,7 @@ const agentName=item=>item?.form?.agentName||item?.userName||item?.form?.storeNa
 const agentKey=item=>item?.userId||item?._owner_id||item?.form?.email||item?.form?.whatsapp||agentName(item)
 const approvedAmount=item=>Number(item?.approvedCapital||item?.approvedAmount||item?.creditOriginalAmount||item?.form?.amount||0)
 const decisionNote=item=>item?.operatorDecision?.note||item?.reviewNote||item?.note||'Belum ada catatan reviewer.'
+const documentSource=document=>typeof document==='string'?document:document?.image||document?.dataUrl||document?.url||''
 
 function EmptyState({loading,error,onRetry}){
   if(loading)return <div className="marketing-status-empty"><span className="mutation-loader"/><strong>Memuat data agent...</strong></div>
@@ -32,13 +33,13 @@ export default function MarketingApplicationStatusPage(){
       <header><FileCheck2/><h1>Dokumen Agent</h1><button type="button" onClick={load} disabled={loading} aria-label="Muat ulang"><RefreshCw/></button></header>
       {!empty&&agents.map(group=>{const item=group.latest,documents=item?.documents||{},hasSignature=Boolean(item?.agentConsent?.signature),count=documentTypes.filter(([key])=>Boolean(documents[key])).length+(hasSignature?1:0),state=statusOf(item?.status),open=expanded===group.key;return <article className={`marketing-agent-document ${open?'open':''}`} key={group.key}>
         <button type="button" className="marketing-agent-document-toggle" onClick={()=>setExpanded(open?'':group.key)} aria-expanded={open}><span><strong>{group.name}</strong><small>{count} dokumen · klik untuk melihat semua</small></span><b className={state.key}>{state.key==='accepted'?'Disetujui':state.label}</b><i><ChevronDown/></i></button>
-        {open&&<div className="marketing-document-details">{documentTypes.map(([key,label])=><div key={key}><span>{label}</span><b className={documents[key]?'ready':'missing'}>{documents[key]?'Tersedia':'Belum ada'}</b></div>)}<div><span>Tanda tangan agent</span><b className={hasSignature?'ready':'missing'}>{hasSignature?'Tersedia':'Belum ada'}</b></div></div>}
+        {open&&<div className="marketing-document-gallery">{documentTypes.map(([key,label])=>{const source=documentSource(documents[key]);return <figure key={key} className={!source?'missing':''}><figcaption><strong>{label}</strong><b className={source?'ready':'missing'}>{source?(state.key==='accepted'?'Disetujui':'Terkirim'):'Belum ada'}</b></figcaption>{source?<img src={source} alt={label} loading="lazy"/>:<div className="marketing-document-placeholder"><FileSearch/><span>Foto belum tersedia</span></div>}</figure>})}{hasSignature&&<figure><figcaption><strong>Tanda tangan agent</strong><b className="ready">Tersedia</b></figcaption><img className="signature" src={item.agentConsent.signature} alt="Tanda tangan agent" loading="lazy"/></figure>}</div>}
       </article>})}
       {empty&&<EmptyState loading={loading} error={error} onRetry={load}/>}
     </section>
     <section className="marketing-credit-section marketing-agent-applications">
       <header><h2>Pengajuan Agent</h2></header>
-      {!empty&&items.map(item=>{const state=statusOf(item.status),amount=approvedAmount(item);return <article key={item.id}><div className="marketing-application-top"><strong>{item.id} · {agentName(item)}</strong><span><b>{rupiah(amount)}</b><em className={state.key}>{state.label}</em></span></div><p>{state.key==='accepted'?'Kredit modal disetujui Operator':state.key==='rejected'?'Pengajuan tidak disetujui Operator':'Menunggu pemeriksaan Operator'}</p>{state.key==='accepted'&&<div className="marketing-approved-amount">Disetujui: {rupiah(amount)}</div>}<small>Catatan review: {decisionNote(item)}</small></article>})}
+      {!empty&&items.map(item=>{const state=statusOf(item.status),amount=approvedAmount(item);return <article key={item.id}><div className="marketing-application-top"><strong>{item.id} · {agentName(item)}</strong><span><b>{rupiah(amount)}</b><em className={state.key}>{state.label}</em></span></div><p>{item?.form?.purpose||'Tanpa keterangan'}</p>{state.key==='accepted'&&<div className="marketing-approved-amount">Disetujui: {rupiah(amount)}</div>}<small>Catatan review: {decisionNote(item)}</small></article>})}
       {empty&&<EmptyState loading={loading} error={error} onRetry={load}/>}
     </section><MobileNav/>
   </main>

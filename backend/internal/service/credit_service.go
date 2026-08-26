@@ -355,10 +355,10 @@ func publicCredit(row map[string]any) map[string]any {
 	return out
 }
 func marketingCredit(row map[string]any) map[string]any {
-	// Marketing only needs operational progress for agents it registered.
-	// Identity numbers, addresses, financial values, photos and signatures stay
-	// inside the Agent–Operator workflow and are never serialized here.
-	return map[string]any{
+	// Marketing only receives operational progress and field documents belonging
+	// to agents it registered. Sensitive identity fields such as NIK and address
+	// remain inside the Agent–Operator workflow.
+	out := map[string]any{
 		"id":            stringValue(row["id"]),
 		"status":        stringValue(row["status"]),
 		"userId":        stringValue(row["userId"]),
@@ -368,6 +368,27 @@ func marketingCredit(row map[string]any) map[string]any {
 		"createdAt":     stringValue(row["createdAt"]),
 		"updatedAt":     stringValue(row["updatedAt"]),
 	}
+	if form, ok := row["form"].(map[string]any); ok {
+		out["form"] = map[string]any{
+			"agentName": stringValue(form["agentName"]),
+			"storeName": stringValue(form["storeName"]),
+			"amount":    form["amount"],
+			"purpose":   stringValue(form["purpose"]),
+		}
+	}
+	for _, key := range []string{"documents", "agentConsent", "operatorDecision", "reviewNote", "note", "approvedCapital", "approvedAmount", "creditOriginalAmount", "paymentStatus", "partnershipStatus"} {
+		if value, exists := row[key]; exists {
+			out[key] = cloneValue(value)
+		}
+	}
+	return out
+}
+
+func cloneValue(value any) any {
+	encoded, _ := json.Marshal(value)
+	var cloned any
+	_ = json.Unmarshal(encoded, &cloned)
+	return cloned
 }
 func stringValue(value any) string { text, _ := value.(string); return text }
 func intValue(value any) int64 {

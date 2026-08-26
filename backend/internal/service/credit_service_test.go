@@ -46,7 +46,7 @@ func TestMarketingCanMonitorOwnCapitalApplicationsButCannotWrite(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = credit.Save("Bearer "+agent.Token, map[string]any{"id": "KSA-TEST-AGENT", "form": map[string]any{"amount": 500000, "nik": "1234567890123456"}, "documents": map[string]any{"ktp": "secret"}})
+	_, err = credit.Save("Bearer "+agent.Token, map[string]any{"id": "KSA-TEST-AGENT", "form": map[string]any{"amount": 500000, "nik": "1234567890123456"}, "documents": map[string]any{"ktp": map[string]any{"image": "data:image/jpeg;base64,secret"}}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,11 +57,15 @@ func TestMarketingCanMonitorOwnCapitalApplicationsButCannotWrite(t *testing.T) {
 	if len(rows) != 1 || rows[0]["id"] != "KSA-TEST-AGENT" {
 		t.Fatalf("Marketing own application rows = %#v", rows)
 	}
-	if _, exposed := rows[0]["form"]; exposed {
-		t.Fatal("Marketing response exposed identity and financial form")
+	form, ok := rows[0]["form"].(map[string]any)
+	if !ok || form["amount"] == nil {
+		t.Fatal("Marketing response did not include operational application summary")
 	}
-	if _, exposed := rows[0]["documents"]; exposed {
-		t.Fatal("Marketing response exposed application documents")
+	if _, exposed := form["nik"]; exposed {
+		t.Fatal("Marketing response exposed identity number")
+	}
+	if _, available := rows[0]["documents"]; !available {
+		t.Fatal("Marketing response did not include its agent field documents")
 	}
 }
 
