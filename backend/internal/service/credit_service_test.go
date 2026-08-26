@@ -110,7 +110,7 @@ func TestOperatorApprovalDisbursesMainBalanceExactlyOnce(t *testing.T) {
 	}
 }
 
-func TestOperatorRecordsRetailPaymentAndSettlesOutstanding(t *testing.T) {
+func TestOperatorRecordsRetailPaymentAndRenewsRevolvingCapital(t *testing.T) {
 	auth := newAuthService("test-secret", "", nil, []AccountSeed{
 		{Username: "marketing-pay", Password: "marketing-secret", Name: "Marketing Pay", Role: "marketing"},
 		{Username: "operator-pay", Password: "operator-secret", Name: "Operator Pay", Role: "operator"},
@@ -134,21 +134,40 @@ func TestOperatorRecordsRetailPaymentAndSettlesOutstanding(t *testing.T) {
 	payment := map[string]any{
 		"amount": 200000, "transferredAt": "2026-08-26T10:30", "destinationBank": "BCA",
 		"destinationAccountNumber": "1234567890", "destinationAccountName": "KuotaKita", "senderName": "Agent Bayar",
+		"requestId": "payment-cycle-1-partial",
 	}
 	partial, err := credit.RecordPayment("Bearer "+operator.Token, "KSA-PAY-1", payment)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if intValue(partial["capitalOutstanding"]) != 300000 || partial["paymentStatus"] != "Dibayar sebagian" {
+	if intValue(partial["capitalOutstanding"]) != 300000 || partial["paymentStatus"] != "Modal aktif bergulir" || partial["capitalStatus"] != "Aktif" {
 		t.Fatalf("partial payment result = %#v", partial)
 	}
+	current, _ := auth.CurrentUser("Bearer " + agent.Token)
+	if current.Balance != 700000 {
+		t.Fatalf("partial payment did not refill wallet: %d", current.Balance)
+	}
 	payment["amount"] = 300000
-	settled, err := credit.RecordPayment("Bearer "+operator.Token, "KSA-PAY-1", payment)
+	payment["requestId"] = "payment-cycle-1-close"
+	renewed, err := credit.RecordPayment("Bearer "+operator.Token, "KSA-PAY-1", payment)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if intValue(settled["capitalOutstanding"]) != 0 || settled["paymentStatus"] != "Lunas" || settled["capitalStatus"] != "Lunas" {
-		t.Fatalf("settled payment result = %#v", settled)
+	if intValue(renewed["capitalOutstanding"]) != 500000 || renewed["paymentStatus"] != "Modal aktif bergulir" || renewed["capitalStatus"] != "Aktif" || intValue(renewed["revolvingCycle"]) != 2 {
+		t.Fatalf("renewed payment result = %#v", renewed)
+	}
+	current, _ = auth.CurrentUser("Bearer " + agent.Token)
+	if current.Balance != 1000000 {
+		t.Fatalf("full cycle payment did not refill wallet: %d", current.Balance)
+	}
+	// Retrying the same request must return the saved result without adding
+	// money a second time.
+	if _, err = credit.RecordPayment("Bearer "+operator.Token, "KSA-PAY-1", payment); err != nil {
+		t.Fatal(err)
+	}
+	current, _ = auth.CurrentUser("Bearer " + agent.Token)
+	if current.Balance != 1000000 {
+		t.Fatalf("duplicate payment refilled wallet twice: %d", current.Balance)
 	}
 }
 

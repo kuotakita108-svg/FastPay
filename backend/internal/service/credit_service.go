@@ -112,14 +112,14 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 	if !exists && user.Role == "agent" {
 		for _, existing := range s.rows {
 			if stringValue(existing["_owner_id"]) == user.ID && blocksNewCredit(existing) {
-				return nil, errors.New("agent masih memiliki pengajuan atau kredit aktif; lunasi kredit sebelum mengajukan kembali")
+				return nil, errors.New("agent masih memiliki fasilitas modal aktif; pengajuan baru hanya tersedia setelah kemitraan diakhiri")
 			}
 		}
 	}
 	if !exists && selectedAgentID != "" {
 		for _, existing := range s.rows {
 			if stringValue(existing["_owner_id"]) == selectedAgentID && blocksNewCredit(existing) {
-				return nil, errors.New("agent masih memiliki pengajuan atau kredit aktif; lunasi kredit sebelum mengajukan kembali")
+				return nil, errors.New("agent masih memiliki fasilitas modal aktif; pengajuan baru hanya tersedia setelah kemitraan diakhiri")
 			}
 		}
 	}
@@ -227,9 +227,11 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 	return publicCredit(row), nil
 }
 
-// RecordPayment is the only path allowed to reduce an Agent's outstanding
-// capital. It is intentionally Operator-only so a browser cannot manufacture
-// a paid status through the generic application update endpoint.
+// RecordPayment records a verified refill of an Agent's revolving capital.
+// A payment reduces the current cycle's outstanding amount and immediately
+// restores the same amount to the Agent wallet. When a cycle is fully paid,
+// the facility starts a new cycle at the approved limit; it does not become
+// "Lunas" while the partnership is active.
 func (s *CreditService) RecordPayment(token, id string, input map[string]any) (map[string]any, error) {
 	user, err := s.auth.CurrentUser(token)
 	if err != nil {
@@ -258,12 +260,26 @@ func (s *CreditService) RecordPayment(token, id string, input map[string]any) (m
 	if stringValue(current["status"]) != "Disetujui" {
 		return nil, errors.New("pembayaran hanya dapat dicatat untuk kredit yang disetujui")
 	}
+	if stringValue(current["partnershipStatus"]) == "PARTNERSHIP_ENDED" {
+		return nil, errors.New("kemitraan agent sudah diakhiri")
+	}
+	requestID := strings.TrimSpace(stringValue(input["requestId"]))
+	history, _ := current["paymentHistory"].([]any)
+	if requestID != "" {
+		for _, raw := range history {
+			entry, _ := raw.(map[string]any)
+			if stringValue(entry["requestId"]) == requestID {
+				return publicCredit(current), nil
+			}
+		}
+	}
+	approved := approvedCapitalAmount(current)
 	outstanding := intValue(current["capitalOutstanding"])
 	if outstanding <= 0 {
-		outstanding = approvedCapitalAmount(current) - intValue(current["paidAmount"])
+		outstanding = approved
 	}
 	if outstanding <= 0 {
-		return nil, errors.New("kredit ini sudah lunas")
+		return nil, errors.New("limit modal aktif belum tersedia")
 	}
 	if amount > outstanding {
 		return nil, fmt.Errorf("nominal pembayaran melebihi sisa kredit Rp %d", outstanding)
@@ -284,26 +300,44 @@ func (s *CreditService) RecordPayment(token, id string, input map[string]any) (m
 		"status":                   "Terverifikasi",
 		"recordedAt":               now,
 		"recordedBy":               user.Name,
+		"requestId":                requestID,
+		"cycle":                    maxInt64(1, intValue(row["revolvingCycle"])),
 	}
-	history, _ := row["paymentHistory"].([]any)
+	history, _ = row["paymentHistory"].([]any)
 	row["paymentHistory"] = append([]any{payment}, history...)
 	paid := intValue(row["paidAmount"]) + amount
 	remaining := outstanding - amount
 	row["paidAmount"] = paid
 	row["capitalOutstanding"] = remaining
-	row["paymentStatus"] = "Dibayar sebagian"
+	row["paymentStatus"] = "Modal aktif bergulir"
+	row["capitalStatus"] = "Aktif"
+	row["lastPaymentAt"] = now
 	if remaining == 0 {
-		row["paymentStatus"] = "Lunas"
-		row["capitalStatus"] = "Lunas"
-		row["settledAt"] = now
+		row["capitalOutstanding"] = approved
+		row["revolvingCycle"] = maxInt64(1, intValue(row["revolvingCycle"])) + 1
+		row["lastCycleClosedAt"] = now
+	}
+	// The verified transfer replenishes spendable capital. This is deliberately
+	// done server-side so refreshing or changing the browser cannot mint funds.
+	ownerID := stringValue(row["_owner_id"])
+	if _, err := s.auth.ChangeBalanceByUserID(ownerID, amount); err != nil {
+		return nil, fmt.Errorf("saldo modal belum dapat diisi kembali: %w", err)
 	}
 	row["updatedAt"] = now
 	s.rows[id] = row
 	if err := s.saveLocked(); err != nil {
 		s.rows[id] = current
+		_, _ = s.auth.ChangeBalanceByUserID(ownerID, -amount)
 		return nil, errors.New("pembayaran belum dapat disimpan ke server")
 	}
 	return publicCredit(row), nil
+}
+
+func maxInt64(a, b int64) int64 {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 func canWorkWithCredit(role string) bool {
@@ -338,6 +372,7 @@ func protectCreditDecisionFields(target, source map[string]any) {
 		"creditLimit", "creditTier", "creditBadge", "automaticCreditLimit", "automaticCreditTier",
 		"manualCreditLimit", "manualCreditTier", "manualCreditBadge", "manualLimitAt", "manualLimitBy",
 		"capitalLimit", "approvedCapital", "capitalOutstanding", "capitalOriginalAmount", "capitalStatus",
+		"paidAmount", "paymentHistory", "paymentStatus", "revolvingCycle", "lastPaymentAt", "lastCycleClosedAt",
 		"dueAt", "settledAt", "decidedAt", "analysisDecision", "analisSignature", "operatorSignature",
 		"agentAccessStatus", "agentAccessReason", "agentAccessUpdatedAt",
 		"decisionHistory", "blacklistedAt", "blacklistedBy", "blacklistReason",
@@ -347,10 +382,6 @@ func protectCreditDecisionFields(target, source map[string]any) {
 		} else {
 			delete(target, key)
 		}
-	}
-	// A payment proof is allowed, but its final status is always set by Operator.
-	if stringValue(target["paymentStatus"]) == "Lunas" {
-		target["paymentStatus"] = source["paymentStatus"]
 	}
 }
 
