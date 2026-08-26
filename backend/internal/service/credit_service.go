@@ -227,6 +227,85 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 	return publicCredit(row), nil
 }
 
+// RecordPayment is the only path allowed to reduce an Agent's outstanding
+// capital. It is intentionally Operator-only so a browser cannot manufacture
+// a paid status through the generic application update endpoint.
+func (s *CreditService) RecordPayment(token, id string, input map[string]any) (map[string]any, error) {
+	user, err := s.auth.CurrentUser(token)
+	if err != nil {
+		return nil, err
+	}
+	if !isOperatorRole(user.Role) {
+		return nil, fmt.Errorf("%w: pembayaran hanya dapat dicatat Operator", ErrForbidden)
+	}
+	id = strings.TrimSpace(id)
+	amount := intValue(input["amount"])
+	if id == "" || amount <= 0 {
+		return nil, errors.New("nominal pembayaran harus lebih dari Rp 0")
+	}
+	for _, key := range []string{"transferredAt", "destinationBank", "destinationAccountNumber", "destinationAccountName", "senderName"} {
+		if strings.TrimSpace(stringValue(input[key])) == "" {
+			return nil, errors.New("data transfer wajib dilengkapi")
+		}
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	current, exists := s.rows[id]
+	if !exists {
+		return nil, errors.New("pengajuan kredit tidak ditemukan")
+	}
+	if stringValue(current["status"]) != "Disetujui" {
+		return nil, errors.New("pembayaran hanya dapat dicatat untuk kredit yang disetujui")
+	}
+	outstanding := intValue(current["capitalOutstanding"])
+	if outstanding <= 0 {
+		outstanding = approvedCapitalAmount(current) - intValue(current["paidAmount"])
+	}
+	if outstanding <= 0 {
+		return nil, errors.New("kredit ini sudah lunas")
+	}
+	if amount > outstanding {
+		return nil, fmt.Errorf("nominal pembayaran melebihi sisa kredit Rp %d", outstanding)
+	}
+
+	row := cloneCredit(current)
+	now := time.Now().UTC().Format(time.RFC3339)
+	payment := map[string]any{
+		"id":                       fmt.Sprintf("PAY-%d", time.Now().UnixNano()),
+		"amount":                   amount,
+		"transferredAt":            strings.TrimSpace(stringValue(input["transferredAt"])),
+		"destinationBank":          strings.TrimSpace(stringValue(input["destinationBank"])),
+		"destinationAccountNumber": strings.TrimSpace(stringValue(input["destinationAccountNumber"])),
+		"destinationAccountName":   strings.TrimSpace(stringValue(input["destinationAccountName"])),
+		"senderName":               strings.TrimSpace(stringValue(input["senderName"])),
+		"note":                     strings.TrimSpace(stringValue(input["note"])),
+		"proof":                    cloneValue(input["proof"]),
+		"status":                   "Terverifikasi",
+		"recordedAt":               now,
+		"recordedBy":               user.Name,
+	}
+	history, _ := row["paymentHistory"].([]any)
+	row["paymentHistory"] = append([]any{payment}, history...)
+	paid := intValue(row["paidAmount"]) + amount
+	remaining := outstanding - amount
+	row["paidAmount"] = paid
+	row["capitalOutstanding"] = remaining
+	row["paymentStatus"] = "Dibayar sebagian"
+	if remaining == 0 {
+		row["paymentStatus"] = "Lunas"
+		row["capitalStatus"] = "Lunas"
+		row["settledAt"] = now
+	}
+	row["updatedAt"] = now
+	s.rows[id] = row
+	if err := s.saveLocked(); err != nil {
+		s.rows[id] = current
+		return nil, errors.New("pembayaran belum dapat disimpan ke server")
+	}
+	return publicCredit(row), nil
+}
+
 func canWorkWithCredit(role string) bool {
 	return role == "agent" || role == "operator" || role == "analis" || role == "master" || role == "admin"
 }

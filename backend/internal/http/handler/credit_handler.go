@@ -44,3 +44,21 @@ func (h *CreditHandler) Save(w http.ResponseWriter, r *http.Request) {
 	}
 	response.JSON(w, http.StatusOK, item)
 }
+
+func (h *CreditHandler) RecordPayment(w http.ResponseWriter, r *http.Request) {
+	var input map[string]any
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 16<<20)).Decode(&input); err != nil {
+		response.Error(w, http.StatusBadRequest, "data pembayaran tidak valid atau terlalu besar")
+		return
+	}
+	item, err := h.service.RecordPayment(r.Header.Get("Authorization"), r.PathValue("id"), input)
+	if err != nil {
+		status := http.StatusBadRequest
+		if errors.Is(err, service.ErrForbidden) {
+			status = http.StatusForbidden
+		}
+		response.Error(w, status, err.Error())
+		return
+	}
+	response.JSON(w, http.StatusOK, item)
+}

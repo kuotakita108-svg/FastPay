@@ -110,6 +110,48 @@ func TestOperatorApprovalDisbursesMainBalanceExactlyOnce(t *testing.T) {
 	}
 }
 
+func TestOperatorRecordsRetailPaymentAndSettlesOutstanding(t *testing.T) {
+	auth := newAuthService("test-secret", "", nil, []AccountSeed{
+		{Username: "marketing-pay", Password: "marketing-secret", Name: "Marketing Pay", Role: "marketing"},
+		{Username: "operator-pay", Password: "operator-secret", Name: "Operator Pay", Role: "operator"},
+	})
+	marketing, _ := auth.Login("marketing-pay", "marketing-secret")
+	_, err := auth.CreateAgent("Bearer "+marketing.Token, domain.RegisterInput{Name: "Agent Bayar", Username: "agent-bayar", StoreName: "Toko Bayar", Phone: "081234567891", Password: "agent-secret"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	agent, _ := auth.Login("agent-bayar", "agent-secret")
+	operator, _ := auth.Login("operator-pay", "operator-secret")
+	credit := NewCreditService(filepath.Join(t.TempDir(), "credit.json"), auth)
+	created, err := credit.Save("Bearer "+agent.Token, map[string]any{"id": "KSA-PAY-1", "form": map[string]any{"amount": 500000}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	created["status"] = "Disetujui"
+	if _, err = credit.Save("Bearer "+operator.Token, created); err != nil {
+		t.Fatal(err)
+	}
+	payment := map[string]any{
+		"amount": 200000, "transferredAt": "2026-08-26T10:30", "destinationBank": "BCA",
+		"destinationAccountNumber": "1234567890", "destinationAccountName": "KuotaKita", "senderName": "Agent Bayar",
+	}
+	partial, err := credit.RecordPayment("Bearer "+operator.Token, "KSA-PAY-1", payment)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if intValue(partial["capitalOutstanding"]) != 300000 || partial["paymentStatus"] != "Dibayar sebagian" {
+		t.Fatalf("partial payment result = %#v", partial)
+	}
+	payment["amount"] = 300000
+	settled, err := credit.RecordPayment("Bearer "+operator.Token, "KSA-PAY-1", payment)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if intValue(settled["capitalOutstanding"]) != 0 || settled["paymentStatus"] != "Lunas" || settled["capitalStatus"] != "Lunas" {
+		t.Fatalf("settled payment result = %#v", settled)
+	}
+}
+
 func TestMarketingAgentScopeHidesFinanceAndRejectsCrossOwnership(t *testing.T) {
 	auth := newAuthService("test-secret", "", nil, []AccountSeed{
 		{Username: "marketing-one", Password: "marketing-secret", Name: "Marketing One", Role: "marketing"},

@@ -108,6 +108,25 @@
   .panel-workspace-shell .operator-review .marketing-report-panel>article:nth-child(-n+2){border-bottom:1px solid var(--op-line)!important}
 }
 
+/* Operator retail payment: compact mobile-first transfer record dialog. */
+.operator-payment-overlay{position:fixed;inset:0;z-index:1500;display:grid;place-items:center;padding:8px;background:rgba(3,13,27,.68);backdrop-filter:blur(2px)}
+.operator-payment-dialog{box-sizing:border-box;width:min(390px,100%);max-height:calc(100dvh - 16px);overflow:auto;padding:16px;border:1px solid #dce5ee;border-radius:17px;background:#fff;color:#10233d;box-shadow:0 24px 70px rgba(0,0,0,.34)}
+.operator-payment-dialog header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:0 0 15px}
+.operator-payment-dialog h2{margin:0 0 3px;color:#0d1f36;font-size:16px;line-height:1.2}
+.operator-payment-dialog header p{margin:0;color:#71869b;font-size:10px;line-height:1.4}
+.operator-payment-dialog header button{min-height:31px;padding:0 12px;border:1px solid #9aacbd;border-radius:999px;background:#fff;color:#31485e;font-size:10px;font-weight:700;cursor:pointer}
+.operator-payment-dialog label{display:grid;grid-template-columns:auto 1fr;gap:6px;margin:0 0 11px;color:#263a52;font-size:10px;font-weight:750;line-height:1.3}
+.operator-payment-dialog label>b{color:#e4405f}.operator-payment-dialog label>span{color:#657b91;font-weight:550}
+.operator-payment-dialog :is(input,textarea){grid-column:1/-1;box-sizing:border-box;width:100%;padding:11px 12px;border:1px solid #cfdae5;border-radius:11px;outline:0;background:#fff;color:#12283f;font:inherit;font-weight:550}
+.operator-payment-dialog textarea{min-height:66px;resize:vertical}
+.operator-payment-dialog :is(input,textarea):focus{border-color:#198ee2;box-shadow:0 0 0 3px rgba(25,142,226,.1)}
+.operator-payment-dialog input.file{padding:8px;color:#6e8296}
+.operator-payment-dialog label small{grid-column:1/-1;color:#7e93a8;font-size:8px;font-weight:500;line-height:1.45}
+.operator-payment-error{margin:0 0 12px;padding:9px 11px;border:1px solid #ffc2cc;border-radius:9px;background:#fff1f3;color:#b92c47;font-size:9px;line-height:1.4}
+.operator-payment-dialog .submit{width:100%;min-height:42px;border:0;border-radius:10px;background:#1769f6;color:#fff;font-size:11px;font-weight:850;cursor:pointer}
+.operator-payment-dialog .submit:disabled{cursor:not-allowed;opacity:.55}
+@media(max-width:420px){.operator-payment-overlay{place-items:end center;padding:0}.operator-payment-dialog{width:100%;max-height:calc(100dvh - 8px);border-radius:17px 17px 0 0}}
+
 /* Data Agent: kolom operasional lengkap dan aksi tetap sejajar. */
 .panel-workspace-shell .operator-review .operator-agent-portfolio .operator-agent-table .head,
 .panel-workspace-shell .operator-review .operator-agent-portfolio .operator-agent-table > article {
