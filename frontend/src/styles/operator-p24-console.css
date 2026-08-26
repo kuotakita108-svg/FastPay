@@ -108,6 +108,76 @@
   .panel-workspace-shell .operator-review .marketing-report-panel>article:nth-child(-n+2){border-bottom:1px solid var(--op-line)!important}
 }
 
+/* Kredit Retail: permukaan putih yang konsisten untuk daftar dan form pembayaran. */
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-account{
+  overflow:hidden!important;border:1px solid #d6e4ee!important;border-radius:14px!important;background:#fff!important;color:#10283a!important;box-shadow:0 8px 24px rgba(1,18,34,.1)!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-account-head{
+  width:100%!important;border:0!important;background:#fff!important;color:#10283a!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-account-head:hover{
+  background:#f2f8fc!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-account-head b{
+  color:#09243a!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-account-head small{
+  color:#6c8397!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-account-head em{
+  color:#0783b7!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-account-head>svg{
+  color:#64849a!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-account-body{
+  border-top:1px solid #dbe7ef!important;background:#fff!important;color:#10283a!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-history{
+  border-color:#dbe7ef!important;background:#fff!important;color:#10283a!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-history-main b,
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-history-finance strong{
+  color:#10283a!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-history-main :is(small,span),
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-history-finance :is(small,time){
+  color:#6f8699!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-history-main span{
+  color:#304e64!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-history-actions button:not(.primary){
+  border-color:#bcd4e4!important;background:#fff!important;color:#214c68!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-inline-note{
+  border-color:#d7e5ee!important;background:#f4f9fc!important;color:#17364d!important
+}
+
+body .operator-payment-overlay .operator-payment-dialog{
+  border-color:#d8e2eb!important;background:#fff!important;color:#10233d!important;color-scheme:light!important
+}
+body .operator-payment-overlay .operator-payment-dialog :is(h2,label){color:#10233d!important}
+body .operator-payment-overlay .operator-payment-dialog header p,
+body .operator-payment-overlay .operator-payment-dialog label>span,
+body .operator-payment-overlay .operator-payment-dialog label small{color:#6f8295!important}
+body .operator-payment-overlay .operator-payment-dialog header button{
+  border-color:#9bacbc!important;background:#fff!important;color:#31485e!important
+}
+body .operator-payment-overlay .operator-payment-dialog :is(input,textarea){
+  border:1px solid #cbd8e4!important;background:#fff!important;color:#12283f!important;box-shadow:none!important;color-scheme:light!important
+}
+body .operator-payment-overlay .operator-payment-dialog :is(input,textarea)::placeholder{color:#8a9db0!important;opacity:1!important}
+body .operator-payment-overlay .operator-payment-dialog :is(input,textarea):focus{
+  border-color:#198ee2!important;box-shadow:0 0 0 3px rgba(25,142,226,.1)!important
+}
+body .operator-payment-overlay .operator-payment-dialog input[type=file]::file-selector-button{
+  margin-right:9px;padding:7px 9px;border:1px solid #c7d5e1;border-radius:7px;background:#eef5fa;color:#24465f;font:inherit;font-weight:750
+}
+body .operator-payment-overlay .operator-payment-dialog .submit{
+  border:0!important;background:#1769f6!important;color:#fff!important
+}
+
 /* Operator retail payment: compact mobile-first transfer record dialog. */
 .operator-payment-overlay{position:fixed;inset:0;z-index:1500;display:grid;place-items:center;padding:8px;background:rgba(3,13,27,.68);backdrop-filter:blur(2px)}
 .operator-payment-dialog{box-sizing:border-box;width:min(390px,100%);max-height:calc(100dvh - 16px);overflow:auto;padding:16px;border:1px solid #dce5ee;border-radius:17px;background:#fff;color:#10233d;box-shadow:0 24px 70px rgba(0,0,0,.34)}
@@ -1024,3 +1094,37 @@
  .operator-review .operator-loan-card-toggle{grid-template-columns:minmax(0,1fr) auto 22px;gap:8px;min-height:68px;padding:12px}.operator-review .operator-loan-summary{grid-column:1;text-align:left}.operator-review .operator-loan-card-toggle em{grid-column:2;grid-row:1/3}.operator-review .operator-loan-card-toggle>svg{grid-column:3;grid-row:1/3}.operator-review .operator-loan-agent small,.operator-review .operator-loan-summary small{font-size:8px}.operator-review .operator-loan-agent b,.operator-review .operator-loan-summary strong{font-size:11px}.operator-review .operator-loan-card-detail{grid-template-columns:1fr;padding:13px}.operator-review .operator-loan-card-detail dl{grid-template-columns:1fr 1fr;gap:11px}.operator-review .operator-loan-card-detail>button{width:100%}
  .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-p24-empty-row{min-height:43px!important;padding:13px 14px!important;font-size:9px!important;border-radius:8px!important}
 }
+
+/* Pengunci terakhir Kredit Retail: aturan ini wajib berada paling bawah. */
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-account,
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-account-head,
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-account-body,
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-history{
+ background:#fff!important;color:#10283a!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-account{
+ border:1px solid #d6e4ee!important;box-shadow:0 8px 24px rgba(1,18,34,.1)!important
+}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-account-head:hover{background:#f2f8fc!important}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-account-head b,
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-history-main b,
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-history-finance strong{color:#10283a!important}
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-account-head small,
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-history-main :is(small,span),
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-history-finance :is(small,time){color:#6f8699!important}
+
+body .operator-payment-overlay .operator-payment-dialog{background:#fff!important;color:#10233d!important;color-scheme:light!important}
+body .operator-payment-overlay .operator-payment-dialog :is(h2,label){color:#10233d!important}
+body .operator-payment-overlay .operator-payment-dialog header p,
+body .operator-payment-overlay .operator-payment-dialog label>span,
+body .operator-payment-overlay .operator-payment-dialog label small{color:#6f8295!important}
+body .operator-payment-overlay .operator-payment-dialog header button{border-color:#9bacbc!important;background:#fff!important;color:#31485e!important}
+body .operator-payment-overlay .operator-payment-dialog :is(input,textarea){
+ border:1px solid #cbd8e4!important;background:#fff!important;color:#12283f!important;box-shadow:none!important;color-scheme:light!important
+}
+body .operator-payment-overlay .operator-payment-dialog :is(input,textarea)::placeholder{color:#8a9db0!important;opacity:1!important}
+body .operator-payment-overlay .operator-payment-dialog :is(input,textarea):focus{border-color:#198ee2!important;box-shadow:0 0 0 3px rgba(25,142,226,.1)!important}
+body .operator-payment-overlay .operator-payment-dialog input[type=file]::file-selector-button{
+ margin-right:9px;padding:7px 9px;border:1px solid #c7d5e1;border-radius:7px;background:#eef5fa;color:#24465f;font:inherit;font-weight:750
+}
+body .operator-payment-overlay .operator-payment-dialog .submit{border:0!important;background:#1769f6!important;color:#fff!important}
