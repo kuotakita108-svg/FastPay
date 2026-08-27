@@ -27,6 +27,9 @@
 .panel-workspace-shell .operator-review.operator-capital-console .operator-turnover-list>article>header dd{color:#102b40!important;-webkit-text-fill-color:#102b40!important;font-size:11px!important;font-weight:900!important;line-height:1.35!important;opacity:1!important}
 .panel-workspace-shell .operator-review.operator-capital-console .operator-turnover-list>article>header dd.up{color:#008e68!important;-webkit-text-fill-color:#008e68!important}
 .panel-workspace-shell .operator-review.operator-capital-console .operator-turnover-list>article>header dd.down{color:#d62d4d!important;-webkit-text-fill-color:#d62d4d!important}
+.operator-review.operator-capital-console .operator-turnover-list>article>footer{grid-template-columns:repeat(4,minmax(0,1fr))}
+.operator-review.operator-capital-console .operator-turnover-list footer b.balance{color:#0878bd!important}
+@media(max-width:520px){.operator-review.operator-capital-console .operator-turnover-list>article>footer{grid-template-columns:1fr 1fr;row-gap:9px}}
 
 /* Toolbar stabil: tidak terpotong atau saling menimpa oleh tema panel. */
 .panel-workspace-shell .operator-review.operator-capital-console .operator-turnover-toolbar{display:grid!important;grid-template-columns:max-content 176px minmax(260px,1fr) 76px!important;align-items:center!important;gap:8px!important;min-width:0!important;overflow:visible!important;padding:9px!important}
