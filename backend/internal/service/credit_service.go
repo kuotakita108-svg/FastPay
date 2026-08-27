@@ -228,10 +228,9 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 }
 
 // RecordPayment records a verified refill of an Agent's revolving capital.
-// A payment reduces the current cycle's outstanding amount and immediately
-// restores the same amount to the Agent wallet. When a cycle is fully paid,
-// the facility starts a new cycle at the approved limit; it does not become
-// "Lunas" while the partnership is active.
+// A verified payment is a revolving-capital refill: the whole amount is added
+// to the Agent wallet while the approved facility stays active at its original
+// limit. It never becomes "Lunas" until the partnership is explicitly ended.
 func (s *CreditService) RecordPayment(token, id string, input map[string]any) (map[string]any, error) {
 	user, err := s.auth.CurrentUser(token)
 	if err != nil {
@@ -281,10 +280,6 @@ func (s *CreditService) RecordPayment(token, id string, input map[string]any) (m
 	if outstanding <= 0 {
 		return nil, errors.New("limit modal aktif belum tersedia")
 	}
-	if amount > outstanding {
-		return nil, fmt.Errorf("nominal pembayaran melebihi sisa kredit Rp %d", outstanding)
-	}
-
 	row := cloneCredit(current)
 	now := time.Now().UTC().Format(time.RFC3339)
 	payment := map[string]any{
@@ -302,21 +297,20 @@ func (s *CreditService) RecordPayment(token, id string, input map[string]any) (m
 		"recordedBy":               user.Name,
 		"requestId":                requestID,
 		"cycle":                    maxInt64(1, intValue(row["revolvingCycle"])),
+		"facilityLimit":            approved,
+		"capitalBefore":            outstanding,
+		"capitalAfter":             approved,
 	}
 	history, _ = row["paymentHistory"].([]any)
 	row["paymentHistory"] = append([]any{payment}, history...)
 	paid := intValue(row["paidAmount"]) + amount
-	remaining := outstanding - amount
 	row["paidAmount"] = paid
-	row["capitalOutstanding"] = remaining
+	row["capitalOutstanding"] = approved
 	row["paymentStatus"] = "Modal aktif bergulir"
 	row["capitalStatus"] = "Aktif"
 	row["lastPaymentAt"] = now
-	if remaining == 0 {
-		row["capitalOutstanding"] = approved
-		row["revolvingCycle"] = maxInt64(1, intValue(row["revolvingCycle"])) + 1
-		row["lastCycleClosedAt"] = now
-	}
+	row["revolvingCycle"] = maxInt64(1, intValue(row["revolvingCycle"])) + 1
+	row["lastCycleClosedAt"] = now
 	// The verified transfer replenishes spendable capital. This is deliberately
 	// done server-side so refreshing or changing the browser cannot mint funds.
 	ownerID := stringValue(row["_owner_id"])

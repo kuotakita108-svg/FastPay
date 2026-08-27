@@ -140,24 +140,26 @@ func TestOperatorRecordsRetailPaymentAndRenewsRevolvingCapital(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if intValue(partial["capitalOutstanding"]) != 300000 || partial["paymentStatus"] != "Modal aktif bergulir" || partial["capitalStatus"] != "Aktif" {
+	if intValue(partial["capitalOutstanding"]) != 500000 || partial["paymentStatus"] != "Modal aktif bergulir" || partial["capitalStatus"] != "Aktif" {
 		t.Fatalf("partial payment result = %#v", partial)
 	}
 	current, _ := auth.CurrentUser("Bearer " + agent.Token)
 	if current.Balance != 700000 {
 		t.Fatalf("partial payment did not refill wallet: %d", current.Balance)
 	}
-	payment["amount"] = 300000
+	// A payment may exceed the facility limit. The entire transfer refills the
+	// wallet while the Rp500.000 revolving facility remains active.
+	payment["amount"] = 600000
 	payment["requestId"] = "payment-cycle-1-close"
 	renewed, err := credit.RecordPayment("Bearer "+operator.Token, "KSA-PAY-1", payment)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if intValue(renewed["capitalOutstanding"]) != 500000 || renewed["paymentStatus"] != "Modal aktif bergulir" || renewed["capitalStatus"] != "Aktif" || intValue(renewed["revolvingCycle"]) != 2 {
+	if intValue(renewed["capitalOutstanding"]) != 500000 || renewed["paymentStatus"] != "Modal aktif bergulir" || renewed["capitalStatus"] != "Aktif" || intValue(renewed["revolvingCycle"]) != 3 {
 		t.Fatalf("renewed payment result = %#v", renewed)
 	}
 	current, _ = auth.CurrentUser("Bearer " + agent.Token)
-	if current.Balance != 1000000 {
+	if current.Balance != 1300000 {
 		t.Fatalf("full cycle payment did not refill wallet: %d", current.Balance)
 	}
 	// Retrying the same request must return the saved result without adding
@@ -166,7 +168,7 @@ func TestOperatorRecordsRetailPaymentAndRenewsRevolvingCapital(t *testing.T) {
 		t.Fatal(err)
 	}
 	current, _ = auth.CurrentUser("Bearer " + agent.Token)
-	if current.Balance != 1000000 {
+	if current.Balance != 1300000 {
 		t.Fatalf("duplicate payment refilled wallet twice: %d", current.Balance)
 	}
 }

@@ -14,11 +14,13 @@ const documentCount=item=>Object.values(item?.documents||{}).filter(doc=>doc?.im
 const hasSignature=item=>Boolean(item?.agentConsent?.signature||item?.agentSignature?.image||item?.signature)
 const localDateTime=()=>{const value=new Date();value.setMinutes(value.getMinutes()-value.getTimezoneOffset());return value.toISOString().slice(0,16)}
 const outstandingOf=item=>{const form=formOf(item),approved=Number(item?.approvedCapital||form.amount||0);return Math.max(0,Number(item?.capitalOutstanding??approved-Number(item?.paidAmount||0)))}
-const PAYMENT_PROOF_MAX_BYTES=600*1024
+// Keep the complete JSON request safely below common reverse-proxy 1 MB limits.
+// Base64 adds roughly 33% overhead to the compressed proof.
+const PAYMENT_PROOF_MAX_BYTES=450*1024
 const blobDataUrl=blob=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Bukti transfer belum dapat dibaca.'));reader.readAsDataURL(blob)})
 async function preparePaymentProof(file){
  if(file.type==='application/pdf'){
-  if(file.size>PAYMENT_PROOF_MAX_BYTES)throw new Error('PDF bukti transfer maksimal 600 KB. Gunakan foto atau kompres PDF terlebih dahulu.')
+  if(file.size>PAYMENT_PROOF_MAX_BYTES)throw new Error('PDF bukti transfer maksimal 450 KB. Gunakan foto atau kompres PDF terlebih dahulu.')
   return{name:file.name,type:file.type,size:file.size,dataUrl:await blobDataUrl(file)}
  }
  const bitmap=await createImageBitmap(file),scale=Math.min(1,1600/Math.max(bitmap.width,bitmap.height)),canvas=document.createElement('canvas')
@@ -34,7 +36,7 @@ const OPERATOR_VIEW_ALIASES={
 const OPERATOR_VIEWS=new Set(['overview','pinjaman-retail','migrasi-data','konter-tidak-transaksi','perputaran-uang'])
 
 function RetailLoanWorkspaceP24({applications,agents,onRefresh,onInspect}){
- const[q,setQ]=useState(''),[tab,setTab]=useState('PENGAJUAN'),[status,setStatus]=useState('MENUNGGU'),[openId,setOpenId]=useState(''),[detailMode,setDetailMode]=useState(''),[paymentItem,setPaymentItem]=useState(null)
+ const[q,setQ]=useState(''),[tab,setTab]=useState('PENGAJUAN'),[status,setStatus]=useState('MENUNGGU'),[openId,setOpenId]=useState(''),[paymentItem,setPaymentItem]=useState(null),[historyItem,setHistoryItem]=useState(null)
  const names=new Map(agents.map(agent=>[agent.id,agent.name]))
  const rows=applications.filter(item=>{const form=formOf(item),state=String(item.status||'').toUpperCase();return(status==='SEMUA'||state.includes(status))&&`${item.id} ${form.agentName||names.get(item.userId)||''} ${form.email||''}`.toLowerCase().includes(q.toLowerCase())})
  const groups=[...rows.reduce((map,item)=>{const form=formOf(item),name=form.agentName||names.get(item.userId)||'Agent',contact=form.email||form.whatsapp||'Kontak belum dilengkapi',master=form.marketingName||item.marketingOwnerName||'Marketing belum ditentukan',key=String(item.userId||contact||name);if(!map.has(key))map.set(key,{key,name,contact,master,items:[]});map.get(key).items.push(item);return map},new Map()).values()]
@@ -42,14 +44,14 @@ function RetailLoanWorkspaceP24({applications,agents,onRefresh,onInspect}){
   <header className="operator-p24-page-head"><span>RETAIL AGENT CREDIT</span><h2>Kredit Modal Retail</h2><p>Verifikasi dokumen dan review pengajuan modal Agent tanpa bunga dan tanpa tempo.</p></header>
   <div className="operator-loan-toolbar"><nav><button className={tab==='PENGAJUAN'?'active':''} onClick={()=>setTab('PENGAJUAN')}>Pengajuan</button><button className={tab==='DOKUMEN'?'active':''} onClick={()=>setTab('DOKUMEN')}>Dokumen</button></nav><select value={status} onChange={event=>setStatus(event.target.value)}><option value="MENUNGGU">Pending</option><option value="DISETUJUI">Disetujui</option><option value="DITOLAK">Ditolak</option><option value="SEMUA">Semua</option></select><label><Search/><input value={q} onChange={event=>setQ(event.target.value)} placeholder="Cari ref, Agent, atau email"/></label><button className="operator-p24-refresh" onClick={onRefresh}>Refresh</button></div>
   {tab==='DOKUMEN'?<DocumentWorkspace rows={rows} names={names}/>:<div className="operator-loan-accounts">{groups.map(group=>{const isOpen=openId===group.key;return <article className={`operator-loan-account ${isOpen?'open':''}`} key={group.key}>
-   <button type="button" className="operator-loan-account-head" aria-expanded={isOpen} onClick={()=>{setOpenId(isOpen?'':group.key);setDetailMode('')}}><span><b>{group.name}</b><small>{group.contact} · Penanggung jawab: {group.master}</small><em>{group.items.length} riwayat kredit</em></span><ChevronDown/></button>
-   {isOpen&&<div className="operator-loan-account-body">{group.items.map(item=>{const form=formOf(item),state=String(item.status||'Menunggu'),paid=Number(item.paidAmount||0),total=Number(item.approvedCapital||form.amount||0),remaining=outstandingOf(item),statusClass=state.toLowerCase().includes('tolak')?'failed':state.toLowerCase().includes('setuju')?'success':'pending',mode=detailMode.startsWith(`${item.id}:`)?detailMode.split(':')[1]:'';return <section className="operator-loan-history" key={item.id}>
+   <button type="button" className="operator-loan-account-head" aria-expanded={isOpen} onClick={()=>setOpenId(isOpen?'':group.key)}><span><b>{group.name}</b><small>{group.contact} · Penanggung jawab: {group.master}</small><em>{group.items.length} riwayat kredit</em></span><ChevronDown/></button>
+   {isOpen&&<div className="operator-loan-account-body">{group.items.map(item=>{const form=formOf(item),state=String(item.status||'Menunggu'),paid=Number(item.paidAmount||0),total=Number(item.approvedCapital||form.amount||0),remaining=outstandingOf(item),statusClass=state.toLowerCase().includes('tolak')?'failed':state.toLowerCase().includes('setuju')?'success':'pending';return <section className="operator-loan-history" key={item.id}>
     <div className="operator-loan-history-row"><div className="operator-loan-history-main"><b>{item.id} · {group.name}</b><small>{group.contact} · Penanggung jawab: {group.master}</small><span>Tujuan: {form.purpose||form.businessPurpose||form.tujuan||'-'}</span></div><div className="operator-loan-history-finance"><strong>{rupiah(total)}</strong><small>Total dibayar {rupiah(paid)} · Modal berjalan {rupiah(remaining)}</small><em className={statusClass}>{state}</em><time>{dt(item.createdAt||item.created_at)}</time></div></div>
-    <div className="operator-loan-history-actions"><button type="button" className="primary" onClick={()=>onInspect(item)}><Eye/>Periksa Pengajuan</button><button type="button" disabled={remaining<=0} onClick={()=>setPaymentItem(item)}>Catat Pembayaran</button><button type="button" onClick={()=>setDetailMode(mode==='history'?'':`${item.id}:history`)}>Riwayat Pembayaran</button></div>
-    {mode==='history'&&<div className="operator-loan-inline-note"><b>Riwayat pembayaran</b><span>{paid>0?`Total pembayaran tercatat ${rupiah(paid)}.`:'Belum ada pembayaran yang tercatat.'}</span></div>}
+    <div className="operator-loan-history-actions"><button type="button" className="primary" onClick={()=>onInspect(item)}><Eye/>Periksa Pengajuan</button><button type="button" onClick={()=>setPaymentItem(item)}>Catat Pembayaran</button><button type="button" onClick={()=>setHistoryItem(item)}>Riwayat Pembayaran</button></div>
    </section>})}</div>}
   </article>})}{!groups.length&&<p className="operator-p24-empty-row">Tidak ada pengajuan untuk filter ini.</p>}</div>}
   {paymentItem&&<PaymentTransferDialog item={paymentItem} onClose={()=>setPaymentItem(null)} onSaved={async()=>{setPaymentItem(null);await onRefresh()}}/>}
+  {historyItem&&<PaymentHistoryDialog item={historyItem} onClose={()=>setHistoryItem(null)}/>}
  </section>
 }
 
@@ -59,20 +61,34 @@ function PaymentTransferDialog({item,onClose,onSaved}){
  const[saving,setSaving]=useState(false),[error,setError]=useState('')
  const update=(key,value)=>setData(current=>({...current,[key]:value}))
  const chooseProof=async event=>{const file=event.target.files?.[0];setError('');if(!file){update('proof',null);return}if(!['image/jpeg','image/png','image/webp','application/pdf'].includes(file.type)){event.target.value='';setError('Bukti transfer harus berupa JPG, PNG, WebP, atau PDF.');return}try{update('proof',await preparePaymentProof(file))}catch(err){event.target.value='';update('proof',null);setError(err.message||'Bukti transfer belum dapat diproses.')}}
- const submit=async event=>{event.preventDefault();setError('');const amount=Number(data.amount);if(!amount||amount<1){setError('Nominal pembayaran wajib diisi.');return}if(amount>remaining){setError(`Nominal maksimal ${rupiah(remaining)}.`);return}if(!data.transferredAt||!data.destinationBank.trim()||!data.destinationAccountNumber.trim()||!data.destinationAccountName.trim()||!data.senderName.trim()){setError('Lengkapi seluruh data transfer yang bertanda wajib.');return}const body=JSON.stringify({...data,amount});if(new Blob([body]).size>900*1024){setError('Data bukti transfer masih terlalu besar. Pilih foto lain yang lebih kecil.');return}setSaving(true);try{await request(`/agent-credit/applications/${encodeURIComponent(item.id)}/payments`,{method:'POST',timeoutMs:30000,body});await onSaved()}catch(err){setError(err.message||'Pembayaran belum dapat disimpan.')}finally{setSaving(false)}}
+ const submit=async event=>{event.preventDefault();setError('');const amount=Number(data.amount);if(!amount||amount<1){setError('Nominal pembayaran wajib diisi.');return}if(!data.transferredAt||!data.destinationBank.trim()||!data.destinationAccountNumber.trim()||!data.destinationAccountName.trim()||!data.senderName.trim()){setError('Lengkapi seluruh data transfer yang bertanda wajib.');return}const body=JSON.stringify({...data,amount});if(new Blob([body]).size>700*1024){setError('Data bukti transfer masih terlalu besar. Pilih foto lain yang lebih kecil.');return}setSaving(true);try{await request(`/agent-credit/applications/${encodeURIComponent(item.id)}/payments`,{method:'POST',timeoutMs:30000,body});await onSaved()}catch(err){setError(err.message||'Pembayaran belum dapat disimpan.')}finally{setSaving(false)}}
  return <div className="operator-payment-overlay" onMouseDown={event=>event.target===event.currentTarget&&onClose()}><form className="operator-payment-dialog" onSubmit={submit}>
   <header><div><h2>Catat Pembayaran Transfer</h2><p>{form.agentName||item.userName||'Agent'} · Modal berjalan {rupiah(remaining)}</p></div><button type="button" onClick={onClose}>Tutup</button></header>
   {error&&<div className="operator-payment-error">{error}</div>}
-  <label>Nominal pembayaran <b>*</b><input inputMode="numeric" value={data.amount} onChange={event=>update('amount',event.target.value.replace(/\D/g,''))} placeholder="Contoh: 100000"/><small>Maksimal {rupiah(remaining)}. Setelah diverifikasi, nominal ini langsung mengisi kembali saldo modal Agent.</small></label>
+  <label>Nominal pembayaran <b>*</b><input inputMode="numeric" value={data.amount} onChange={event=>update('amount',event.target.value.replace(/\D/g,''))} placeholder="Contoh: 100000"/><small>Seluruh pembayaran langsung menambah saldo Agent. Modal aktif {rupiah(total)} tetap bergulir selama kemitraan berjalan.</small></label>
   <label>Tanggal dan waktu transfer <b>*</b><input type="datetime-local" value={data.transferredAt} onChange={event=>update('transferredAt',event.target.value)}/></label>
   <label>Bank rekening kantor tujuan <b>*</b><input value={data.destinationBank} onChange={event=>update('destinationBank',event.target.value)} placeholder="Contoh: BCA"/></label>
   <label>Nomor rekening kantor tujuan <b>*</b><input inputMode="numeric" value={data.destinationAccountNumber} onChange={event=>update('destinationAccountNumber',event.target.value.replace(/\D/g,''))} placeholder="Masukkan nomor rekening"/></label>
   <label>Nama pemilik rekening kantor <b>*</b><input value={data.destinationAccountName} onChange={event=>update('destinationAccountName',event.target.value)} placeholder="Nama yang tercantum pada rekening"/></label>
   <label>Nama pengirim transfer <b>*</b><input value={data.senderName} onChange={event=>update('senderName',event.target.value)} placeholder="Nama pemilik rekening pengirim"/></label>
-  <label>Bukti transfer <span>(opsional)</span><input className="file" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={chooseProof}/><small>{data.proof?.name||'Foto otomatis diperkecil. PDF maksimal 600 KB.'}</small></label>
+  <label>Bukti transfer <span>(opsional)</span><input className="file" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={chooseProof}/><small>{data.proof?.name||'Foto otomatis diperkecil. PDF maksimal 450 KB.'}</small></label>
   <label>Catatan <span>(opsional)</span><textarea rows="3" value={data.note} onChange={event=>update('note',event.target.value)} placeholder="Tambahkan keterangan pembayaran bila diperlukan"/></label>
-  <button className="submit" type="submit" disabled={saving||remaining<=0}>{saving?'Menyimpan...':'Simpan Pembayaran'}</button>
+  <button className="submit" type="submit" disabled={saving}>{saving?'Menyimpan...':'Simpan Pembayaran'}</button>
  </form></div>
+}
+
+function PaymentHistoryDialog({item,onClose}){
+ const form=formOf(item),rows=Array.isArray(item.paymentHistory)?item.paymentHistory:[]
+ return <div className="operator-payment-overlay" onMouseDown={event=>event.target===event.currentTarget&&onClose()}><section className="operator-payment-history-dialog">
+  <header><div><h2>Riwayat Pembayaran</h2><p>{form.agentName||item.userName||'Agent'}</p></div><button type="button" onClick={onClose}>Tutup</button></header>
+  <div className="operator-payment-history-list">{rows.map((payment,index)=><article key={payment.id||index}>
+   <div className="operator-payment-history-top"><strong>{rupiah(payment.amount)}</strong><time>{dt(payment.transferredAt||payment.recordedAt)}</time></div>
+   <span>{payment.destinationBank||'Transfer'} · {payment.destinationAccountNumber||'-'}</span>
+   <span>Pengirim: {payment.senderName||'-'}</span>
+   <span>Catatan: {payment.note||'-'}</span>
+   {payment.proof?.dataUrl?<a href={payment.proof.dataUrl} target="_blank" rel="noreferrer">Buka bukti transfer</a>:<small>Bukti transfer tidak dilampirkan</small>}
+  </article>)}{!rows.length&&<p className="operator-payment-history-empty">Belum ada pembayaran yang tercatat.</p>}</div>
+ </section></div>
 }
 
 export default function OperatorCapitalConsole(){
