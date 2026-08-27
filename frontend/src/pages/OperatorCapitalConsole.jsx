@@ -14,6 +14,20 @@ const documentCount=item=>Object.values(item?.documents||{}).filter(doc=>doc?.im
 const hasSignature=item=>Boolean(item?.agentConsent?.signature||item?.agentSignature?.image||item?.signature)
 const localDateTime=()=>{const value=new Date();value.setMinutes(value.getMinutes()-value.getTimezoneOffset());return value.toISOString().slice(0,16)}
 const outstandingOf=item=>{const form=formOf(item),approved=Number(item?.approvedCapital||form.amount||0);return Math.max(0,Number(item?.capitalOutstanding??approved-Number(item?.paidAmount||0)))}
+const PAYMENT_PROOF_MAX_BYTES=600*1024
+const blobDataUrl=blob=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Bukti transfer belum dapat dibaca.'));reader.readAsDataURL(blob)})
+async function preparePaymentProof(file){
+ if(file.type==='application/pdf'){
+  if(file.size>PAYMENT_PROOF_MAX_BYTES)throw new Error('PDF bukti transfer maksimal 600 KB. Gunakan foto atau kompres PDF terlebih dahulu.')
+  return{name:file.name,type:file.type,size:file.size,dataUrl:await blobDataUrl(file)}
+ }
+ const bitmap=await createImageBitmap(file),scale=Math.min(1,1600/Math.max(bitmap.width,bitmap.height)),canvas=document.createElement('canvas')
+ canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close?.()
+ let quality=.82,blob
+ do{blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));quality-=.1}while(blob&&blob.size>PAYMENT_PROOF_MAX_BYTES&&quality>=.32)
+ if(!blob||blob.size>PAYMENT_PROOF_MAX_BYTES)throw new Error('Foto bukti masih terlalu besar. Ambil ulang foto dengan resolusi lebih rendah.')
+ return{name:file.name.replace(/\.[^.]+$/,'.jpg'),type:'image/jpeg',size:blob.size,dataUrl:await blobDataUrl(blob)}
+}
 const OPERATOR_VIEW_ALIASES={
  'aktivitas-agent':'perputaran-uang','transaksi-agent':'perputaran-uang',verifikasi:'pinjaman-retail','pengajuan-modal':'pinjaman-retail',peminjam:'pinjaman-retail',agent:'pinjaman-retail','modal-limit':'pinjaman-retail',suspend:'konter-tidak-transaksi',penagihan:'konter-tidak-transaksi',laporan:'overview','follow-up':'overview','monitoring-agent':'konter-tidak-transaksi','kinerja-marketing':'overview',marketing:'overview',audit:'overview',pengaturan:'overview',
 }
@@ -44,8 +58,8 @@ function PaymentTransferDialog({item,onClose,onSaved}){
  const[data,setData]=useState(()=>({amount:'',transferredAt:localDateTime(),destinationBank:'',destinationAccountNumber:'',destinationAccountName:'',senderName:'',note:'',proof:null,requestId:globalThis.crypto?.randomUUID?.()||`PAY-${Date.now()}-${Math.random().toString(36).slice(2)}`}))
  const[saving,setSaving]=useState(false),[error,setError]=useState('')
  const update=(key,value)=>setData(current=>({...current,[key]:value}))
- const chooseProof=event=>{const file=event.target.files?.[0];setError('');if(!file){update('proof',null);return}if(file.size>10*1024*1024){event.target.value='';setError('Ukuran bukti transfer maksimal 10 MB.');return}if(!['image/jpeg','image/png','image/webp','application/pdf'].includes(file.type)){event.target.value='';setError('Bukti transfer harus berupa JPG, PNG, WebP, atau PDF.');return}const reader=new FileReader();reader.onload=()=>update('proof',{name:file.name,type:file.type,size:file.size,dataUrl:reader.result});reader.onerror=()=>setError('Bukti transfer belum dapat dibaca.');reader.readAsDataURL(file)}
- const submit=async event=>{event.preventDefault();setError('');const amount=Number(data.amount);if(!amount||amount<1){setError('Nominal pembayaran wajib diisi.');return}if(amount>remaining){setError(`Nominal maksimal ${rupiah(remaining)}.`);return}if(!data.transferredAt||!data.destinationBank.trim()||!data.destinationAccountNumber.trim()||!data.destinationAccountName.trim()||!data.senderName.trim()){setError('Lengkapi seluruh data transfer yang bertanda wajib.');return}setSaving(true);try{await request(`/agent-credit/applications/${encodeURIComponent(item.id)}/payments`,{method:'POST',timeoutMs:30000,body:JSON.stringify({...data,amount})});await onSaved()}catch(err){setError(err.message||'Pembayaran belum dapat disimpan.')}finally{setSaving(false)}}
+ const chooseProof=async event=>{const file=event.target.files?.[0];setError('');if(!file){update('proof',null);return}if(!['image/jpeg','image/png','image/webp','application/pdf'].includes(file.type)){event.target.value='';setError('Bukti transfer harus berupa JPG, PNG, WebP, atau PDF.');return}try{update('proof',await preparePaymentProof(file))}catch(err){event.target.value='';update('proof',null);setError(err.message||'Bukti transfer belum dapat diproses.')}}
+ const submit=async event=>{event.preventDefault();setError('');const amount=Number(data.amount);if(!amount||amount<1){setError('Nominal pembayaran wajib diisi.');return}if(amount>remaining){setError(`Nominal maksimal ${rupiah(remaining)}.`);return}if(!data.transferredAt||!data.destinationBank.trim()||!data.destinationAccountNumber.trim()||!data.destinationAccountName.trim()||!data.senderName.trim()){setError('Lengkapi seluruh data transfer yang bertanda wajib.');return}const body=JSON.stringify({...data,amount});if(new Blob([body]).size>900*1024){setError('Data bukti transfer masih terlalu besar. Pilih foto lain yang lebih kecil.');return}setSaving(true);try{await request(`/agent-credit/applications/${encodeURIComponent(item.id)}/payments`,{method:'POST',timeoutMs:30000,body});await onSaved()}catch(err){setError(err.message||'Pembayaran belum dapat disimpan.')}finally{setSaving(false)}}
  return <div className="operator-payment-overlay" onMouseDown={event=>event.target===event.currentTarget&&onClose()}><form className="operator-payment-dialog" onSubmit={submit}>
   <header><div><h2>Catat Pembayaran Transfer</h2><p>{form.agentName||item.userName||'Agent'} · Modal berjalan {rupiah(remaining)}</p></div><button type="button" onClick={onClose}>Tutup</button></header>
   {error&&<div className="operator-payment-error">{error}</div>}
@@ -55,7 +69,7 @@ function PaymentTransferDialog({item,onClose,onSaved}){
   <label>Nomor rekening kantor tujuan <b>*</b><input inputMode="numeric" value={data.destinationAccountNumber} onChange={event=>update('destinationAccountNumber',event.target.value.replace(/\D/g,''))} placeholder="Masukkan nomor rekening"/></label>
   <label>Nama pemilik rekening kantor <b>*</b><input value={data.destinationAccountName} onChange={event=>update('destinationAccountName',event.target.value)} placeholder="Nama yang tercantum pada rekening"/></label>
   <label>Nama pengirim transfer <b>*</b><input value={data.senderName} onChange={event=>update('senderName',event.target.value)} placeholder="Nama pemilik rekening pengirim"/></label>
-  <label>Bukti transfer <span>(opsional)</span><input className="file" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={chooseProof}/><small>{data.proof?.name||'JPG, PNG, WebP, atau PDF. Maksimal 10 MB.'}</small></label>
+  <label>Bukti transfer <span>(opsional)</span><input className="file" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={chooseProof}/><small>{data.proof?.name||'Foto otomatis diperkecil. PDF maksimal 600 KB.'}</small></label>
   <label>Catatan <span>(opsional)</span><textarea rows="3" value={data.note} onChange={event=>update('note',event.target.value)} placeholder="Tambahkan keterangan pembayaran bila diperlukan"/></label>
   <button className="submit" type="submit" disabled={saving||remaining<=0}>{saving?'Menyimpan...':'Simpan Pembayaran'}</button>
  </form></div>

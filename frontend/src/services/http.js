@@ -14,7 +14,10 @@ async function fetchJSON(url,fetchOptions,token,timeoutMs){
   try{
     const response=await fetch(url,{...fetchOptions,mode:'same-origin',cache:'no-store',credentials:'same-origin',redirect:'follow',signal:controller.signal,headers:{Accept:'application/json','Content-Type':fetchOptions.body?'text/plain;charset=UTF-8':'application/json',...(token?{Authorization:`Bearer ${token}`}:{}) ,...fetchOptions.headers}})
     const data=await response.json().catch(()=>null)
-    if(!response.ok)throw new Error(data?.error||`Server tidak dapat memproses permintaan (${response.status})`)
+    if(!response.ok){
+      if(response.status===413)throw new Error('Berkas yang dikirim terlalu besar. Pilih foto yang lebih kecil lalu coba lagi.')
+      throw new Error(data?.error||`Server tidak dapat memproses permintaan (${response.status})`)
+    }
     return data
   }finally{clearTimeout(timer)}
 }
