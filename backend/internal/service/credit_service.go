@@ -228,9 +228,9 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 }
 
 // RecordPayment records a verified refill of an Agent's revolving capital.
-// A verified payment is a revolving-capital refill: the whole amount is added
-// to the Agent wallet while the approved facility stays active at its original
-// limit. It never becomes "Lunas" until the partnership is explicitly ended.
+// Payments are allocated FIFO to the Agent's oldest active facilities. The
+// verified amount then becomes a new revolving facility, so the partnership
+// remains active while each historical cycle keeps an accurate paid balance.
 func (s *CreditService) RecordPayment(token, id string, input map[string]any) (map[string]any, error) {
 	user, err := s.auth.CurrentUser(token)
 	if err != nil {
@@ -256,34 +256,57 @@ func (s *CreditService) RecordPayment(token, id string, input map[string]any) (m
 	if !exists {
 		return nil, errors.New("pengajuan kredit tidak ditemukan")
 	}
+	ownerID := stringValue(current["_owner_id"])
+	requestID := strings.TrimSpace(stringValue(input["requestId"]))
+	for _, candidate := range s.rows {
+		if stringValue(candidate["_owner_id"]) != ownerID {
+			continue
+		}
+		history, _ := candidate["paymentHistory"].([]any)
+		for _, raw := range history {
+			entry, _ := raw.(map[string]any)
+			if requestID != "" && stringValue(entry["requestId"]) == requestID {
+				paymentID := stringValue(entry["id"])
+				for _, revolving := range s.rows {
+					if stringValue(revolving["_owner_id"]) == ownerID && stringValue(revolving["revolvingFromPaymentId"]) == paymentID {
+						return publicCredit(revolving), nil
+					}
+				}
+				return publicCredit(candidate), nil
+			}
+		}
+	}
 	if stringValue(current["status"]) != "Disetujui" {
 		return nil, errors.New("pembayaran hanya dapat dicatat untuk kredit yang disetujui")
 	}
 	if stringValue(current["partnershipStatus"]) == "PARTNERSHIP_ENDED" {
 		return nil, errors.New("kemitraan agent sudah diakhiri")
 	}
-	requestID := strings.TrimSpace(stringValue(input["requestId"]))
-	history, _ := current["paymentHistory"].([]any)
-	if requestID != "" {
-		for _, raw := range history {
-			entry, _ := raw.(map[string]any)
-			if stringValue(entry["requestId"]) == requestID {
-				return publicCredit(current), nil
-			}
+
+	active := make([]map[string]any, 0)
+	for _, candidate := range s.rows {
+		if stringValue(candidate["_owner_id"]) != ownerID || stringValue(candidate["status"]) != "Disetujui" || stringValue(candidate["partnershipStatus"]) == "PARTNERSHIP_ENDED" {
+			continue
+		}
+		if intValue(candidate["capitalOutstanding"]) > 0 {
+			active = append(active, candidate)
 		}
 	}
-	approved := approvedCapitalAmount(current)
-	outstanding := intValue(current["capitalOutstanding"])
-	if outstanding <= 0 {
-		outstanding = approved
-	}
-	if outstanding <= 0 {
+	sort.Slice(active, func(i, j int) bool {
+		left, right := stringValue(active[i]["createdAt"]), stringValue(active[j]["createdAt"])
+		if left == right {
+			return stringValue(active[i]["id"]) < stringValue(active[j]["id"])
+		}
+		return left < right
+	})
+	if len(active) == 0 {
 		return nil, errors.New("limit modal aktif belum tersedia")
 	}
-	row := cloneCredit(current)
+
 	now := time.Now().UTC().Format(time.RFC3339)
-	payment := map[string]any{
-		"id":                       fmt.Sprintf("PAY-%d", time.Now().UnixNano()),
+	paymentID := fmt.Sprintf("PAY-%d", time.Now().UnixNano())
+	basePayment := map[string]any{
+		"id":                       paymentID,
 		"amount":                   amount,
 		"transferredAt":            strings.TrimSpace(stringValue(input["transferredAt"])),
 		"destinationBank":          strings.TrimSpace(stringValue(input["destinationBank"])),
@@ -296,35 +319,97 @@ func (s *CreditService) RecordPayment(token, id string, input map[string]any) (m
 		"recordedAt":               now,
 		"recordedBy":               user.Name,
 		"requestId":                requestID,
-		"cycle":                    maxInt64(1, intValue(row["revolvingCycle"])),
-		"facilityLimit":            approved,
-		"capitalBefore":            outstanding,
-		"capitalAfter":             approved,
+		"transferAmount":           amount,
 	}
-	history, _ = row["paymentHistory"].([]any)
-	row["paymentHistory"] = append([]any{payment}, history...)
-	paid := intValue(row["paidAmount"]) + amount
-	row["paidAmount"] = paid
-	row["capitalOutstanding"] = approved
-	row["paymentStatus"] = "Modal aktif bergulir"
-	row["capitalStatus"] = "Aktif"
-	row["lastPaymentAt"] = now
-	row["revolvingCycle"] = maxInt64(1, intValue(row["revolvingCycle"])) + 1
-	row["lastCycleClosedAt"] = now
+
+	backups := make(map[string]map[string]any, len(active))
+	remainingPayment := amount
+	for _, candidate := range active {
+		if remainingPayment <= 0 {
+			break
+		}
+		candidateID := stringValue(candidate["id"])
+		backups[candidateID] = cloneCredit(candidate)
+		row := cloneCredit(candidate)
+		before := intValue(row["capitalOutstanding"])
+		allocated := remainingPayment
+		if allocated > before {
+			allocated = before
+		}
+		after := before - allocated
+		payment := cloneCredit(basePayment)
+		payment["amount"] = allocated
+		payment["allocatedAmount"] = allocated
+		payment["facilityId"] = candidateID
+		payment["capitalBefore"] = before
+		payment["capitalAfter"] = after
+		history, _ := row["paymentHistory"].([]any)
+		row["paymentHistory"] = append([]any{payment}, history...)
+		row["paidAmount"] = intValue(row["paidAmount"]) + allocated
+		row["capitalOutstanding"] = after
+		row["lastPaymentAt"] = now
+		row["updatedAt"] = now
+		if after == 0 {
+			row["status"] = "Lunas"
+			row["paymentStatus"] = "Lunas"
+			row["capitalStatus"] = "Lunas"
+			row["settledAt"] = now
+		} else {
+			row["paymentStatus"] = "Aktif"
+			row["capitalStatus"] = "Aktif"
+		}
+		s.rows[candidateID] = row
+		remainingPayment -= allocated
+	}
+
+	// Every verified payment opens the next revolving cycle for exactly the
+	// transferred amount. Thus Rp600.000 paid against Rp500.000 + Rp500.000
+	// closes the first cycle, pays Rp100.000 on the second and opens Rp600.000.
+	revolvingID := fmt.Sprintf("RAL-REV-%X", time.Now().UnixNano())
+	revolving := cloneCredit(current)
+	revolving["id"] = revolvingID
+	revolving["status"] = "Disetujui"
+	revolving["approvedCapital"] = amount
+	revolving["capitalOriginalAmount"] = amount
+	revolving["capitalOutstanding"] = amount
+	revolving["paidAmount"] = int64(0)
+	revolving["paymentHistory"] = []any{}
+	revolving["paymentStatus"] = "Aktif"
+	revolving["capitalStatus"] = "Aktif"
+	revolving["revolvingCycle"] = maxInt64(1, intValue(current["revolvingCycle"])) + 1
+	revolving["revolvingFromPaymentId"] = paymentID
+	revolving["revolvingFromApplicationId"] = id
+	revolving["reviewNote"] = "Kredit bergulir otomatis dari pembayaran " + id
+	revolving["capitalDisbursedAt"] = now
+	revolving["capitalDisbursedBy"] = user.Name
+	revolving["createdAt"] = now
+	revolving["updatedAt"] = now
+	for _, key := range []string{"settledAt", "lastPaymentAt", "lastCycleClosedAt", "partnershipEndedAt"} {
+		delete(revolving, key)
+	}
+	if form, ok := revolving["form"].(map[string]any); ok {
+		form["amount"] = amount
+	}
+	s.rows[revolvingID] = revolving
+
 	// The verified transfer replenishes spendable capital. This is deliberately
 	// done server-side so refreshing or changing the browser cannot mint funds.
-	ownerID := stringValue(row["_owner_id"])
 	if _, err := s.auth.ChangeBalanceByUserID(ownerID, amount); err != nil {
+		for backupID, backup := range backups {
+			s.rows[backupID] = backup
+		}
+		delete(s.rows, revolvingID)
 		return nil, fmt.Errorf("saldo modal belum dapat diisi kembali: %w", err)
 	}
-	row["updatedAt"] = now
-	s.rows[id] = row
 	if err := s.saveLocked(); err != nil {
-		s.rows[id] = current
+		for backupID, backup := range backups {
+			s.rows[backupID] = backup
+		}
+		delete(s.rows, revolvingID)
 		_, _ = s.auth.ChangeBalanceByUserID(ownerID, -amount)
 		return nil, errors.New("pembayaran belum dapat disimpan ke server")
 	}
-	return publicCredit(row), nil
+	return publicCredit(revolving), nil
 }
 
 func maxInt64(a, b int64) int64 {
@@ -355,10 +440,18 @@ func isOperatorRole(role string) bool {
 }
 
 func blocksNewCredit(row map[string]any) bool {
-	if stringValue(row["status"]) == "Ditolak" {
+	if stringValue(row["partnershipStatus"]) == "PARTNERSHIP_ENDED" {
 		return false
 	}
-	return stringValue(row["partnershipStatus"]) != "PARTNERSHIP_ENDED"
+	// An approved facility may receive a limit-increase application. Only an
+	// unfinished decision blocks another submission, preventing duplicate
+	// pending requests without stopping revolving capital growth.
+	switch stringValue(row["status"]) {
+	case "Ditolak", "Disetujui", "Lunas":
+		return false
+	default:
+		return true
+	}
 }
 
 func protectCreditDecisionFields(target, source map[string]any) {

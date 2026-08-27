@@ -82,7 +82,7 @@ function PaymentHistoryDialog({item,onClose}){
  return <div className="operator-payment-overlay" onMouseDown={event=>event.target===event.currentTarget&&onClose()}><section className="operator-payment-history-dialog">
   <header><div><h2>Riwayat Pembayaran</h2><p>{form.agentName||item.userName||'Agent'}</p></div><button type="button" onClick={onClose}>Tutup</button></header>
   <div className="operator-payment-history-list">{rows.map((payment,index)=><article key={payment.id||index}>
-   <div className="operator-payment-history-top"><strong>{rupiah(payment.amount)}</strong><time>{dt(payment.transferredAt||payment.recordedAt)}</time></div>
+   <div className="operator-payment-history-top"><strong>{rupiah(payment.transferAmount||payment.amount)}</strong><time>{dt(payment.transferredAt||payment.recordedAt)}</time></div>
    <span>{payment.destinationBank||'Transfer'} · {payment.destinationAccountNumber||'-'}</span>
    <span>Pengirim: {payment.senderName||'-'}</span>
    <span>Catatan: {payment.note||'-'}</span>

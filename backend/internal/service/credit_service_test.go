@@ -14,7 +14,7 @@ func TestBlocksNewCredit(t *testing.T) {
 		want bool
 	}{
 		{"pending application", map[string]any{"status": "Menunggu verifikasi marketing", "creditStatus": "Menunggu keputusan"}, true},
-		{"approved active credit", map[string]any{"status": "Disetujui", "paymentStatus": "Belum lunas"}, true},
+		{"approved active credit permits limit increase", map[string]any{"status": "Disetujui", "paymentStatus": "Belum lunas"}, false},
 		{"rejected application", map[string]any{"status": "Ditolak"}, false},
 		{"ended partnership can apply again", map[string]any{"status": "Disetujui", "partnershipStatus": "PARTNERSHIP_ENDED"}, false},
 	}
@@ -131,35 +131,46 @@ func TestOperatorRecordsRetailPaymentAndRenewsRevolvingCapital(t *testing.T) {
 	if _, err = credit.Save("Bearer "+operator.Token, created); err != nil {
 		t.Fatal(err)
 	}
-	payment := map[string]any{
-		"amount": 200000, "transferredAt": "2026-08-26T10:30", "destinationBank": "BCA",
-		"destinationAccountNumber": "1234567890", "destinationAccountName": "KuotaKita", "senderName": "Agent Bayar",
-		"requestId": "payment-cycle-1-partial",
-	}
-	partial, err := credit.RecordPayment("Bearer "+operator.Token, "KSA-PAY-1", payment)
+	increase, err := credit.Save("Bearer "+agent.Token, map[string]any{"id": "KSA-PAY-2", "form": map[string]any{"amount": 500000}})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if intValue(partial["capitalOutstanding"]) != 500000 || partial["paymentStatus"] != "Modal aktif bergulir" || partial["capitalStatus"] != "Aktif" {
-		t.Fatalf("partial payment result = %#v", partial)
+	increase["status"] = "Disetujui"
+	if _, err = credit.Save("Bearer "+operator.Token, increase); err != nil {
+		t.Fatal(err)
 	}
-	current, _ := auth.CurrentUser("Bearer " + agent.Token)
-	if current.Balance != 700000 {
-		t.Fatalf("partial payment did not refill wallet: %d", current.Balance)
+	payment := map[string]any{
+		"amount": 600000, "transferredAt": "2026-08-26T10:30", "destinationBank": "BCA",
+		"destinationAccountNumber": "1234567890", "destinationAccountName": "KuotaKita", "senderName": "Agent Bayar",
+		"requestId": "payment-fifo-600",
 	}
-	// A payment may exceed the facility limit. The entire transfer refills the
-	// wallet while the Rp500.000 revolving facility remains active.
-	payment["amount"] = 600000
-	payment["requestId"] = "payment-cycle-1-close"
 	renewed, err := credit.RecordPayment("Bearer "+operator.Token, "KSA-PAY-1", payment)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if intValue(renewed["capitalOutstanding"]) != 500000 || renewed["paymentStatus"] != "Modal aktif bergulir" || renewed["capitalStatus"] != "Aktif" || intValue(renewed["revolvingCycle"]) != 3 {
+	if intValue(renewed["capitalOutstanding"]) != 600000 || renewed["paymentStatus"] != "Aktif" || renewed["capitalStatus"] != "Aktif" {
 		t.Fatalf("renewed payment result = %#v", renewed)
 	}
-	current, _ = auth.CurrentUser("Bearer " + agent.Token)
-	if current.Balance != 1300000 {
+	rows, err := credit.List("Bearer " + operator.Token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var activeOutstanding int64
+	var settled int
+	for _, row := range rows {
+		activeOutstanding += intValue(row["capitalOutstanding"])
+		if stringValue(row["status"]) == "Lunas" {
+			settled++
+		}
+	}
+	// Rp500.000 closes the oldest facility, Rp100.000 reduces the second
+	// facility to Rp400.000, and the full Rp600.000 opens a new cycle. Total
+	// active capital therefore remains Rp1.000.000 until partnership ends.
+	if activeOutstanding != 1000000 || settled != 1 {
+		t.Fatalf("FIFO revolving allocation: outstanding=%d settled=%d rows=%#v", activeOutstanding, settled, rows)
+	}
+	current, _ := auth.CurrentUser("Bearer " + agent.Token)
+	if current.Balance != 1600000 {
 		t.Fatalf("full cycle payment did not refill wallet: %d", current.Balance)
 	}
 	// Retrying the same request must return the saved result without adding
@@ -168,7 +179,7 @@ func TestOperatorRecordsRetailPaymentAndRenewsRevolvingCapital(t *testing.T) {
 		t.Fatal(err)
 	}
 	current, _ = auth.CurrentUser("Bearer " + agent.Token)
-	if current.Balance != 1300000 {
+	if current.Balance != 1600000 {
 		t.Fatalf("duplicate payment refilled wallet twice: %d", current.Balance)
 	}
 }
