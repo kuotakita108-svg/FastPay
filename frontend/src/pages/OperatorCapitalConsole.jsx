@@ -174,6 +174,16 @@ function paymentRecordedOf(item){
  const allocated=history.reduce((sum,payment)=>sum+Number(payment?.allocatedAmount??payment?.amount??0),0)
  return Math.max(Number(item?.paidAmount||0),allocated)
 }
+function issuedCreditOf(item){
+ const state=String(item?.status||item?.capitalStatus||'').toLowerCase()
+ if(state.includes('tolak')||state.includes('menunggu')||state.includes('pending'))return 0
+ return Math.max(0,Number(item?.approvedCapital||item?.disbursedAmount||formOf(item).amount||0))
+}
+function activeCreditOf(item){
+ const principal=issuedCreditOf(item),recorded=paymentRecordedOf(item)
+ if(!principal||String(item?.partnershipStatus||'').toUpperCase()==='PARTNERSHIP_ENDED')return 0
+ return Math.max(0,Number(item?.capitalOutstanding??(principal-recorded)))
+}
 function TurnoverWorkspace({agents,applications,transactions,loading,onRefresh}){
  const[days,setDays]=useState(3),[custom,setCustom]=useState(''),[q,setQ]=useState(''),[page,setPage]=useState(1)
  const now=Date.now(),period=Math.max(1,days),since=now-period*86400000,previousSince=since-period*86400000
@@ -183,9 +193,10 @@ function TurnoverWorkspace({agents,applications,transactions,loading,onRefresh})
  const creditRowsByAgent=useMemo(()=>{const grouped=new Map();for(const item of applications||[]){const id=String(item?.userId||item?._owner_id||'');if(!id)continue;if(!grouped.has(id))grouped.set(id,[]);grouped.get(id).push(item)}return grouped},[applications])
  const rows=agents.filter(agent=>creditRowsByAgent.has(String(agent.id))&&`${agent.name||''} ${agent.store_name||''} ${agent.email||''} ${agent.phone||''} ${agent.marketing_name||''}`.toLowerCase().includes(q.toLowerCase())).map(agent=>{
   const facilities=creditRowsByAgent.get(String(agent.id))||[],owned=transactions.filter(row=>String(row.user_id||row.UserID||row.userId||'')===String(agent.id)&&isSuccess(row)),current=owned.filter(row=>txTime(row)>=since),previous=owned.filter(row=>txTime(row)>=previousSince&&txTime(row)<since),turnover=current.reduce((sum,row)=>sum+txAmount(row),0),previousTurnover=previous.reduce((sum,row)=>sum+txAmount(row),0)
-  const approved=facilities.reduce((sum,item)=>{const state=String(item?.status||'').toLowerCase(),isRevolving=Boolean(item?.revolvingFromPaymentId);return sum+(!isRevolving&&(state.includes('setuju')||state.includes('lunas'))?Number(item?.approvedCapital||formOf(item).amount||0):0)},0)
-  const paid=facilities.reduce((sum,item)=>sum+paymentRecordedOf(item),0)
-  const outstanding=facilities.reduce((sum,item)=>{const principal=Number(item?.approvedCapital||formOf(item).amount||0),recorded=paymentRecordedOf(item),remaining=Math.max(0,Number(item?.capitalOutstanding??(principal-recorded)));return sum+(String(item?.partnershipStatus||'').toUpperCase()==='PARTNERSHIP_ENDED'?0:remaining)},0)
+  const approved=facilities.reduce((sum,item)=>sum+issuedCreditOf(item),0)
+  const activeFacilities=facilities.filter(item=>activeCreditOf(item)>0)
+  const paid=activeFacilities.reduce((sum,item)=>sum+paymentRecordedOf(item),0)
+  const outstanding=Math.max(0,approved-paid)
   const balance=Number(agent?.balance??agent?.main_balance??agent?.mainBalance??0),change=previousTurnover?((turnover-previousTurnover)/previousTurnover)*100:turnover?100:0
   return{agent,count:current.length,turnover,average:turnover/period,change,approved,paid,outstanding,balance}
  })
@@ -195,7 +206,7 @@ function TurnoverWorkspace({agents,applications,transactions,loading,onRefresh})
   <header className="operator-turnover-head"><i><CreditCard/></i><div><span>MONITORING KREDIT RETAIL</span><h2>Perputaran Uang Konter</h2></div></header>
   <div className="operator-turnover-toolbar"><nav>{[[3,'3 Hari'],[7,'1 Minggu'],[14,'2 Minggu'],[21,'3 Minggu'],[30,'1 Bulan']].map(([value,label])=><button key={value} className={period===value?'active':''} onClick={()=>selectDays(value)}>{label}</button>)}</nav><div className="operator-custom-days"><input inputMode="numeric" value={custom} onChange={event=>setCustom(event.target.value.replace(/\D/g,''))} placeholder="Jumlah hari"/><button onClick={applyCustom}>Pilih</button></div><label><Search/><input value={q} onChange={event=>{setQ(event.target.value);setPage(1)}} placeholder="Cari konter, email, atau marketing"/></label><button className="operator-p24-refresh" onClick={onRefresh}>Refresh</button></div>
   <div className="operator-turnover-summary"><article><span>Total perputaran {period} hari</span><strong>{rupiah(total)}</strong></article><article><span>Konter penerima modal</span><strong>{rows.length} konter</strong></article></div>
-  {loading?<p className="operator-turnover-loading">Memuat data terbaru...</p>:visible.length?<div className="operator-turnover-list">{visible.map(row=><article key={row.agent.id}><header><div><b>{row.agent.store_name||row.agent.name||'Konter'}</b><span>{row.agent.email||row.agent.phone||'Kontak belum dilengkapi'}</span><small>Marketing: {row.agent.marketing_name||'Belum ditentukan'}</small></div><dl><div><dt>Transaksi sukses</dt><dd>{row.count}</dd></div><div><dt>Perputaran</dt><dd>{rupiah(row.turnover)}</dd></div><div><dt>Rata-rata/hari</dt><dd>{rupiah(row.average)}</dd></div><div><dt>Dari periode lalu</dt><dd className={row.change<0?'down':'up'}>{row.change>0?'↗ ':row.change<0?'↘ ':''}{row.change.toFixed(2)}%</dd></div></dl></header><footer><div><span>Modal awal disetujui</span><b>{rupiah(row.approved)}</b></div><div><span>Total pembayaran</span><b className="paid">{rupiah(row.paid)}</b></div><div><span>Modal aktif bergulir</span><b className="due">{rupiah(row.outstanding)}</b></div><div><span>Sisa saldo Agent</span><b className="balance">{rupiah(row.balance)}</b></div></footer></article>)}</div>:<p className="operator-turnover-loading">Belum ada konter penerima modal untuk filter ini.</p>}
+  {loading?<p className="operator-turnover-loading">Memuat data terbaru...</p>:visible.length?<div className="operator-turnover-list">{visible.map(row=><article key={row.agent.id}><header><div><b>{row.agent.store_name||row.agent.name||'Konter'}</b><span>{row.agent.email||row.agent.phone||'Kontak belum dilengkapi'}</span><small>Marketing: {row.agent.marketing_name||'Belum ditentukan'}</small></div><dl><div><dt>Transaksi sukses</dt><dd>{row.count}</dd></div><div><dt>Perputaran</dt><dd>{rupiah(row.turnover)}</dd></div><div><dt>Rata-rata/hari</dt><dd>{rupiah(row.average)}</dd></div><div><dt>Dari periode lalu</dt><dd className={row.change<0?'down':'up'}>{row.change>0?'↗ ':row.change<0?'↘ ':''}{row.change.toFixed(2)}%</dd></div></dl></header><footer><div><span>Kredit dicairkan</span><b>{rupiah(row.approved)}</b></div><div><span>Dibayar</span><b className="paid">{rupiah(row.paid)}</b></div><div><span>Sisa kredit</span><b className="due">{rupiah(row.outstanding)}</b></div><div><span>Sisa saldo</span><b className="balance">{rupiah(row.balance)}</b></div></footer></article>)}</div>:<p className="operator-turnover-loading">Belum ada konter penerima modal untuk filter ini.</p>}
   <footer className="operator-turnover-pagination"><button disabled={safePage<=1} onClick={()=>setPage(value=>Math.max(1,value-1))}>Sebelumnya</button><span>Halaman {safePage} dari {totalPages}</span><button disabled={safePage>=totalPages} onClick={()=>setPage(value=>Math.min(totalPages,value+1))}>Berikutnya</button></footer>
  </section>
 }
