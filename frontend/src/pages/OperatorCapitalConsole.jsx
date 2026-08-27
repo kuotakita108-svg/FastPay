@@ -81,10 +81,10 @@ function PaymentHistoryDialog({item,onClose}){
  const form=formOf(item),rows=Array.isArray(item.paymentHistory)?item.paymentHistory:[]
  const[preview,setPreview]=useState(null)
  return <div className="operator-payment-overlay" onMouseDown={event=>event.target===event.currentTarget&&onClose()}><section className="operator-payment-history-dialog">
-  <header><div><h2>Riwayat Pembayaran</h2><p>{form.agentName||item.userName||'Agent'}</p></div><button type="button" onClick={onClose}>Tutup</button></header>
+  <header><div><h2>Riwayat Pembayaran</h2><p>{form.storeName||item.storeName||form.agentName||item.userName||'Agent'}</p></div><button type="button" onClick={onClose}>Tutup</button></header>
   <div className="operator-payment-history-list">{rows.map((payment,index)=>{const proof=payment.proof||{},source=proof.dataUrl||proof.image||proof.url||'';return <article key={payment.id||index}>
    <div className="operator-payment-history-top"><strong>{rupiah(payment.transferAmount||payment.amount)}</strong><time>{dt(payment.transferredAt||payment.recordedAt)}</time></div>
-   <span>{payment.destinationBank||'Transfer'} · {payment.destinationAccountNumber||'-'}</span>
+   <span>{String(payment.destinationBank||'Transfer').toUpperCase()} · {payment.destinationAccountNumber||'-'}</span>
    <span><b>Pengirim:</b> {payment.senderName||'-'}</span>
    <span><b>Catatan:</b> {payment.note||'-'}</span>
    {source?<button type="button" className="operator-payment-proof-button" onClick={()=>setPreview({source,name:proof.name||'Bukti transfer',type:proof.type||''})}><Eye/>Buka bukti transfer</button>:<small>Bukti transfer tidak dilampirkan</small>}

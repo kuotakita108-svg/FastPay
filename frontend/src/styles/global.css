@@ -68,6 +68,159 @@
 @import './operator-legacy-migration.css';
 @import './operator-inactive-reference.css';
 @import './operator-turnover-reference.css';
+
+/* Payment history is a light receipt, isolated from the dark operator theme. */
+html body #root .operator-payment-overlay .operator-payment-history-dialog {
+  position: relative !important;
+  box-sizing: border-box !important;
+  width: min(430px, calc(100vw - 24px)) !important;
+  max-height: calc(100dvh - 24px) !important;
+  overflow: auto !important;
+  padding: 16px !important;
+  border: 1px solid #dce5ee !important;
+  border-radius: 17px !important;
+  background: #fff !important;
+  color: #10233d !important;
+  color-scheme: light !important;
+  opacity: 1 !important;
+  filter: none !important;
+  text-shadow: none !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .34) !important;
+}
+
+html body #root .operator-payment-overlay .operator-payment-history-dialog * {
+  box-sizing: border-box;
+  opacity: 1 !important;
+  filter: none !important;
+  text-shadow: none !important;
+}
+
+html body #root .operator-payment-overlay .operator-payment-history-dialog > header {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  margin: 0 0 14px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+html body #root .operator-payment-overlay .operator-payment-history-dialog > header h2 {
+  margin: 0 0 3px !important;
+  color: #0d1f36 !important;
+  -webkit-text-fill-color: #0d1f36 !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  text-align: left !important;
+}
+
+html body #root .operator-payment-overlay .operator-payment-history-dialog > header p {
+  margin: 0 !important;
+  color: #718397 !important;
+  -webkit-text-fill-color: #718397 !important;
+  font-size: 10px !important;
+  line-height: 1.35 !important;
+  text-align: left !important;
+}
+
+html body #root .operator-payment-overlay .operator-payment-history-dialog > header button {
+  width: auto !important;
+  min-width: 0 !important;
+  padding: 7px 11px !important;
+  border: 1px solid #cbd8e4 !important;
+  border-radius: 999px !important;
+  background: #fff !important;
+  color: #31485e !important;
+  -webkit-text-fill-color: #31485e !important;
+  font-size: 10px !important;
+  font-weight: 750 !important;
+}
+
+html body #root .operator-payment-overlay .operator-payment-history-list {
+  display: grid !important;
+  gap: 10px !important;
+}
+
+html body #root .operator-payment-overlay .operator-payment-history-list article {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 5px !important;
+  width: 100% !important;
+  padding: 13px !important;
+  border: 1px solid #dce5ee !important;
+  border-radius: 11px !important;
+  background: #f8fafc !important;
+  color: #334a61 !important;
+  -webkit-text-fill-color: #334a61 !important;
+  font-size: 11px !important;
+  line-height: 1.45 !important;
+  text-align: left !important;
+}
+
+html body #root .operator-payment-overlay .operator-payment-history-top {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  width: 100% !important;
+}
+
+html body #root .operator-payment-overlay .operator-payment-history-top strong {
+  color: #10233d !important;
+  -webkit-text-fill-color: #10233d !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+}
+
+html body #root .operator-payment-overlay .operator-payment-history-top time {
+  color: #718397 !important;
+  -webkit-text-fill-color: #718397 !important;
+  font-size: 9px !important;
+  white-space: nowrap !important;
+}
+
+html body #root .operator-payment-overlay .operator-payment-history-list article span,
+html body #root .operator-payment-overlay .operator-payment-history-list article span b {
+  display: block !important;
+  color: #334a61 !important;
+  -webkit-text-fill-color: #334a61 !important;
+  font-size: 11px !important;
+  text-align: left !important;
+}
+
+html body #root .operator-payment-overlay .operator-payment-history-list article span b {
+  display: inline !important;
+  font-weight: 700 !important;
+}
+
+html body #root .operator-payment-overlay .operator-payment-proof-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  justify-self: start !important;
+  gap: 6px !important;
+  width: auto !important;
+  margin-top: 5px !important;
+  padding: 7px 10px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: #dff4ff !important;
+  color: #0674ad !important;
+  -webkit-text-fill-color: #0674ad !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+}
+
+@media (max-width: 420px) {
+  html body #root .operator-payment-overlay .operator-payment-history-dialog {
+    width: calc(100vw - 8px) !important;
+    max-height: calc(100dvh - 8px) !important;
+    padding: 15px !important;
+    border-radius: 17px !important;
+  }
+}
 .mobile-nav.no-scan-nav,.advanced-nav.no-scan-nav{grid-template-columns:repeat(4,1fr)!important}.mobile-nav.no-scan-nav.user-mobile-nav{grid-template-columns:repeat(3,1fr)!important}.mobile-nav.no-scan-nav.agent-mobile-nav{grid-template-columns:repeat(4,1fr)!important}.no-scan-nav .nav-scan{display:none!important}.no-scan-nav a.active{color:#6557e5;font-weight:800}
 *{box-sizing:border-box}html{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}body{margin:0;font-size:14px}button,input,select,textarea{font:inherit}button,a{cursor:pointer}button:disabled{opacity:.65;cursor:wait}h1,h2,h3,p{margin-top:0}a{text-decoration:none;color:inherit}.primary-button,.secondary-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;border-radius:9px;padding:11px 16px;font-weight:700}.primary-button{background:linear-gradient(135deg,#8a7cf5,var(--primary));color:#fff;box-shadow:0 7px 17px rgba(103,89,232,.2)}.secondary-button{background:var(--primary-soft);color:var(--primary)}.full{width:100%}
 /* Lightweight route loader shown only while a lazily loaded screen arrives. */
