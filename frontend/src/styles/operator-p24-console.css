@@ -1188,3 +1188,47 @@ body .operator-payment-overlay .operator-payment-dialog .submit{border:0!importa
 .operator-payment-proof-preview>header button{display:inline-flex;align-items:center;gap:5px;padding:7px 10px;border:1px solid #cbd8e4;border-radius:9px;background:#fff;color:#31485e;font-weight:750;cursor:pointer}.operator-payment-proof-preview>header svg{width:13px;height:13px}
 .operator-payment-proof-preview img,.operator-payment-proof-preview iframe{display:block;width:100%;min-height:360px;max-height:calc(100dvh - 130px);border:0;border-radius:10px;background:#eef3f7;object-fit:contain}
 @media(max-width:420px){.operator-payment-history-dialog{width:100%;max-height:calc(100dvh - 8px);border-radius:17px 17px 0 0}}
+
+/* Kredit Retail — kartu pengajuan ringkas, terang, dan konsisten seperti konsol referensi. */
+.operator-capital-console .operator-retail-loans .operator-loan-accounts{
+ display:grid!important;gap:10px!important;margin-top:10px!important
+}
+.operator-capital-console .operator-retail-loans .operator-loan-account{
+ overflow:hidden!important;border:1px solid #c9d8e4!important;border-radius:13px!important;background:#fff!important;box-shadow:0 8px 22px rgba(0,27,51,.10)!important
+}
+.operator-capital-console .operator-retail-loans .operator-loan-account-head{
+ display:flex!important;width:100%!important;min-height:64px!important;align-items:center!important;justify-content:space-between!important;gap:14px!important;padding:12px 14px!important;border:0!important;background:#f7fafc!important;text-align:left!important
+}
+.operator-capital-console .operator-retail-loans .operator-loan-account-head>span{display:grid!important;gap:3px!important;min-width:0!important}
+.operator-capital-console .operator-retail-loans .operator-loan-account-head b{color:#10233d!important;font-size:12px!important;line-height:1.3!important}
+.operator-capital-console .operator-retail-loans .operator-loan-account-head small{overflow:hidden!important;color:#698197!important;font-size:9px!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.operator-capital-console .operator-retail-loans .operator-loan-account-head em{color:#087db8!important;font-size:9px!important;font-style:normal!important;font-weight:800!important}
+.operator-capital-console .operator-retail-loans .operator-loan-account-body{padding:0!important;background:#fff!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history{padding:14px!important;border:0!important;border-top:1px solid #dce7ee!important;background:#fff!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-row{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(190px,auto)!important;gap:20px!important;align-items:start!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-main,
+.operator-capital-console .operator-retail-loans .operator-loan-history-finance{display:grid!important;gap:4px!important;min-width:0!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-main b{color:#10233d!important;font-size:11px!important;line-height:1.4!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-main :is(small,span){color:#657f94!important;font-size:9px!important;line-height:1.45!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-main span{color:#29485f!important;font-weight:750!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-finance{text-align:right!important;justify-items:end!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-finance strong{color:#0877b7!important;font-size:12px!important;line-height:1.35!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-finance :is(small,time){color:#7890a3!important;font-size:8px!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-finance em{padding:4px 8px!important;border-radius:999px!important;font-size:8px!important;font-style:normal!important;font-weight:900!important;text-transform:uppercase!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-finance em.pending{background:#fff0ca!important;color:#a76900!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-finance em.success{background:#dcf8e9!important;color:#087b50!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-finance em.failed{background:#ffe7ec!important;color:#c92345!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-actions{display:flex!important;flex-wrap:wrap!important;gap:7px!important;margin-top:11px!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-actions button{min-height:30px!important;padding:0 12px!important;border:1px solid #b8d5e7!important;border-radius:8px!important;background:#fff!important;color:#24506b!important;font-size:9px!important;font-weight:850!important;box-shadow:none!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-actions button.approve{border-color:#08a66d!important;background:#08a66d!important;color:#fff!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-actions button.reject{border-color:#ef174d!important;background:#ef174d!important;color:#fff!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-actions button.documents{border-color:#9fd2ed!important;background:#f7fcff!important;color:#0876b5!important}
+@media(max-width:760px){
+ .operator-capital-console .operator-retail-loans .operator-loan-history-row{grid-template-columns:1fr!important;gap:9px!important}
+ .operator-capital-console .operator-retail-loans .operator-loan-history-finance{grid-template-columns:1fr auto!important;text-align:left!important;justify-items:start!important}
+ .operator-capital-console .operator-retail-loans .operator-loan-history-finance :is(strong,small){grid-column:1!important}
+ .operator-capital-console .operator-retail-loans .operator-loan-history-finance :is(em,time){grid-column:2!important}
+ .operator-capital-console .operator-retail-loans .operator-loan-history-finance em{grid-row:1!important}
+ .operator-capital-console .operator-retail-loans .operator-loan-history-finance time{grid-row:2!important}
+ .operator-capital-console .operator-retail-loans .operator-loan-history-actions button{flex:1 1 auto!important}
+}
