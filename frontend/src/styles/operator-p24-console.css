@@ -1250,3 +1250,23 @@ body .operator-payment-overlay .operator-payment-dialog .submit{border:0!importa
  .operator-capital-console .operator-retail-loans .operator-loan-history-finance time{grid-row:2!important}
  .operator-capital-console .operator-retail-loans .operator-loan-history-actions button{flex:1 1 auto!important}
 }
+/* Final retail decision colors: keep these last so legacy operator button rules cannot neutralize them. */
+.panel-workspace-shell .operator-capital-console .operator-retail-loans .operator-loan-history-actions > button.operator-retail-approve {
+  border-color: #079c62 !important;
+  background: #079c62 !important;
+  color: #ffffff !important;
+  box-shadow: 0 5px 14px rgba(7, 156, 98, 0.22) !important;
+}
+
+.panel-workspace-shell .operator-capital-console .operator-retail-loans .operator-loan-history-actions > button.operator-retail-reject {
+  border-color: #ef174d !important;
+  background: #ef174d !important;
+  color: #ffffff !important;
+  box-shadow: 0 5px 14px rgba(239, 23, 77, 0.2) !important;
+}
+
+.panel-workspace-shell .operator-capital-console .operator-retail-loans .operator-loan-history-actions > button.operator-retail-documents {
+  border-color: #9fd2ed !important;
+  background: #f7fcff !important;
+  color: #0876b5 !important;
+}
