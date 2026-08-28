@@ -22,6 +22,29 @@ const documentTitle=(key,doc={})=>{const value=String(key||doc?.name||doc?.fileN
 const documentStatus=(item,doc={})=>{const value=String(doc?.status||'').toUpperCase(),applicationStatus=String(item?.status||'').toUpperCase();if(['REJECTED','DITOLAK','FAILED'].includes(value))return{label:'Ditolak',tone:'rejected'};if(['APPROVED','DISETUJUI'].includes(value)||(!value&&['APPROVED','ACTIVE','LUNAS'].includes(applicationStatus)))return{label:'Disetujui',tone:'approved'};return{label:'Siap diperiksa',tone:'pending'}}
 const localDateTime=()=>{const value=new Date();value.setMinutes(value.getMinutes()-value.getTimezoneOffset());return value.toISOString().slice(0,16)}
 const outstandingOf=item=>{const form=formOf(item),approved=Number(item?.approvedCapital||form.amount||0);return Math.max(0,Number(item?.capitalOutstanding??approved-Number(item?.paidAmount||0)))}
+
+function HydratedDocumentWorkspace({rows,names,onRefresh,onLoadDetail}){
+ const[details,setDetails]=useState({}),[loading,setLoading]=useState(false),[loadError,setLoadError]=useState(''),[retry,setRetry]=useState(0)
+ const rowIds=rows.map(item=>item.id).join('|')
+ useEffect(()=>{
+  let active=true
+  const missing=rows.filter(item=>item.id&&!Object.values(item.documents||{}).some(doc=>doc?.image||doc?.dataUrl))
+  if(!missing.length||!onLoadDetail){setLoading(false);setLoadError('');return()=>{active=false}}
+  setLoading(true);setLoadError('')
+  Promise.allSettled(missing.map(item=>onLoadDetail(item))).then(results=>{
+   if(!active)return
+   const next={},failed=[]
+   results.forEach((result,index)=>{if(result.status==='fulfilled')next[missing[index].id]=result.value;else failed.push(missing[index].id)})
+   setDetails(current=>({...current,...next}))
+   if(failed.length)setLoadError(`${failed.length} pengajuan belum berhasil dimuat lengkap.`)
+  }).finally(()=>active&&setLoading(false))
+  return()=>{active=false}
+ },[rowIds,retry,onLoadDetail])
+ const hydratedRows=rows.map(item=>details[item.id]||item)
+ if(loading)return <div className="operator-document-groups"><Empty text="Memuat dokumen lengkap..."/></div>
+ if(loadError)return <div className="operator-document-groups"><div className="operator-document-load-error"><p>{loadError}</p><button type="button" onClick={()=>setRetry(value=>value+1)}>Coba lagi</button></div></div>
+ return <DocumentWorkspace rows={hydratedRows} names={names} onRefresh={onRefresh}/>
+}
 // Keep the complete JSON request safely below common reverse-proxy 1 MB limits.
 // Base64 adds roughly 33% overhead to the compressed proof.
 const PAYMENT_PROOF_MAX_BYTES=450*1024
@@ -43,15 +66,16 @@ const OPERATOR_VIEW_ALIASES={
 }
 const OPERATOR_VIEWS=new Set(['overview','pinjaman-retail','migrasi-data','konter-tidak-transaksi','perputaran-uang'])
 
-function RetailLoanWorkspaceP24({applications,agents,onRefresh,onInspect,onApprove,onReject}){
- const[q,setQ]=useState(''),[tab,setTab]=useState('PENGAJUAN'),[status,setStatus]=useState('SEMUA'),[openId,setOpenId]=useState(''),[paymentItem,setPaymentItem]=useState(null),[historyItem,setHistoryItem]=useState(null)
+function RetailLoanWorkspaceP24({applications,agents,onRefresh,onLoadDetail,onInspect,onApprove,onReject}){
+ const[q,setQ]=useState(''),[tab,setTab]=useState('PENGAJUAN'),[status,setStatus]=useState('MENUNGGU'),[openId,setOpenId]=useState(''),[paymentItem,setPaymentItem]=useState(null),[historyItem,setHistoryItem]=useState(null)
+ const DocumentWorkspace=HydratedDocumentWorkspace
  const names=new Map(agents.map(agent=>[agent.id,agent.name]))
  const rows=applications.filter(item=>{const form=formOf(item);return matchesCreditStatus(item.status,status)&&`${item.id} ${form.agentName||names.get(item.userId)||''} ${form.email||''}`.toLowerCase().includes(q.toLowerCase())})
  const groups=[...rows.reduce((map,item)=>{const form=formOf(item),name=form.agentName||names.get(item.userId)||'Agent',contact=form.email||form.whatsapp||'Kontak belum dilengkapi',marketing=marketingOwnerOf(item,agents),key=String(item.userId||contact||name);if(!map.has(key))map.set(key,{key,name,contact,marketing,items:[]});else if(map.get(key).marketing==='Marketing belum ditentukan'&&marketing!=='Marketing belum ditentukan')map.get(key).marketing=marketing;map.get(key).items.push(item);return map},new Map()).values()]
  return <section className="operator-retail-loans">
   <header className="operator-p24-page-head"><span>RETAIL AGENT CREDIT</span><h2>Kredit Modal Retail</h2><p>Verifikasi dokumen dan review pengajuan modal Agent tanpa bunga dan tanpa tempo.</p></header>
-  <div className="operator-loan-toolbar"><nav><button className={tab==='PENGAJUAN'?'active':''} onClick={()=>setTab('PENGAJUAN')}>Pengajuan</button><button className={tab==='DOKUMEN'?'active':''} onClick={()=>setTab('DOKUMEN')}>Dokumen</button></nav><select value={status} onChange={event=>setStatus(event.target.value)}><option value="SEMUA">Semua status</option><option value="MENUNGGU">Pending</option><option value="DISETUJUI">Disetujui</option><option value="DITOLAK">Ditolak</option></select><label><Search/><input value={q} onChange={event=>setQ(event.target.value)} placeholder="Cari ref, Agent, atau email"/></label><button className="operator-p24-refresh" onClick={onRefresh}>Refresh</button></div>
-  {tab==='DOKUMEN'?<DocumentWorkspace rows={rows} names={names} onRefresh={onRefresh}/>:<div className="operator-loan-accounts">{groups.map(group=>{const isOpen=openId===group.key,hasApproved=group.items.some(item=>String(item.status||'').toLowerCase().includes('setuju'));return <article className={`operator-loan-account ${isOpen?'open':''}`} key={group.key}>
+  <div className="operator-loan-toolbar"><nav><button className={tab==='PENGAJUAN'?'active':''} onClick={()=>setTab('PENGAJUAN')}>Pengajuan</button><button className={tab==='DOKUMEN'?'active':''} onClick={()=>setTab('DOKUMEN')}>Dokumen</button></nav><select value={status} onChange={event=>setStatus(event.target.value)}><option value="MENUNGGU">Pending</option><option value="SEMUA">Semua status</option><option value="DISETUJUI">Disetujui</option><option value="DITOLAK">Ditolak</option></select><label><Search/><input value={q} onChange={event=>setQ(event.target.value)} placeholder="Cari ref, Agent, atau email"/></label><button className="operator-p24-refresh" onClick={onRefresh}>Refresh</button></div>
+  {tab==='DOKUMEN'?<DocumentWorkspace rows={rows} names={names} onRefresh={onRefresh} onLoadDetail={onLoadDetail}/>:<div className="operator-loan-accounts">{groups.map(group=>{const isOpen=openId===group.key,hasApproved=group.items.some(item=>String(item.status||'').toLowerCase().includes('setuju'));return <article className={`operator-loan-account ${isOpen?'open':''}`} key={group.key}>
    <button type="button" className="operator-loan-account-head" aria-expanded={isOpen} onClick={()=>setOpenId(isOpen?'':group.key)}><span><b>{group.name}</b><small>{group.contact} · Penanggung jawab: {group.marketing}</small><em>{group.items.length} riwayat kredit</em></span><ChevronDown/></button>
    {isOpen&&<div className="operator-loan-account-body">
     {hasApproved&&<div className="operator-loan-account-tools"><button type="button" onClick={()=>setHistoryItem(group.items.find(item=>String(item.status||'').toLowerCase().includes('setuju')))}>Riwayat Pembayaran</button></div>}
@@ -136,7 +160,7 @@ export default function OperatorCapitalConsole(){
   {view!=='overview'&&view!=='pinjaman-retail'&&view!=='migrasi-data'&&view!=='konter-tidak-transaksi'&&view!=='perputaran-uang'&&<header className="operator-capital-hero"><div><span>RUANG KERJA OPERATOR</span><h1>{viewTitle}</h1><p>Kontrol Agent, pengajuan modal, aktivitas, risiko, dan koordinasi lapangan dalam alur kerja KuotaKita.</p></div><i><ShieldCheck/></i></header>}
   {error&&<p className="operator-capital-alert error">{error}</p>}{message&&<p className="operator-capital-alert">{message}</p>}
   {view==='overview'&&<OperatorDashboard name={user?.name||user?.full_name||user?.fullName||user?.displayName||user?.username||'Operator KuotaKita'}/>}
-  {view==='pinjaman-retail'&&<RetailLoanWorkspaceP24 applications={applications} agents={agents} onRefresh={load} onInspect={inspectApplication} onApprove={approveFromList} onReject={rejectFromList}/>}
+  {view==='pinjaman-retail'&&<RetailLoanWorkspaceP24 applications={applications} agents={agents} onRefresh={load} onLoadDetail={loadApplicationDetail} onInspect={inspectApplication} onApprove={approveFromList} onReject={rejectFromList}/>}
   {view==='konter-tidak-transaksi'&&<AgentHealth agents={agents} appByAgent={appByAgent} onRefresh={load} loading={loading}/>}
   {view==='migrasi-data'&&<LegacyMigrationWorkspace/>}
   {view==='perputaran-uang'&&<TurnoverWorkspace agents={agents} applications={applications} transactions={agentTransactions} loading={loading} onRefresh={load}/>}
