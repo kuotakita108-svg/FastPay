@@ -233,6 +233,62 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 	return publicCredit(row), nil
 }
 
+// ReviewDocument updates only one document review state. Keeping this as a
+// small server-side mutation avoids resending the complete application (and
+// its base64 images) whenever an Operator approves or rejects a document.
+func (s *CreditService) ReviewDocument(token, id, documentKey, status string) (map[string]any, error) {
+	user, err := s.auth.CurrentUser(token)
+	if err != nil {
+		return nil, err
+	}
+	if !isOperatorRole(user.Role) {
+		return nil, fmt.Errorf("%w: pemeriksaan dokumen hanya dapat dilakukan Operator", ErrForbidden)
+	}
+	id = strings.TrimSpace(id)
+	documentKey = strings.TrimSpace(documentKey)
+	status = strings.ToUpper(strings.TrimSpace(status))
+	if id == "" || documentKey == "" {
+		return nil, errors.New("pengajuan atau dokumen tidak valid")
+	}
+	if status != "APPROVED" && status != "REJECTED" {
+		return nil, errors.New("status pemeriksaan dokumen tidak valid")
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	current, exists := s.rows[id]
+	if !exists {
+		return nil, errors.New("pengajuan kredit tidak ditemukan")
+	}
+	documents, ok := current["documents"].(map[string]any)
+	if !ok {
+		return nil, errors.New("dokumen pengajuan tidak ditemukan")
+	}
+	rawDocument, exists := documents[documentKey]
+	if !exists {
+		return nil, errors.New("dokumen pengajuan tidak ditemukan")
+	}
+	document, ok := rawDocument.(map[string]any)
+	if !ok {
+		return nil, errors.New("format dokumen pengajuan tidak valid")
+	}
+
+	previous := cloneCredit(current)
+	updatedDocument := cloneCredit(document)
+	updatedDocument["status"] = status
+	updatedDocument["reviewedAt"] = time.Now().UTC().Format(time.RFC3339)
+	updatedDocument["reviewedBy"] = user.Name
+	documents[documentKey] = updatedDocument
+	current["documents"] = documents
+	current["updatedAt"] = time.Now().UTC().Format(time.RFC3339)
+	if err := s.saveLocked(); err != nil {
+		s.rows[id] = previous
+		log.Printf("credit application %s document review persistence failed: %v", id, err)
+		return nil, ErrCreditPersistence
+	}
+	return publicCredit(current), nil
+}
+
 // RecordPayment records a verified refill of an Agent's revolving capital.
 // Payments are allocated FIFO to the Agent's oldest active facilities. The
 // verified amount then becomes a new revolving facility, so the partnership

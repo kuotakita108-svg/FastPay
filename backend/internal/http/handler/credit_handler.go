@@ -47,6 +47,33 @@ func (h *CreditHandler) Save(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, item)
 }
 
+func (h *CreditHandler) ReviewDocument(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Status string `json:"status"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4<<10)).Decode(&input); err != nil {
+		response.Error(w, http.StatusBadRequest, "status pemeriksaan dokumen tidak valid")
+		return
+	}
+	item, err := h.service.ReviewDocument(
+		r.Header.Get("Authorization"),
+		r.PathValue("id"),
+		r.PathValue("documentKey"),
+		input.Status,
+	)
+	if err != nil {
+		status := http.StatusBadRequest
+		if errors.Is(err, service.ErrCreditPersistence) {
+			status = http.StatusInternalServerError
+		} else if errors.Is(err, service.ErrForbidden) {
+			status = http.StatusForbidden
+		}
+		response.Error(w, status, err.Error())
+		return
+	}
+	response.JSON(w, http.StatusOK, item)
+}
+
 func (h *CreditHandler) RecordPayment(w http.ResponseWriter, r *http.Request) {
 	var input map[string]any
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 16<<20)).Decode(&input); err != nil {
