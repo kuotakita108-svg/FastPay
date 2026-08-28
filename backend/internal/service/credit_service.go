@@ -111,6 +111,34 @@ func (s *CreditService) Get(token, id string) (map[string]any, error) {
 	return nil, ErrCreditNotFound
 }
 
+// GetDocument returns one full document payload without sending every embedded
+// photo in the application list. Review status never removes access to the
+// original file, so approved and rejected documents remain previewable.
+func (s *CreditService) GetDocument(token, id, documentKey string) (map[string]any, error) {
+	item, err := s.Get(token, id)
+	if err != nil {
+		return nil, err
+	}
+	documents, ok := item["documents"].(map[string]any)
+	if !ok {
+		return nil, ErrCreditNotFound
+	}
+	documentKey = strings.TrimSpace(documentKey)
+	for key, value := range documents {
+		if key != documentKey && !strings.EqualFold(key, documentKey) {
+			continue
+		}
+		document, ok := value.(map[string]any)
+		if !ok {
+			return nil, ErrCreditNotFound
+		}
+		result := cloneCredit(document)
+		result["key"] = key
+		return result, nil
+	}
+	return nil, ErrCreditNotFound
+}
+
 func stripCreditPayload(value any) any {
 	switch current := value.(type) {
 	case map[string]any:

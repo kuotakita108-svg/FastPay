@@ -48,6 +48,21 @@ func (h *CreditHandler) Get(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, item)
 }
 
+func (h *CreditHandler) GetDocument(w http.ResponseWriter, r *http.Request) {
+	item, err := h.service.GetDocument(r.Header.Get("Authorization"), r.PathValue("id"), r.PathValue("documentKey"))
+	if err != nil {
+		status := http.StatusUnauthorized
+		if errors.Is(err, service.ErrForbidden) {
+			status = http.StatusForbidden
+		} else if errors.Is(err, service.ErrCreditNotFound) {
+			status = http.StatusNotFound
+		}
+		response.Error(w, status, err.Error())
+		return
+	}
+	response.JSON(w, http.StatusOK, item)
+}
+
 func (h *CreditHandler) Save(w http.ResponseWriter, r *http.Request) {
 	var input map[string]any
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 16<<20)).Decode(&input); err != nil {
