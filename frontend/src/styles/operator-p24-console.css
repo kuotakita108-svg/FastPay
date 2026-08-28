@@ -108,6 +108,24 @@
   .panel-workspace-shell .operator-review .marketing-report-panel>article:nth-child(-n+2){border-bottom:1px solid var(--op-line)!important}
 }
 
+/* Tombol keputusan Kredit Retail: class mandiri agar tidak ditimpa tema tombol umum. */
+button.operator-retail-approve,
+.operator-loan-history-actions button.operator-retail-approve{
+ border:1px solid #079c62!important;background:#079c62!important;color:#fff!important;box-shadow:0 5px 12px rgba(7,156,98,.18)!important
+}
+button.operator-retail-approve:hover,
+.operator-loan-history-actions button.operator-retail-approve:hover{background:#067f51!important;border-color:#067f51!important}
+button.operator-retail-reject,
+.operator-loan-history-actions button.operator-retail-reject{
+ border:1px solid #ef174d!important;background:#ef174d!important;color:#fff!important;box-shadow:0 5px 12px rgba(239,23,77,.16)!important
+}
+button.operator-retail-reject:hover,
+.operator-loan-history-actions button.operator-retail-reject:hover{background:#cf123f!important;border-color:#cf123f!important}
+button.operator-retail-documents,
+.operator-loan-history-actions button.operator-retail-documents{
+ border:1px solid #9fd2ed!important;background:#f7fcff!important;color:#0876b5!important;box-shadow:none!important
+}
+
 /* Kredit Retail: permukaan putih yang konsisten untuk daftar dan form pembayaran. */
 .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-account{
   overflow:hidden!important;border:1px solid #d6e4ee!important;border-radius:14px!important;background:#fff!important;color:#10283a!important;box-shadow:0 8px 24px rgba(1,18,34,.1)!important
