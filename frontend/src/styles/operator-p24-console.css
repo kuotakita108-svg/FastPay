@@ -165,7 +165,7 @@ button.operator-retail-documents,
 .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-history-main span{
   color:#304e64!important
 }
-.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-history-actions button:not(.primary){
+.panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-history-actions button:not(.primary):not(.operator-retail-approve):not(.operator-retail-reject){
   border-color:#bcd4e4!important;background:#fff!important;color:#214c68!important
 }
 .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-inline-note{
