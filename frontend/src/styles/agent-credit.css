@@ -117,4 +117,17 @@
 .credit-history-list article header b{font-size:11px}.credit-history-list article header strong{font-size:12px}
 .credit-history-list article>div{font-size:9px}.credit-history-list article p{font-size:10px}.credit-history-list article small{font-size:9px}
 @media(max-width:390px){.credit-upload-card,.credit-files-card,.credit-history-card{margin-left:9px;margin-right:9px}.credit-files-toggle{grid-template-columns:minmax(0,1fr) 18px}.credit-files-toggle>strong{display:none}.credit-history-list article header b{max-width:62%}}
+
+/* Status pengajuan kredit: konsisten di seluruh tampilan Agent. */
+.credit-files-toggle>strong.pending{background:#fff3d6;color:#a86400}
+.credit-files-toggle>strong.approved{background:#e7fbef;color:#008750}
+.credit-files-toggle>strong.rejected{background:#ffe7eb;color:#c72f45}
+.credit-history-list article em{font-weight:750}
+.credit-history-list article em.pending{background:#fff3d6;color:#a86400}
+.credit-history-list article em.approved,.credit-history-list article em.paid{background:#e7fbef;color:#008750}
+.credit-history-list article em.rejected{background:#ffe7eb;color:#c72f45}
+.credit-history-list .credit-status-text{font-weight:750}
+.credit-history-list .credit-status-text.pending{color:#a86400}
+.credit-history-list .credit-status-text.approved{color:#008750}
+.credit-history-list .credit-status-text.rejected{color:#c72f45}
 .credit-active-summary{margin:10px 12px;border:1px solid #a9ead2;border-radius:14px;overflow:hidden;background:linear-gradient(145deg,#f4fff9,#fff 58%,#f4fbff);box-shadow:0 7px 20px #15845c12;color:#0d1e35}.credit-active-summary header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px 0}.credit-active-summary header span{color:#00875d;font-size:10px;font-weight:900;letter-spacing:.6px}.credit-active-summary header strong{border-radius:999px;background:#dcfaec;padding:5px 9px;color:#087b58;font-size:9px;white-space:nowrap}.credit-active-summary h2{margin:5px 14px 13px;font-size:25px;line-height:1.1}.credit-active-summary>div{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #dce9e5}.credit-active-summary>div span{display:grid;gap:4px;padding:12px 14px}.credit-active-summary>div span+span{border-left:1px solid #dce9e5;text-align:right}.credit-active-summary small{color:#738299;font-size:9px}.credit-active-summary b{color:#009167;font-size:14px}.credit-active-summary>div span:last-child b{color:#d5003c}@media(max-width:390px){.credit-active-summary{margin-left:9px;margin-right:9px}.credit-active-summary header{padding-left:11px;padding-right:11px}.credit-active-summary h2{margin-left:11px;margin-right:11px}}

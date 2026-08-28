@@ -7,7 +7,7 @@ import {rupiah} from '../utils/currency'
 import '../styles/marketing-credit.css'
 
 const documentTypes=[['ktp','KTP pemilik konter'],['store','Foto konter'],['marketing','Foto bersama marketing'],['application','Dokumen pengajuan kredit']]
-const statusOf=value=>{const status=String(value||'').toLowerCase();if(status.includes('disetujui')||status.includes('diterima')||status.includes('aktif'))return {key:'accepted',label:'Aktif'};if(status.includes('ditolak'))return {key:'rejected',label:'Ditolak'};return {key:'processing',label:'Diproses'}}
+const statusOf=value=>{const status=String(value||'').toLowerCase();if(status.includes('disetujui')||status.includes('diterima')||status.includes('aktif')||status.includes('approve')||status.includes('accept'))return {key:'accepted',label:'Diterima'};if(status.includes('ditolak')||status.includes('gagal')||status.includes('reject')||status.includes('failed'))return {key:'rejected',label:'Ditolak'};return {key:'processing',label:'Pending'}}
 const agentName=item=>item?.form?.agentName||item?.userName||item?.form?.storeName||'Agent KuotaKita'
 const agentKey=item=>item?.userId||item?._owner_id||item?.form?.email||item?.form?.whatsapp||agentName(item)
 const approvedAmount=item=>Number(item?.approvedCapital||item?.approvedAmount||item?.creditOriginalAmount||item?.form?.amount||0)
