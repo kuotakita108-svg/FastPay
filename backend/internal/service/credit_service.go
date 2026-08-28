@@ -37,6 +37,8 @@ var ErrForbidden = errors.New("akses ditolak")
 // authentication or validation error at the HTTP boundary.
 var ErrCreditPersistence = errors.New("data kredit belum dapat disimpan ke server")
 
+var ErrCreditNotFound = errors.New("pengajuan kredit tidak ditemukan")
+
 func NewCreditService(path string, auth *AuthService) *CreditService {
 	return NewDatabaseCreditService(path, auth, nil)
 }
@@ -80,6 +82,67 @@ func (s *CreditService) List(token string) ([]map[string]any, error) {
 	}
 	sort.Slice(result, func(i, j int) bool { return stringValue(result[i]["updatedAt"]) > stringValue(result[j]["updatedAt"]) })
 	return result, nil
+}
+
+// ListSummary omits embedded photo/file payloads. Full documents are loaded
+// only when an application is opened, keeping the operator list response small.
+func (s *CreditService) ListSummary(token string) ([]map[string]any, error) {
+	items, err := s.List(token)
+	if err != nil {
+		return nil, err
+	}
+	for index, item := range items {
+		items[index] = stripCreditPayload(item).(map[string]any)
+	}
+	return items, nil
+}
+
+func (s *CreditService) Get(token, id string) (map[string]any, error) {
+	id = strings.TrimSpace(id)
+	items, err := s.List(token)
+	if err != nil {
+		return nil, err
+	}
+	for _, item := range items {
+		if stringValue(item["id"]) == id {
+			return item, nil
+		}
+	}
+	return nil, ErrCreditNotFound
+}
+
+func stripCreditPayload(value any) any {
+	switch current := value.(type) {
+	case map[string]any:
+		out := make(map[string]any, len(current))
+		for key, child := range current {
+			if text, ok := child.(string); ok && isEmbeddedCreditPayload(strings.ToLower(key), text) {
+				continue
+			}
+			out[key] = stripCreditPayload(child)
+		}
+		return out
+	case []any:
+		out := make([]any, len(current))
+		for index, child := range current {
+			out[index] = stripCreditPayload(child)
+		}
+		return out
+	default:
+		return current
+	}
+}
+
+func isEmbeddedCreditPayload(key, value string) bool {
+	if !strings.HasPrefix(value, "data:") && len(value) < 4096 {
+		return false
+	}
+	switch key {
+	case "image", "dataurl", "base64", "content", "filedata", "proofdata":
+		return true
+	default:
+		return false
+	}
 }
 
 func (s *CreditService) Save(token string, input map[string]any) (map[string]any, error) {

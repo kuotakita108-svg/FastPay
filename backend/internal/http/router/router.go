@@ -61,6 +61,7 @@ func New(h Handlers) http.Handler {
 	mux.HandleFunc("GET /api/v1/me/agent-credit", h.Credit.List)
 	mux.HandleFunc("POST /api/v1/me/agent-credit", h.Credit.Save)
 	mux.HandleFunc("GET /api/v1/agent-credit/applications", h.Credit.List)
+	mux.HandleFunc("GET /api/v1/agent-credit/applications/{id}", h.Credit.Get)
 	mux.HandleFunc("PUT /api/v1/agent-credit/applications/{id}", h.Credit.Save)
 	mux.HandleFunc("PATCH /api/v1/agent-credit/applications/{id}/documents/{documentKey}", h.Credit.ReviewDocument)
 	mux.HandleFunc("POST /api/v1/agent-credit/applications/{id}/payments", h.Credit.RecordPayment)

@@ -15,7 +15,13 @@ func NewCreditHandler(service *service.CreditService) *CreditHandler {
 }
 
 func (h *CreditHandler) List(w http.ResponseWriter, r *http.Request) {
-	items, err := h.service.List(r.Header.Get("Authorization"))
+	var items []map[string]any
+	var err error
+	if r.URL.Query().Get("summary") == "1" {
+		items, err = h.service.ListSummary(r.Header.Get("Authorization"))
+	} else {
+		items, err = h.service.List(r.Header.Get("Authorization"))
+	}
 	if err != nil {
 		status := http.StatusUnauthorized
 		if errors.Is(err, service.ErrForbidden) {
@@ -25,6 +31,21 @@ func (h *CreditHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.JSON(w, http.StatusOK, items)
+}
+
+func (h *CreditHandler) Get(w http.ResponseWriter, r *http.Request) {
+	item, err := h.service.Get(r.Header.Get("Authorization"), r.PathValue("id"))
+	if err != nil {
+		status := http.StatusUnauthorized
+		if errors.Is(err, service.ErrForbidden) {
+			status = http.StatusForbidden
+		} else if errors.Is(err, service.ErrCreditNotFound) {
+			status = http.StatusNotFound
+		}
+		response.Error(w, status, err.Error())
+		return
+	}
+	response.JSON(w, http.StatusOK, item)
 }
 
 func (h *CreditHandler) Save(w http.ResponseWriter, r *http.Request) {
