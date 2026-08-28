@@ -29,7 +29,7 @@ func (h *CreditHandler) List(w http.ResponseWriter, r *http.Request) {
 
 func (h *CreditHandler) Save(w http.ResponseWriter, r *http.Request) {
 	var input map[string]any
-	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 12<<20)).Decode(&input); err != nil {
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 16<<20)).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, "data pengajuan tidak valid atau terlalu besar")
 		return
 	}

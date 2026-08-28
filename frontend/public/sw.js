@@ -1,4 +1,4 @@
-const CACHE='kuotakita-v6-shell';
+const CACHE='kuotakita-v7-shell';
 const CORE=['/manifest.webmanifest?v=3','/icons/icon-192.png?v=3','/icons/icon-512.png?v=3','/icons/apple-touch-icon.png?v=3','/icons/favicon-32.png?v=3'];
 const STATIC_FILE=/\.(?:js|css|png|jpe?g|webp|svg|ico|woff2?)$/i;
 

@@ -12,7 +12,7 @@ function clearReadCache(){responseCache.clear()}
 async function fetchJSON(url,fetchOptions,token,timeoutMs){
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs)
   try{
-    const response=await fetch(url,{...fetchOptions,mode:'same-origin',cache:'no-store',credentials:'same-origin',redirect:'follow',signal:controller.signal,headers:{Accept:'application/json','Content-Type':fetchOptions.body?'text/plain;charset=UTF-8':'application/json',...(token?{Authorization:`Bearer ${token}`}:{}) ,...fetchOptions.headers}})
+    const response=await fetch(url,{...fetchOptions,mode:'same-origin',cache:'no-store',credentials:'same-origin',redirect:'follow',signal:controller.signal,headers:{Accept:'application/json','Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{}) ,...fetchOptions.headers}})
     const data=await response.json().catch(()=>null)
     if(!response.ok){
       if(response.status===413)throw new Error('Berkas yang dikirim terlalu besar. Pilih foto yang lebih kecil lalu coba lagi.')
