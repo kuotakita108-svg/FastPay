@@ -1312,6 +1312,7 @@ body .operator-payment-overlay .operator-payment-dialog .submit{border:0!importa
 
 /* Preview dokumen operator: tetap di halaman dan dapat direview per berkas. */
 .operator-document-viewer{z-index:10020;background:rgba(2,9,20,.9);backdrop-filter:blur(5px)}
+.operator-document-result-overlay{z-index:10040}
 .operator-document-viewer>section{grid-template-rows:auto minmax(0,1fr) auto auto auto;width:min(94vw,760px);height:auto;max-height:92vh;border:1px solid #263b57;border-radius:16px;background:#0c1525}
 .operator-document-viewer header{position:relative;justify-content:center;min-height:58px;padding:14px 64px;background:#0c1525;border-bottom:1px solid #253850}
 .operator-document-viewer header h2{margin:0;color:#f4f7fb!important;-webkit-text-fill-color:#f4f7fb!important;font-size:21px;line-height:1.25;text-align:center}
