@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"kuotakita/backend/internal/database"
+	"log"
 	"os"
 	"path/filepath"
 	"sort"
@@ -31,6 +32,10 @@ type creditFile struct {
 // ErrForbidden marks an authenticated request that is outside the role's
 // authority. HTTP handlers translate it to 403 Forbidden.
 var ErrForbidden = errors.New("akses ditolak")
+
+// ErrCreditPersistence distinguishes an internal persistence failure from an
+// authentication or validation error at the HTTP boundary.
+var ErrCreditPersistence = errors.New("data kredit belum dapat disimpan ke server")
 
 func NewCreditService(path string, auth *AuthService) *CreditService {
 	return NewDatabaseCreditService(path, auth, nil)
@@ -222,7 +227,8 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 		if disbursedAmount > 0 {
 			_, _ = s.auth.ChangeBalanceByUserID(stringValue(row["_owner_id"]), -disbursedAmount)
 		}
-		return nil, errors.New("data kredit belum dapat disimpan ke server")
+		log.Printf("credit application %s persistence failed: %v", id, err)
+		return nil, ErrCreditPersistence
 	}
 	return publicCredit(row), nil
 }

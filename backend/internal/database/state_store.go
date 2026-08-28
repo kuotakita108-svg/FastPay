@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -103,7 +104,18 @@ func (s *StateStore) Save(namespace string, value any) error {
 	if err != nil {
 		return err
 	}
-	return s.syncNamespace(namespace, raw)
+	// app_state is the canonical, backward-compatible store. The normalized
+	// credit table is an operational mirror and must never turn a successfully
+	// persisted application into a failed customer request. A stale account
+	// foreign key can be repaired later from app_state without losing the form.
+	if err := s.syncNamespace(namespace, raw); err != nil {
+		if namespace == "credit-applications" {
+			log.Printf("state mirror sync failed for %s: %v", namespace, err)
+			return nil
+		}
+		return err
+	}
+	return nil
 }
 
 // syncExisting mirrors existing grouped data into the feature tables. It keeps

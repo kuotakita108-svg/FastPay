@@ -35,8 +35,10 @@ func (h *CreditHandler) Save(w http.ResponseWriter, r *http.Request) {
 	}
 	item, err := h.service.Save(r.Header.Get("Authorization"), input)
 	if err != nil {
-		status := http.StatusUnauthorized
-		if errors.Is(err, service.ErrForbidden) {
+		status := http.StatusBadRequest
+		if errors.Is(err, service.ErrCreditPersistence) {
+			status = http.StatusInternalServerError
+		} else if errors.Is(err, service.ErrForbidden) {
 			status = http.StatusForbidden
 		}
 		response.Error(w, status, err.Error())
