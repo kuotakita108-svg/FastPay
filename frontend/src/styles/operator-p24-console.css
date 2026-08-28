@@ -1113,6 +1113,44 @@ body .operator-payment-overlay .operator-payment-dialog .submit{
 .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-history-main :is(small,span),
 .panel-workspace-shell:is(.role-operator,.role-analis,.role-admin) .operator-review .operator-retail-loans .operator-loan-history-finance :is(small,time){color:#6f8699!important}
 
+/* Daftar Kredit Retail: kartu akun dan riwayat mengikuti susunan ringkas konsol P24. */
+.operator-capital-console .operator-retail-loans .operator-loan-account{
+ border:1px solid #cbd8e3!important;border-radius:14px!important;background:#fff!important;color:#10233d!important
+}
+.operator-capital-console .operator-retail-loans .operator-loan-account-head{
+ min-height:66px!important;padding:12px 14px!important;background:#f7fafc!important;color:#10233d!important
+}
+.operator-capital-console .operator-retail-loans .operator-loan-account-head b{color:#10233d!important;font-size:12px!important}
+.operator-capital-console .operator-retail-loans .operator-loan-account-head small{color:#658097!important;font-size:9px!important}
+.operator-capital-console .operator-retail-loans .operator-loan-account-head em{color:#0781bb!important;font-size:9px!important}
+.operator-capital-console .operator-retail-loans .operator-loan-account-body{padding:0!important;background:#fff!important}
+.operator-capital-console .operator-retail-loans .operator-loan-account-tools{
+ padding:11px 14px;border-top:1px solid #d9e5ed;border-bottom:1px solid #d9e5ed;background:#eef7fd
+}
+.operator-capital-console .operator-retail-loans .operator-loan-account-tools button{
+ min-height:30px;padding:0 12px;border:1px solid #b9d3e4;border-radius:9px;background:#fff;color:#254b66;font-size:9px;font-weight:800;cursor:pointer
+}
+.operator-capital-console .operator-retail-loans .operator-loan-history{padding:14px!important;border-top:0!important;border-bottom:1px solid #dce7ee!important;background:#fff!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history:last-child{border-bottom:0!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-row{grid-template-columns:minmax(0,1fr) minmax(190px,auto)!important;gap:20px!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-main b{color:#10233d!important;font-size:11px!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-main :is(small,span){color:#627b90!important;font-size:8px!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-finance strong{color:#0876b5!important;font-size:12px!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-finance :is(small,time){color:#7890a3!important;font-size:8px!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-actions{gap:7px!important;margin-top:11px!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-actions button{
+ min-height:30px!important;padding:0 12px!important;border-radius:9px!important;background:#fff!important;color:#24506b!important;font-size:9px!important
+}
+.operator-capital-console .operator-retail-loans .operator-loan-history-actions .approve{border-color:#09a66d!important;background:#09a66d!important;color:#fff!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-actions .reject{border-color:#ec174c!important;background:#ec174c!important;color:#fff!important}
+.operator-capital-console .operator-retail-loans .operator-loan-history-actions .documents{border-color:#9fd2ed!important;background:#f7fcff!important;color:#0876b5!important}
+@media(max-width:760px){
+ .operator-capital-console .operator-retail-loans .operator-loan-history-row{grid-template-columns:1fr!important;gap:9px!important}
+ .operator-capital-console .operator-retail-loans .operator-loan-history-finance{grid-template-columns:1fr auto!important}
+ .operator-capital-console .operator-retail-loans .operator-loan-history-actions{display:flex!important;flex-wrap:wrap!important}
+ .operator-capital-console .operator-retail-loans .operator-loan-history-actions button{flex:1 1 auto!important}
+}
+
 body .operator-payment-overlay .operator-payment-dialog{background:#fff!important;color:#10233d!important;color-scheme:light!important}
 body .operator-payment-overlay .operator-payment-dialog :is(h2,label){color:#10233d!important}
 body .operator-payment-overlay .operator-payment-dialog header p,
