@@ -68,6 +68,7 @@
 @import './operator-legacy-migration.css';
 @import './operator-inactive-reference.css';
 @import './operator-turnover-reference.css';
+@import './operator-sidebar-readable.css';
 
 /* Payment history is a light receipt, isolated from the dark operator theme. */
 html body #root .operator-payment-overlay .operator-payment-history-dialog {
