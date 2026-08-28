@@ -1270,3 +1270,28 @@ body .operator-payment-overlay .operator-payment-dialog .submit{border:0!importa
   background: #f7fcff !important;
   color: #0876b5 !important;
 }
+
+/* Hasil keputusan Operator hanya tampil setelah server berhasil menyimpan status. */
+.operator-decision-result-overlay{
+ position:fixed;inset:0;z-index:2500;display:grid;place-items:center;padding:18px;background:rgba(1,8,18,.72);backdrop-filter:blur(3px)
+}
+.operator-decision-result-card{
+ width:min(510px,100%);padding:34px 28px 24px;border:1px solid #314158;border-radius:7px;background:#0d1726;color:#f7f9fd;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.42)
+}
+.operator-decision-result-card>i{
+ display:grid;width:88px;height:88px;margin:0 auto 22px;place-items:center;border:4px solid currentColor;border-radius:50%;font-style:normal
+}
+.operator-decision-result-card>i svg{width:52px;height:52px;stroke-width:2.2}
+.operator-decision-result-card.approved>i{color:#91d274}
+.operator-decision-result-card.rejected>i{color:#ff6378}
+.operator-decision-result-card h2{margin:0;color:#fff;font-size:28px;line-height:1.2}
+.operator-decision-result-card p{margin:22px 0 26px;color:#e8edf5;font-size:16px;line-height:1.55}
+.operator-decision-result-card button{min-width:64px;padding:11px 18px;border:2px solid #174891;border-radius:6px;background:#2769dc;color:#fff;font-size:16px;font-weight:800;box-shadow:0 0 0 2px #14263e;cursor:pointer}
+.operator-decision-result-card button:hover{background:#3478eb}
+@media(max-width:520px){
+ .operator-decision-result-card{padding:28px 20px 22px}
+ .operator-decision-result-card>i{width:76px;height:76px;margin-bottom:18px}
+ .operator-decision-result-card>i svg{width:44px;height:44px}
+ .operator-decision-result-card h2{font-size:24px}
+ .operator-decision-result-card p{margin:17px 0 22px;font-size:14px}
+}
