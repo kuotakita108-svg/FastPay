@@ -110,6 +110,38 @@ func TestOperatorApprovalDisbursesMainBalanceExactlyOnce(t *testing.T) {
 	}
 }
 
+func TestApprovedApplicationRemainsVisibleToOperator(t *testing.T) {
+	auth := newAuthService("test-secret", "", nil, []AccountSeed{
+		{Username: "marketing-visible", Password: "marketing-secret", Name: "Marketing Visible", Role: "marketing"},
+		{Username: "operator-visible", Password: "operator-secret", Name: "Operator Visible", Role: "operator"},
+	})
+	marketing, _ := auth.Login("marketing-visible", "marketing-secret")
+	_, err := auth.CreateAgent("Bearer "+marketing.Token, domain.RegisterInput{Name: "Agent Visible", Username: "agent-visible", StoreName: "Toko Visible", Phone: "081234567899", Password: "agent-secret"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	agent, _ := auth.Login("agent-visible", "agent-secret")
+	operator, _ := auth.Login("operator-visible", "operator-secret")
+	credit := NewCreditService(filepath.Join(t.TempDir(), "credit.json"), auth)
+	created, err := credit.Save("Bearer "+agent.Token, map[string]any{
+		"id": "KSA-VISIBLE-1", "form": map[string]any{"agentName": "Agent Visible", "amount": 500000},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	created["status"] = "Disetujui"
+	if _, err = credit.Save("Bearer "+operator.Token, created); err != nil {
+		t.Fatal(err)
+	}
+	rows, err := credit.List("Bearer " + operator.Token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rows) != 1 || stringValue(rows[0]["id"]) != "KSA-VISIBLE-1" || stringValue(rows[0]["status"]) != "Disetujui" {
+		t.Fatalf("approved application disappeared from operator list: %#v", rows)
+	}
+}
+
 func TestOperatorRecordsRetailPaymentAndRenewsRevolvingCapital(t *testing.T) {
 	auth := newAuthService("test-secret", "", nil, []AccountSeed{
 		{Username: "marketing-pay", Password: "marketing-secret", Name: "Marketing Pay", Role: "marketing"},
