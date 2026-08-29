@@ -1145,6 +1145,16 @@ body .operator-payment-overlay .operator-payment-dialog .submit{
 .operator-capital-console .operator-retail-loans .operator-loan-account-head em{color:#0781bb!important;font-size:9px!important}
 .operator-capital-console .operator-retail-loans .operator-loan-account-body{padding:0!important;background:#fff!important}
 .operator-capital-console .operator-retail-loans .operator-loan-account-tools{
+ display:flex!important;align-items:center!important;gap:10px!important;padding:12px 14px!important;border-top:1px solid #d8e5ee!important;border-bottom:1px solid #d8e5ee!important;background:#eef7fd!important
+}
+.operator-capital-console .operator-retail-loans .operator-loan-account-tools button{
+ min-height:34px!important;padding:0 15px!important;border:1px solid #bfd4e5!important;border-radius:10px!important;background:#fff!important;color:#27465f!important;font-size:9px!important;font-weight:850!important;box-shadow:none!important;cursor:pointer!important
+}
+.operator-capital-console .operator-retail-loans .operator-loan-account-tools button.primary{
+ border-color:#1769ff!important;background:linear-gradient(180deg,#1f73ff,#1160ec)!important;color:#fff!important;box-shadow:0 5px 12px rgba(23,105,255,.24)!important
+}
+.operator-capital-console .operator-retail-loans .operator-loan-account-tools button:hover{transform:translateY(-1px)}
+.operator-capital-console .operator-retail-loans .operator-loan-account-tools{
  padding:11px 14px;border-top:1px solid #d9e5ed;border-bottom:1px solid #d9e5ed;background:#eef7fd
 }
 .operator-capital-console .operator-retail-loans .operator-loan-account-tools button{
@@ -1165,6 +1175,8 @@ body .operator-payment-overlay .operator-payment-dialog .submit{
 .operator-capital-console .operator-retail-loans .operator-loan-history-actions .reject{border-color:#ec174c!important;background:#ec174c!important;color:#fff!important}
 .operator-capital-console .operator-retail-loans .operator-loan-history-actions .documents{border-color:#9fd2ed!important;background:#f7fcff!important;color:#0876b5!important}
 @media(max-width:760px){
+ .operator-capital-console .operator-retail-loans .operator-loan-account-tools{display:grid!important;grid-template-columns:1fr 1fr!important;padding:10px 12px!important}
+ .operator-capital-console .operator-retail-loans .operator-loan-account-tools button{width:100%!important;padding:0 8px!important}
  .operator-capital-console .operator-retail-loans .operator-loan-history-row{grid-template-columns:1fr!important;gap:9px!important}
  .operator-capital-console .operator-retail-loans .operator-loan-history-finance{grid-template-columns:1fr auto!important}
  .operator-capital-console .operator-retail-loans .operator-loan-history-actions{display:flex!important;flex-wrap:wrap!important}
