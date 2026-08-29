@@ -228,6 +228,34 @@ func TestOperatorSummaryUpdatePreservesStoredDocumentImages(t *testing.T) {
 	}
 }
 
+func TestOperatorDocumentRejectionStoresReviewNote(t *testing.T) {
+	auth := newAuthService("test-secret", "", nil, []AccountSeed{
+		{Username: "operator-doc-note", Password: "operator-secret", Name: "Operator Catatan", Role: "operator"},
+		{Username: "agent-doc-note", Password: "agent-secret", Name: "Agent Catatan", Role: "agent"},
+	})
+	agent, _ := auth.Login("agent-doc-note", "agent-secret")
+	operator, _ := auth.Login("operator-doc-note", "operator-secret")
+	credit := NewCreditService(filepath.Join(t.TempDir(), "credit.json"), auth)
+	_, err := credit.Save("Bearer "+agent.Token, map[string]any{
+		"id": "KSA-DOCUMENT-NOTE", "form": map[string]any{"amount": 500000},
+		"documents": map[string]any{"ktp": map[string]any{"name": "ktp.jpg", "image": "data:image/jpeg;base64,a3Rw"}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = credit.ReviewDocument("Bearer "+operator.Token, "KSA-DOCUMENT-NOTE", "ktp", "REJECTED", "Foto KTP buram, unggah ulang."); err != nil {
+		t.Fatal(err)
+	}
+	rows, err := credit.List("Bearer " + agent.Token)
+	if err != nil || len(rows) != 1 {
+		t.Fatalf("agent rows = %#v, err = %v", rows, err)
+	}
+	document := rows[0]["documents"].(map[string]any)["ktp"].(map[string]any)
+	if document["status"] != "REJECTED" || document["reviewNote"] != "Foto KTP buram, unggah ulang." || document["reviewedBy"] != "Operator Catatan" {
+		t.Fatalf("document review = %#v", document)
+	}
+}
+
 func TestOperatorRecordsRetailPaymentAndRenewsRevolvingCapital(t *testing.T) {
 	auth := newAuthService("test-secret", "", nil, []AccountSeed{
 		{Username: "marketing-pay", Password: "marketing-secret", Name: "Marketing Pay", Role: "marketing"},

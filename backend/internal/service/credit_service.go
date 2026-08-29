@@ -403,7 +403,7 @@ func preserveEmbeddedFields(target, source map[string]any) {
 // ReviewDocument updates only one document review state. Keeping this as a
 // small server-side mutation avoids resending the complete application (and
 // its base64 images) whenever an Operator approves or rejects a document.
-func (s *CreditService) ReviewDocument(token, id, documentKey, status string) (map[string]any, error) {
+func (s *CreditService) ReviewDocument(token, id, documentKey, status, note string) (map[string]any, error) {
 	user, err := s.auth.CurrentUser(token)
 	if err != nil {
 		return nil, err
@@ -414,11 +414,15 @@ func (s *CreditService) ReviewDocument(token, id, documentKey, status string) (m
 	id = strings.TrimSpace(id)
 	documentKey = strings.TrimSpace(documentKey)
 	status = strings.ToUpper(strings.TrimSpace(status))
+	note = strings.TrimSpace(note)
 	if id == "" || documentKey == "" {
 		return nil, errors.New("pengajuan atau dokumen tidak valid")
 	}
 	if status != "APPROVED" && status != "REJECTED" {
 		return nil, errors.New("status pemeriksaan dokumen tidak valid")
+	}
+	if status == "REJECTED" && note == "" {
+		return nil, errors.New("catatan penolakan dokumen wajib diisi")
 	}
 
 	s.mu.Lock()
@@ -445,6 +449,7 @@ func (s *CreditService) ReviewDocument(token, id, documentKey, status string) (m
 	updatedDocument["status"] = status
 	updatedDocument["reviewedAt"] = time.Now().UTC().Format(time.RFC3339)
 	updatedDocument["reviewedBy"] = user.Name
+	updatedDocument["reviewNote"] = note
 	documents[documentKey] = updatedDocument
 	current["documents"] = documents
 	current["updatedAt"] = time.Now().UTC().Format(time.RFC3339)

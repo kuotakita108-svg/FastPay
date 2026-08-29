@@ -86,6 +86,7 @@ func (h *CreditHandler) Save(w http.ResponseWriter, r *http.Request) {
 func (h *CreditHandler) ReviewDocument(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Status string `json:"status"`
+		Note   string `json:"note"`
 	}
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4<<10)).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, "status pemeriksaan dokumen tidak valid")
@@ -96,6 +97,7 @@ func (h *CreditHandler) ReviewDocument(w http.ResponseWriter, r *http.Request) {
 		r.PathValue("id"),
 		r.PathValue("documentKey"),
 		input.Status,
+		input.Note,
 	)
 	if err != nil {
 		status := http.StatusBadRequest
