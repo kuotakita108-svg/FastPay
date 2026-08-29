@@ -1322,6 +1322,7 @@ body .operator-payment-overlay .operator-payment-dialog .submit{border:0!importa
 .operator-document-preview-meta{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 18px 2px;color:#eaf1f8;text-align:center}
 .operator-document-preview-meta small{color:#8fa4ba}
 .operator-document-review-error{margin:8px 18px 0;padding:9px 12px;border:1px solid rgba(255,91,113,.35);border-radius:9px;background:rgba(255,64,91,.1);color:#ff91a1;text-align:center}
+.operator-document-review-notice{margin:8px 18px 0;padding:9px 12px;border:1px solid rgba(62,211,154,.35);border-radius:9px;background:rgba(35,181,126,.1);color:#8cf0c8;text-align:center}
 .operator-document-viewer footer{justify-content:space-between;gap:12px;padding:14px 18px 16px;background:#0c1525;border-top:1px solid #253850}
 .operator-document-zoom,.operator-document-review-actions{display:flex;align-items:center;gap:8px}
 .operator-document-viewer footer .operator-document-zoom button{border-color:#33465f;background:#182438;color:#e5edf6}
