@@ -13,7 +13,7 @@ func TestBlocksNewCredit(t *testing.T) {
 		row  map[string]any
 		want bool
 	}{
-		{"pending application", map[string]any{"status": "Menunggu verifikasi marketing", "creditStatus": "Menunggu keputusan"}, true},
+		{"pending application permits limit increase", map[string]any{"status": "Menunggu verifikasi marketing", "creditStatus": "Menunggu keputusan"}, false},
 		{"approved active credit permits limit increase", map[string]any{"status": "Disetujui", "paymentStatus": "Belum lunas"}, false},
 		{"rejected application", map[string]any{"status": "Ditolak"}, false},
 		{"ended partnership can apply again", map[string]any{"status": "Disetujui", "partnershipStatus": "PARTNERSHIP_ENDED"}, false},

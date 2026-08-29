@@ -646,18 +646,9 @@ func isOperatorRole(role string) bool {
 }
 
 func blocksNewCredit(row map[string]any) bool {
-	if stringValue(row["partnershipStatus"]) == "PARTNERSHIP_ENDED" {
-		return false
-	}
-	// An approved facility may receive a limit-increase application. Only an
-	// unfinished decision blocks another submission, preventing duplicate
-	// pending requests without stopping revolving capital growth.
-	switch stringValue(row["status"]) {
-	case "Ditolak", "Disetujui", "Lunas":
-		return false
-	default:
-		return true
-	}
+	// Every application is an independent Operator decision. Agents may submit
+	// a limit increase while an earlier request is pending or capital is active.
+	return false
 }
 
 func protectCreditDecisionFields(target, source map[string]any) {
