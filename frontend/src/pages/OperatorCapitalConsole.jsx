@@ -272,7 +272,7 @@ function TurnoverWorkspace({agents,applications,transactions,loading,onRefresh})
  const txTime=row=>new Date(row.created_at||row.CreatedAt||row.date||0).getTime()
  const txAmount=row=>Number(row.amount||row.Amount||row.total||row.Total||row.qty||row.Qty||0)
  const isSuccess=row=>['success','successful','berhasil','sukses'].includes(String(row.status||row.Status||'').toLowerCase())
- const creditRowsByAgent=useMemo(()=>{const grouped=new Map();for(const item of applications||[]){const id=String(item?.userId||item?._owner_id||'');if(!id)continue;if(!grouped.has(id))grouped.set(id,[]);grouped.get(id).push(item)}return grouped},[applications])
+ const creditRowsByAgent=useMemo(()=>{const grouped=new Map();for(const item of applications||[]){const status=creditStatusOf(item?.status);if(!['DISETUJUI','LUNAS'].includes(status))continue;const id=String(item?.userId||item?._owner_id||'');if(!id)continue;if(!grouped.has(id))grouped.set(id,[]);grouped.get(id).push(item)}return grouped},[applications])
  const rows=agents.filter(agent=>creditRowsByAgent.has(String(agent.id))&&`${agent.name||''} ${agent.store_name||''} ${agent.email||''} ${agent.phone||''} ${agent.marketing_name||''}`.toLowerCase().includes(q.toLowerCase())).map(agent=>{
   const facilities=creditRowsByAgent.get(String(agent.id))||[],owned=transactions.filter(row=>String(row.user_id||row.UserID||row.userId||'')===String(agent.id)&&isSuccess(row)),current=owned.filter(row=>txTime(row)>=since),previous=owned.filter(row=>txTime(row)>=previousSince&&txTime(row)<since),turnover=current.reduce((sum,row)=>sum+txAmount(row),0),previousTurnover=previous.reduce((sum,row)=>sum+txAmount(row),0)
   const approved=facilities.reduce((sum,item)=>sum+issuedCreditOf(item),0)
