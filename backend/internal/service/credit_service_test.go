@@ -69,6 +69,41 @@ func TestMarketingCanMonitorOwnCapitalApplicationsButCannotWrite(t *testing.T) {
 	}
 }
 
+func TestLimitIncreaseReusesInitialApplicationDocuments(t *testing.T) {
+	auth := newAuthService("test-secret", "", nil, []AccountSeed{{Username: "agent-limit", Password: "agent-secret", Name: "Agent Limit", Role: "agent"}})
+	agent, err := auth.Login("agent-limit", "agent-secret")
+	if err != nil {
+		t.Fatal(err)
+	}
+	credit := NewCreditService(filepath.Join(t.TempDir(), "credit.json"), auth)
+	initial, err := credit.Save("Bearer "+agent.Token, map[string]any{
+		"id": "KSA-LIMIT-INITIAL", "form": map[string]any{"amount": 500000, "nik": "1234567890123456", "storeName": "Toko Limit"},
+		"documents":    map[string]any{"ktp": map[string]any{"name": "ktp.jpg", "image": "data:image/jpeg;base64,a3Rw"}},
+		"agentConsent": map[string]any{"signature": "data:image/png;base64,c2ln"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	increase, err := credit.Save("Bearer "+agent.Token, map[string]any{
+		"id": "KSA-LIMIT-INCREASE", "applicationType": "LIMIT_INCREASE", "parentApplicationId": initial["id"],
+		"form": map[string]any{"amount": 250000, "purpose": "Tambah stok"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if increase["status"] != "Menunggu keputusan operator" || increase["inheritedDocumentsFrom"] != "KSA-LIMIT-INITIAL" {
+		t.Fatalf("limit increase metadata = %#v", increase)
+	}
+	form := increase["form"].(map[string]any)
+	if intValue(form["amount"]) != 250000 || form["nik"] != "1234567890123456" || form["purpose"] != "Tambah stok" {
+		t.Fatalf("inherited limit form = %#v", form)
+	}
+	documents := increase["documents"].(map[string]any)
+	if documents["ktp"] == nil || increase["agentConsent"] == nil {
+		t.Fatalf("limit increase did not inherit documents: %#v", increase)
+	}
+}
+
 func TestOperatorApprovalDisbursesMainBalanceExactlyOnce(t *testing.T) {
 	auth := newAuthService("test-secret", "", nil, []AccountSeed{
 		{Username: "marketing-test", Password: "marketing-secret", Name: "Marketing Test", Role: "marketing"},

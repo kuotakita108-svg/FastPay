@@ -227,6 +227,29 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 	}
 
 	row := cloneCredit(input)
+	if !exists && user.Role == "agent" && stringValue(row["applicationType"]) == "LIMIT_INCREASE" {
+		parentID := strings.TrimSpace(stringValue(row["parentApplicationId"]))
+		parent, found := s.rows[parentID]
+		if !found || stringValue(parent["_owner_id"]) != user.ID {
+			return nil, errors.New("pengajuan awal untuk kenaikan limit tidak ditemukan")
+		}
+		parentForm, _ := parent["form"].(map[string]any)
+		requestedForm, _ := row["form"].(map[string]any)
+		inheritedForm := cloneCredit(parentForm)
+		if inheritedForm == nil {
+			inheritedForm = map[string]any{}
+		}
+		for key, value := range requestedForm {
+			inheritedForm[key] = cloneValue(value)
+		}
+		row["form"] = inheritedForm
+		for _, key := range []string{"documents", "agentConsent", "agentSignature"} {
+			if value, available := parent[key]; available {
+				row[key] = cloneValue(value)
+			}
+		}
+		row["inheritedDocumentsFrom"] = parentID
+	}
 	if exists {
 		// Operator screens load a compact application list that intentionally
 		// omits large base64 document bodies. A decision submitted from that
