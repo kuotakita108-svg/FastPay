@@ -142,6 +142,57 @@ func TestApprovedApplicationRemainsVisibleToOperator(t *testing.T) {
 	}
 }
 
+func TestOperatorSummaryUpdatePreservesStoredDocumentImages(t *testing.T) {
+	auth := newAuthService("test-secret", "", nil, []AccountSeed{
+		{Username: "operator-doc", Password: "operator-secret", Name: "Operator Doc", Role: "operator"},
+		{Username: "agent-doc", Password: "agent-secret", Name: "Agent Doc", Role: "agent"},
+	})
+	agent, _ := auth.Login("agent-doc", "agent-secret")
+	operator, _ := auth.Login("operator-doc", "operator-secret")
+	credit := NewCreditService(filepath.Join(t.TempDir(), "credit.json"), auth)
+	const image = "data:image/jpeg;base64,cGVyc2lzdGVudC1kb2N1bWVudA=="
+	_, err := credit.Save("Bearer "+agent.Token, map[string]any{
+		"id":   "KSA-DOCUMENT-1",
+		"form": map[string]any{"amount": 500000},
+		"documents": map[string]any{
+			"ktp": map[string]any{"name": "ktp.jpg", "image": image},
+		},
+		"agentConsent": map[string]any{"signature": "data:image/png;base64,c2lnbmF0dXJl"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	summaries, err := credit.ListSummary("Bearer " + operator.Token)
+	if err != nil || len(summaries) != 1 {
+		t.Fatalf("summary list = %#v, err = %v", summaries, err)
+	}
+	summaryDocument := summaries[0]["documents"].(map[string]any)["ktp"].(map[string]any)
+	if _, exists := summaryDocument["image"]; exists {
+		t.Fatal("summary unexpectedly includes embedded image")
+	}
+	summaries[0]["status"] = "Disetujui"
+	if _, err = credit.Save("Bearer "+operator.Token, summaries[0]); err != nil {
+		t.Fatal(err)
+	}
+
+	document, err := credit.GetDocument("Bearer "+operator.Token, "KSA-DOCUMENT-1", "ktp")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if document["image"] != image {
+		t.Fatalf("stored image was lost after compact update: %#v", document)
+	}
+	application, err := credit.Get("Bearer "+operator.Token, "KSA-DOCUMENT-1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	consent := application["agentConsent"].(map[string]any)
+	if consent["signature"] != "data:image/png;base64,c2lnbmF0dXJl" {
+		t.Fatalf("stored signature was lost after compact update: %#v", consent)
+	}
+}
+
 func TestOperatorRecordsRetailPaymentAndRenewsRevolvingCapital(t *testing.T) {
 	auth := newAuthService("test-secret", "", nil, []AccountSeed{
 		{Username: "marketing-pay", Password: "marketing-secret", Name: "Marketing Pay", Role: "marketing"},

@@ -228,6 +228,12 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 
 	row := cloneCredit(input)
 	if exists {
+		// Operator screens load a compact application list that intentionally
+		// omits large base64 document bodies. A decision submitted from that
+		// list must never replace the persisted originals with metadata only.
+		// Merge every missing embedded payload back from the stored row before
+		// saving status, notes, or approved capital.
+		preserveCreditDocumentPayloads(row, current)
 		// Preserve ownership even when a reviewer updates status, signature, or cicilan.
 		row["_owner_id"] = current["_owner_id"]
 	} else {
@@ -322,6 +328,53 @@ func (s *CreditService) Save(token string, input map[string]any) (map[string]any
 		return nil, ErrCreditPersistence
 	}
 	return publicCredit(row), nil
+}
+
+func preserveCreditDocumentPayloads(target, source map[string]any) {
+	preserveEmbeddedFields(target, source)
+
+	targetDocuments, targetOK := target["documents"].(map[string]any)
+	sourceDocuments, sourceOK := source["documents"].(map[string]any)
+	if !sourceOK {
+		return
+	}
+	if !targetOK {
+		target["documents"] = cloneValue(sourceDocuments)
+		return
+	}
+	for key, sourceValue := range sourceDocuments {
+		sourceDocument, sourceIsMap := sourceValue.(map[string]any)
+		targetDocument, targetIsMap := targetDocuments[key].(map[string]any)
+		if !targetIsMap {
+			targetDocuments[key] = cloneValue(sourceValue)
+			continue
+		}
+		if sourceIsMap {
+			preserveEmbeddedFields(targetDocument, sourceDocument)
+		}
+	}
+	target["documents"] = targetDocuments
+}
+
+func preserveEmbeddedFields(target, source map[string]any) {
+	for _, key := range []string{"image", "dataUrl", "data_url", "base64", "content", "fileData", "proofData", "signature"} {
+		if strings.TrimSpace(stringValue(target[key])) != "" {
+			continue
+		}
+		if value, exists := source[key]; exists && strings.TrimSpace(stringValue(value)) != "" {
+			target[key] = cloneValue(value)
+		}
+	}
+	sourceConsent, sourceOK := source["agentConsent"].(map[string]any)
+	if !sourceOK {
+		return
+	}
+	targetConsent, targetOK := target["agentConsent"].(map[string]any)
+	if !targetOK {
+		target["agentConsent"] = cloneValue(sourceConsent)
+		return
+	}
+	preserveEmbeddedFields(targetConsent, sourceConsent)
 }
 
 // ReviewDocument updates only one document review state. Keeping this as a
