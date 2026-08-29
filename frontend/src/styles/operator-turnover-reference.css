@@ -29,6 +29,7 @@
 .panel-workspace-shell .operator-review.operator-capital-console .operator-turnover-list>article>header dd.down{color:#d62d4d!important;-webkit-text-fill-color:#d62d4d!important}
 .operator-review.operator-capital-console .operator-turnover-list>article>footer{grid-template-columns:repeat(4,minmax(0,1fr))}
 .operator-review.operator-capital-console .operator-turnover-list footer b.balance{color:#0878bd!important}
+.operator-agent-whatsapp{display:inline-flex!important;align-items:center;gap:5px;width:max-content;margin-top:7px;border-radius:999px;background:#08a957;padding:6px 10px;color:#fff!important;font-size:8px!important;font-weight:900;text-decoration:none;box-shadow:0 3px 8px rgba(8,169,87,.2)}.operator-agent-whatsapp:hover{background:#078b49}.operator-agent-whatsapp svg{width:12px;height:12px}
 @media(max-width:520px){.operator-review.operator-capital-console .operator-turnover-list>article>footer{grid-template-columns:1fr 1fr;row-gap:9px}}
 
 /* Toolbar stabil: tidak terpotong atau saling menimpa oleh tema panel. */
