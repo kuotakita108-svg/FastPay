@@ -1275,10 +1275,10 @@ body .operator-payment-overlay .operator-payment-dialog .submit{border:0!importa
 
 /* Hasil keputusan Operator hanya tampil setelah server berhasil menyimpan status. */
 .operator-decision-result-overlay{
- position:fixed;inset:0;z-index:11000;display:grid;place-items:center;padding:18px;background:#07111f
+ position:fixed;inset:0;z-index:11000;display:grid;place-items:center;padding:18px;background:rgba(2,9,20,.72);backdrop-filter:blur(4px)
 }
 .operator-decision-result-card{
- position:relative;width:min(510px,100%);padding:38px 30px 28px;border:1px solid #314158;border-radius:16px;background:#0d1726;color:#f7f9fd;text-align:center;box-shadow:0 28px 90px #000
+ position:relative;width:min(460px,calc(100vw - 36px));min-height:310px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px 30px 28px;border:1px solid #36506c;border-radius:20px;background:linear-gradient(155deg,#101d2e,#091421);color:#f7f9fd;text-align:center;box-shadow:0 28px 90px rgba(0,0,0,.72),0 0 0 1px rgba(116,176,225,.08) inset
 }
 .operator-decision-result-card>i{
  display:grid;width:88px;height:88px;margin:0 auto 22px;place-items:center;border:4px solid currentColor;border-radius:50%;font-style:normal
