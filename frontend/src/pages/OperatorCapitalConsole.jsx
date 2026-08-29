@@ -187,8 +187,15 @@ function DocumentWorkspace({rows,names,onRefresh}){
   setPreview({...value,loading:!value.source});setZoom(1);setReviewError('')
   if(value.source)return
   try{
-   const loaded=await request(`/agent-credit/applications/${encodeURIComponent(value.item.id)}/documents/${encodeURIComponent(value.key)}`,{noCache:true,timeoutMs:20000}),source=documentSource(loaded)
-   setPreview(current=>current?.item?.id===value.item.id&&current?.key===value.key?{...current,doc:{...current.doc,...loaded},source,loading:false,fileName:loaded?.fileName||loaded?.name||current.fileName,status:documentStatus(value.item,{...current.doc,...loaded})}:current)
+   // Ambil detail pengajuan melalui endpoint GET yang sudah tersedia sejak versi
+   // backend lama. Ini membuat preview tetap bekerja saat frontend baru sempat
+   // terpasang bersama container backend lama yang hanya mengenali PATCH pada
+   // route /documents/{key} (dan sebelumnya membalas GET dengan 405).
+   const loadedApplication=await request(`/agent-credit/applications/${encodeURIComponent(value.item.id)}`,{noCache:true,timeoutMs:30000})
+   const loadedDocuments=loadedApplication?.documents||{}
+   const loaded=loadedDocuments[value.key]||Object.entries(loadedDocuments).find(([key,doc])=>key===value.key||doc?.key===value.key||doc?.type===value.key)?.[1]||{}
+   const source=documentSource(loaded)
+   setPreview(current=>current?.item?.id===value.item.id&&current?.key===value.key?{...current,item:{...current.item,...loadedApplication,documents:{...(current.item.documents||{}),...loadedDocuments}},doc:{...current.doc,...loaded},source,loading:false,fileName:loaded?.fileName||loaded?.name||current.fileName,status:documentStatus({...value.item,...loadedApplication},{...current.doc,...loaded})}:current)
    if(!source)setReviewError('File dokumen tidak ditemukan di server.')
   }catch(error){setPreview(current=>current?{...current,loading:false}:current);setReviewError(error?.message||'File dokumen tidak dapat dimuat.')}
  }
