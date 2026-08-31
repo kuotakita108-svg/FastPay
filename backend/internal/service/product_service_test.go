@@ -3,10 +3,16 @@ package service
 import (
 	"encoding/json"
 	"kuotakita/backend/internal/config"
+	"kuotakita/backend/internal/domain"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
+
+type productReaderStub struct{ products []domain.Product }
+
+func (s productReaderStub) FindProducts() []domain.Product { return s.products }
 
 func TestClassifyH2HRService(t *testing.T) {
 	tests := map[string]string{
@@ -45,5 +51,18 @@ func TestPulsa24ProductsUsesV2AndKeepsLargeItems(t *testing.T) {
 	items, ok := result.Raw["items"].([]any)
 	if !ok || len(items) != 1 {
 		t.Fatalf("items=%T %#v", result.Raw["items"], result.Raw["items"])
+	}
+}
+
+func TestListByServiceFallsBackWhenLiveCategoryIsEmpty(t *testing.T) {
+	products := &ProductService{
+		repo:       productReaderStub{products: []domain.Product{{ID: "DATA-1", SKU: "DATA1", Service: "data", Name: "Paket Data"}}},
+		h2h:        &Pulsa24Service{apiKey: "key", pin: "pin"},
+		live:       []domain.Product{{ID: "DANA", SKU: "DANA", Service: "ewallet", Name: "DANA"}},
+		liveLoaded: time.Now(),
+	}
+	result := products.ListByService("data")
+	if len(result) == 0 {
+		t.Fatal("katalog data tersimpan tidak digunakan ketika kategori live kosong")
 	}
 }

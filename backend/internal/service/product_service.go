@@ -53,7 +53,13 @@ func (s *ProductService) List() []domain.Product {
 
 func (s *ProductService) ListByService(serviceName string) []domain.Product {
 	if live, err := s.liveProducts(); err == nil && len(live) > 0 {
-		return filterProductsByService(live, serviceName)
+		filtered := filterProductsByService(live, serviceName)
+		if len(filtered) > 0 || strings.TrimSpace(serviceName) == "" {
+			return filtered
+		}
+		// Some H2HR profiles return only routed wallet/bank rows from PRODUK.
+		// Keep the embedded SKU catalogue available for other service pages;
+		// PAY remains the final authority and safely rejects inactive SKUs.
 	}
 	return filterProductsByService(s.List(), serviceName)
 }
