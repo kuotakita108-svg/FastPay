@@ -11,6 +11,26 @@ func TestNormalizePulsa24NumericStatus(t *testing.T) {
 	}
 }
 
+func TestPulsa24InquiryMessageParsing(t *testing.T) {
+	message := "Cek tagihan berhasil. ID Pelanggan: 123, Nama: BUDI, Tagihan: 150.000, Admin: 2.500, Total: 152.500"
+	if got := labeledAmountP24(message, "total", "tagihan"); got != 152500 {
+		t.Fatalf("total inquiry=%d, ingin 152500", got)
+	}
+	if got := labeledTextP24(message, "nama"); got != "BUDI" {
+		t.Fatalf("nama inquiry=%q, ingin BUDI", got)
+	}
+}
+
+func TestPulsa24RefIDFitsH2HRLimits(t *testing.T) {
+	service := &Pulsa24Service{}
+	for index := 0; index < 20; index++ {
+		refID := service.NewRefID()
+		if len(refID) > 27 {
+			t.Fatalf("refid %q panjangnya %d byte", refID, len(refID))
+		}
+	}
+}
+
 func TestRecordUniqueReturnsOriginalCheckoutOrder(t *testing.T) {
 	service := &Pulsa24Service{orders: map[string]Pulsa24Order{}}
 	first := Pulsa24Order{RefID: "REF-1", UserID: "USER-1", ClientRequestID: "CHECKOUT-1"}

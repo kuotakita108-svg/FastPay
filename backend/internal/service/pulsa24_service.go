@@ -11,6 +11,7 @@ import (
 	"kuotakita/backend/internal/config"
 	"kuotakita/backend/internal/database"
 	"net/http"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -32,10 +33,10 @@ type Pulsa24Service struct {
 
 type Pulsa24Order struct {
 	RefID, UserID, UserRole, ClientRequestID, Product, Destination, TransactionID string
-	Qty, Amount, MainUsed, CreditUsed                                   int64
-	Status, SN, Message, CustomerName                                   string
-	Debited, Refunded, DirectH2H                                        bool
-	CreatedAt, UpdatedAt                                                time.Time
+	Qty, Amount, MainUsed, CreditUsed                                             int64
+	Status, SN, Message, CustomerName                                             string
+	Debited, Refunded, DirectH2H                                                  bool
+	CreatedAt, UpdatedAt                                                          time.Time
 }
 
 type pulsa24OrderFile struct {
@@ -74,9 +75,10 @@ func (s *Pulsa24Service) Enabled() bool { return s != nil && s.apiKey != "" && s
 func (s *Pulsa24Service) NewRefID() string {
 	b := make([]byte, 6)
 	if _, err := rand.Read(b); err != nil {
-		return fmt.Sprintf("KK-%d", time.Now().UnixNano())
+		return fmt.Sprintf("KK%s", strconv.FormatInt(time.Now().UnixNano(), 36))
 	}
-	return fmt.Sprintf("KK-%d-%s", time.Now().UnixMilli(), strings.ToUpper(hex.EncodeToString(b)))
+	// H2HR membatasi refid PPOB/wallet menjadi 27 byte ASCII.
+	return fmt.Sprintf("KK%s-%s", strconv.FormatInt(time.Now().UnixMilli(), 36), strings.ToUpper(hex.EncodeToString(b)))
 }
 func (s *Pulsa24Service) Balance() (Pulsa24Result, error) {
 	return s.request("SALDO", map[string]any{})
@@ -107,7 +109,11 @@ func (s *Pulsa24Service) request(command string, payload map[string]any) (Pulsa2
 	if err != nil {
 		return Pulsa24Result{}, err
 	}
-	req, err := http.NewRequest(http.MethodPost, s.baseURL+"/v1/trx", bytes.NewReader(body))
+	endpoint := s.baseURL
+	if !strings.HasSuffix(endpoint, "/v1/trx") && !strings.HasSuffix(endpoint, "/v2/trx") {
+		endpoint += "/v2/trx"
+	}
+	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewReader(body))
 	if err != nil {
 		return Pulsa24Result{}, err
 	}
@@ -157,6 +163,14 @@ func (s *Pulsa24Service) request(command string, payload map[string]any) (Pulsa2
 	}
 	if result.CustomerName == "" {
 		result.CustomerName = firstText(stringVal(data, "customer_name"), stringVal(data, "customerName"), stringVal(data, "nama_pelanggan"), stringVal(data, "customer"), stringVal(data, "name"), stringVal(data, "nama"))
+	}
+	if command == "INQ" {
+		if result.Amount == 0 {
+			result.Amount = labeledAmountP24(result.Message, "total", "grand total", "tagihan")
+		}
+		if result.CustomerName == "" {
+			result.CustomerName = labeledTextP24(result.Message, "nama")
+		}
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 || data["ok"] == false {
 		if result.Message == "" {
@@ -349,6 +363,27 @@ func firstText(values ...string) string {
 		if strings.TrimSpace(v) != "" {
 			return v
 		}
+	}
+	return ""
+}
+
+func labeledAmountP24(message string, labels ...string) int64 {
+	for _, label := range labels {
+		re := regexp.MustCompile(`(?i)(?:^|[,;|])\s*` + regexp.QuoteMeta(label) + `\s*:\s*(?:rp\s*)?([0-9][0-9.]*)`)
+		if match := re.FindStringSubmatch(message); len(match) == 2 {
+			value, _ := strconv.ParseInt(strings.ReplaceAll(match[1], ".", ""), 10, 64)
+			if value > 0 {
+				return value
+			}
+		}
+	}
+	return 0
+}
+
+func labeledTextP24(message, label string) string {
+	re := regexp.MustCompile(`(?i)(?:^|[,;|])\s*` + regexp.QuoteMeta(label) + `\s*:\s*([^,;|]+)`)
+	if match := re.FindStringSubmatch(message); len(match) == 2 {
+		return strings.TrimSpace(match[1])
 	}
 	return ""
 }
