@@ -124,7 +124,12 @@ func (s *Pulsa24Service) request(command string, payload map[string]any) (Pulsa2
 		return Pulsa24Result{}, fmt.Errorf("P24 tidak dapat dihubungi: %w", err)
 	}
 	defer resp.Body.Close()
-	raw, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	responseLimit := int64(1 << 20)
+	if command == "PRODUK" {
+		// The H2HR catalogue can contain more than nine thousand SKUs.
+		responseLimit = 32 << 20
+	}
+	raw, _ := io.ReadAll(io.LimitReader(resp.Body, responseLimit))
 	var data map[string]any
 	if err := json.Unmarshal(raw, &data); err != nil {
 		return Pulsa24Result{}, fmt.Errorf("balasan P24 tidak valid")
