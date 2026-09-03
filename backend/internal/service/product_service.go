@@ -53,15 +53,31 @@ func (s *ProductService) List() []domain.Product {
 
 func (s *ProductService) ListByService(serviceName string) []domain.Product {
 	if live, err := s.liveProducts(); err == nil && len(live) > 0 {
-		filtered := filterProductsByService(live, serviceName)
-		if len(filtered) > 0 || strings.TrimSpace(serviceName) == "" {
-			return filtered
-		}
-		// Some H2HR profiles return only routed wallet/bank rows from PRODUK.
-		// Keep the embedded SKU catalogue available for other service pages;
-		// PAY remains the final authority and safely rejects inactive SKUs.
+		return filterProductsByService(live, serviceName)
+	}
+	// Once H2HR is configured, an embedded snapshot must never become a
+	// purchasable fallback. Provider catalogues change and stale SKUs are
+	// rejected by PAY even though their old name and price still look valid.
+	if s.h2h != nil && s.h2h.Enabled() {
+		return []domain.Product{}
 	}
 	return filterProductsByService(s.List(), serviceName)
+}
+
+// LiveProduct returns an exact, currently advertised H2HR SKU. It is used by
+// checkout as a final server-side guard against stale browser/catalog data.
+func (s *ProductService) LiveProduct(sku string) (domain.Product, bool, error) {
+	products, err := s.liveProducts()
+	if err != nil {
+		return domain.Product{}, false, err
+	}
+	sku = strings.TrimSpace(sku)
+	for _, product := range products {
+		if strings.EqualFold(product.SKU, sku) {
+			return product, true, nil
+		}
+	}
+	return domain.Product{}, false, nil
 }
 
 func filterProductsByService(all []domain.Product, serviceName string) []domain.Product {

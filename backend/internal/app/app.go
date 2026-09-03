@@ -43,6 +43,7 @@ func New(cfg config.Config) *App {
 	// Wallet history lives in the server volume. Main balance is charged first,
 	// then the agent's approved credit capacity when necessary.
 	userTransactions := handler.NewDatabaseUserTransactionHandlerWithCreditAndP24(auth, filepath.Join(cfg.DataDir, "wallet-transactions.json"), state, credit, pulsa24)
+	userTransactions.UseProductCatalog(products)
 	preferences := service.NewDatabasePreferenceService(auth, filepath.Join(cfg.DataDir, "user-preferences.json"), state)
 	routes := router.New(router.Handlers{Transactions: handler.NewTransactionHandler(tx), Customers: handler.NewCustomerHandler(customers), Dashboard: handler.NewDashboardHandler(dashboard), Products: handler.NewProductHandler(products), Auth: handler.NewAuthHandler(auth, cfg), Lookup: handler.NewLookupHandler(lookup), UserTransactions: userTransactions, Credit: handler.NewCreditHandler(credit), Preferences: handler.NewPreferenceHandler(preferences)})
 	var root http.Handler = routes

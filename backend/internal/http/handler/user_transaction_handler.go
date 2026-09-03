@@ -25,6 +25,7 @@ type UserTransactionHandler struct {
 	state       *database.StateStore
 	credit      *service.CreditService
 	pulsa24     *service.Pulsa24Service
+	products    *service.ProductService
 	reconcileMu sync.Mutex
 	reconciling map[string]bool
 }
@@ -71,6 +72,10 @@ func NewDatabaseUserTransactionHandlerWithCreditAndP24(auth *service.AuthService
 	h := &UserTransactionHandler{items: make(map[string][]domain.Transaction), auth: auth, dataFile: dataFile, state: state, credit: credit, pulsa24: pulsa24, reconciling: make(map[string]bool)}
 	_ = h.load()
 	return h
+}
+
+func (h *UserTransactionHandler) UseProductCatalog(products *service.ProductService) {
+	h.products = products
 }
 
 func (h *UserTransactionHandler) userID(w http.ResponseWriter, r *http.Request) (string, bool) {
@@ -125,6 +130,17 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 	if h.pulsa24 == nil || !h.pulsa24.Enabled() {
 		response.Error(w, http.StatusServiceUnavailable, "transaksi H2H belum diaktifkan di server")
 		return
+	}
+	if h.products != nil {
+		_, found, catalogErr := h.products.LiveProduct(in.SKU)
+		if catalogErr != nil {
+			response.Error(w, http.StatusServiceUnavailable, "katalog H2HR sedang tidak dapat diverifikasi; saldo belum dipotong")
+			return
+		}
+		if !found {
+			response.Error(w, http.StatusUnprocessableEntity, "SKU produk sudah tidak aktif di katalog H2HR; pilih produk terbaru")
+			return
+		}
 	}
 	user, mainUsed, creditUsed, err := h.chargeFunds(token, current, in.Amount)
 	if err != nil {

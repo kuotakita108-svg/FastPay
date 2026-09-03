@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 )
 
 type productReaderStub struct{ products []domain.Product }
@@ -54,15 +53,20 @@ func TestPulsa24ProductsUsesV2AndKeepsLargeItems(t *testing.T) {
 	}
 }
 
-func TestListByServiceFallsBackWhenLiveCategoryIsEmpty(t *testing.T) {
-	products := &ProductService{
-		repo:       productReaderStub{products: []domain.Product{{ID: "DATA-1", SKU: "DATA1", Service: "data", Name: "Paket Data"}}},
-		h2h:        &Pulsa24Service{apiKey: "key", pin: "pin"},
-		live:       []domain.Product{{ID: "DANA", SKU: "DANA", Service: "ewallet", Name: "DANA"}},
-		liveLoaded: time.Now(),
+func TestLiveProductRequiresExactActiveSKU(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = json.NewEncoder(w).Encode(map[string]any{"ok": true, "items": []any{
+			map[string]any{"sku": "WDBTPN", "nama": "WITHDRAWAL BANK SMBC", "kategori_nama": "Transfer Bank", "harga": 1500},
+		}})
+	}))
+	defer server.Close()
+	provider := NewPulsa24Service(config.Config{P24BaseURL: server.URL, P24APIKey: "key", P24PIN: "pin", P24RequestTimeoutSeconds: 5}, nil)
+	products := NewProductService(productReaderStub{})
+	products.UseH2H(provider)
+	if _, found, err := products.LiveProduct("SMB"); err != nil || found {
+		t.Fatalf("substring SMB tidak boleh dianggap SKU aktif: found=%v err=%v", found, err)
 	}
-	result := products.ListByService("data")
-	if len(result) == 0 {
-		t.Fatal("katalog data tersimpan tidak digunakan ketika kategori live kosong")
+	if product, found, err := products.LiveProduct("wdbtpn"); err != nil || !found || product.SKU != "WDBTPN" {
+		t.Fatalf("SKU aktif exact tidak ditemukan: product=%#v found=%v err=%v", product, found, err)
 	}
 }
