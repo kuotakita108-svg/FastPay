@@ -51,7 +51,7 @@ func Load() Config {
 		P24BaseURL:               env("P24_BASE_URL", "https://api.pulsa24jam.net"),
 		P24APIKey:                os.Getenv("P24_API_KEY"),
 		P24PIN:                   os.Getenv("P24_PIN"),
-		P24RequestTimeoutSeconds: int(envInt64("P24_REQUEST_TIMEOUT_SECONDS", 15)),
+		P24RequestTimeoutSeconds: int(envInt64("P24_REQUEST_TIMEOUT_SECONDS", 45)),
 	}
 }
 

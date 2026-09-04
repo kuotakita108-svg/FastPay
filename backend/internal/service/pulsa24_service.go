@@ -58,8 +58,10 @@ type Pulsa24Result struct {
 
 func NewPulsa24Service(cfg config.Config, state *database.StateStore) *Pulsa24Service {
 	timeout := cfg.P24RequestTimeoutSeconds
-	if timeout < 5 {
-		timeout = 15
+	if timeout < 45 {
+		// PRODUK may return thousands of rows on H2HR accounts. A short
+		// provider timeout makes a healthy catalogue look empty after restart.
+		timeout = 45
 	}
 	s := &Pulsa24Service{baseURL: strings.TrimRight(cfg.P24BaseURL, "/"), apiKey: strings.TrimSpace(cfg.P24APIKey), pin: strings.TrimSpace(cfg.P24PIN), client: &http.Client{Timeout: time.Duration(timeout) * time.Second}, state: state, orders: map[string]Pulsa24Order{}}
 	if state != nil {

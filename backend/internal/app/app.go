@@ -51,7 +51,7 @@ func New(cfg config.Config) *App {
 		root = spaHandler(cfg.StaticDir, routes)
 	}
 	stack := middleware.Logger(middleware.Security(middleware.CORS(cfg.FrontendURL, root)))
-	return &App{cfg: cfg, server: &http.Server{Addr: ":" + cfg.Port, Handler: stack, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second}}
+	return &App{cfg: cfg, server: &http.Server{Addr: ":" + cfg.Port, Handler: stack, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 65 * time.Second, IdleTimeout: 90 * time.Second}}
 }
 func (a *App) Run() error { return a.server.ListenAndServe() }
 
