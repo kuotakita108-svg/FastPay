@@ -23,11 +23,16 @@ func TestPulsa24InquiryMessageParsing(t *testing.T) {
 
 func TestPulsa24RefIDFitsH2HRLimits(t *testing.T) {
 	service := &Pulsa24Service{}
+	seen := map[string]bool{}
 	for index := 0; index < 20; index++ {
 		refID := service.NewRefID()
-		if len(refID) > 27 {
+		if len(refID) > 17 {
 			t.Fatalf("refid %q panjangnya %d byte", refID, len(refID))
 		}
+		if seen[refID] {
+			t.Fatalf("refid duplikat: %q", refID)
+		}
+		seen[refID] = true
 	}
 }
 

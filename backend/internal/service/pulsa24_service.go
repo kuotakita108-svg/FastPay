@@ -73,12 +73,22 @@ func NewPulsa24Service(cfg config.Config, state *database.StateStore) *Pulsa24Se
 
 func (s *Pulsa24Service) Enabled() bool { return s != nil && s.apiKey != "" && s.pin != "" }
 func (s *Pulsa24Service) NewRefID() string {
-	b := make([]byte, 6)
-	if _, err := rand.Read(b); err != nil {
-		return fmt.Sprintf("KK%s", strconv.FormatInt(time.Now().UnixNano(), 36))
+	// Jalur wallet SMB membatasi refid hingga 17 byte ASCII. Kombinasikan
+	// delapan digit base36 waktu dengan 32-bit acak agar tetap ringkas dan
+	// memiliki ruang unik yang cukup untuk transaksi pada milidetik yang sama.
+	stamp := strconv.FormatInt(time.Now().UnixMilli(), 36)
+	if len(stamp) > 8 {
+		stamp = stamp[len(stamp)-8:]
 	}
-	// H2HR membatasi refid PPOB/wallet menjadi 27 byte ASCII.
-	return fmt.Sprintf("KK%s-%s", strconv.FormatInt(time.Now().UnixMilli(), 36), strings.ToUpper(hex.EncodeToString(b)))
+	b := make([]byte, 4)
+	if _, err := rand.Read(b); err != nil {
+		fallback := strconv.FormatInt(time.Now().UnixNano(), 36)
+		if len(fallback) > 16 {
+			fallback = fallback[len(fallback)-16:]
+		}
+		return "K" + fallback
+	}
+	return "K" + strings.ToUpper(stamp) + strings.ToUpper(hex.EncodeToString(b))
 }
 func (s *Pulsa24Service) Balance() (Pulsa24Result, error) {
 	return s.request("SALDO", map[string]any{})
