@@ -11,6 +11,7 @@ dist/
 **/dist/
 .cache/
 .tmp-go-cache/
+.tmp/
 
 # Editors and operating systems
 .vscode/

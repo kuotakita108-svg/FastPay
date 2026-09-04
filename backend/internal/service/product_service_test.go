@@ -73,10 +73,11 @@ func TestLiveProductRequiresExactActiveSKU(t *testing.T) {
 
 func TestNamedNominalP24(t *testing.T) {
 	tests := map[string]int64{
-		"SALDO DANA 10.000":             10000,
-		"ASTRAPAY 100.000 (ADMIN 1500)": 100000,
-		"Dana Bebas Nominal":            0,
-		"002 BRI":                       0,
+		"SALDO DANA 10.000":               10000,
+		"ASTRAPAY 100.000 (ADMIN 1500)":   100000,
+		"Dana Bebas Nominal":              0,
+		"E-WALLET 2.500 DANA OPEN AMOUNT": 0,
+		"002 BRI":                         0,
 	}
 	for name, want := range tests {
 		if got := namedNominalP24(name); got != want {
@@ -95,5 +96,17 @@ func TestWalletCatalogPrefersExplicitH2HRoute(t *testing.T) {
 	result := filterProductsByService(products, "ewallet")
 	if len(result) != 2 || result[0].SKU != "DANA100H" || result[1].SKU != "OVO100" {
 		t.Fatalf("jalur wallet terpilih tidak tepat: %#v", result)
+	}
+}
+
+func TestWalletCatalogPrefersCanonicalOpenAmountSKU(t *testing.T) {
+	products := []domain.Product{
+		{SKU: "DANA", Service: "ewallet", Operator: "DANA", Name: "DANA OPEN AMOUNT", Status: "OPEN_AMOUNT"},
+		{SKU: "DANA100", Service: "ewallet", Operator: "DANA", Name: "SALDO DANA 100.000", Nominal: 100000, Status: "OPEN_AMOUNT"},
+		{SKU: "DANA100H", Service: "ewallet", Operator: "DANA", Name: "E-WALLET DANA 100.000 H2H", Nominal: 100000, Status: "OPEN_AMOUNT"},
+	}
+	result := filterProductsByService(products, "ewallet")
+	if len(result) != 1 || result[0].SKU != "DANA" {
+		t.Fatalf("SKU open amount kanonis tidak diprioritaskan: %#v", result)
 	}
 }

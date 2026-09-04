@@ -104,6 +104,29 @@ func filterProductsByService(all []domain.Product, serviceName string) []domain.
 // H2H route is authoritative. Offering every duplicate lets a customer pick a
 // regular SKU such as DANA100 even though DANA100H is the routed member SKU.
 func preferH2HWalletRoutes(products []domain.Product) []domain.Product {
+	canonicalOperators := make(map[string]bool)
+	for _, product := range products {
+		if isCanonicalOpenWalletRoute(product) {
+			canonicalOperators[strings.ToLower(strings.TrimSpace(product.Operator))] = true
+		}
+	}
+	// The provider documentation uses the base wallet SKU (for example DANA)
+	// with qty carrying the requested amount. When it exists, thousands of
+	// denomination/promo/H2H variants for that provider are routing noise and
+	// must not be offered to customers.
+	canonical := make([]domain.Product, 0, len(canonicalOperators))
+	for _, product := range products {
+		operator := strings.ToLower(strings.TrimSpace(product.Operator))
+		if canonicalOperators[operator] {
+			if isCanonicalOpenWalletRoute(product) {
+				canonical = append(canonical, product)
+			}
+			continue
+		}
+		canonical = append(canonical, product)
+	}
+	products = canonical
+
 	h2hKeys := make(map[string]bool)
 	for _, product := range products {
 		if isExplicitH2HRoute(product) {
@@ -118,6 +141,19 @@ func preferH2HWalletRoutes(products []domain.Product) []domain.Product {
 		result = append(result, product)
 	}
 	return result
+}
+
+func isCanonicalOpenWalletRoute(product domain.Product) bool {
+	if !strings.Contains(strings.ToUpper(product.Status), "OPEN") {
+		return false
+	}
+	operator := strings.Map(func(r rune) rune {
+		if (r >= 'A' && r <= 'Z') || (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			return r
+		}
+		return -1
+	}, product.Operator)
+	return strings.EqualFold(strings.TrimSpace(product.SKU), operator)
 }
 
 func walletRouteKey(product domain.Product) string {
@@ -194,6 +230,10 @@ func (s *ProductService) liveProducts() ([]domain.Product, error) {
 var dottedNominalP24 = regexp.MustCompile(`(?:^|\D)(\d{1,3}(?:[.,]\d{3})+)(?:\D|$)`)
 
 func namedNominalP24(name string) int64 {
+	upperName := strings.ToUpper(name)
+	if strings.Contains(upperName, "OPEN AMOUNT") || strings.Contains(upperName, "BEBAS NOMINAL") {
+		return 0
+	}
 	match := dottedNominalP24.FindStringSubmatch(name)
 	if len(match) != 2 {
 		return 0
