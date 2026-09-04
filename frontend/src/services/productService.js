@@ -10,9 +10,13 @@ export const getProducts = async service => {
   // Katalog H2HR dapat berisi lebih dari sembilan ribu baris. Permintaan
   // pertama setelah deploy perlu waktu lebih lama untuk mengambil dan
   // mengelompokkan katalog; request umum tetap memakai timeout pendek.
-  const promise = request(`/products${service ? `?service=${encodeURIComponent(service)}` : ''}`,{timeoutMs:60000})
+  const promise = request(`/products${service ? `?service=${encodeURIComponent(service)}` : ''}`,{timeoutMs:60000,noCache:true})
     .then(data => {
-      cache.set(key, {data, savedAt: Date.now()})
+      // Jangan menyimpan respons kosong sesaat setelah backend restart. Tanpa
+      // ini halaman terus menampilkan 0 provider selama dua menit meskipun
+      // katalog H2HR sudah selesai dimuat pada request berikutnya.
+      if(Array.isArray(data)&&data.length>0)cache.set(key, {data, savedAt: Date.now()})
+      else cache.delete(key)
       return data
     })
     .catch(error => {
