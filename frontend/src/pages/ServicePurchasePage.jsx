@@ -34,7 +34,10 @@ import tvHero from '../assets/service-heroes/tv.webp'
 import voucherHero from '../assets/service-heroes/voucher.webp'
 
 const automatic=['pulsa','data']
-const custom=['pulsa','ewallet']
+// Nominal bebas hanya boleh dipakai setelah pengguna memilih SKU
+// OPEN_AMOUNT dari katalog H2HR. Tab generik sebelumnya dapat membawa SKU
+// FIXED yang sudah terpilih lalu mengirim nominal sebagai qty.
+const custom=[]
 const isVariableProduct=product=>Boolean(product&&(Number(product.price)<=0||String(product.status||'').startsWith('OPEN_AMOUNT')))
 const phoneServices=['pulsa','data','ewallet','pascabayar']
 const textInputServices=['game','voucher','streaming','esim','parking','qris']

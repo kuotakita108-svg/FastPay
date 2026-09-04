@@ -131,8 +131,11 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 		response.Error(w, http.StatusServiceUnavailable, "transaksi H2H belum diaktifkan di server")
 		return
 	}
+	var catalogProduct domain.Product
 	if h.products != nil {
-		_, found, catalogErr := h.products.LiveProduct(in.SKU)
+		var found bool
+		var catalogErr error
+		catalogProduct, found, catalogErr = h.products.LiveProduct(in.SKU)
 		if catalogErr != nil {
 			response.Error(w, http.StatusServiceUnavailable, "katalog H2HR sedang tidak dapat diverifikasi; saldo belum dipotong")
 			return
@@ -141,6 +144,19 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 			response.Error(w, http.StatusUnprocessableEntity, "SKU produk sudah tidak aktif di katalog H2HR; pilih produk terbaru")
 			return
 		}
+	}
+	// Harga dan qty harus berasal dari katalog server, bukan nilai dari browser.
+	// Produk FIXED selalu satu unit. OPEN_AMOUNT memakai qty sebagai nominal dan
+	// total yang ditagih adalah nominal ditambah fee resmi katalog.
+	if strings.Contains(strings.ToUpper(catalogProduct.Status), "OPEN") {
+		if in.Qty < 1 {
+			response.Error(w, http.StatusUnprocessableEntity, "nominal transaksi wajib diisi")
+			return
+		}
+		in.Amount = in.Qty + catalogProduct.Price
+	} else if catalogProduct.SKU != "" {
+		in.Qty = 1
+		in.Amount = catalogProduct.Price
 	}
 	user, mainUsed, creditUsed, err := h.chargeFunds(token, current, in.Amount)
 	if err != nil {
