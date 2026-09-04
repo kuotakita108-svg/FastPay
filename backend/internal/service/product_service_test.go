@@ -84,3 +84,16 @@ func TestNamedNominalP24(t *testing.T) {
 		}
 	}
 }
+
+func TestWalletCatalogPrefersExplicitH2HRoute(t *testing.T) {
+	products := []domain.Product{
+		{SKU: "DANA100", Service: "ewallet", Operator: "DANA", Name: "SALDO DANA 100.000", Nominal: 100000},
+		{SKU: "DANA100H", Service: "ewallet", Operator: "DANA", Name: "E-WALLET DANA 100.000 H2H", Nominal: 100000},
+		{SKU: "DANA100P", Service: "ewallet", Operator: "DANA", Name: "E-WALLET DANA 100.000 PROMO", Nominal: 100000},
+		{SKU: "OVO100", Service: "ewallet", Operator: "OVO", Name: "OVO 100.000", Nominal: 100000},
+	}
+	result := filterProductsByService(products, "ewallet")
+	if len(result) != 2 || result[0].SKU != "DANA100H" || result[1].SKU != "OVO100" {
+		t.Fatalf("jalur wallet terpilih tidak tepat: %#v", result)
+	}
+}

@@ -93,7 +93,39 @@ func filterProductsByService(all []domain.Product, serviceName string) []domain.
 			result = append(result, product)
 		}
 	}
+	if serviceName == "ewallet" {
+		return preferH2HWalletRoutes(result)
+	}
 	return result
+}
+
+// H2HR may advertise several routes for the same wallet and denomination
+// (regular, H2H, promo, and PRO). For this member integration the explicit
+// H2H route is authoritative. Offering every duplicate lets a customer pick a
+// regular SKU such as DANA100 even though DANA100H is the routed member SKU.
+func preferH2HWalletRoutes(products []domain.Product) []domain.Product {
+	h2hKeys := make(map[string]bool)
+	for _, product := range products {
+		if isExplicitH2HRoute(product) {
+			h2hKeys[walletRouteKey(product)] = true
+		}
+	}
+	result := make([]domain.Product, 0, len(products))
+	for _, product := range products {
+		if h2hKeys[walletRouteKey(product)] && !isExplicitH2HRoute(product) {
+			continue
+		}
+		result = append(result, product)
+	}
+	return result
+}
+
+func walletRouteKey(product domain.Product) string {
+	return strings.ToLower(strings.TrimSpace(product.Operator)) + ":" + strconv.FormatInt(product.Nominal, 10)
+}
+
+func isExplicitH2HRoute(product domain.Product) bool {
+	return strings.Contains(strings.ToUpper(product.Name), " H2H")
 }
 
 func (s *ProductService) liveProducts() ([]domain.Product, error) {
