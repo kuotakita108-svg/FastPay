@@ -149,7 +149,9 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 	// Produk FIXED selalu satu unit. OPEN_AMOUNT memakai qty sebagai nominal dan
 	// total yang ditagih adalah nominal ditambah fee resmi katalog.
 	if strings.Contains(strings.ToUpper(catalogProduct.Status), "OPEN") {
-		if in.Qty < 1 {
+		if catalogProduct.Nominal > 0 {
+			in.Qty = catalogProduct.Nominal
+		} else if in.Qty < 1 {
 			response.Error(w, http.StatusUnprocessableEntity, "nominal transaksi wajib diisi")
 			return
 		}

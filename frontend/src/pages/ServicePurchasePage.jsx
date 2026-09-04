@@ -38,7 +38,8 @@ const automatic=['pulsa','data']
 // OPEN_AMOUNT dari katalog H2HR. Tab generik sebelumnya dapat membawa SKU
 // FIXED yang sudah terpilih lalu mengirim nominal sebagai qty.
 const custom=[]
-const isVariableProduct=product=>Boolean(product&&(Number(product.price)<=0||String(product.status||'').startsWith('OPEN_AMOUNT')))
+const isOpenProduct=product=>Boolean(product&&String(product.status||'').startsWith('OPEN_AMOUNT'))
+const isVariableProduct=product=>Boolean(isOpenProduct(product)&&Number(product.nominal||0)<=0)
 const phoneServices=['pulsa','data','ewallet','pascabayar']
 const textInputServices=['game','voucher','streaming','esim','parking','qris']
 const inputMeta={
@@ -94,7 +95,9 @@ export default function ServicePurchasePage(){
  useEffect(()=>{setProviderQuery('');setProviderLimit(18)},[type])
  useEffect(()=>{if(!providerEffectReady.current){providerEffectReady.current=true;return}setProductQuery('');setProductLimit(40);setCatalogGroup('')},[provider])
  const selectedVariable=isVariableProduct(selected)
- const amount=type==='pln'&&plnMode==='bill'?plnBill?.total||0:(mode==='custom'||selectedVariable)?Number(freeAmount):selected?.price||0
+ const selectedOpen=isOpenProduct(selected)
+ const transactionNominal=selectedVariable?Number(freeAmount):selectedOpen?Number(selected?.nominal||0):Number(selected?.nominal||0)
+ const amount=type==='pln'&&plnMode==='bill'?plnBill?.total||0:selectedOpen?transactionNominal+Number(selected?.price||0):selected?.price||0
  const [inputPrefix,inputPlaceholder,inputMode]=inputMeta[type]||[phoneServices.includes(type)?'+62':'Akun',config.placeholder,textInputServices.includes(type)?'text':'numeric']
  const providerIndex=Math.max(0,availableProviders.indexOf(provider))
  const changeTarget=value=>{setTarget(value);setContactHint('');closeCatalog();setSelected(null);setPlnBill(null);if(automatic.includes(type))setProvider(detectOperator(value)?.name||'')}
@@ -121,7 +124,7 @@ export default function ServicePurchasePage(){
    setPlnBill({...result,data:result.data||{},total:Number(result.amount||0),sku:plnProduct.sku,idpel:target})
   } catch(error) { setBillError(error.message) } finally { setCheckingBill(false) }
  }
- const checkout=()=>{const checkoutSKU=type==='pln'&&plnMode==='bill'?plnBill?.sku:selected?.sku;if(!checkoutSKU||amount<1){show('Produk belum tersedia pada katalog aktif H2HR. Pilih produk lain.');return}const backgroundLocation={...location,state:{...location.state,catalog:true,purchase:purchaseSnapshot()}};navigate('/app/checkout',{state:{backgroundLocation,order:{type,title:type==='pln'&&plnMode==='bill'?'Bayar Tagihan PLN':config.title,target,provider:type==='pln'&&plnMode==='bill'?'PLN Pascabayar':provider,product:type==='pln'&&plnMode==='bill'?`Tagihan PLN ${plnBill?.idpel}`:selected?.name||((mode==='custom'||selectedVariable)?`${config.title} ${rupiah(amount)}`:config.title),amount:selectedVariable?amount+Number(selected?.price||0):amount,nominal:type==='pln'&&plnMode==='bill'?amount:((mode==='custom'||selectedVariable)?amount:(selected?.nominal||amount)),providerFee:selectedVariable?Number(selected?.price||0):0,sku:type==='pln'&&plnMode==='bill'?plnBill?.sku:selected?.sku,qty:type==='pln'&&plnMode==='bill'?amount:((mode==='custom'||selectedVariable)?amount:1),detail:type==='pln'&&plnMode==='bill'?plnBill:null}}})}
+ const checkout=()=>{const checkoutSKU=type==='pln'&&plnMode==='bill'?plnBill?.sku:selected?.sku;if(!checkoutSKU||amount<1){show('Produk belum tersedia pada katalog aktif H2HR. Pilih produk lain.');return}const backgroundLocation={...location,state:{...location.state,catalog:true,purchase:purchaseSnapshot()}};navigate('/app/checkout',{state:{backgroundLocation,order:{type,title:type==='pln'&&plnMode==='bill'?'Bayar Tagihan PLN':config.title,target,provider:type==='pln'&&plnMode==='bill'?'PLN Pascabayar':provider,product:type==='pln'&&plnMode==='bill'?`Tagihan PLN ${plnBill?.idpel}`:selected?.name||config.title,amount,nominal:type==='pln'&&plnMode==='bill'?amount:transactionNominal,providerFee:selectedOpen?Number(selected?.price||0):0,sku:type==='pln'&&plnMode==='bill'?plnBill?.sku:selected?.sku,qty:type==='pln'&&plnMode==='bill'?amount:(selectedOpen?transactionNominal:1),detail:type==='pln'&&plnMode==='bill'?plnBill:null}}})}
  if(catalog)return <main className={`mobile-app product-catalog-page service-${type} catalog-provider-${providerIndex}`}>
   <header className="catalog-page-head"><button onClick={closeCatalog}><ArrowLeft/></button><div><strong>Produk {provider}</strong><small>{config.title} · {products.length} pilihan tersedia</small></div></header>
   <section className="catalog-provider-hero"><div><span>PROVIDER TERPILIH</span><h1>{provider}</h1><p>Pilih produk atau nominal yang paling sesuai dengan kebutuhanmu.</p></div><ProviderLogo name={provider} className="catalog-provider-logo" priority/></section>

@@ -70,3 +70,17 @@ func TestLiveProductRequiresExactActiveSKU(t *testing.T) {
 		t.Fatalf("SKU aktif exact tidak ditemukan: product=%#v found=%v err=%v", product, found, err)
 	}
 }
+
+func TestNamedNominalP24(t *testing.T) {
+	tests := map[string]int64{
+		"SALDO DANA 10.000":             10000,
+		"ASTRAPAY 100.000 (ADMIN 1500)": 100000,
+		"Dana Bebas Nominal":            0,
+		"002 BRI":                       0,
+	}
+	for name, want := range tests {
+		if got := namedNominalP24(name); got != want {
+			t.Fatalf("namedNominalP24(%q)=%d, ingin %d", name, got, want)
+		}
+	}
+}

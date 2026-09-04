@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"kuotakita/backend/internal/domain"
+	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -137,7 +139,11 @@ func (s *ProductService) liveProducts() ([]domain.Product, error) {
 		price := firstIntValP24(row, "harga", "price", "fee_tambahan")
 		nominal := price
 		if strings.Contains(priceType, "OPEN") {
-			nominal = 0
+			// A number of wallet routes are marked OPEN_AMOUNT even though the
+			// product name fixes the denomination (for example DANA 10.000).
+			// Preserve that denomination so the UI cannot send DANA10 with qty
+			// 100000. Truly free-amount products keep nominal zero.
+			nominal = namedNominalP24(name)
 			if fee := firstIntValP24(row, "fee_tambahan", "fee"); fee > 0 {
 				price = fee
 			}
@@ -151,6 +157,18 @@ func (s *ProductService) liveProducts() ([]domain.Product, error) {
 	s.live, s.liveLoaded = append([]domain.Product(nil), products...), time.Now()
 	s.mu.Unlock()
 	return products, nil
+}
+
+var dottedNominalP24 = regexp.MustCompile(`(?:^|\D)(\d{1,3}(?:[.,]\d{3})+)(?:\D|$)`)
+
+func namedNominalP24(name string) int64 {
+	match := dottedNominalP24.FindStringSubmatch(name)
+	if len(match) != 2 {
+		return 0
+	}
+	value := strings.NewReplacer(".", "", ",", "").Replace(match[1])
+	nominal, _ := strconv.ParseInt(value, 10, 64)
+	return nominal
 }
 
 func classifyH2HRService(category, group, brand, name string) string {
