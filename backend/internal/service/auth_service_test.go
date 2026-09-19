@@ -1,11 +1,37 @@
 package service
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"os"
 	"path/filepath"
 	"testing"
 
 	"kuotakita/backend/internal/domain"
 )
+
+func TestLegacyPasswordLoginUpgradesHash(t *testing.T) {
+	dataFile := filepath.Join(t.TempDir(), "accounts.json")
+	salt := []byte("legacy-kuotakita")
+	sum := sha256.Sum256(append(salt, []byte("rahasia-lama")...))
+	legacyHash := hex.EncodeToString(salt) + ":" + hex.EncodeToString(sum[:])
+	payload := accountFile{Users: []storedUser{{User: domain.User{ID: "usr_legacy", Username: "agent-lama", Name: "Agent Lama", Role: "agent"}, PasswordHash: legacyHash}}}
+	raw, _ := json.Marshal(payload)
+	if err := os.WriteFile(dataFile, raw, 0600); err != nil {
+		t.Fatal(err)
+	}
+	service := NewPersistentAuthService("test-secret", dataFile, nil)
+	if _, err := service.Login("agent-lama", "rahasia-lama"); err != nil {
+		t.Fatalf("login hash lama gagal: %v", err)
+	}
+	var saved accountFile
+	updated, _ := os.ReadFile(dataFile)
+	_ = json.Unmarshal(updated, &saved)
+	if len(saved.Users) != 1 || len(saved.Users[0].PasswordHash) < 2 || saved.Users[0].PasswordHash[:2] != "$2" {
+		t.Fatal("hash lama tidak dinaikkan ke bcrypt")
+	}
+}
 
 func TestLoginRoles(t *testing.T) {
 	service := newAuthService("test-secret", "", nil, []AccountSeed{

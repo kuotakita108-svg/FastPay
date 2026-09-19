@@ -9,6 +9,22 @@ import (
 	"testing"
 )
 
+func TestClassifyH2HRServicePrefersProviderCategory(t *testing.T) {
+	tests := []struct {
+		category, group, brand, name, want string
+	}{
+		{"Paket Data", "PPOB", "Telkomsel", "30 GB GAMESMAX", "data"},
+		{"TV & Streaming", "PULSA", "Nex Parabola", "NEX DIAMOND 30 HARI", "tv"},
+		{"TV & Streaming", "PULSA", "Transvision", "NUSA DIAMOND 30 HARI", "tv"},
+		{"Voucher Game", "PULSA", "PUBG MOBILE", "PUBG 60 UC", "game"},
+	}
+	for _, test := range tests {
+		if got := classifyH2HRService(test.category, test.group, test.brand, test.name); got != test.want {
+			t.Errorf("%s/%s classified as %s, want %s", test.brand, test.name, got, test.want)
+		}
+	}
+}
+
 type productReaderStub struct{ products []domain.Product }
 
 func (s productReaderStub) FindProducts() []domain.Product { return s.products }

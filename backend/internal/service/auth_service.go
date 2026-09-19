@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -144,8 +145,21 @@ func (s *AuthService) Login(identity, password string) (domain.AuthResult, error
 		}
 	}
 	s.mu.RUnlock()
-	if account.ID == "" || account.PasswordHash == "" || bcrypt.CompareHashAndPassword([]byte(account.PasswordHash), []byte(password)) != nil {
+	if account.ID == "" || account.PasswordHash == "" || !verifyPassword(account.PasswordHash, password) {
 		return domain.AuthResult{}, errors.New("username atau password salah")
+	}
+	// Upgrade the salted SHA-256 hashes imported from the previous KuotaKita
+	// service after the first successful login. Existing passwords keep working,
+	// while all future checks use bcrypt.
+	if !strings.HasPrefix(account.PasswordHash, "$2") {
+		if upgraded, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost); err == nil {
+			s.mu.Lock()
+			stored := s.users[account.Username]
+			stored.PasswordHash = string(upgraded)
+			s.users[account.Username] = stored
+			_ = s.saveLocked()
+			s.mu.Unlock()
+		}
 	}
 	if account.AccessStatus == "suspended" {
 		message := "akses akun sedang dinonaktifkan"
@@ -155,6 +169,22 @@ func (s *AuthService) Login(identity, password string) (domain.AuthResult, error
 		return domain.AuthResult{}, errors.New(message)
 	}
 	return s.result(withH2HDirect(account.User)), nil
+}
+
+func verifyPassword(encoded, password string) bool {
+	if strings.HasPrefix(encoded, "$2") {
+		return bcrypt.CompareHashAndPassword([]byte(encoded), []byte(password)) == nil
+	}
+	parts := strings.Split(encoded, ":")
+	if len(parts) != 2 {
+		return false
+	}
+	salt, err := hex.DecodeString(parts[0])
+	if err != nil {
+		return false
+	}
+	sum := sha256.Sum256(append(salt, []byte(password)...))
+	return hmac.Equal([]byte(parts[1]), []byte(hex.EncodeToString(sum[:])))
 }
 
 func (s *AuthService) Register(in domain.RegisterInput) (domain.AuthResult, error) {

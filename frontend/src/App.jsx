@@ -2,6 +2,8 @@ import {lazy,Suspense,useEffect} from 'react'
 import {Navigate,Route,Routes,useLocation} from 'react-router-dom'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
+import AppLayout from './components/layout/AppLayout'
+import DashboardPage from './pages/DashboardPage'
 
 const loadUserHome=()=>import('./pages/UserHomePage')
 const loadHistory=()=>import('./pages/HistoryPage')
@@ -11,12 +13,10 @@ const loadCreditApplications=()=>import('./pages/CreditApplicationsPage')
 const loadMarketingApp=()=>import('./pages/MarketingAppPage')
 const loadServicePurchase=()=>import('./pages/ServicePurchasePage')
 const loadAllServices=()=>import('./pages/AllServicesPage')
-const loadAppLayout=()=>import('./components/layout/AppLayout')
 const loadCheckout=()=>import('./pages/CheckoutPage')
 const loadBalance=()=>import('./pages/BalancePage')
 const loadWalletTopUp=()=>import('./pages/WalletTopUpPage')
 const loadTransfer=()=>import('./pages/TransferPage')
-const loadDashboard=()=>import('./pages/DashboardPage')
 const loadTopUp=()=>import('./pages/TopUpPage')
 const loadProducts=()=>import('./pages/ProductsPage')
 const loadTransactions=()=>import('./pages/TransactionsPage')
@@ -40,14 +40,12 @@ const ProfilePage=lazy(loadProfile)
 const AgentCreditPage=lazy(loadAgentCredit)
 const CreditApplicationsPage=lazy(loadCreditApplications)
 const MarketingAppPage=lazy(loadMarketingApp)
-const AppLayout=lazy(loadAppLayout)
 const ServicePurchasePage=lazy(loadServicePurchase)
 const CheckoutPage=lazy(loadCheckout)
 const AllServicesPage=lazy(loadAllServices)
 const BalancePage=lazy(loadBalance)
 const WalletTopUpPage=lazy(loadWalletTopUp)
 const TransferPage=lazy(loadTransfer)
-const DashboardPage=lazy(loadDashboard)
 const TopUpPage=lazy(loadTopUp)
 const ProductsPage=lazy(loadProducts)
 const TransactionsPage=lazy(loadTransactions)
@@ -82,7 +80,7 @@ export default function App(){
   const warmRoutes=()=>{
    if(location.pathname.startsWith('/app'))[loadUserHome,loadHistory,loadProfile,loadAgentCredit,loadAllServices,loadServicePurchase].forEach(load=>load())
    if(location.pathname.startsWith('/marketing'))[loadMarketingApp,loadCreditApplications].forEach(load=>load())
-   if(!location.pathname.startsWith('/app') && !location.pathname.startsWith('/marketing') && location.pathname !== '/login') [loadAppLayout,loadCreditApplications,loadDashboard,loadProducts,loadTransactions,loadCustomers,loadAnalytics,loadPaymentMethods,loadInvoices,loadSettings].forEach(load=>load())
+   if(!location.pathname.startsWith('/app') && !location.pathname.startsWith('/marketing') && location.pathname !== '/login') [loadCreditApplications,loadProducts,loadTransactions,loadCustomers,loadAnalytics,loadPaymentMethods,loadInvoices,loadSettings].forEach(load=>load())
   }
   if('requestIdleCallback' in window){const id=window.requestIdleCallback(warmRoutes,{timeout:1800});return()=>window.cancelIdleCallback(id)}
   const timer=window.setTimeout(warmRoutes,700);return()=>window.clearTimeout(timer)

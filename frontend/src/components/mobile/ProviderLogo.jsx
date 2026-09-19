@@ -64,9 +64,10 @@ import jneOfficial from '../../assets/providers/official/auto/jne-official.svg'
 import anterajaOfficial from '../../assets/providers/official/auto/anteraja-official.png'
 import { BadgeCheck, Banknote, BookOpenCheck, Building2, Bus, Car, CircleParking, Clapperboard, CreditCard, Cross, Droplets, Earth, Flame, Gamepad2, GraduationCap, HandHeart, HeartPulse, Landmark, MapPin, MonitorPlay, Plane, QrCode, Radio, ReceiptText, ShieldCheck, Smartphone, Store, TrainFront, Truck, Wallet, Wifi, Zap } from 'lucide-react'
 
-const imageLogos={BCA:bca,'Bank BCA':bca,BRI:bri,'Bank BRI':bri,BNI:bni,'Bank BNI':bni,Mandiri:mandiri,'Bank Mandiri':mandiri,'CIMB Niaga':cimb,'Bank Syariah Indonesia':bsi,'Syariah Indonesia':bsi,BSI:bsi,Danamon:danamon,'Bank Danamon':danamon,PermataBank:permatabank,'Bank Permata':permatabank,Permata:permatabank,SeaBank:seabank,'Sea Bank':seabank,'Bank Jago':jago,Jago:jago,AstraPay:astrapay,'i.saku':isaku,Grab:grab,KasPro:kaspro,Maxim:maxim,Sakuku:sakuku,'FIF Group':fif,Spotify:spotify,Vidio:vidio,Telkomsel:telkomsel,'by.U':byu,byU:byu,Smartfren:smartfren,BRIZZI:bri,'BNI TapCash':bni,'BCA Flazz':bca,'Mandiri e-Money':mandiri,'Internet Pascabayar':indihome,Indosat:indosat,XL:xl,Tri:tri,AXIS:axis,DANA:dana,GoPay:gopay,OVO:ovo,ShopeePay:shopeepay,LinkAja:linkaja,'Free Fire':freefire,'Mobile Legends':mobilelegendsPremium,Roblox:robloxPremium,Valorant:valorantPremium,'Valorant Points':valorantPremium,'Genshin Impact':genshinPremium,'Genshin Impact Genesis Crystals':genshinPremium,'Steam Wallet ID':steamPremium,'Arena of Valor Voucher':aovPremium,Minecraft:minecraft,'Magic Chess: Go Go':magicChessGoGo,'FC Mobile':fcMobile,'League of Legends: Wild Rift':wildRift,'Call of Duty Mobile':callOfDutyMobile,'Honkai Impact 3':honkaiImpact3,'Honor of Kings':honorOfKings,'BPJS Kesehatan':bpjs,Biznet:biznet,Prudential:prudential,Allianz:allianz,Manulife:manulife,MyRepublic:myrepublic,CBN:cbn,IndiHome:indihome,'MNC Vision':mncvisionOfficial,'K-Vision':kvisionBrand,'Nex Parabola':nexParabolaBrand,Transvision:transvisionBrand,'JNE':jneOfficial,AnterAja:anterajaOfficial,'Google Play':googleplay,'Apple Gift Card':apple,Pesawat:garuda,Sekolah:kemendikbud,Universitas:kemendikbud,Bimbel:kemendikbud,'PBB Kota/Kabupaten':pajak,'DJP Online':pajak}
+const imageLogos={BCA:bca,'Bank BCA':bca,BRI:bri,'Bank BRI':bri,BNI:bni,'Bank BNI':bni,Mandiri:mandiri,'Bank Mandiri':mandiri,'CIMB Niaga':cimb,'Bank Syariah Indonesia':bsi,'Syariah Indonesia':bsi,BSI:bsi,Danamon:danamon,'Bank Danamon':danamon,PermataBank:permatabank,'Bank Permata':permatabank,Permata:permatabank,SeaBank:seabank,'Sea Bank':seabank,'Bank Jago':jago,Jago:jago,AstraPay:astrapay,'i.saku':isaku,Grab:grab,KasPro:kaspro,Maxim:maxim,Sakuku:sakuku,'FIF Group':fif,Spotify:spotify,Vidio:vidio,Telkomsel:telkomsel,'by.U':byu,byU:byu,Smartfren:smartfren,BRIZZI:bri,'BNI TapCash':bni,'BCA Flazz':bca,'Mandiri e-Money':mandiri,'Internet Pascabayar':indihome,Indosat:indosat,XL:xl,Tri:tri,Axis:axis,AXIS:axis,DANA:dana,GoPay:gopay,OVO:ovo,ShopeePay:shopeepay,'Shopee Food Driver':shopeepay,LinkAja:linkaja,'Free Fire':freefire,'Mobile Legend':mobilelegendsPremium,'Mobile Legends':mobilelegendsPremium,Roblox:robloxPremium,Valorant:valorantPremium,'Valorant Points':valorantPremium,'Genshin Impact':genshinPremium,'Genshin Impact Genesis Crystals':genshinPremium,'Steam Wallet ID':steamPremium,'Arena of Valor':aovPremium,'Arena of Valor Voucher':aovPremium,Minecraft:minecraft,'Magic Chess: Go Go':magicChessGoGo,'FC Mobile':fcMobile,'League of Legends: Wild Rift':wildRift,'Call of Duty Mobile':callOfDutyMobile,'Honkai Impact 3':honkaiImpact3,'Honor of King':honorOfKings,'Honor of Kings':honorOfKings,'BPJS Kesehatan':bpjs,Biznet:biznet,Prudential:prudential,Allianz:allianz,Manulife:manulife,MyRepublic:myrepublic,CBN:cbn,IndiHome:indihome,'MNC Vision':mncvisionOfficial,'K-Vision':kvisionBrand,'Nex Parabola':nexParabolaBrand,Transvision:transvisionBrand,'JNE':jneOfficial,AnterAja:anterajaOfficial,'Google Play':googleplay,'Apple Gift Card':apple,Pesawat:garuda,Sekolah:kemendikbud,Universitas:kemendikbud,Bimbel:kemendikbud,'PBB Kota/Kabupaten':pajak,'DJP Online':pajak}
 
 const svgLogos={
+	MotionPay:{type:'motionpay'},
   'Mobile Legends':{type:'mlbb'},'Free Fire':{type:'freefire'},'PUBG Mobile':{type:'pubg'},'Point Blank':{type:'pointblank'},Roblox:{type:'roblox'},'Genshin Impact':{type:'genshin'},'Genshin Impact Genesis Crystals':{type:'genshin'},Valorant:{type:'valorant'},'Valorant Points':{type:'valorant'},'Steam Wallet ID':{type:'steam'},'Arena of Valor Voucher':{type:'aov'},
   Netflix:{type:'netflix'},'YouTube Premium':{type:'youtube'},'Disney+ Hotstar':{type:'disney'},
   PLN:{type:'pln'},PGN:{type:'gas'},PDAM:{type:'water'},Telkom:{type:'telkom'},
@@ -84,11 +85,13 @@ const normalize=name=>String(name||'').replace(/ Card$/,'')
 const slug=name=>String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-')
 const findLogoMatch=(name,source)=>Object.entries(source)
   .sort(([left],[right])=>right.length-left.length)
-  .find(([key])=>name===key||name.startsWith(`${key} `)||name.startsWith(`${key} -`))
+  .find(([key])=>{const value=name.toLocaleLowerCase('id-ID'),candidate=key.toLocaleLowerCase('id-ID');return value===candidate||value.startsWith(`${candidate} `)||value.startsWith(`${candidate} -`)})
 // Aset provider tambahan disimpan per nama provider. Dengan ini provider baru
 // tetap memakai logo brand asli tanpa perlu kembali ke ikon placeholder.
 const automaticLogos=import.meta.glob([
   '../../assets/providers/official/auto/*.png',
+  '../../assets/providers/official/auto/*.jpg',
+  '../../assets/providers/official/auto/*.jpeg',
   '../../assets/providers/official/auto/*.svg',
   '../../assets/providers/official/auto/*.webp',
 ],{eager:true,query:'?url',import:'default'})
@@ -152,6 +155,11 @@ const automaticAliases={
   'Pos Indonesia':'pos-indonesia','Canva Pro':'canva-pro','Apple Gift Card':'apple',
   'YouTube Premium':'youtube','Disney+ Hotstar':'disney-hotstar',
   'Telkomsel Halo':'telkomsel','Indosat Postpaid':'indosat','XL Prioritas':'xl',
+  'DELTA FORCE - STEAM':'delta-force-garena',
+  'POINT BLANK - CASH':'point-blank',
+  'NARUTO SHIPPUDEN':'naruto-shippuden-mobile',
+  'PUBG NEW STATE MOBILE':'new-state-mobile',
+  'CRYSTAL OF ALTLAN':'crystal-of-atlan',
 }
 const findAutomaticLogo=name=>{
   const key=automaticAliases[name]||slug(name)
@@ -195,6 +203,7 @@ function ProviderSymbol({name}){
 }
 
 function ProviderSvgLogo({spec}){
+	if(spec.type==='motionpay')return <svg className="provider-svg-logo" viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="29" fill="#6432a8"/><path d="M22 48V31c0-5 4-9 9-9h7l7 12 7-12h3c5 0 9 4 9 9v17c0 6-5 10-10 10H32c-6 0-10-4-10-10z" fill="#fff"/><path d="M31 31v18M55 31v18M38 34l7 11 7-11" fill="none" stroke="#6432a8" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/></svg>
   if(spec.type==='freefire')return <svg className="provider-svg-logo provider-svg-freefire provider-svg-game-banner" viewBox="0 0 420 108" aria-hidden="true"><defs><linearGradient id="ffKnife" x1="0" x2="0" y1="0" y2="1"><stop stopColor="#ffd45a"/><stop offset=".5" stopColor="#ff9f05"/><stop offset="1" stopColor="#e86800"/></linearGradient></defs><rect width="420" height="108" rx="5" fill="#020202"/><g fontFamily="Impact, Haettenschweiler, 'Arial Black', sans-serif" fontSize="64" fontWeight="900" letterSpacing="1"><text x="26" y="72" fill="#f8fafc">FREE</text><text x="238" y="72" fill="#f8fafc">FIRE</text></g><path d="M219 18c11 11 9 25 2 39l-8 18 16-8-5 27-25-1 8-31c-10 3-17 6-25 12 8-22 20-40 37-56z" fill="url(#ffKnife)"/><path d="M217 29c4 8 1 15-3 23l-4 11 8-5-2 12-9 1 4-18c-5 2-9 4-13 7 5-13 11-23 19-31z" fill="#fff4b0" opacity=".35"/></svg>
   if(spec.type==='pubg')return <svg className="provider-svg-logo provider-svg-game provider-svg-game-banner" viewBox="0 0 160 90" aria-hidden="true"><defs><linearGradient id="pubgGameBg" x1="0" y1="0" x2="160" y2="90"><stop stopColor="#050505"/><stop offset=".55" stopColor="#17120a"/><stop offset="1" stopColor="#070707"/></linearGradient></defs><rect width="160" height="90" rx="14" fill="url(#pubgGameBg)"/><rect x="24" y="12" width="112" height="66" rx="9" fill="none" stroke="#f2b233" strokeWidth="5"/><path d="M66 21h28c5 0 8 3 8 8v7H58v-7c0-5 3-8 8-8z" fill="#fff"/><path d="M59 36h43v8c0 11-8 19-21 19h-1c-13 0-21-8-21-19z" fill="#f8fafc"/><path d="M46 78c4-17 16-25 34-25s30 8 34 25z" fill="#f8fafc"/><path d="M47 24v44M113 24v44" stroke="#fff" strokeWidth="6" strokeLinecap="round"/></svg>
   if(spec.type==='mlbb')return <svg className="provider-svg-logo provider-svg-game provider-svg-game-banner" viewBox="0 0 160 90" aria-hidden="true"><defs><linearGradient id="mlGameBg" x1="9" y1="8" x2="151" y2="82"><stop stopColor="#06152f"/><stop offset=".52" stopColor="#0f1b3f"/><stop offset="1" stopColor="#020617"/></linearGradient><linearGradient id="mlGold" x1="42" y1="8" x2="118" y2="82"><stop stopColor="#fff4a3"/><stop offset=".48" stopColor="#f5b82e"/><stop offset="1" stopColor="#9b5b08"/></linearGradient></defs><rect width="160" height="90" rx="14" fill="url(#mlGameBg)"/><path d="M80 8l42 18-8 42-34 14-34-14-8-42z" fill="url(#mlGold)"/><path d="M51 28l19 30 10-35 10 35 19-30-9 39H60z" fill="#111827" opacity=".78"/><path d="M48 69h64" stroke="#fff0ad" strokeWidth="5" strokeLinecap="round"/></svg>

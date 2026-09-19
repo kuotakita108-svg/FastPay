@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react'
 import {useNavigate, useSearchParams} from 'react-router-dom'
 import {ArrowRight, CheckCircle2, Eye, EyeOff, LockKeyhole, Mail, Phone, ShieldCheck, Sparkles, UserRound} from 'lucide-react'
 import {useAuth} from '../context/AuthContext'
-import {googleLogin, resetPassword as resetPasswordRequest} from '../services/authService'
+import {resetPassword as resetPasswordRequest} from '../services/authService'
 import KuotaKitaLogo from '../components/common/KuotaKitaLogo'
 import loginHero from '../assets/images/kuotakita-ppob-hero-v4.webp'
 
@@ -25,7 +25,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
-  const {login, register} = useAuth()
+  const {login, googleLogin, register} = useAuth()
   const navigate = useNavigate()
   const [params] = useSearchParams()
 
@@ -62,6 +62,19 @@ export default function LoginPage() {
       setLoading(false)
     }
   }
+  const submitGoogle = async () => {
+    setLoading(true)
+    setError('')
+    setNotice('')
+    try {
+      const result=await googleLogin()
+      navigate(['user','agent','marketing'].includes(result.user.role)?'/app':['master','operator','analis'].includes(result.user.role)?'/credit-applications':'/dashboard',{replace:true})
+    } catch(current) {
+      setError(current.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const props = {form, onChange: change}
   const title = mode === 'login' ? 'Selamat datang kembali' : mode === 'register' ? 'Mulai bersama KuotaKita' : 'Reset kata sandi akun'
@@ -91,7 +104,7 @@ export default function LoginPage() {
           <button type="button" className={mode === 'login' ? 'active' : ''} onClick={() => switchMode('login')}>Masuk</button>
           <button type="button" className={mode === 'register' ? 'active' : ''} onClick={() => switchMode('register')}>Daftar</button>
         </div>
-        {mode !== 'reset' && <button type="button" className="auth-google" onClick={googleLogin}><GoogleMark/><span>{mode === 'login' ? 'Masuk dengan Google' : 'Daftar dengan Google'}</span><ArrowRight/></button>}
+        {mode !== 'reset' && <button type="button" className="auth-google" onClick={submitGoogle} disabled={loading}><GoogleMark/><span>{mode === 'login' ? 'Masuk dengan Google' : 'Daftar dengan Google'}</span><ArrowRight/></button>}
         <div className="auth-divider"><span/>{mode === 'reset' ? 'buat kata sandi baru' : `atau gunakan ${mode === 'login' ? 'akun KuotaKita' : 'data diri tanpa Google'}`}<span/></div>
         <form onSubmit={submit}>
           {mode === 'register' && <>

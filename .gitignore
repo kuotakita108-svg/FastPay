@@ -10,6 +10,8 @@ node_modules/
 dist/
 **/dist/
 .cache/
+__pycache__/
+*.py[cod]
 .tmp-go-cache/
 .tmp/
 

@@ -19,9 +19,9 @@ async function fetchJSON(url,fetchOptions,token,timeoutMs){
     const data=await response.json().catch(()=>null)
     if(!response.ok){
       if(response.status===413)throw new Error('Berkas yang dikirim terlalu besar. Pilih foto yang lebih kecil lalu coba lagi.')
-      throw new Error(data?.error||`Server tidak dapat memproses permintaan (${response.status})`)
+      throw new Error(data?.error||data?.message||`Server tidak dapat memproses permintaan (${response.status})`)
     }
-    return data
+    return data?.success===true&&Object.prototype.hasOwnProperty.call(data,'data')?data.data:data
   }finally{clearTimeout(timer)}
 }
 

@@ -72,7 +72,8 @@ export default function Sidebar({open, onClose}) {
   const navigate = useNavigate()
   const location = useLocation()
   const signOut = () => { logout(); navigate('/login') }
-  const role = user.role
+  const role = String(user?.role || 'user').toLowerCase()
+  const displayName = user?.name || user?.full_name || user?.fullName || user?.username || user?.email || 'Pengguna KuotaKita'
   const isMarketing = role === 'marketing'
   // "analis" remains supported for existing accounts. New accounts use the
   // clearer Operator role but both open the same controlled panel.
@@ -116,7 +117,7 @@ export default function Sidebar({open, onClose}) {
     </div>})}</nav>
     <div className="sidebar-bottom">
       <div className="help-card"><CircleHelp/><strong>Pusat Bantuan</strong><small>Tim KuotaKita siap membantu 24/7</small><button>Hubungi Support</button></div>
-      <div className="user-card"><span className="avatar coral">{initials(user.name)}</span><div><strong>{user.name}</strong><small>{roleLabel}</small></div><button onClick={signOut} title="Keluar"><LogOut size={16}/></button></div>
+      <div className="user-card"><span className="avatar coral">{initials(displayName)}</span><div><strong>{displayName}</strong><small>{roleLabel}</small></div><button onClick={signOut} title="Keluar"><LogOut size={16}/></button></div>
     </div>
   </aside>
 }

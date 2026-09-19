@@ -244,6 +244,21 @@ func namedNominalP24(name string) int64 {
 }
 
 func classifyH2HRService(category, group, brand, name string) string {
+	categoryValue := strings.ToLower(strings.TrimSpace(category))
+	brandValue := strings.ToLower(strings.TrimSpace(brand))
+	// Trust Pulsa24Jam's explicit category before keywords in a product name.
+	// Otherwise GAMESMAX data packages and TV packages named "DIAMOND" are
+	// incorrectly exposed as game vouchers.
+	if strings.Contains(categoryValue, "paket data") {
+		return "data"
+	}
+	if strings.Contains(categoryValue, "tv") && strings.Contains(categoryValue, "streaming") {
+		for _, tvBrand := range []string{"k-vision", "kvision", "nex parabola", "transvision", "mnc vision"} {
+			if strings.Contains(brandValue, tvBrand) {
+				return "tv"
+			}
+		}
+	}
 	value := strings.ToLower(strings.Join([]string{category, group, brand, name}, " "))
 	rules := []struct {
 		service string

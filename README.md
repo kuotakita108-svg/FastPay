@@ -374,7 +374,7 @@ docker compose exec backend sh -lc 'test -n "$P24_API_KEY" && test -n "$P24_PIN"
 ```
 
 ```bash
-docker compose exec backend sh -lc 'wget -qO- --header="Content-Type: application/json" --header="X-Api-Key: $P24_API_KEY" --post-data="{\"commands\":\"SALDO\",\"pin\":\"$P24_PIN\"}" "$P24_BASE_URL/v1/trx"'
+docker compose exec backend sh -lc 'wget -qO- --header="Content-Type: application/json" --header="X-Api-Key: $P24_API_KEY" --post-data="{\"commands\":\"SALDO\",\"pin\":\"$P24_PIN\"}" "${P24_BASE_URL%/}/v2/trx"'
 ```
 
 ## Troubleshooting

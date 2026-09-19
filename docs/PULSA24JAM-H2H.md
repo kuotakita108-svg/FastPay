@@ -45,7 +45,7 @@ KuotaKita mengirim semua transaksi H2H dari backend. Browser atau aplikasi agen 
 
 1. Agen memilih SKU produk H2H dan memasukkan tujuan.
 2. Backend membuat `refid` unik (`KKT-...`) dan menyimpan order sebagai `pending`.
-3. Backend mengirim `PAY` ke `https://api.pulsa24jam.net/v1/trx` memakai header `X-Api-Key` dan PIN server.
+3. Backend mengirim `PAY` ke endpoint H2HR `https://api.pulsa24jam.net/v2/trx` memakai header `X-Api-Key` dan PIN server.
 4. Jika respons masih pending, saldo tidak dianggap sukses oleh aplikasi. Status akhir menunggu callback P24 atau pengecekan `STATUS-PAY` dari backend.
 5. Callback masuk ke `/api/v1/webhooks/pulsa24jam`; backend tetap memverifikasi `STATUS-PAY` ke P24 sebelum menetapkan sukses/gagal agar callback palsu tidak dapat mengubah transaksi.
 6. Jika final gagal, saldo yang sebelumnya dicadangkan dikembalikan satu kali.
