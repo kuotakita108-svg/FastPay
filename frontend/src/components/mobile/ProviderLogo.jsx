@@ -67,6 +67,20 @@ import { BadgeCheck, Banknote, BookOpenCheck, Building2, Bus, Car, CircleParking
 
 const imageLogos={BCA:bca,'Bank BCA':bca,BRI:bri,'Bank BRI':bri,BNI:bni,'Bank BNI':bni,Mandiri:mandiri,'Bank Mandiri':mandiri,'CIMB Niaga':cimb,'Bank Syariah Indonesia':bsi,'Syariah Indonesia':bsi,BSI:bsi,Danamon:danamon,'Bank Danamon':danamon,PermataBank:permatabank,'Bank Permata':permatabank,Permata:permatabank,SeaBank:seabank,'Sea Bank':seabank,'Bank Jago':jago,Jago:jago,AstraPay:astrapay,'i.saku':isaku,Grab:grab,KasPro:kaspro,Maxim:maxim,Sakuku:sakuku,'FIF Group':fif,Spotify:spotify,Vidio:vidio,Telkomsel:telkomsel,'by.U':byu,byU:byu,Smartfren:smartfren,BRIZZI:bri,'BNI TapCash':bni,'BCA Flazz':bca,'Mandiri e-Money':mandiri,'Internet Pascabayar':indihome,Indosat:indosat,XL:xl,Tri:tri,Axis:axis,AXIS:axis,DANA:dana,GoPay:gopay,OVO:ovo,ShopeePay:shopeepay,'Shopee Food Driver':shopeepay,LinkAja:linkaja,'Free Fire':freefire,'Mobile Legend':mobilelegendsPremium,'Mobile Legends':mobilelegendsPremium,Roblox:robloxPremium,Valorant:valorantPremium,'Valorant Points':valorantPremium,'Genshin Impact':genshinPremium,'Genshin Impact Genesis Crystals':genshinPremium,'Steam Wallet ID':steamPremium,'Arena of Valor':aovPremium,'Arena of Valor Voucher':aovPremium,Minecraft:minecraft,'Magic Chess: Go Go':magicChessGoGo,'FC Mobile':fcMobile,'League of Legends: Wild Rift':wildRift,'Call of Duty Mobile':callOfDutyMobile,'Honkai Impact 3':honkaiImpact3,'Honor of King':honorOfKings,'Honor of Kings':honorOfKings,'BPJS Kesehatan':bpjs,Biznet:biznet,Prudential:prudential,Allianz:allianz,Manulife:manulife,MyRepublic:myrepublic,CBN:cbn,IndiHome:indihome,'MNC Vision':mncvisionOfficial,'K-Vision':kvisionBrand,'Nex Parabola':nexParabolaBrand,Transvision:transvisionBrand,'JNE':jneOfficial,AnterAja:anterajaOfficial,'Google Play':googleplay,'Apple Gift Card':apple,Pesawat:garuda,Sekolah:kemendikbud,Universitas:kemendikbud,Bimbel:kemendikbud,'PBB Kota/Kabupaten':pajak,'DJP Online':pajak}
 
+// Wordmark resolusi tinggi untuk bank yang aset katalog lamanya hanya favicon
+// kecil. Sumber Wikimedia mempertahankan bentuk logo, sedangkan Sumsel Babel
+// dilayani langsung dari situs resmi bank.
+const highResolutionBankLogos={
+  Maybank:'https://upload.wikimedia.org/wikipedia/commons/1/1a/Logo_wordmark_Bank_Maybank_Indonesia.png',
+  UOB:'https://upload.wikimedia.org/wikipedia/commons/e/e0/UOB_Logo_%282022%29.svg',
+  Muamalat:'https://upload.wikimedia.org/wikipedia/commons/8/81/Muamalat_Logo.png',
+  'Bank Jatim':'https://upload.wikimedia.org/wikipedia/commons/3/3b/Bank-Jatim-Logo.svg',
+  'Bank Sumut':'https://upload.wikimedia.org/wikipedia/commons/3/31/Logo_Bank_Sumut.png',
+  'Bank Kalbar':'https://upload.wikimedia.org/wikipedia/commons/3/35/Logo_Bank_Kalbar.png',
+  'Bank Sulselbar':'https://upload.wikimedia.org/wikipedia/commons/c/c0/Logo_Bank_Sulselbar.png',
+  'Bank Sumsel Babel':'https://www.banksumselbabel.com/img/logo.png',
+}
+
 const svgLogos={
 	MotionPay:{type:'motionpay'},
   'Mobile Legends':{type:'mlbb'},'Free Fire':{type:'freefire'},'PUBG Mobile':{type:'pubg'},'Point Blank':{type:'pointblank'},Roblox:{type:'roblox'},'Genshin Impact':{type:'genshin'},'Genshin Impact Genesis Crystals':{type:'genshin'},Valorant:{type:'valorant'},'Valorant Points':{type:'valorant'},'Steam Wallet ID':{type:'steam'},'Arena of Valor Voucher':{type:'aov'},
@@ -251,9 +265,11 @@ function ProviderSvgLogo({spec}){
 
 export default function ProviderLogo({name,className='',priority=false}){
   const clean=normalize(name)
-  const image=findLogoMatch(clean,imageLogos)?.[1]
-  if(image)return <i className={`${className} provider-logo-rendered provider-logo-image`} data-brand={slug(clean)}><img src={image} alt={`Logo ${name}`} loading={priority?'eager':'lazy'} fetchPriority={priority?'high':'auto'} decoding="async"/></i>
   const automatic=findAutomaticLogo(clean)
+  const bundled=findLogoMatch(clean,imageLogos)?.[1]||automatic
+  const image=findLogoMatch(clean,highResolutionBankLogos)?.[1]||bundled
+  const useBundledFallback=event=>{if(bundled&&event.currentTarget.src!==bundled)event.currentTarget.src=bundled}
+  if(image)return <i className={`${className} provider-logo-rendered provider-logo-image`} data-brand={slug(clean)}><img src={image} alt={`Logo ${name}`} loading={priority?'eager':'lazy'} fetchPriority={priority?'high':'auto'} decoding="async" onError={useBundledFallback}/></i>
   if(automatic)return <i className={`${className} provider-logo-rendered provider-logo-image`} data-brand={slug(clean)}><img src={automatic} alt={`Logo ${name}`} loading={priority?'eager':'lazy'} fetchPriority={priority?'high':'auto'} decoding="async"/></i>
   const spec=findLogoMatch(clean,svgLogos)?.[1]
   if(spec)return <i className={`${className} provider-logo-rendered provider-logo-vector`} data-brand={slug(clean)} role="img" aria-label={`Logo ${name}`}><ProviderSvgLogo spec={spec}/></i>
