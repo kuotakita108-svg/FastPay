@@ -35,11 +35,11 @@ export async function createManagedAgent(profile){
   const name=String(profile.name||'').trim(),username=String(profile.username||'').toLowerCase().trim(),phone=String(profile.phone||'').trim(),email=String(profile.email||'').toLowerCase().trim(),password=String(profile.password||'')
   const store_name=String(profile.store_name||'').trim()
   if(name.length<3||username.length<3||phone.length<10||password.length<6||store_name.length<2)throw new Error('Lengkapi identitas, toko, WhatsApp, username, dan password agent.')
-  return request('/credit/agents',{method:'POST',body:JSON.stringify({name,username,phone,email,password,store_name})})
+  return request('/auth/agents',{method:'POST',body:JSON.stringify({name,username,phone,email,password,store_name})})
 }
 
 export async function listManagedAgents(){
-  return request('/retail/network')
+  return request('/auth/agents',{noCache:true})
 }
 
 export async function updateAgentFollowUp(id,status,note=''){
@@ -59,7 +59,7 @@ export async function listManagedDownlines(){
 export async function createManagedMarketing(profile){
   const name=String(profile.name||'').trim(),username=String(profile.username||'').toLowerCase().trim(),phone=String(profile.phone||'').trim(),email=String(profile.email||'').toLowerCase().trim(),password=String(profile.password||'')
   if(name.length<3||username.length<3||phone.length<10||password.length<6)throw new Error('Lengkapi nama, WhatsApp, username, dan password marketing minimal 6 karakter.')
-  return request('/operator/marketing',{method:'POST',body:JSON.stringify({name,username,phone,email,password})})
+  return request('/auth/marketing',{method:'POST',body:JSON.stringify({name,username,phone,email,password})})
 }
 
 export async function resetPassword(profile){
