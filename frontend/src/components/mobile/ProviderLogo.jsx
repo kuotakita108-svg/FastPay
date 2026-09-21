@@ -63,10 +63,10 @@ import nexParabolaBrand from '../../assets/providers/official/auto/nex-parabola-
 import transvisionBrand from '../../assets/providers/official/auto/transvision-brand.png'
 import jneOfficial from '../../assets/providers/official/auto/jne-official.svg'
 import anterajaOfficial from '../../assets/providers/official/auto/anteraja-official.png'
-import pdamSvg from 'idn-finlogos/icons/pdam'
-import pdamSurabayaSvg from 'idn-finlogos/icons/pdam-kota-surabaya'
-import pamJayaSvg from 'idn-finlogos/icons/pam-jaya'
-import aetraTangerangSvg from 'idn-finlogos/icons/aetra-tangerang'
+import pdamLogo from 'idn-finlogos/icons/pdam.svg?url'
+import pdamSurabayaLogo from 'idn-finlogos/icons/pdam-kota-surabaya.svg?url'
+import pamJayaLogo from 'idn-finlogos/icons/pam-jaya.svg?url'
+import aetraTangerangLogo from 'idn-finlogos/icons/aetra-tangerang.svg?url'
 import { BadgeCheck, Banknote, BookOpenCheck, Building2, Bus, Car, CircleParking, Clapperboard, CreditCard, Cross, Droplets, Earth, Flame, Gamepad2, GraduationCap, HandHeart, HeartPulse, Landmark, MapPin, MonitorPlay, Plane, QrCode, Radio, ReceiptText, ShieldCheck, Smartphone, Store, TrainFront, Truck, Wallet, Wifi, Zap } from 'lucide-react'
 
 const imageLogos={BCA:bca,'Bank BCA':bca,BRI:bri,'Bank BRI':bri,BNI:bni,'Bank BNI':bni,Mandiri:mandiri,'Bank Mandiri':mandiri,'CIMB Niaga':cimb,'Bank Syariah Indonesia':bsi,'Syariah Indonesia':bsi,BSI:bsi,Danamon:danamon,'Bank Danamon':danamon,PermataBank:permatabank,'Bank Permata':permatabank,Permata:permatabank,SeaBank:seabank,'Sea Bank':seabank,'Bank Jago':jago,Jago:jago,AstraPay:astrapay,'i.saku':isaku,Grab:grab,KasPro:kaspro,Maxim:maxim,Sakuku:sakuku,'FIF Group':fif,Spotify:spotify,Vidio:vidio,Telkomsel:telkomsel,'by.U':byu,byU:byu,Smartfren:smartfren,BRIZZI:bri,'BNI TapCash':bni,'BCA Flazz':bca,'Mandiri e-Money':mandiri,'Internet Pascabayar':indihome,Indosat:indosat,XL:xl,Tri:tri,Axis:axis,AXIS:axis,DANA:dana,GoPay:gopay,OVO:ovo,ShopeePay:shopeepay,'Shopee Food Driver':shopeepay,LinkAja:linkaja,'Free Fire':freefire,'Mobile Legend':mobilelegendsPremium,'Mobile Legends':mobilelegendsPremium,Roblox:robloxPremium,Valorant:valorantPremium,'Valorant Points':valorantPremium,'Genshin Impact':genshinPremium,'Genshin Impact Genesis Crystals':genshinPremium,'Steam Wallet ID':steamPremium,'Arena of Valor':aovPremium,'Arena of Valor Voucher':aovPremium,Minecraft:minecraft,'Magic Chess: Go Go':magicChessGoGo,'FC Mobile':fcMobile,'League of Legends: Wild Rift':wildRift,'Call of Duty Mobile':callOfDutyMobile,'Honkai Impact 3':honkaiImpact3,'Honor of King':honorOfKings,'Honor of Kings':honorOfKings,'BPJS Kesehatan':bpjs,Biznet:biznet,Prudential:prudential,Allianz:allianz,Manulife:manulife,MyRepublic:myrepublic,CBN:cbn,IndiHome:indihome,'MNC Vision':mncvisionOfficial,'K-Vision':kvisionBrand,'Nex Parabola':nexParabolaBrand,Transvision:transvisionBrand,'JNE':jneOfficial,AnterAja:anterajaOfficial,'Google Play':googleplay,'Apple Gift Card':apple,Pesawat:garuda,Sekolah:kemendikbud,Universitas:kemendikbud,Bimbel:kemendikbud,'PBB Kota/Kabupaten':pajak,'DJP Online':pajak}
@@ -110,12 +110,11 @@ const svgLogos={
 
 const normalize=name=>String(name||'').replace(/ Card$/,'')
 const slug=name=>String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-')
-const svgData=source=>`data:image/svg+xml;charset=utf-8,${encodeURIComponent(source)}`
 const pdamLogos={
-  default:svgData(pdamSvg),
-  surabaya:svgData(pdamSurabayaSvg),
-  pamJaya:svgData(pamJayaSvg),
-  aetraTangerang:svgData(aetraTangerangSvg),
+  default:pdamLogo,
+  surabaya:pdamSurabayaLogo,
+  pamJaya:pamJayaLogo,
+  aetraTangerang:aetraTangerangLogo,
 }
 const officialPDAMLogo=name=>{
   const value=String(name||'').toUpperCase()
