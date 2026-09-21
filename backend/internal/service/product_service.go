@@ -216,7 +216,9 @@ func (s *ProductService) liveProducts() ([]domain.Product, error) {
 				price = fee
 			}
 		}
-		products = append(products, domain.Product{ID: "h2hr-" + strings.ToLower(sku), SKU: sku, Service: classifyH2HRService(category, group, brand, name), Operator: brand, Name: name, Group: group, Category: category, Nominal: nominal, Price: price, Stock: 999, Status: priceType})
+		service := classifyH2HRService(category, group, brand, name)
+		operator := canonicalH2HOperator(service, brand, name)
+		products = append(products, domain.Product{ID: "h2hr-" + strings.ToLower(sku), SKU: sku, Service: service, Operator: operator, Name: name, Group: group, Category: category, Nominal: nominal, Price: price, Stock: 999, Status: priceType})
 	}
 	if len(products) == 0 {
 		return nil, fmt.Errorf("katalog H2HR kosong")
@@ -225,6 +227,24 @@ func (s *ProductService) liveProducts() ([]domain.Product, error) {
 	s.live, s.liveLoaded = append([]domain.Product(nil), products...), time.Now()
 	s.mu.Unlock()
 	return products, nil
+}
+
+func canonicalH2HOperator(service, brand, name string) string {
+	value := strings.ToUpper(strings.TrimSpace(name))
+	if service == "insurance" {
+		for _, candidate := range []struct{ match, label string }{
+			{"PRUDENTIAL", "Prudential"}, {"TOKIO MARINE", "Tokio Marine"},
+			{"JIWASRAYA", "Jiwasraya"}, {"IFG LIFE", "IFG Life"}, {"ASURANSI CAR", "CAR"},
+		} {
+			if strings.Contains(value, candidate.match) {
+				return candidate.label
+			}
+		}
+	}
+	if (service == "emoney" || service == "ewallet") && strings.Contains(value, "SHOPEE") {
+		return "ShopeePay"
+	}
+	return strings.TrimSpace(brand)
 }
 
 var dottedNominalP24 = regexp.MustCompile(`(?:^|\D)(\d{1,3}(?:[.,]\d{3})+)(?:\D|$)`)

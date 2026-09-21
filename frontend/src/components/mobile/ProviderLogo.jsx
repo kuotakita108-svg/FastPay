@@ -81,6 +81,13 @@ const highResolutionBankLogos={
   'Bank Sumsel Babel':'https://www.banksumselbabel.com/img/logo.png',
 }
 
+const officialInsuranceLogos={
+  CAR:'https://www.car.co.id/media/43lfgiwi/car.png',
+  'IFG Life':'https://ifg-life.id/api/cms/preview/logo_ifg_life_v2_7d5e4bd8.jpg',
+  Jiwasraya:'https://timlikuidasi.jiwasraya.co.id/wp-content/uploads/2019/09/Jiwasraya_2026.png',
+  'Tokio Marine':'https://www.tokiomarine.com/content/dam/tokiomarine/indonesia/shared-landing/images/TokioMarineLogo-Horizontal@2x.png',
+}
+
 const svgLogos={
 	MotionPay:{type:'motionpay'},
   'Mobile Legends':{type:'mlbb'},'Free Fire':{type:'freefire'},'PUBG Mobile':{type:'pubg'},'Point Blank':{type:'pointblank'},Roblox:{type:'roblox'},'Genshin Impact':{type:'genshin'},'Genshin Impact Genesis Crystals':{type:'genshin'},Valorant:{type:'valorant'},'Valorant Points':{type:'valorant'},'Steam Wallet ID':{type:'steam'},'Arena of Valor Voucher':{type:'aov'},
@@ -267,7 +274,7 @@ export default function ProviderLogo({name,className='',priority=false}){
   const clean=normalize(name)
   const automatic=findAutomaticLogo(clean)
   const bundled=findLogoMatch(clean,imageLogos)?.[1]||automatic
-  const image=findLogoMatch(clean,highResolutionBankLogos)?.[1]||bundled
+  const image=findLogoMatch(clean,officialInsuranceLogos)?.[1]||findLogoMatch(clean,highResolutionBankLogos)?.[1]||bundled
   const useBundledFallback=event=>{if(bundled&&event.currentTarget.src!==bundled)event.currentTarget.src=bundled}
   if(image)return <i className={`${className} provider-logo-rendered provider-logo-image`} data-brand={slug(clean)}><img src={image} alt={`Logo ${name}`} loading={priority?'eager':'lazy'} fetchPriority={priority?'high':'auto'} decoding="async" onError={useBundledFallback}/></i>
   if(automatic)return <i className={`${className} provider-logo-rendered provider-logo-image`} data-brand={slug(clean)}><img src={automatic} alt={`Logo ${name}`} loading={priority?'eager':'lazy'} fetchPriority={priority?'high':'auto'} decoding="async"/></i>

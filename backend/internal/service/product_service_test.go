@@ -43,6 +43,22 @@ func TestClassifyH2HRService(t *testing.T) {
 	}
 }
 
+func TestCanonicalH2HOperator(t *testing.T) {
+	tests := map[string]string{
+		canonicalH2HOperator("insurance", "Asuransi", "ASURANSI CAR"):          "CAR",
+		canonicalH2HOperator("insurance", "Asuransi", "ASURANSI IFG LIFE"):     "IFG Life",
+		canonicalH2HOperator("insurance", "Asuransi", "ASURANSI JIWASRAYA"):    "Jiwasraya",
+		canonicalH2HOperator("insurance", "Asuransi", "ASURANSI TOKIO MARINE"): "Tokio Marine",
+		canonicalH2HOperator("insurance", "Asuransi", "ASURANSI PRUDENTIAL"):   "Prudential",
+		canonicalH2HOperator("emoney", "shopee", "Shopeepay Bebas Nominal"):    "ShopeePay",
+	}
+	for got, want := range tests {
+		if got != want {
+			t.Fatalf("operator=%q, ingin %q", got, want)
+		}
+	}
+}
+
 func TestPulsa24ProductsUsesV2AndKeepsLargeItems(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v2/trx" {
