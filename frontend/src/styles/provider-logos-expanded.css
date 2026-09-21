@@ -129,3 +129,12 @@
 .service-game .modern-provider-grid button{grid-template-rows:62px auto!important;min-height:116px!important;padding:12px 7px!important}
 .service-game .modern-provider-grid button>i.provider-logo-rendered{width:62px!important;height:62px!important;max-width:62px!important;max-height:62px!important;border-radius:13px!important;overflow:hidden!important}
 .service-game .modern-provider-grid button>i.provider-logo-image img{width:62px!important;height:62px!important;max-width:62px!important;max-height:62px!important;object-fit:contain!important;object-position:center!important;image-rendering:auto!important}
+
+/* PDAM mengikuti pola daftar wilayah: satu logo PDAM yang konsisten di kiri
+   dan nama cabang H2HR di kanan. */
+.service-pdam .modern-provider-grid{grid-template-columns:1fr!important;gap:7px!important}
+.service-pdam .modern-provider-grid button{display:grid!important;grid-template-columns:48px minmax(0,1fr)!important;grid-template-rows:1fr!important;align-items:center!important;justify-items:start!important;min-height:58px!important;padding:7px 12px!important;gap:10px!important;border-radius:4px!important}
+.service-pdam .modern-provider-grid button>i.provider-logo-rendered{grid-column:1!important;width:44px!important;height:40px!important;max-width:44px!important;max-height:40px!important;margin:0!important}
+.service-pdam .modern-provider-grid button>i.provider-logo-image img{width:44px!important;height:40px!important;max-width:44px!important;max-height:40px!important;object-fit:contain!important}
+.service-pdam .modern-provider-grid button>span{grid-column:2!important;align-items:center!important;justify-content:flex-start!important;width:100%!important;max-width:none!important;min-height:40px!important;text-align:left!important;font-size:10px!important}
+.service-pdam .modern-provider-grid button>svg{right:10px!important;top:18px!important}
