@@ -217,7 +217,7 @@ func (s *ProductService) liveProducts() ([]domain.Product, error) {
 			}
 		}
 		service := classifyH2HRService(category, group, brand, name)
-		operator := canonicalH2HOperator(service, brand, name)
+		operator := canonicalH2HROperator(service, brand, name)
 		products = append(products, domain.Product{ID: "h2hr-" + strings.ToLower(sku), SKU: sku, Service: service, Operator: operator, Name: name, Group: group, Category: category, Nominal: nominal, Price: price, Stock: 999, Status: priceType})
 	}
 	if len(products) == 0 {
@@ -229,7 +229,9 @@ func (s *ProductService) liveProducts() ([]domain.Product, error) {
 	return products, nil
 }
 
-func canonicalH2HOperator(service, brand, name string) string {
+var leadingProviderCodeH2HR = regexp.MustCompile(`^\s*\d+\s+`)
+
+func canonicalH2HROperator(service, brand, name string) string {
 	value := strings.ToUpper(strings.TrimSpace(name))
 	if service == "insurance" {
 		for _, candidate := range []struct{ match, label string }{
@@ -244,7 +246,33 @@ func canonicalH2HOperator(service, brand, name string) string {
 	if (service == "emoney" || service == "ewallet") && strings.Contains(value, "SHOPEE") {
 		return "ShopeePay"
 	}
-	return strings.TrimSpace(brand)
+	brand = strings.TrimSpace(brand)
+	// Several Pulsa24Jam H2HR categories intentionally return a generic brand.
+	// The actual provider is carried by nama (for example "014 BCA" or
+	// "001 PDAM ACEH BARAT"). Exposing the generic brand collapses hundreds of
+	// real providers into one card and prevents the correct logo from matching.
+	generic := map[string]bool{
+		"bank": true, "pdam": true, "multifinance": true, "gas": true,
+	}
+	if generic[strings.ToLower(brand)] {
+		provider := strings.TrimSpace(leadingProviderCodeH2HR.ReplaceAllString(name, ""))
+		provider = strings.TrimSpace(strings.TrimSuffix(provider, " CEK TAGIHAN"))
+		if service == "bank" {
+			provider = strings.TrimSpace(strings.TrimPrefix(provider, "BANK "))
+		}
+		if provider != "" {
+			return provider
+		}
+	}
+	if strings.EqualFold(brand, "XL/Axis") {
+		if strings.Contains(value, "AXIS") && !strings.Contains(value, "XL/") {
+			return "Axis"
+		}
+		if strings.Contains(value, "XL") {
+			return "XL"
+		}
+	}
+	return brand
 }
 
 var dottedNominalP24 = regexp.MustCompile(`(?:^|\D)(\d{1,3}(?:[.,]\d{3})+)(?:\D|$)`)

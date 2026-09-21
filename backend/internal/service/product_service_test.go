@@ -43,14 +43,21 @@ func TestClassifyH2HRService(t *testing.T) {
 	}
 }
 
-func TestCanonicalH2HOperator(t *testing.T) {
+func TestCanonicalH2HROperator(t *testing.T) {
 	tests := map[string]string{
-		canonicalH2HOperator("insurance", "Asuransi", "ASURANSI CAR"):          "CAR",
-		canonicalH2HOperator("insurance", "Asuransi", "ASURANSI IFG LIFE"):     "IFG Life",
-		canonicalH2HOperator("insurance", "Asuransi", "ASURANSI JIWASRAYA"):    "Jiwasraya",
-		canonicalH2HOperator("insurance", "Asuransi", "ASURANSI TOKIO MARINE"): "Tokio Marine",
-		canonicalH2HOperator("insurance", "Asuransi", "ASURANSI PRUDENTIAL"):   "Prudential",
-		canonicalH2HOperator("emoney", "shopee", "Shopeepay Bebas Nominal"):    "ShopeePay",
+		canonicalH2HROperator("insurance", "Asuransi", "ASURANSI CAR"):                   "CAR",
+		canonicalH2HROperator("insurance", "Asuransi", "ASURANSI IFG LIFE"):              "IFG Life",
+		canonicalH2HROperator("insurance", "Asuransi", "ASURANSI JIWASRAYA"):             "Jiwasraya",
+		canonicalH2HROperator("insurance", "Asuransi", "ASURANSI TOKIO MARINE"):          "Tokio Marine",
+		canonicalH2HROperator("insurance", "Asuransi", "ASURANSI PRUDENTIAL"):            "Prudential",
+		canonicalH2HROperator("emoney", "shopee", "Shopeepay Bebas Nominal"):             "ShopeePay",
+		canonicalH2HROperator("bank", "Bank", "014 BCA"):                                 "BCA",
+		canonicalH2HROperator("bank", "Bank", "008 BANK MANDIRI"):                        "MANDIRI",
+		canonicalH2HROperator("pdam", "PDAM", "001 PDAM ACEH BARAT"):                     "PDAM ACEH BARAT",
+		canonicalH2HROperator("multifinance", "Multifinance", "ADIRA FINANCE"):           "ADIRA FINANCE",
+		canonicalH2HROperator("multifinance", "Multifinance", "BFI FINANCE CEK TAGIHAN"): "BFI FINANCE",
+		canonicalH2HROperator("pulsa", "XL/Axis", "PULSA AXIS 10000"):                    "Axis",
+		canonicalH2HROperator("pulsa", "XL/Axis", "PULSA XL 10000"):                      "XL",
 	}
 	for got, want := range tests {
 		if got != want {
