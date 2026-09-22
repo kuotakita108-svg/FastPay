@@ -182,6 +182,12 @@ func (s *Pulsa24Service) request(command string, payload map[string]any) (Pulsa2
 		result.CustomerName = firstText(stringVal(data, "customer_name"), stringVal(data, "customerName"), stringVal(data, "nama_pelanggan"), stringVal(data, "customer"), stringVal(data, "name"), stringVal(data, "nama"))
 	}
 	if command == "INQ" {
+		// A catalogue or inquiry fee may be returned as harga/price. It is not
+		// the customer's bill. Only explicit bill totals can be shown as payable.
+		result.Amount = firstIntValP24(row, "total_tagihan", "grand_total", "jumlah_tagihan", "total", "tagihan", "amount")
+		if result.Amount == 0 {
+			result.Amount = firstIntValP24(data, "total_tagihan", "grand_total", "jumlah_tagihan", "total", "tagihan", "amount")
+		}
 		if result.Amount == 0 {
 			result.Amount = labeledAmountP24(result.Message, "total", "grand total", "tagihan")
 		}

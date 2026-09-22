@@ -644,7 +644,7 @@ func (h *UserTransactionHandler) Pulsa24Inquiry(w http.ResponseWriter, r *http.R
 		response.Error(w, http.StatusUnprocessableEntity, message)
 		return
 	}
-	response.JSON(w, http.StatusOK, map[string]any{"inquiry": map[string]any{"refid": refID, "status": result.Status, "message": result.Message, "amount": result.Amount, "data": result.Raw}})
+	response.JSON(w, http.StatusOK, map[string]any{"inquiry": map[string]any{"refid": refID, "status": result.Status, "message": result.Message, "amount": result.Amount, "customer_name": result.CustomerName, "data": result.Raw}})
 }
 
 // Pulsa24Callback acknowledges the provider immediately. P24 can deliver this

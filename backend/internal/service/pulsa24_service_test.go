@@ -1,6 +1,24 @@
 package service
 
-import "testing"
+import (
+	"encoding/json"
+	"kuotakita/backend/internal/config"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
+
+func TestInquiryDoesNotUseCatalogueFeeAsBillTotal(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = json.NewEncoder(w).Encode(map[string]any{"ok": true, "data": map[string]any{"status": "success", "harga": 1000, "customer_name": "BUDI"}})
+	}))
+	defer server.Close()
+	provider := NewPulsa24Service(config.Config{P24BaseURL: server.URL, P24APIKey: "test", P24PIN: "test"}, nil)
+	result, err := provider.Inquiry("PDAMTEST", "123456789", "REF-1")
+	if err != nil || result.Amount != 0 {
+		t.Fatalf("biaya SKU tidak boleh menjadi total tagihan: amount=%d err=%v", result.Amount, err)
+	}
+}
 
 func TestNormalizePulsa24NumericStatus(t *testing.T) {
 	tests := map[string]string{"1": "pending", "2": "success", "3": "failed"}

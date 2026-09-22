@@ -5,6 +5,7 @@ import {useAsync} from '../hooks/useAsync'
 import {getProducts} from '../services/productService'
 import {inquirePulsa24} from '../services/transactionService'
 import {rupiah} from '../utils/currency'
+import {pdamBillDetails} from '../utils/pdamBill'
 import {serviceConfig} from '../constants/services'
 import {detectOperator} from '../constants/operators'
 import MobileNav from '../components/mobile/MobileNav'
@@ -146,6 +147,7 @@ export default function ServicePurchasePage(){
    setPdamBill({...inquiry,sku:product.sku,target:target.trim(),provider})
   }catch(error){setBillError(error.message||'Tagihan belum dapat dicek. Coba lagi nanti.')}finally{setCheckingBill(false)}
  }
+ const pdamDetails=pdamBill?pdamBillDetails(pdamBill):null
  if(type==='pdam')return <main className="mobile-app modern-purchase service-pdam pdam-flow">
   <header className="purchase-head modern"><button onClick={()=>provider?setProvider(''):navigate(-1)}><ArrowLeft/></button><div><strong>{provider||'Cari PDAM'}</strong><small>{provider?'Masukkan nomor pelanggan':'Pilih daerah dari katalog H2HR'}</small></div></header>
   <section className="pdam-flow-body">
@@ -155,7 +157,28 @@ export default function ServicePurchasePage(){
     {!productsLoading&&!productsError&&matchingProviders.length===0&&<p className="pdam-flow-hint">PDAM tidak ditemukan dalam katalog aktif.</p>}
     <div className="pdam-list">{visibleProviders.map(name=><button type="button" key={name} onClick={()=>{setProvider(name);setTarget('');setPdamBill(null);setBillError('')}}><ProviderLogo name={name} service="pdam"/><span>{name}</span><ChevronRight/></button>)}</div>
     {visibleProviders.length<matchingProviders.length&&<button type="button" className="pdam-more" onClick={()=>setProviderLimit(limit=>limit+30)}>Tampilkan PDAM lainnya</button>}
-   </>:<section className="pdam-detail-card"><div className="pdam-detail-heading"><ProviderLogo name={provider} service="pdam" priority/><div><strong>{provider}</strong><small>Masukkan nomor pelanggan {provider} untuk cek tagihan.</small></div></div><input value={target} onChange={event=>{setTarget(event.target.value.replace(/\D/g,''));setPdamBill(null);setBillError('')}} inputMode="numeric" autoComplete="off" placeholder="Masukkan nomor pelanggan PDAM" aria-label="Nomor pelanggan PDAM"/><button type="button" onClick={checkPdamBill} disabled={checkingBill||target.length<4}><Search/> {checkingBill?'Mengecek tagihan…':'Cek Tagihan'}</button>{billError&&<p className="pdam-flow-error">{billError}</p>}{pdamBill&&<div className="pdam-bill-result"><span>Tagihan terkonfirmasi dari Pulsa24Jam</span><strong>{rupiah(pdamBill.amount)}</strong><small>Nomor pelanggan {pdamBill.target} · Ref {pdamBill.refid}</small><small>Pembayaran belum tersedia sampai nominal hasil inquiry didukung aman oleh server.</small></div>}</section>}
+   </>:<>
+    <section className="pdam-detail-card">
+     <div className="pdam-detail-heading"><ProviderLogo name={provider} service="pdam" priority/><div><strong>{provider}</strong><small>Masukkan nomor pelanggan untuk cek tagihan air.</small></div></div>
+     <label className="pdam-input-label" htmlFor="pdam-customer-id">ID Pelanggan</label>
+     <input id="pdam-customer-id" value={target} onChange={event=>{setTarget(event.target.value.replace(/\D/g,''));setPdamBill(null);setBillError('')}} inputMode="numeric" autoComplete="off" placeholder="Masukkan nomor pelanggan PDAM" aria-label="Nomor pelanggan PDAM"/>
+     <button type="button" onClick={checkPdamBill} disabled={checkingBill||target.length<4}><Search/> {checkingBill?'Mengecek tagihan…':'Cek Tagihan'}</button>
+     {billError&&<p className="pdam-flow-error">{billError}</p>}
+    </section>
+    {pdamBill&&<section className="pdam-bill-result" aria-label="Detail tagihan PDAM">
+     <h2>Detail Tagihan</h2>
+     <div className="pdam-bill-row"><span>Nama Pelanggan</span><strong>{pdamDetails.customer||'Tidak dikirim provider'}</strong></div>
+     <div className="pdam-bill-row"><span>Periode Tagihan</span><strong>{pdamDetails.period||'Tidak dikirim provider'}</strong></div>
+     <div className="pdam-bill-breakdown"><div className="pdam-bill-total"><span>Total Tagihan</span><strong>{rupiah(pdamDetails.total)}</strong></div>
+      <div><span>Harga Air</span><strong>{pdamDetails.water===null?'Tidak dirinci':rupiah(pdamDetails.water)}</strong></div>
+      <div><span>Biaya Admin</span><strong>{pdamDetails.admin===null?'Tidak dirinci':rupiah(pdamDetails.admin)}</strong></div>
+      <div><span>Denda</span><strong>{pdamDetails.penalty===null?'Tidak dirinci':rupiah(pdamDetails.penalty)}</strong></div>
+     </div>
+     <small>Tagihan dari Pulsa24Jam · ID {pdamBill.target} · Ref {pdamBill.refid}</small>
+     <button type="button" disabled title="Pembayaran menunggu verifikasi nominal tagihan di server">Lanjut (belum tersedia)</button>
+     <p>Pembayaran belum dibuka agar saldo tidak terpotong dengan nominal yang salah.</p>
+    </section>}
+   </>}
   </section><MobileNav/>
  </main>
  if(catalog)return <main className={`mobile-app product-catalog-page service-${type} catalog-provider-${providerIndex}`}>
