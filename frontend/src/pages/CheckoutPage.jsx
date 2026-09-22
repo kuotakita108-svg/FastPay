@@ -27,7 +27,6 @@ export default function CheckoutPage() {
   const isAgent=user.role==='agent'
   const directH2H=Boolean(user.h2h_direct)
   const mainPayment=Math.min(Number(user.balance||0),Number(state?.amount||0))
-  const creditPayment=isAgent?Math.max(0,Number(state?.amount||0)-Number(user.balance||0)):0
   const balanceEnough=directH2H||isAgent||Number(user.balance||0)>=Number(state?.amount||0)
   const enrichTransaction = useCallback(transaction => ({
     ...transaction,

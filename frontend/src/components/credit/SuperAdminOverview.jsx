@@ -1,3 +1,4 @@
+import {useState} from 'react'
 import {Activity, AlertTriangle, ArrowRight, BarChart3, Boxes, CreditCard, Headphones, Landmark, ReceiptText, Settings, ShieldCheck, TrendingUp, Users, WalletCards} from 'lucide-react'
 import {rupiah} from '../../utils/currency'
 import {useAsync} from '../../hooks/useAsync'
@@ -14,12 +15,12 @@ const loadOwnerSnapshot=async()=>{
 
 export default function SuperAdminOverview({user,items=[],agents=[],marketingPerformance=[],h2h={},onOpen}){
   const {data:snapshot}=useAsync(loadOwnerSnapshot)
+  const [snapshotTime]=useState(()=>Date.now())
   const business=snapshot?.dashboard||{}
   const products=Array.isArray(snapshot?.products)?snapshot.products:[]
   const customers=Array.isArray(snapshot?.customers)?snapshot.customers:[]
   const activeCredits=items.filter(item=>item.status==='Disetujui'&&item.paymentStatus!=='Lunas')
-  const review=items.filter(item=>item.status==='Menunggu keputusan operator').length
-  const overdue=activeCredits.filter(item=>item.dueAt&&new Date(item.dueAt).getTime()<Date.now())
+  const overdue=activeCredits.filter(item=>item.dueAt&&new Date(item.dueAt).getTime()<snapshotTime)
   const outstanding=activeCredits.reduce((total,item)=>total+Number(item.creditOutstanding??item.creditBalance??item.creditOriginalAmount??item.form?.amount??0),0)
   const orders=Array.isArray(h2h.orders)?h2h.orders:[]
   const success=orders.filter(order=>statusOf(order)==='success').length

@@ -91,9 +91,9 @@ export default function TransferPage() {
     [amount, setAmount] = useState(""),
     [note, setNote] = useState(""),
     [step, setStep] = useState("form"),
-    [processing, setProcessing] = useState(false),
+    [processing] = useState(false),
     [error, setError] = useState(""),
-    [result, setResult] = useState(null);
+    [result] = useState(null);
   const value = Number(amount),
     fee = channel === "bank" || channel === "virtual" ? 2500 : 0,
     total = value + fee,
@@ -235,7 +235,7 @@ export default function TransferPage() {
             <section className="transfer-card">
               <h2>{withdraw ? "Pilih rekening tujuan" : "Pilih penyedia"}</h2>
               <div className="transfer-providers">
-                {list.map((name, index) => (
+                {list.map(name => (
                   <button
                     className={provider === name ? "active" : ""}
                     onClick={() => {

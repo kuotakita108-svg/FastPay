@@ -34,7 +34,8 @@ export default function AgentCreditPage(){
  const retakeCameraPhoto=async()=>{if(!camera)return;setCamera(current=>({...current,reviewImage:''}));try{await startCameraStream(camera.facing)}catch(cameraFailure){setCameraError(cameraFailure.message||'Kamera belum dapat dibuka kembali.')}}
  const confirmCameraPhoto=()=>{if(!camera?.reviewImage)return;setDocuments(value=>({...value,[camera.key]:{name:`${camera.key}-${Date.now()}.jpg`,image:camera.reviewImage,...camera.capture}}));closeCamera()}
  useEffect(()=>()=>cameraStreamRef.current?.getTracks().forEach(track=>track.stop()),[])
- useEffect(()=>{if(!camera||camera.reviewImage)return;const timer=window.setInterval(()=>setCamera(current=>current&&!current.reviewImage?{...current,capture:refreshCaptureTime(current.capture)}:current),1000);return()=>window.clearInterval(timer)},[camera?.key,camera?.reviewImage])
+ const cameraActive=Boolean(camera&&!camera.reviewImage)
+ useEffect(()=>{if(!cameraActive)return;const timer=window.setInterval(()=>setCamera(current=>current&&!current.reviewImage?{...current,capture:refreshCaptureTime(current.capture)}:current),1000);return()=>window.clearInterval(timer)},[cameraActive])
  const point=event=>{const rect=canvasRef.current.getBoundingClientRect(),source=event.touches?.[0]||event;return{x:(source.clientX-rect.left)*(canvasRef.current.width/rect.width),y:(source.clientY-rect.top)*(canvasRef.current.height/rect.height)}}
  const startDraw=event=>{event.preventDefault();drawing.current=true;event.currentTarget.setPointerCapture?.(event.pointerId);const{x,y}=point(event),context=canvasRef.current.getContext('2d');context.beginPath();context.moveTo(x,y)}
  const moveDraw=event=>{if(!drawing.current)return;event.preventDefault();const{x,y}=point(event),context=canvasRef.current.getContext('2d');context.lineWidth=3;context.lineCap='round';context.strokeStyle='#4f3bd8';context.lineTo(x,y);context.stroke();setSigned(true)}

@@ -12,7 +12,7 @@ const text = value => String(value || '').trim()
 
 export default function ProductsPage() {
   const {data = [], loading, error, reload} = useAsync(getProducts)
-  const products = Array.isArray(data) ? data : []
+  const products = useMemo(() => Array.isArray(data) ? data : [], [data])
   const [query, setQuery] = useState('')
   const [service, setService] = useState('')
   const [operator, setOperator] = useState('')

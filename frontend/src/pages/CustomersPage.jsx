@@ -10,7 +10,7 @@ import {shortRupiah} from '../utils/currency'
 const roleName={user:'User',agent:'Agent',marketing:'Marketing',operator:'Operator',analis:'Operator',admin:'Admin',master:'Super Admin'}
 const date=value=>value?new Intl.DateTimeFormat('id-ID',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value)):'-'
 export default function CustomersPage(){
-  const{data,loading,error,reload}=useAsync(getCustomers),items=Array.isArray(data)?data:[],[query,setQuery]=useState(''),[role,setRole]=useState(''),[busy,setBusy]=useState(''),[notice,setNotice]=useState('')
+  const{data,loading,error,reload}=useAsync(getCustomers),items=useMemo(()=>Array.isArray(data)?data:[],[data]),[query,setQuery]=useState(''),[role,setRole]=useState(''),[busy,setBusy]=useState(''),[notice,setNotice]=useState('')
   const filtered=useMemo(()=>items.filter(account=>(!role||account.role===role)&&`${account.name} ${account.username} ${account.email} ${account.phone}`.toLowerCase().includes(query.toLowerCase())),[items,query,role])
   const toggle=async account=>{setBusy(account.id);setNotice('');try{await setAccountAccess(account.id,account.access_status!=='suspended');setNotice(account.access_status==='suspended'?'Akun sudah diaktifkan.':'Akun sudah dinonaktifkan.');reload()}catch(err){setNotice(err.message)}finally{setBusy('')}}
   const remove=async account=>{if(!window.confirm(`Hapus permanen akun ${account.name||account.username}? Tindakan ini tidak dapat dibatalkan.`))return;setBusy(account.id);setNotice('');try{await deleteAccount(account.id);setNotice('Akun sudah dihapus dari server.');reload()}catch(err){setNotice(err.message)}finally{setBusy('')}}

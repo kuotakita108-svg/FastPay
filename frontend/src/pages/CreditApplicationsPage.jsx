@@ -90,14 +90,6 @@ const replaceCreditCache = rows => {
   } catch {/* penyimpanan browser tidak tersedia */}
 }
 
-const mergeDocuments = (remote = {}, local = {}) => {
-  const keys = new Set([...Object.keys(remote || {}), ...Object.keys(local || {})])
-  return Object.fromEntries([...keys].map(key => {
-    const remoteFile = typeof remote[key] === 'string' ? {name: remote[key]} : (remote[key] || {})
-    const localFile = typeof local[key] === 'string' ? {name: local[key]} : (local[key] || {})
-    return [key, {...remoteFile, ...localFile, dataUrl: localFile.dataUrl || remoteFile.dataUrl || ''}]
-  }))
-}
 const compressDocumentPreview = file => new Promise(resolve => {
   const url = URL.createObjectURL(file)
   const image = new Image()
@@ -501,7 +493,7 @@ export default function CreditApplicationsPage() {
     setExpandedId('')
     setQuery('')
     window.scrollTo({top: 0, behavior: 'smooth'})
-  }, [view, isOwner, setSearchParams])
+  }, [view, isOwner, params, setSearchParams])
   const signOperator = (item, image) => {
     const signature = stampPayload({...user, role: 'operator'}, image)
     saveApplication(item, {analisSignature: signature, operatorSignature: signature, status: 'Menunggu keputusan operator'})
@@ -902,27 +894,6 @@ export default function CreditApplicationsPage() {
     if (item.paymentStatus === 'Lunas') return {label:'Lihat arsip', tone:'safe', view:'pelunasan'}
     return {label:'Pantau kredit', tone:'normal', view:'detail'}
   }
-  const creditAuditFindings = sortedItems.flatMap(item => {
-    const paid = Number(paymentSummary(item).totalPaid || 0)
-    const issued = Number(item.creditOriginalAmount || item.form.amount || 0)
-    const outstanding = Number(item.creditOutstanding ?? item.creditBalance ?? Math.max(0, issued - paid))
-    const base = {item, marketing: item.marketingOwnerName || item.marketingName || 'Belum ditugaskan'}
-    if (item.agentAccessStatus === 'suspended' && !String(item.agentAccessReason || '').trim()) return [{...base, area:'Akses', level:'Mendesak', title:'Suspend belum memiliki alasan', note:'Akses agent sudah dihentikan tanpa keterangan Operator.', impact:'Riwayat pengamanan akun tidak dapat dipertanggungjawabkan', amount:outstanding, action:'Lengkapi Alasan', target:'suspend'}]
-    if (issued > 0 && paid > issued) return [{...base, area:'Saldo', level:'Mendesak', title:'Uang masuk lebih besar dari pinjaman', note:`Ada selisih ${rupiah(paid - issued)} yang harus dicocokkan.`, impact:'Pembukuan dan saldo agent tidak sesuai', amount:paid, action:'Cocokkan Nominal', target:'detail'}]
-    if (item.paymentStatus === 'Lunas' && outstanding > 0) return [{...base, area:'Saldo', level:'Mendesak', title:'Sudah lunas tetapi saldo belum nol', note:`Saldo kredit masih tercatat ${rupiah(outstanding)}.`, impact:'Agent tetap terlihat memiliki tagihan', amount:outstanding, action:'Perbaiki Saldo', target:'detail'}]
-    if (item.dueAt && item.paymentStatus !== 'Lunas' && new Date(item.dueAt).getTime() < Date.now()) return [{...base, area:'Penagihan', level:'Mendesak', title:'Tagihan sudah melewati jatuh tempo', note:`Jatuh tempo ${dateTime(item.dueAt)} dan belum diselesaikan.`, impact:'Risiko tunggakan agent terus bertambah', amount:outstanding, action:'Tindak Tagihan', target:'jatuh-tempo'}]
-    if (item.paymentStatus !== 'Lunas' && issued > 0 && paid >= issued) return [{...base, area:'Pembayaran', level:'Perlu Diperiksa', title:'Pembayaran penuh belum ditutup', note:'Nominal pembayaran sudah memenuhi seluruh pinjaman.', impact:'Kredit belum berubah menjadi lunas', amount:paid, action:'Selesaikan Pelunasan', target:'pelunasan'}]
-    if (item.paymentStatus === 'Menunggu verifikasi pembayaran') return [{...base, area:'Pembayaran', level:'Perlu Diperiksa', title:'Bukti pembayaran belum diperiksa', note:'Agent sudah mengirim bukti pembayaran.', impact:'Pembayaran belum dapat diakui', amount:paid, action:'Periksa Bukti', target:'pelunasan'}]
-    if (item.status === 'Menunggu keputusan operator') return [{...base, area:'Keputusan', level:'Perlu Diperiksa', title:'Pengajuan siap diberi keputusan', note:'Marketing sudah mengirim data dan dokumen untuk diperiksa.', impact:'Agent masih menunggu kepastian kredit', amount:issued, action:'Periksa Pengajuan', target:'detail'}]
-    if (item.status === 'Disetujui' && item.paymentStatus !== 'Lunas' && !item.dueAt) return [{...base, area:'Data Kredit', level:'Belum Lengkap', title:'Tanggal jatuh tempo belum diisi', note:'Kredit aktif belum memiliki jadwal pelunasan.', impact:'Tagihan tidak muncul di menu Jatuh Tempo', amount:outstanding, action:'Lengkapi Kredit', target:'detail'}]
-    return []
-  }).sort((a,b) => ({Mendesak:0,'Perlu Diperiksa':1,'Belum Lengkap':2}[a.level] ?? 3) - ({Mendesak:0,'Perlu Diperiksa':1,'Belum Lengkap':2}[b.level] ?? 3) || new Date(a.item.dueAt || a.item.updatedAt || 0) - new Date(b.item.dueAt || b.item.updatedAt || 0))
-  const auditMarketingNames = [...new Set(creditAuditFindings.map(row => row.marketing))].sort((a,b) => a.localeCompare(b,'id'))
-  const auditRows = creditAuditFindings.filter(row => {
-    const item = row.item
-    const text = `${row.area} ${row.title} ${item.id} ${item.form.agentName || item.userName} ${item.form.storeName || ''} ${row.marketing}`.toLowerCase()
-    return text.includes(query.toLowerCase().trim()) && (reportFilter === 'Semua' || row.area === reportFilter) && (reportMarketing === 'Semua Marketing' || row.marketing === reportMarketing)
-  })
   const registeredAgentRows = managedAgents.map(agent => ({agent, application: sortedItems.find(item => item.userId === agent.id) || null}))
   const registeredWithoutApplications = registeredAgentRows.filter(row => !row.application)
   const agentHasOpenCredit = agentId => sortedItems.some(item => item.userId === agentId && item.paymentStatus !== 'Lunas' && !['Ditolak', 'Ditolak Permanen'].includes(item.status))
@@ -942,8 +913,6 @@ export default function CreditApplicationsPage() {
   const fieldTaskAgentOptions = sortedItems.filter(item => (item.marketingOwnerName || item.marketingName || '') === fieldTaskDraft.marketing)
   const marketingContacts = registeredAgentRows.filter(({agent, application}) => `${agent.name} ${agent.username} ${agent.store_name} ${agent.phone} ${agent.id} ${application?.id || ''}`.toLowerCase().includes(query.toLowerCase().trim())).map(({agent, application}) => application || {id: agent.id, userId: agent.id, userName: agent.name, status: 'Belum mengajukan', paymentStatus: '', form: {...manualInitial, agentName: agent.name, storeName: agent.store_name || '', whatsapp: agent.phone || '', email: agent.email || ''}})
   const analystQueue = sortedItems.filter(item => item.status === 'Menunggu keputusan operator')
-  const analystPendingSignature = analystQueue.filter(item => !item.analisSignature)
-  const analystReadyToDecide = analystQueue.filter(item => Boolean(item.analisSignature))
   const analystDecidedToday = sortedItems.filter(item => finalStatus.includes(item.status) && new Date(item.decidedAt || 0).toDateString() === new Date().toDateString())
   const approvedToday = analystDecidedToday.filter(item => item.status === 'Disetujui')
   const agentNameForOrder = order => {
@@ -968,13 +937,10 @@ export default function CreditApplicationsPage() {
     return counts
   }, {pending: 0, refund: 0, done: 0})
   const analystApprovedActive = sortedItems.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas')
-  const operatorIssuedAmount = analystApprovedActive.reduce((sum, item) => sum + Number(item.creditOriginalAmount || item.form.amount || 0), 0)
   const operatorRemainingAmount = analystApprovedActive.reduce((sum, item) => sum + Number(item.creditOutstanding ?? item.creditBalance ?? item.creditOriginalAmount ?? item.form.amount ?? 0), 0)
   const operatorSuspended = [...new Map(sortedItems.filter(item => item.agentAccessStatus === 'suspended').map(item => [agentIdentity(item), item])).values()]
   const overdueItems = sortedItems.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas' && item.dueAt && new Date(item.dueAt).getTime() < Date.now())
   const operatorLimitRows = sortedItems.filter(item => ['Disetujui', 'Lunas'].includes(statusGroup(item)))
-  const marketingRecommendations = marketingOwnedItems.filter(item => item.marketingRecommendation)
-  const marketingCommission = marketingOwnedItems.reduce((sum, item) => sum + Number(item.marketingCommission || 0), 0)
   const marketingActiveAgents = marketingOwnedItems.filter(item => item.status === 'Disetujui')
   const approvedActive = sortedItems.filter(item => item.status === 'Disetujui' && item.paymentStatus !== 'Lunas')
   const marketingTracking = {
@@ -1013,7 +979,6 @@ export default function CreditApplicationsPage() {
     return groups
   }, {}))
   const installmentRows = borrowerRows.filter(row => row.item.status === 'Disetujui' || row.item.paymentStatus === 'Lunas')
-  const installmentActive = installmentRows.filter(({item}) => item.paymentStatus !== 'Lunas')
   const installmentFinished = installmentRows.filter(({item}) => item.paymentStatus === 'Lunas')
   const paidProofRows = installmentFinished.map(({item, pay}) => {
     const payment = (item.repayments || []).find(row => row.status === 'Lunas') || {}
@@ -1023,8 +988,6 @@ export default function CreditApplicationsPage() {
     const payment = (item.repayments || []).find(row => row.status === 'Menunggu verifikasi')
     return payment ? {item, payment, proof: payment.proof || item.offlineCollection?.proof || null} : null
   }).filter(Boolean)
-  const installmentPaidAmount = installmentRows.reduce((sum, {pay}) => sum + pay.totalPaid, 0)
-  const installmentRemainingAmount = installmentRows.reduce((sum, {item, pay}) => sum + Math.max(0, Number(item.creditOriginalAmount || item.form.amount || 0) - pay.totalPaid), 0)
   const marketingCards = [
     {title: 'Perlu Pendampingan', value: meetingQueue.length, note: 'Selfie bersama agent belum ada', icon: Camera},
     {title: 'Siap Diperiksa Operator', value: marketingReadyForAnalysis.length, note: 'Data dan pertemuan sudah lengkap', icon: ClipboardCheck},
@@ -1034,9 +997,6 @@ export default function CreditApplicationsPage() {
   const activeView = viewInfo[view] || viewInfo.overview
   const isRejectedArchive = isOperator && view === 'verifikasi' && filter === 'Ditolak'
   const rejectedItems = sortedItems.filter(item => statusGroup(item) === 'Ditolak')
-  const totalLoan = items.reduce((sum, item) => sum + Number(item.form.amount || 0), 0)
-  const totalPaidAmount = items.reduce((sum, item) => sum + paymentSummary(item).totalPaid, 0)
-  const remainingLoan = Math.max(0, totalLoan - totalPaidAmount)
   const marketingPerformance = Object.values(sortedItems.reduce((groups, item) => {
     const name = item.marketingOwnerName || item.marketingName || 'Belum ditugaskan'
     if (!groups[name]) groups[name] = {name, registered: 0, visits: 0, pending: 0, approved: 0, rejected: 0, active: 0, turnover: 0, overdue: 0, lastActivity: null}
