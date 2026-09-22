@@ -19,4 +19,7 @@ export const getPulsa24Operations=()=>request('/h2h/pulsa24jam/operations',{time
 export const refundPulsa24Order=refid=>request(`/h2h/pulsa24jam/operations/${encodeURIComponent(refid)}/refund`,{method:'POST',timeoutMs:25000})
 export const getPulsa24Status=refid=>request(`/h2h/pulsa24jam/status?refid=${encodeURIComponent(refid)}`,{timeoutMs:25000})
 export const getPulsa24Products=product=>request(`/h2h/pulsa24jam/products${product?`?product=${encodeURIComponent(product)}`:''}`)
-export const inquirePulsa24=data=>request('/h2h/pulsa24jam/inquiry',{method:'POST',body:JSON.stringify(data)})
+// INQ is a provider round trip and can take 20–45 seconds. Keep the browser
+// waiting longer than the backend's provider timeout so the real result/error
+// is shown instead of a misleading 12-second connection timeout.
+export const inquirePulsa24=data=>request('/h2h/pulsa24jam/inquiry',{method:'POST',body:JSON.stringify(data),timeoutMs:60000})
