@@ -74,6 +74,7 @@ export default function ServicePurchasePage(){
  const [plnMode,setPlnMode]=useState(restored.plnMode||'token'),[plnBill,setPlnBill]=useState(restored.plnBill||null)
  const [checkingBill,setCheckingBill]=useState(false),[billError,setBillError]=useState('')
  const [pdamBill,setPdamBill]=useState(null)
+ const [gasBill,setGasBill]=useState(null)
  const [favoriteContacts,setFavoriteContacts]=useState(()=>getFavoriteContacts(user?.id)),[contactHint,setContactHint]=useState('')
  const [providerQuery,setProviderQuery]=useState(''),[providerLimit,setProviderLimit]=useState(18),[productQuery,setProductQuery]=useState(restored.productQuery||''),[productLimit,setProductLimit]=useState(restored.productLimit||40),[catalogGroup,setCatalogGroup]=useState(restored.catalogGroup||'')
  const providerEffectReady=useRef(false)
@@ -148,6 +149,32 @@ export default function ServicePurchasePage(){
   }catch(error){setBillError(error.message||'Tagihan belum dapat dicek. Coba lagi nanti.')}finally{setCheckingBill(false)}
  }
  const pdamDetails=pdamBill?pdamBillDetails(pdamBill):null
+ const checkGasBill=async()=>{
+  const idpel=target.replace(/\D/g,'')
+  if(idpel.length<4){setBillError('Masukkan nomor pelanggan PGN yang valid.');return}
+  const product=serviceProducts.find(item=>String(item.sku||'').toUpperCase()==='CEKPGN')
+  if(!product){setBillError('SKU cek tagihan PGN belum tersedia di katalog H2HR.');return}
+  setCheckingBill(true);setBillError('');setGasBill(null)
+  try{
+   const response=await inquirePulsa24({sku:product.sku,target:idpel})
+   const inquiry=response?.inquiry
+   if(!inquiry?.refid||Number(inquiry.amount)<=0)throw new Error('Tagihan PGN belum dikonfirmasi oleh Pulsa24Jam.')
+   setGasBill({...inquiry,target:idpel})
+  }catch(error){setBillError(error.message||'Tagihan PGN belum dapat dicek.')}finally{setCheckingBill(false)}
+ }
+ if(type==='gas')return <main className="mobile-app gas-inquiry-page">
+  <header className="purchase-head modern"><button type="button" onClick={()=>navigate(-1)}><ArrowLeft/></button><div><strong>Tagihan PGN</strong><small>Cek tagihan gas pelanggan</small></div></header>
+  <section className="gas-inquiry-body">
+   <section className="gas-inquiry-card">
+    <div className="gas-inquiry-title"><ProviderLogo name="PGN" service="gas" priority/><strong>Tagihan PGN</strong></div>
+    <input value={target} onChange={event=>{setTarget(event.target.value.replace(/\D/g,''));setGasBill(null);setBillError('')}} inputMode="numeric" autoComplete="off" placeholder="Masukkan nomor pelanggan" aria-label="Nomor pelanggan PGN"/>
+    <button type="button" onClick={checkGasBill} disabled={checkingBill||target.length<4||productsLoading||Boolean(productsError)}><Search/>{checkingBill?'Mengecek tagihan…':'Cek Tagihan'}</button>
+    {productsError&&<p className="gas-inquiry-error">Katalog H2HR belum dapat dimuat.</p>}
+    {billError&&<p className="gas-inquiry-error">{billError}</p>}
+   </section>
+   {gasBill&&<section className="gas-inquiry-result"><h2>Detail Tagihan PGN</h2><div><span>Nomor pelanggan</span><strong>{gasBill.target}</strong></div><div><span>Total dari Pulsa24Jam</span><strong>{rupiah(gasBill.amount)}</strong></div><small>Ref cek: {gasBill.refid}</small><p>Pembayaran belum tersedia sampai nominal tagihan diverifikasi aman oleh server.</p></section>}
+  </section><MobileNav/>
+ </main>
  if(type==='pdam')return <main className="mobile-app modern-purchase service-pdam pdam-flow">
   <header className="purchase-head modern"><button onClick={()=>provider?setProvider(''):navigate(-1)}><ArrowLeft/></button><div><strong>{provider||'Cari PDAM'}</strong><small>{provider?'Masukkan nomor pelanggan':'Pilih daerah dari katalog H2HR'}</small></div></header>
   <section className="pdam-flow-body">
