@@ -72,6 +72,7 @@ export default function ServicePurchasePage(){
  const [target,setTarget]=useState(restored.target||''),[provider,setProvider]=useState(restored.provider||(type==='pln'?'PLN':'')),[catalog,setCatalog]=useState(Boolean(location.state?.catalog)),[mode,setMode]=useState(restored.mode||'product'),[selected,setSelected]=useState(restored.selected||null),[freeAmount,setFreeAmount]=useState(restored.freeAmount||'')
  const [plnMode,setPlnMode]=useState(restored.plnMode||'token'),[plnBill,setPlnBill]=useState(restored.plnBill||null)
  const [checkingBill,setCheckingBill]=useState(false),[billError,setBillError]=useState('')
+ const [pdamBill,setPdamBill]=useState(null)
  const [favoriteContacts,setFavoriteContacts]=useState(()=>getFavoriteContacts(user?.id)),[contactHint,setContactHint]=useState('')
  const [providerQuery,setProviderQuery]=useState(''),[providerLimit,setProviderLimit]=useState(18),[productQuery,setProductQuery]=useState(restored.productQuery||''),[productLimit,setProductLimit]=useState(restored.productLimit||40),[catalogGroup,setCatalogGroup]=useState(restored.catalogGroup||'')
  const providerEffectReady=useRef(false)
@@ -125,6 +126,30 @@ export default function ServicePurchasePage(){
   } catch(error) { setBillError(error.message) } finally { setCheckingBill(false) }
  }
  const checkout=()=>{const checkoutSKU=type==='pln'&&plnMode==='bill'?plnBill?.sku:selected?.sku;if(!checkoutSKU||amount<1){show('Produk belum tersedia pada katalog aktif H2HR. Pilih produk lain.');return}const backgroundLocation={...location,state:{...location.state,catalog:true,purchase:purchaseSnapshot()}};navigate('/app/checkout',{state:{backgroundLocation,order:{type,title:type==='pln'&&plnMode==='bill'?'Bayar Tagihan PLN':config.title,target,provider:type==='pln'&&plnMode==='bill'?'PLN Pascabayar':provider,product:type==='pln'&&plnMode==='bill'?`Tagihan PLN ${plnBill?.idpel}`:selected?.name||config.title,amount,nominal:type==='pln'&&plnMode==='bill'?amount:transactionNominal,providerFee:selectedOpen?Number(selected?.price||0):0,sku:type==='pln'&&plnMode==='bill'?plnBill?.sku:selected?.sku,qty:type==='pln'&&plnMode==='bill'?amount:(selectedOpen?transactionNominal:1),detail:type==='pln'&&plnMode==='bill'?plnBill:null}}})}
+ const checkPdamBill=async()=>{
+  const product=products.find(item=>item.sku)
+  if(!product){setBillError('Produk PDAM ini belum tersedia di katalog H2HR.');return}
+  if(target.trim().length<4){setBillError('Masukkan nomor pelanggan PDAM yang valid.');return}
+  setCheckingBill(true);setBillError('');setPdamBill(null)
+  try{
+   const response=await inquirePulsa24({sku:product.sku,target:target.trim()})
+   const inquiry=response?.inquiry
+   if(!inquiry?.refid||Number(inquiry.amount)<=0)throw new Error('Tagihan belum dikonfirmasi oleh Pulsa24Jam.')
+   setPdamBill({...inquiry,sku:product.sku,target:target.trim(),provider})
+  }catch(error){setBillError(error.message||'Tagihan belum dapat dicek. Coba lagi nanti.')}finally{setCheckingBill(false)}
+ }
+ if(type==='pdam')return <main className="mobile-app modern-purchase service-pdam pdam-flow">
+  <header className="purchase-head modern"><button onClick={()=>provider?setProvider(''):navigate(-1)}><ArrowLeft/></button><div><strong>{provider||'Cari PDAM'}</strong><small>{provider?'Masukkan nomor pelanggan':'Pilih daerah dari katalog H2HR'}</small></div></header>
+  <section className="pdam-flow-body">
+   {!provider?<><label className="pdam-search"><Search/><input value={providerQuery} onChange={event=>{setProviderQuery(event.target.value);setProviderLimit(30)}} placeholder="Cari nama PDAM atau daerah" aria-label="Cari nama PDAM"/></label>
+    {productsError&&<p className="pdam-flow-error">Katalog H2HR belum dapat dimuat. Coba lagi nanti.</p>}
+    {productsLoading&&<p className="pdam-flow-hint">Memuat daftar PDAM dari Pulsa24Jam…</p>}
+    {!productsLoading&&!productsError&&matchingProviders.length===0&&<p className="pdam-flow-hint">PDAM tidak ditemukan dalam katalog aktif.</p>}
+    <div className="pdam-list">{visibleProviders.map(name=><button type="button" key={name} onClick={()=>{setProvider(name);setTarget('');setPdamBill(null);setBillError('')}}><ProviderLogo name={name} service="pdam"/><span>{name}</span><ChevronRight/></button>)}</div>
+    {visibleProviders.length<matchingProviders.length&&<button type="button" className="pdam-more" onClick={()=>setProviderLimit(limit=>limit+30)}>Tampilkan PDAM lainnya</button>}
+   </>:<section className="pdam-detail-card"><div className="pdam-detail-heading"><ProviderLogo name={provider} service="pdam" priority/><div><strong>{provider}</strong><small>Masukkan nomor pelanggan {provider} untuk cek tagihan.</small></div></div><input value={target} onChange={event=>{setTarget(event.target.value.replace(/\D/g,''));setPdamBill(null);setBillError('')}} inputMode="numeric" autoComplete="off" placeholder="Masukkan nomor pelanggan PDAM" aria-label="Nomor pelanggan PDAM"/><button type="button" onClick={checkPdamBill} disabled={checkingBill||target.length<4}><Search/> {checkingBill?'Mengecek tagihan…':'Cek Tagihan'}</button>{billError&&<p className="pdam-flow-error">{billError}</p>}{pdamBill&&<div className="pdam-bill-result"><span>Tagihan terkonfirmasi dari Pulsa24Jam</span><strong>{rupiah(pdamBill.amount)}</strong><small>Nomor pelanggan {pdamBill.target} · Ref {pdamBill.refid}</small><small>Pembayaran belum tersedia sampai nominal hasil inquiry didukung aman oleh server.</small></div>}</section>}
+  </section><MobileNav/>
+ </main>
  if(catalog)return <main className={`mobile-app product-catalog-page service-${type} catalog-provider-${providerIndex}`}>
   <header className="catalog-page-head"><button onClick={closeCatalog}><ArrowLeft/></button><div><strong>Produk {provider}</strong><small>{config.title} · {products.length} pilihan tersedia</small></div></header>
   <section className="catalog-provider-hero"><div><span>PROVIDER TERPILIH</span><h1>{provider}</h1><p>Pilih produk atau nominal yang paling sesuai dengan kebutuhanmu.</p></div><ProviderLogo name={provider} service={type} className="catalog-provider-logo" priority/></section>
