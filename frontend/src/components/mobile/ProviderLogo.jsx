@@ -63,6 +63,7 @@ import nexParabolaBrand from '../../assets/providers/official/auto/nex-parabola-
 import transvisionBrand from '../../assets/providers/official/auto/transvision-brand.png'
 import jneOfficial from '../../assets/providers/official/auto/jne-official.svg'
 import anterajaOfficial from '../../assets/providers/official/auto/anteraja-official.png'
+import pgnOfficial from '../../assets/providers/official/pgn-official.svg'
 import pdamSvg from 'idn-finlogos/icons/pdam.svg?raw'
 import { BadgeCheck, Banknote, BookOpenCheck, Building2, Bus, Car, CircleParking, Clapperboard, CreditCard, Cross, Droplets, Earth, Flame, Gamepad2, GraduationCap, HandHeart, HeartPulse, Landmark, MapPin, MonitorPlay, Plane, QrCode, Radio, ReceiptText, ShieldCheck, Smartphone, Store, TrainFront, Truck, Wallet, Wifi, Zap } from 'lucide-react'
 
@@ -280,7 +281,7 @@ export default function ProviderLogo({name,className='',priority=false,service='
   const clean=normalize(name)
   const automatic=findAutomaticLogo(clean)
   const bundled=findLogoMatch(clean,imageLogos)?.[1]||automatic
-  const image=(service==='pdam'?pdamLogo:null)||findLogoMatch(clean,officialInsuranceLogos)?.[1]||findLogoMatch(clean,highResolutionBankLogos)?.[1]||bundled
+  const image=(service==='gas'&&/pgn|perusahaan gas negara/i.test(clean)?pgnOfficial:null)||(service==='pdam'?pdamLogo:null)||findLogoMatch(clean,officialInsuranceLogos)?.[1]||findLogoMatch(clean,highResolutionBankLogos)?.[1]||bundled
   const useBundledFallback=event=>{if(bundled&&event.currentTarget.src!==bundled)event.currentTarget.src=bundled}
   if(image)return <i className={`${className} provider-logo-rendered provider-logo-image`} data-brand={slug(clean)}><img src={image} alt={`Logo ${name}`} loading={priority?'eager':'lazy'} fetchPriority={priority?'high':'auto'} decoding="async" onError={useBundledFallback}/></i>
   if(automatic)return <i className={`${className} provider-logo-rendered provider-logo-image`} data-brand={slug(clean)}><img src={automatic} alt={`Logo ${name}`} loading={priority?'eager':'lazy'} fetchPriority={priority?'high':'auto'} decoding="async"/></i>
