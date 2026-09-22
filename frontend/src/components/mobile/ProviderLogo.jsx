@@ -194,6 +194,9 @@ const automaticAliases={
   'CentrePark':'centrepark','Sky Parking':'sky-parking','Secure Parking':'secure-parking',
   'Pos Indonesia':'pos-indonesia','Canva Pro':'canva-pro','Apple Gift Card':'apple',
   'YouTube Premium':'youtube','Disney+ Hotstar':'disney-hotstar',
+  // Jawara Vision adalah paket MNC Vision; gunakan merek induknya saat
+  // tidak ada berkas logo Jawara tersendiri yang dapat diverifikasi.
+  'Jawara Vision':'mnc-vision-official',
   'Telkomsel Halo':'telkomsel','Indosat Postpaid':'indosat','XL Prioritas':'xl',
   'DELTA FORCE - STEAM':'delta-force-garena',
   'POINT BLANK - CASH':'point-blank',
