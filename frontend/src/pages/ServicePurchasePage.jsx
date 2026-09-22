@@ -117,16 +117,20 @@ export default function ServicePurchasePage(){
  }
  const changePlnMode=value=>{setPlnMode(value);closeCatalog();setSelected(null);setFreeAmount('');setPlnBill(null);if(value==='bill')setProvider('PLN Pascabayar');else setProvider('PLN')}
  const checkPlnBill=async()=>{
+  // The input is visually grouped (e.g. "1210 1050 9274"), but P24 expects
+  // the raw numeric IDPEL as dest. Spaces caused an otherwise valid INQ to fail.
+  const idpel=target.replace(/\D/g,'')
+  if(idpel.length<6){setBillError('Masukkan ID pelanggan PLN yang valid.');return}
   // The live H2HR catalogue labels both prepaid and postpaid SKUs as operator
   // "PLN". Inquiry SKUs (CPLPOST*) must not be mistaken for payment SKUs.
   const plnProduct=serviceProducts.find(item=>/^CPLPOST3000$/i.test(item.sku||''))
   if(!plnProduct?.sku){setBillError('SKU cek tagihan PLN belum tersedia di katalog H2HR. Pembayaran tidak dapat dilanjutkan.');return}
   setCheckingBill(true);setBillError('');setPlnBill(null)
   try {
-   const result=await inquirePulsa24({sku:plnProduct.sku,target})
+   const result=await inquirePulsa24({sku:plnProduct.sku,target:idpel})
    const inquiry=result?.inquiry
    if(!inquiry?.refid||Number(inquiry.amount)<=0)throw new Error('Tagihan belum dikonfirmasi oleh Pulsa24Jam.')
-   setPlnBill({...inquiry,data:inquiry.data||{},total:Number(inquiry.amount),sku:plnProduct.sku,idpel:target})
+   setPlnBill({...inquiry,data:inquiry.data||{},total:Number(inquiry.amount),sku:plnProduct.sku,idpel})
   } catch(error) { setBillError(error.message) } finally { setCheckingBill(false) }
  }
  const checkout=()=>{const checkoutSKU=type==='pln'&&plnMode==='bill'?plnBill?.sku:selected?.sku;if(!checkoutSKU||amount<1){show('Produk belum tersedia pada katalog aktif H2HR. Pilih produk lain.');return}const backgroundLocation={...location,state:{...location.state,catalog:true,purchase:purchaseSnapshot()}};navigate('/app/checkout',{state:{backgroundLocation,order:{type,title:type==='pln'&&plnMode==='bill'?'Bayar Tagihan PLN':config.title,target,provider:type==='pln'&&plnMode==='bill'?'PLN Pascabayar':provider,product:type==='pln'&&plnMode==='bill'?`Tagihan PLN ${plnBill?.idpel}`:selected?.name||config.title,amount,nominal:type==='pln'&&plnMode==='bill'?amount:transactionNominal,providerFee:selectedOpen?Number(selected?.price||0):0,sku:type==='pln'&&plnMode==='bill'?plnBill?.sku:selected?.sku,qty:type==='pln'&&plnMode==='bill'?amount:(selectedOpen?transactionNominal:1),detail:type==='pln'&&plnMode==='bill'?plnBill:null}}})}
