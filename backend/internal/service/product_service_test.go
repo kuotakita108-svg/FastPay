@@ -29,6 +29,13 @@ type productReaderStub struct{ products []domain.Product }
 
 func (s productReaderStub) FindProducts() []domain.Product { return s.products }
 
+func TestCustomerCatalogueNeverFallsBackToEmbeddedH2H(t *testing.T) {
+	products := NewProductService(productReaderStub{products: []domain.Product{{SKU: "LEGACY", Service: "pln"}}})
+	if got := products.ListByService("pln"); len(got) != 0 {
+		t.Fatalf("katalog tanpa koneksi H2HR harus kosong, bukan fallback: %#v", got)
+	}
+}
+
 func TestClassifyH2HRService(t *testing.T) {
 	tests := map[string]string{
 		classifyH2HRService("PULSA", "", "Telkomsel", "Telkomsel 5.000"): "pulsa",

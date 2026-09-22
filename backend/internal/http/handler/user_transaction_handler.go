@@ -145,6 +145,12 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 			return
 		}
 	}
+	// Postpaid bills have a dynamic amount returned by INQ. The fixed catalogue
+	// price is only an inquiry/route fee and must never be charged as the bill.
+	if catalogProduct.Service == "pln" && (isPLNPostpaidSKU(catalogProduct.SKU) || strings.Contains(strings.ToUpper(catalogProduct.Name), "POSTPAID") || strings.Contains(strings.ToUpper(catalogProduct.Name), "PASKABAYAR") || strings.HasPrefix(strings.ToUpper(catalogProduct.Name), "CEK PLN")) {
+		response.Error(w, http.StatusServiceUnavailable, "pembayaran tagihan PLN menunggu verifikasi nominal inquiry di server; saldo belum dipotong")
+		return
+	}
 	// Harga dan qty harus berasal dari katalog server, bukan nilai dari browser.
 	// Produk FIXED selalu satu unit. OPEN_AMOUNT memakai qty sebagai nominal dan
 	// total yang ditagih adalah nominal ditambah fee resmi katalog.
@@ -220,6 +226,11 @@ func (h *UserTransactionHandler) Payment(w http.ResponseWriter, r *http.Request)
 	}
 	h.writePaymentResponseStatus(w, http.StatusAccepted, tx, user.Balance, mainUsed, creditUsed, current.H2HDirect)
 	return
+}
+
+func isPLNPostpaidSKU(sku string) bool {
+	sku = strings.ToUpper(strings.TrimSpace(sku))
+	return strings.HasPrefix(sku, "CPLPOST") || strings.HasPrefix(sku, "CLBPLNPOST") || strings.HasPrefix(sku, "PLPOST") || strings.HasPrefix(sku, "LBPLNPOST") || strings.HasPrefix(sku, "PLNPOST") || strings.HasPrefix(sku, "POSTPRO") || sku == "PLNLB20"
 }
 
 func (h *UserTransactionHandler) removeTransaction(userID, transactionID string) {
@@ -608,7 +619,15 @@ func (h *UserTransactionHandler) Pulsa24Inquiry(w http.ResponseWriter, r *http.R
 	}
 	var in pulsa24InquiryInput
 	if json.NewDecoder(r.Body).Decode(&in) != nil || strings.TrimSpace(in.SKU) == "" || strings.TrimSpace(in.Target) == "" {
-		response.Error(w, http.StatusBadRequest, "produk H2H dan ID pelanggan wajib diisi")
+		response.Error(w, http.StatusBadRequest, "produk H2HR dan ID pelanggan wajib diisi")
+		return
+	}
+	if h.products == nil {
+		response.Error(w, http.StatusServiceUnavailable, "katalog H2HR belum tersedia")
+		return
+	}
+	if _, found, err := h.products.LiveProduct(in.SKU); err != nil || !found {
+		response.Error(w, http.StatusServiceUnavailable, "SKU inquiry tidak tersedia di katalog H2HR aktif")
 		return
 	}
 	refID := h.pulsa24.NewRefID()

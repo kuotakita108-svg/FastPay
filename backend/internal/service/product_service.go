@@ -57,13 +57,9 @@ func (s *ProductService) ListByService(serviceName string) []domain.Product {
 	if live, err := s.liveProducts(); err == nil && len(live) > 0 {
 		return filterProductsByService(live, serviceName)
 	}
-	// Once H2HR is configured, an embedded snapshot must never become a
-	// purchasable fallback. Provider catalogues change and stale SKUs are
-	// rejected by PAY even though their old name and price still look valid.
-	if s.h2h != nil && s.h2h.Enabled() {
-		return []domain.Product{}
-	}
-	return filterProductsByService(s.List(), serviceName)
+	// The customer-facing catalogue is H2HR only, even if provider credentials
+	// are missing or the live request fails. Never expose the embedded H2H list.
+	return []domain.Product{}
 }
 
 // LiveProduct returns an exact, currently advertised H2HR SKU. It is used by
