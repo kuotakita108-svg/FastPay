@@ -204,6 +204,21 @@ const automaticAliases={
   'NARUTO SHIPPUDEN':'naruto-shippuden-mobile',
   'PUBG NEW STATE MOBILE':'new-state-mobile',
   'CRYSTAL OF ALTLAN':'crystal-of-atlan',
+  // Multifinance: katalog H2HR memakai banyak variasi nama untuk perusahaan
+  // yang sama. Semua variasi diarahkan ke satu aset logo brand yang tajam.
+  'ACC FINANCE':'finance-acc','ASTRA CREDIT COMPANIES':'finance-acc',
+  'ADIRA FINANCE':'finance-adira-finance','ADIRA FINANCE (MOTORDURABLE GOOD DAN SYARIAH)':'finance-adira-finance',
+  'AEON CICILAN':'finance-aeon-credit-service','AEON CREDIT SERVICE INDONESIA':'finance-aeon-credit-service','PT AEON CREDIT SERVICE INDONESIA':'finance-aeon-credit-service',
+  'BCA FINANCE':'finance-bca-finance','BCA FINANCE BCAF':'finance-bca-finance','BCA MULTIFINANCE':'finance-bca-finance',
+  'BFI FINANCE':'finance-bfi-finance','PT. BFI FINANCE INDONESIA':'finance-bfi-finance',
+  'BLIBLI.COM TAGIHAN DIATAS 1JT':'finance-blibli','BTN KPR BTN':'finance-btn',
+  'BUSAN AUTO FINANCE':'finance-bussan-auto-finance','BUSSAN AUTO FINANCE (BAF)':'finance-bussan-auto-finance','BUSSAN AUTO FINANCE BAF':'finance-bussan-auto-finance',
+  'FIF ANGSURAN':'finance-fif-astra','FIF FINANCE':'finance-fif-astra','FIF GROUP':'finance-fif-astra','FIF SYARIAH':'finance-fif-astra',
+  'HOME CREDIT':'finance-home-credit','HOME CREDIT INDONESIA':'finance-home-credit',
+  'ANGSURAN KREDIT PLUS(FINANSIA)':'finance-kreditplus','KREDIT PLUS (FINANSIA)':'finance-kreditplus','KREDITPLUS/FINANSIA':'finance-kreditplus',
+  KREDIVO:'finance-kredivo','PEGADAIAN CICIL MIKRO':'finance-pegadaian','PEGADAIAN GADAI ULANG':'finance-pegadaian','PEGADAIAN TEBUS GADAI':'finance-pegadaian',
+  'PEMBA PT. TOYOTA ASTRA FINANCIAL SERVICES':'finance-toyota-financial-service','TOYOTA ASTRA FINANCIAL SERVICES':'finance-toyota-financial-service','TOYOTA ASTRA FINANCIAL SERVICES (TAF) TAF':'finance-toyota-financial-service',
+  'WOM FINANCE':'finance-wom-finance',
 }
 const findAutomaticLogo=name=>{
   const key=automaticAliases[name]||slug(name)
@@ -244,6 +259,13 @@ function ProviderSymbol({name}){
   if(value.includes('kampus'))return <GraduationCap/>
   if(value.includes('bank'))return <Landmark/>
   return <Store/>
+}
+
+function MultifinanceWordmark({name}){
+  const words=String(name||'Finance').replace(/\([^)]*\)/g,' ').split(/\s+/).filter(Boolean).filter(word=>!['PT','PT.','ANGSURAN','PEMBAYARAN'].includes(word.toUpperCase()))
+  const initials=words.slice(0,3).map(word=>word[0]).join('').toUpperCase()||'MF'
+  const label=words.slice(0,2).join(' ').toUpperCase().slice(0,22)||'MULTIFINANCE'
+  return <svg className="provider-svg-logo provider-svg-finance-wordmark" viewBox="0 0 120 72" aria-hidden="true"><rect x="2" y="2" width="116" height="68" rx="16" fill="#fff"/><circle cx="31" cy="31" r="22" fill="#4f3bd8"/><text x="31" y="37" textAnchor="middle" fill="#fff" fontSize="17" fontWeight="900" fontFamily="Arial, sans-serif">{initials}</text><text x="60" y="28" textAnchor="middle" fill="#222b45" fontSize="8" fontWeight="900" fontFamily="Arial, sans-serif">{label}</text><text x="60" y="41" textAnchor="middle" fill="#7464e9" fontSize="7" fontWeight="800" fontFamily="Arial, sans-serif">FINANCE</text></svg>
 }
 
 function ProviderSvgLogo({spec}){
@@ -292,6 +314,7 @@ export default function ProviderLogo({name,className='',priority=false,service='
   const useBundledFallback=event=>{if(bundled&&event.currentTarget.src!==bundled)event.currentTarget.src=bundled}
   if(image)return <i className={`${className} provider-logo-rendered provider-logo-image`} data-brand={slug(clean)}><img src={image} alt={`Logo ${name}`} loading={priority?'eager':'lazy'} fetchPriority={priority?'high':'auto'} decoding="async" onError={useBundledFallback}/></i>
   if(automatic)return <i className={`${className} provider-logo-rendered provider-logo-image`} data-brand={slug(clean)}><img src={automatic} alt={`Logo ${name}`} loading={priority?'eager':'lazy'} fetchPriority={priority?'high':'auto'} decoding="async"/></i>
+  if(service==='multifinance')return <i className={`${className} provider-logo-rendered provider-logo-vector`} data-brand={slug(clean)} role="img" aria-label={`Logo ${name}`}><MultifinanceWordmark name={clean}/></i>
   const spec=findLogoMatch(clean,svgLogos)?.[1]
   if(spec)return <i className={`${className} provider-logo-rendered provider-logo-vector`} data-brand={slug(clean)} role="img" aria-label={`Logo ${name}`}><ProviderSvgLogo spec={spec}/></i>
   return <i className={`${className} provider-logo-rendered provider-wordmark`} data-brand={slug(clean)} role="img" aria-label={`Logo ${name}`}><ProviderSymbol name={clean}/></i>
