@@ -262,10 +262,8 @@ function ProviderSymbol({name}){
 }
 
 function MultifinanceWordmark({name}){
-  const words=String(name||'Finance').replace(/\([^)]*\)/g,' ').split(/\s+/).filter(Boolean).filter(word=>!['PT','PT.','ANGSURAN','PEMBAYARAN'].includes(word.toUpperCase()))
-  const initials=words.slice(0,3).map(word=>word[0]).join('').toUpperCase()||'MF'
-  const label=words.slice(0,2).join(' ').toUpperCase().slice(0,22)||'MULTIFINANCE'
-  return <svg className="provider-svg-logo provider-svg-finance-wordmark" viewBox="0 0 120 72" aria-hidden="true"><rect x="2" y="2" width="116" height="68" rx="16" fill="#fff"/><circle cx="31" cy="31" r="22" fill="#4f3bd8"/><text x="31" y="37" textAnchor="middle" fill="#fff" fontSize="17" fontWeight="900" fontFamily="Arial, sans-serif">{initials}</text><text x="60" y="28" textAnchor="middle" fill="#222b45" fontSize="8" fontWeight="900" fontFamily="Arial, sans-serif">{label}</text><text x="60" y="41" textAnchor="middle" fill="#7464e9" fontSize="7" fontWeight="800" fontFamily="Arial, sans-serif">FINANCE</text></svg>
+  const label=String(name||'MULTIFINANCE').replace(/\([^)]*\)/g,' ').replace(/\s+/g,' ').trim().toUpperCase().slice(0,30)
+  return <svg className="provider-svg-logo provider-svg-finance-wordmark" viewBox="0 0 160 52" aria-hidden="true"><rect x="2" y="2" width="156" height="48" rx="8" fill="#fff" stroke="#e8e3f8"/><path fill="#5b42c9" d="M14 13h5v26h-5z"/><text x="28" y="30" fill="#27324a" fontSize="10" fontWeight="900" fontFamily="Arial, sans-serif">{label}</text><text x="28" y="40" fill="#7665cc" fontSize="6" fontWeight="700" fontFamily="Arial, sans-serif">PENYEDIA H2HR</text></svg>
 }
 
 function ProviderSvgLogo({spec}){

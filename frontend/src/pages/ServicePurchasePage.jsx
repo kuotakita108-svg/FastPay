@@ -211,6 +211,23 @@ export default function ServicePurchasePage(){
    </>}
   </section><MobileNav/>
  </main>
+ if(type==='multifinance'&&!catalog)return <main className="mobile-app modern-purchase service-multifinance pdam-flow multifinance-flow">
+  <header className="purchase-head modern"><button type="button" onClick={()=>provider?setProvider(''):navigate(-1)}><ArrowLeft/></button><div><strong>{provider||'Cari Multifinance'}</strong><small>{provider?'Masukkan nomor kontrak':'Pilih perusahaan pembiayaan'}</small></div></header>
+  <section className="pdam-flow-body">
+   {!provider?<><label className="pdam-search"><Search/><input value={providerQuery} onChange={event=>{setProviderQuery(event.target.value);setProviderLimit(30)}} placeholder="Cari nama multifinance" aria-label="Cari nama multifinance"/></label>
+    {productsError&&<p className="pdam-flow-error">Katalog H2HR belum dapat dimuat. Coba lagi nanti.</p>}
+    {productsLoading&&<p className="pdam-flow-hint">Memuat daftar multifinance dari Pulsa24Jam...</p>}
+    {!productsLoading&&!productsError&&matchingProviders.length===0&&<p className="pdam-flow-hint">Multifinance tidak ditemukan dalam katalog aktif.</p>}
+    <div className="pdam-list multifinance-list">{visibleProviders.map(name=><button type="button" key={name} onClick={()=>{setProvider(name);setTarget('');setSelected(null);setBillError('')}}><ProviderLogo name={name} service="multifinance"/><span>{name}</span><ChevronRight/></button>)}</div>
+    {visibleProviders.length<matchingProviders.length&&<button type="button" className="pdam-more" onClick={()=>setProviderLimit(limit=>limit+30)}>Tampilkan multifinance lainnya</button>}
+   </>:<section className="pdam-detail-card multifinance-detail-card">
+    <div className="pdam-detail-heading"><ProviderLogo name={provider} service="multifinance" priority/><div><strong>{provider}</strong><small>Masukkan nomor kontrak pelanggan untuk melihat produk yang tersedia.</small></div></div>
+    <label className="pdam-input-label" htmlFor="multifinance-contract-id">Nomor Kontrak</label>
+    <input id="multifinance-contract-id" value={target} onChange={event=>{setTarget(event.target.value.replace(/[^0-9A-Za-z]/g,''));setSelected(null);setBillError('')}} inputMode="text" autoComplete="off" placeholder="Masukkan nomor kontrak" aria-label="Nomor kontrak multifinance"/>
+    <button type="button" onClick={()=>{openCatalog();window.scrollTo({top:0,behavior:'smooth'})}} disabled={target.trim().length<4}><Search/> Lihat Produk &amp; Tagihan</button>
+   </section>}
+  </section><MobileNav/>
+ </main>
  if(catalog)return <main className={`mobile-app product-catalog-page service-${type} catalog-provider-${providerIndex}`}>
   <header className="catalog-page-head"><button onClick={closeCatalog}><ArrowLeft/></button><div><strong>Produk {provider}</strong><small>{config.title} · {products.length} pilihan tersedia</small></div></header>
   <section className="catalog-provider-hero"><div><span>PROVIDER TERPILIH</span><h1>{provider}</h1><p>Pilih produk atau nominal yang paling sesuai dengan kebutuhanmu.</p></div><ProviderLogo name={provider} service={type} className="catalog-provider-logo" priority/></section>
