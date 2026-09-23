@@ -35,6 +35,9 @@ import tvHero from '../assets/service-heroes/tv.webp'
 import voucherHero from '../assets/service-heroes/voucher.webp'
 
 const automatic=['pulsa','data']
+// Pulsa24Jam hanya menyediakan pulsa dan paket data untuk operator seluler
+// berikut. Batasi kartu agar produk lintas layanan tidak ikut tampil.
+const mobileProviderKeys=new Set(['axis','indosat','smartfren','telkomsel','tri','xl','by.u'])
 // Nominal bebas hanya boleh dipakai setelah pengguna memilih SKU
 // OPEN_AMOUNT dari katalog H2HR. Tab generik sebelumnya dapat membawa SKU
 // FIXED yang sudah terpilih lalu mengirim nominal sebagai qty.
@@ -88,7 +91,7 @@ export default function ServicePurchasePage(){
  useEffect(()=>{if(user?.id)loadFavoriteContacts(user.id).then(setFavoriteContacts).catch(()=>setContactHint('Favorit belum dapat dimuat dari server.'))},[user?.id])
  const normalize=value=>String(value||'').trim().toLocaleLowerCase('id-ID')
  const serviceProducts=useMemo(()=>Array.isArray(data)?data.filter(item=>item.service?item.service===type:normalize(item.category)===normalize(config.category)).filter(item=>type!=='pln'||/^(?:PLN\s*(?:TOKEN|PREPAID|PRABAYAR|PASKABAYAR|POSTPAID|POST)|CEK PLN)/i.test(item.name||'')):[],[data,type,config.category])
- const availableProviders=useMemo(()=>{const source=serviceProducts.map(item=>item.operator),seen=new Set();const nonGameProviders=new Set(['telkomsel','k-vision','nex parabola','transvision']);return source.filter(name=>{const key=normalize(name);if(!key||key==='garena'||key==='xl/axis'||(type==='bank'&&key==='bank')||(type==='game'&&nonGameProviders.has(key))||(type==='tv'&&key==='tv berlangganan')||seen.has(key))return false;seen.add(key);return true})},[serviceProducts,type])
+ const availableProviders=useMemo(()=>{const source=serviceProducts.map(item=>item.operator),seen=new Set();const nonGameProviders=new Set(['telkomsel','k-vision','nex parabola','transvision']);return source.filter(name=>{const key=normalize(name);if(!key||((type==='pulsa'||type==='data')&&!mobileProviderKeys.has(key))||key==='garena'||key==='xl/axis'||(type==='bank'&&key==='bank')||(type==='game'&&nonGameProviders.has(key))||(type==='tv'&&key==='tv berlangganan')||seen.has(key))return false;seen.add(key);return true})},[serviceProducts,type])
  const matchingProviders=useMemo(()=>availableProviders.filter(name=>normalize(name).includes(normalize(providerQuery))),[availableProviders,providerQuery])
  const visibleProviders=matchingProviders.slice(0,providerLimit)
  const products=useMemo(()=>{const seen=new Set();return serviceProducts.filter(product=>normalize(product.operator)===normalize(provider)&&product.sku&&(type!=='pln'||plnMode==='bill'||/^(?:PLN\s*(?:TOKEN|PREPAID|PRABAYAR))/i.test(product.name||''))).filter(product=>{const key=`sku:${normalize(product.sku)}`;if(seen.has(key))return false;seen.add(key);return true})},[serviceProducts,provider,type,plnMode])
