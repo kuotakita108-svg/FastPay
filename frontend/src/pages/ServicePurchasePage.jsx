@@ -42,6 +42,7 @@ const mobileProviderKeys=new Set(['axis','indosat','smartfren','telkomsel','tri'
 // OPEN_AMOUNT dari katalog H2HR. Tab generik sebelumnya dapat membawa SKU
 // FIXED yang sudah terpilih lalu mengirim nominal sebagai qty.
 const custom=[]
+const bankAmountPresets=[50000,100000,200000,300000,500000,1000000]
 const isOpenProduct=product=>Boolean(product&&String(product.status||'').startsWith('OPEN_AMOUNT'))
 const isVariableProduct=product=>Boolean(isOpenProduct(product)&&Number(product.nominal||0)<=0)
 const phoneServices=['pulsa','data','ewallet','pascabayar']
@@ -90,7 +91,7 @@ export default function ServicePurchasePage(){
  useEffect(()=>{setCatalog(Boolean(location.state?.catalog))},[location.state])
  useEffect(()=>{if(user?.id)loadFavoriteContacts(user.id).then(setFavoriteContacts).catch(()=>setContactHint('Favorit belum dapat dimuat dari server.'))},[user?.id])
  const normalize=value=>String(value||'').trim().toLocaleLowerCase('id-ID')
- const serviceProducts=useMemo(()=>Array.isArray(data)?data.filter(item=>item.service?item.service===type:normalize(item.category)===normalize(config.category)).filter(item=>type!=='pln'||/^(?:PLN\s*(?:TOKEN|PREPAID|PRABAYAR|PASKABAYAR|POSTPAID|POST)|CEK PLN)/i.test(item.name||'')).filter(item=>type!=='tax'||(normalize(item.operator)==='pbb'&&normalize(item.category)==='pajak daerah')):[],[data,type,config.category])
+ const serviceProducts=useMemo(()=>Array.isArray(data)?data.filter(item=>item.service?item.service===type:normalize(item.category)===normalize(config.category)).filter(item=>type!=='pln'||/^(?:PLN\s*(?:TOKEN|PREPAID|PRABAYAR|PASKABAYAR|POSTPAID|POST)|CEK PLN)/i.test(item.name||'')).filter(item=>type!=='tax'||(normalize(item.operator)==='pbb'&&normalize(item.category)==='pajak daerah')).filter(item=>type!=='bank'||normalize(item.category)==='bank transfer'):[],[data,type,config.category])
  const availableProviders=useMemo(()=>{const source=serviceProducts.map(item=>type==='tax'?item.name:item.operator),seen=new Set();const nonGameProviders=new Set(['telkomsel','k-vision','nex parabola','transvision']);return source.filter(name=>{const key=normalize(name);if(!key||(type==='voucher'&&key==='samsat')||((type==='pulsa'||type==='data')&&!mobileProviderKeys.has(key))||key==='garena'||key==='xl/axis'||(type==='bank'&&key==='bank')||(type==='game'&&nonGameProviders.has(key))||(type==='tv'&&key==='tv berlangganan')||seen.has(key))return false;seen.add(key);return true})},[serviceProducts,type])
  const matchingProviders=useMemo(()=>availableProviders.filter(name=>normalize(name).includes(normalize(providerQuery))),[availableProviders,providerQuery])
  const visibleProviders=matchingProviders.slice(0,providerLimit)
@@ -139,6 +140,14 @@ export default function ServicePurchasePage(){
   } catch(error) { setBillError(error.message) } finally { setCheckingBill(false) }
  }
  const checkout=()=>{const checkoutSKU=type==='pln'&&plnMode==='bill'?plnBill?.sku:selected?.sku;if(!checkoutSKU||amount<1){show('Produk belum tersedia pada katalog aktif H2HR. Pilih produk lain.');return}const backgroundLocation={...location,state:{...location.state,catalog:true,purchase:purchaseSnapshot()}};navigate('/app/checkout',{state:{backgroundLocation,order:{type,title:type==='pln'&&plnMode==='bill'?'Bayar Tagihan PLN':config.title,target,provider:type==='pln'&&plnMode==='bill'?'PLN Pascabayar':provider,product:type==='pln'&&plnMode==='bill'?`Tagihan PLN ${plnBill?.idpel}`:selected?.name||config.title,amount,nominal:type==='pln'&&plnMode==='bill'?amount:transactionNominal,providerFee:selectedOpen?Number(selected?.price||0):0,sku:type==='pln'&&plnMode==='bill'?plnBill?.sku:selected?.sku,qty:type==='pln'&&plnMode==='bill'?amount:(selectedOpen?transactionNominal:1),detail:type==='pln'&&plnMode==='bill'?plnBill:null}}})}
+ const checkoutBank=()=>{
+  const product=products.find(isOpenProduct),nominal=Number(freeAmount),admin=Number(product?.price||0)
+  if(!product?.sku){show('SKU transfer bank belum tersedia di katalog H2HR.');return}
+  if(target.replace(/\D/g,'').length<6){show('Masukkan nomor rekening yang valid.');return}
+  if(nominal<10000){show('Nominal transfer minimum Rp10.000.');return}
+  const backgroundLocation={...location,state:{...location.state,purchase:purchaseSnapshot()}}
+  navigate('/app/checkout',{state:{backgroundLocation,order:{type,title:'Transfer Bank',target:target.replace(/\D/g,''),provider,product:product.name||`Transfer ${provider}`,amount:nominal+admin,nominal,providerFee:admin,sku:product.sku,qty:nominal}}})
+ }
  const checkPdamBill=async()=>{
   const product=products.find(item=>item.sku)
   if(!product){setBillError('Produk PDAM ini belum tersedia di katalog H2HR.');return}
@@ -242,6 +251,27 @@ export default function ServicePurchasePage(){
     <label className="pdam-input-label" htmlFor="tax-billing-id">NOP / Kode Billing</label>
     <input id="tax-billing-id" value={target} onChange={event=>{setTarget(event.target.value.replace(/[^0-9A-Za-z]/g,''));setSelected(null);setBillError('')}} inputMode="text" autoComplete="off" placeholder="Masukkan NOP atau kode billing" aria-label="NOP atau kode billing pajak"/>
     <button type="button" onClick={()=>{openCatalog();window.scrollTo({top:0,behavior:'smooth'})}} disabled={target.trim().length<4}><Search/> Lihat Produk Pajak</button>
+   </section>}
+  </section><MobileNav/>
+ </main>
+ if(type==='bank')return <main className="mobile-app modern-purchase service-bank pdam-flow bank-transfer-flow">
+  <header className="purchase-head modern"><button type="button" onClick={()=>provider?setProvider(''):navigate(-1)}><ArrowLeft/></button><div><strong>{provider||'Cari Bank Tujuan'}</strong><small>{provider?'Isi rekening dan nominal transfer':'Pilih bank dari katalog H2HR'}</small></div></header>
+  <section className="pdam-flow-body">
+   {!provider?<><label className="pdam-search"><Search/><input value={providerQuery} onChange={event=>{setProviderQuery(event.target.value);setProviderLimit(30)}} placeholder="Cari nama bank" aria-label="Cari bank tujuan"/></label>
+    {productsError&&<p className="pdam-flow-error">Katalog Transfer Bank H2HR belum dapat dimuat.</p>}
+    {productsLoading&&<p className="pdam-flow-hint">Memuat daftar bank dari Pulsa24Jam...</p>}
+    {!productsLoading&&!productsError&&matchingProviders.length===0&&<p className="pdam-flow-hint">Bank tidak ditemukan dalam katalog aktif.</p>}
+    <div className="pdam-list bank-transfer-list">{visibleProviders.map(name=><button type="button" key={name} onClick={()=>{setProvider(name);setTarget('');setFreeAmount('');setSelected(null)}}><ProviderLogo name={name} service="bank"/><span>{name}</span><ChevronRight/></button>)}</div>
+    {visibleProviders.length<matchingProviders.length&&<button type="button" className="pdam-more" onClick={()=>setProviderLimit(limit=>limit+30)}>Tampilkan bank lainnya</button>}
+   </>:<section className="pdam-detail-card bank-transfer-card">
+    <div className="pdam-detail-heading"><ProviderLogo name={provider} service="bank" priority/><div><strong>{provider}</strong><small>Transfer memakai produk resmi Pulsa24Jam.</small></div></div>
+    <label className="pdam-input-label" htmlFor="bank-account-number">Nomor Rekening</label>
+    <input id="bank-account-number" value={target} onChange={event=>setTarget(event.target.value.replace(/\D/g,''))} inputMode="numeric" autoComplete="off" placeholder="Masukkan nomor rekening tujuan" aria-label="Nomor rekening tujuan"/>
+    <label className="pdam-input-label bank-amount-label" htmlFor="bank-transfer-amount">Nominal Transfer</label>
+    <div className="bank-amount-input"><span>Rp</span><input id="bank-transfer-amount" value={freeAmount?Number(freeAmount).toLocaleString('id-ID'):''} onChange={event=>setFreeAmount(event.target.value.replace(/\D/g,''))} inputMode="numeric" placeholder="0" aria-label="Nominal transfer"/></div>
+    <div className="bank-amount-presets">{bankAmountPresets.map(value=><button type="button" className={Number(freeAmount)===value?'active':''} onClick={()=>setFreeAmount(String(value))} key={value}>{value>=1000000?'1 Juta':`${value/1000} Ribu`}</button>)}</div>
+    <div className="bank-transfer-summary"><span>Biaya admin Pulsa24Jam</span><strong>{rupiah(Number(products.find(isOpenProduct)?.price||0))}</strong></div>
+    <button type="button" onClick={checkoutBank} disabled={target.length<6||Number(freeAmount)<10000||!products.find(isOpenProduct)}><ChevronRight/> Kirim Transfer</button>
    </section>}
   </section><MobileNav/>
  </main>
