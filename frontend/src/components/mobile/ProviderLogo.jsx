@@ -12,6 +12,7 @@ import jago from '../../assets/providers/official/jago.svg'
 import fif from '../../assets/providers/official/fif.png'
 import spotify from '../../assets/providers/official/spotify.png'
 import vidio from '../../assets/providers/official/vidio.png'
+import voucherBrand from '../../assets/service-emblems-hd/voucher.webp'
 import pajak from '../../assets/providers/official/pajak.png'
 import telkomsel from '../../assets/providers/telkomsel.png'
 import indosat from '../../assets/providers/indosat.png'
@@ -285,7 +286,7 @@ function ProviderSvgLogo({spec}){
 export default function ProviderLogo({name,className='',priority=false,service=''}){
   const clean=normalize(name)
   const automatic=findAutomaticLogo(clean)
-  const bundled=findLogoMatch(clean,imageLogos)?.[1]||automatic
+  const bundled=(clean==='Voucher'?voucherBrand:null)||findLogoMatch(clean,imageLogos)?.[1]||automatic
   const telkomImage=/indihome/i.test(clean)?indihomeOfficial:/\btelkom\b/i.test(clean)&&!/telkomsel/i.test(clean)?telkomOfficial:null
   const image=telkomImage||(service==='gas'&&/pgn|perusahaan gas negara/i.test(clean)?pgnOfficial:null)||(service==='pdam'?pdamLogo:null)||findLogoMatch(clean,officialInsuranceLogos)?.[1]||findLogoMatch(clean,highResolutionBankLogos)?.[1]||bundled
   const useBundledFallback=event=>{if(bundled&&event.currentTarget.src!==bundled)event.currentTarget.src=bundled}
