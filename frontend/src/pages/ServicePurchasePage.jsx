@@ -90,11 +90,11 @@ export default function ServicePurchasePage(){
  useEffect(()=>{setCatalog(Boolean(location.state?.catalog))},[location.state])
  useEffect(()=>{if(user?.id)loadFavoriteContacts(user.id).then(setFavoriteContacts).catch(()=>setContactHint('Favorit belum dapat dimuat dari server.'))},[user?.id])
  const normalize=value=>String(value||'').trim().toLocaleLowerCase('id-ID')
- const serviceProducts=useMemo(()=>Array.isArray(data)?data.filter(item=>item.service?item.service===type:normalize(item.category)===normalize(config.category)).filter(item=>type!=='pln'||/^(?:PLN\s*(?:TOKEN|PREPAID|PRABAYAR|PASKABAYAR|POSTPAID|POST)|CEK PLN)/i.test(item.name||'')):[],[data,type,config.category])
- const availableProviders=useMemo(()=>{const source=serviceProducts.map(item=>item.operator),seen=new Set();const nonGameProviders=new Set(['telkomsel','k-vision','nex parabola','transvision']);return source.filter(name=>{const key=normalize(name);if(!key||(type==='voucher'&&key==='samsat')||((type==='pulsa'||type==='data')&&!mobileProviderKeys.has(key))||key==='garena'||key==='xl/axis'||(type==='bank'&&key==='bank')||(type==='game'&&nonGameProviders.has(key))||(type==='tv'&&key==='tv berlangganan')||seen.has(key))return false;seen.add(key);return true})},[serviceProducts,type])
+ const serviceProducts=useMemo(()=>Array.isArray(data)?data.filter(item=>item.service?item.service===type:normalize(item.category)===normalize(config.category)).filter(item=>type!=='pln'||/^(?:PLN\s*(?:TOKEN|PREPAID|PRABAYAR|PASKABAYAR|POSTPAID|POST)|CEK PLN)/i.test(item.name||'')).filter(item=>type!=='tax'||(normalize(item.operator)==='pbb'&&normalize(item.category)==='pajak daerah')):[],[data,type,config.category])
+ const availableProviders=useMemo(()=>{const source=serviceProducts.map(item=>type==='tax'?item.name:item.operator),seen=new Set();const nonGameProviders=new Set(['telkomsel','k-vision','nex parabola','transvision']);return source.filter(name=>{const key=normalize(name);if(!key||(type==='voucher'&&key==='samsat')||((type==='pulsa'||type==='data')&&!mobileProviderKeys.has(key))||key==='garena'||key==='xl/axis'||(type==='bank'&&key==='bank')||(type==='game'&&nonGameProviders.has(key))||(type==='tv'&&key==='tv berlangganan')||seen.has(key))return false;seen.add(key);return true})},[serviceProducts,type])
  const matchingProviders=useMemo(()=>availableProviders.filter(name=>normalize(name).includes(normalize(providerQuery))),[availableProviders,providerQuery])
  const visibleProviders=matchingProviders.slice(0,providerLimit)
- const products=useMemo(()=>{const seen=new Set();return serviceProducts.filter(product=>normalize(product.operator)===normalize(provider)&&product.sku&&(type!=='pln'||plnMode==='bill'||/^(?:PLN\s*(?:TOKEN|PREPAID|PRABAYAR))/i.test(product.name||''))).filter(product=>{const key=`sku:${normalize(product.sku)}`;if(seen.has(key))return false;seen.add(key);return true})},[serviceProducts,provider,type,plnMode])
+ const products=useMemo(()=>{const seen=new Set();return serviceProducts.filter(product=>(type==='tax'?normalize(product.name)===normalize(provider):normalize(product.operator)===normalize(provider))&&product.sku&&(type!=='pln'||plnMode==='bill'||/^(?:PLN\s*(?:TOKEN|PREPAID|PRABAYAR))/i.test(product.name||''))).filter(product=>{const key=`sku:${normalize(product.sku)}`;if(seen.has(key))return false;seen.add(key);return true})},[serviceProducts,provider,type,plnMode])
  const catalogGroups=useMemo(()=>[...new Set(products.map(product=>product.group).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id')),[products])
  const filteredProducts=useMemo(()=>products.filter(product=>(!catalogGroup||product.group===catalogGroup)&&normalize(`${product.name} ${product.sku||''} ${product.group||''}`).includes(normalize(productQuery))),[products,productQuery,catalogGroup])
  const visibleProducts=filteredProducts.slice(0,productLimit)
@@ -225,6 +225,23 @@ export default function ServicePurchasePage(){
     <label className="pdam-input-label" htmlFor="multifinance-contract-id">Nomor Kontrak</label>
     <input id="multifinance-contract-id" value={target} onChange={event=>{setTarget(event.target.value.replace(/[^0-9A-Za-z]/g,''));setSelected(null);setBillError('')}} inputMode="text" autoComplete="off" placeholder="Masukkan nomor kontrak" aria-label="Nomor kontrak multifinance"/>
     <button type="button" onClick={()=>{openCatalog();window.scrollTo({top:0,behavior:'smooth'})}} disabled={target.trim().length<4}><Search/> Lihat Produk &amp; Tagihan</button>
+   </section>}
+  </section><MobileNav/>
+ </main>
+ if(type==='tax'&&!catalog)return <main className="mobile-app modern-purchase service-tax pdam-flow tax-flow">
+  <header className="purchase-head modern"><button type="button" onClick={()=>provider?setProvider(''):navigate(-1)}><ArrowLeft/></button><div><strong>{provider||'Cari Pajak Daerah'}</strong><small>{provider?'Masukkan NOP atau kode billing':'Pilih daerah dari katalog H2HR'}</small></div></header>
+  <section className="pdam-flow-body">
+   {!provider?<><label className="pdam-search"><Search/><input value={providerQuery} onChange={event=>{setProviderQuery(event.target.value);setProviderLimit(30)}} placeholder="Cari kota, kabupaten, atau jenis pajak" aria-label="Cari pajak daerah"/></label>
+    {productsError&&<p className="pdam-flow-error">Katalog Pajak H2HR belum dapat dimuat. Coba lagi nanti.</p>}
+    {productsLoading&&<p className="pdam-flow-hint">Memuat daftar Pajak Daerah dari Pulsa24Jam...</p>}
+    {!productsLoading&&!productsError&&matchingProviders.length===0&&<p className="pdam-flow-hint">Pajak daerah tidak ditemukan dalam katalog aktif.</p>}
+    <div className="pdam-list tax-list">{visibleProviders.map(name=><button type="button" key={name} onClick={()=>{setProvider(name);setTarget('');setSelected(null);setBillError('')}}><ProviderLogo name={name} service="tax"/><span>{name}</span><ChevronRight/></button>)}</div>
+    {visibleProviders.length<matchingProviders.length&&<button type="button" className="pdam-more" onClick={()=>setProviderLimit(limit=>limit+30)}>Tampilkan pajak lainnya</button>}
+   </>:<section className="pdam-detail-card tax-detail-card">
+    <div className="pdam-detail-heading"><ProviderLogo name={provider} service="tax" priority/><div><strong>{provider}</strong><small>Masukkan NOP atau kode billing sesuai data pajak.</small></div></div>
+    <label className="pdam-input-label" htmlFor="tax-billing-id">NOP / Kode Billing</label>
+    <input id="tax-billing-id" value={target} onChange={event=>{setTarget(event.target.value.replace(/[^0-9A-Za-z]/g,''));setSelected(null);setBillError('')}} inputMode="text" autoComplete="off" placeholder="Masukkan NOP atau kode billing" aria-label="NOP atau kode billing pajak"/>
+    <button type="button" onClick={()=>{openCatalog();window.scrollTo({top:0,behavior:'smooth'})}} disabled={target.trim().length<4}><Search/> Lihat Produk Pajak</button>
    </section>}
   </section><MobileNav/>
  </main>
