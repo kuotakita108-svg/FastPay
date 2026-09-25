@@ -1,6 +1,21 @@
 import {request} from './http'
 
 const cache = new Map()
+const STORAGE_PREFIX='kuotakita:products:v1:'
+const STORAGE_TTL=15*60*1000
+
+const readStored=key=>{
+  try{
+    const stored=JSON.parse(localStorage.getItem(`${STORAGE_PREFIX}${key}`)||'null')
+    if(Array.isArray(stored?.data)&&stored.data.length>0&&Date.now()-stored.savedAt<STORAGE_TTL)return stored
+  }catch{/* cache perangkat boleh diabaikan jika tidak tersedia atau rusak */}
+  return null
+}
+
+const writeStored=(key,data,savedAt)=>{
+  try{localStorage.setItem(`${STORAGE_PREFIX}${key}`,JSON.stringify({data,savedAt}))}
+  catch{/* katalog tetap tersedia dari memori jika penyimpanan browser penuh */}
+}
 
 const normalizeText=value=>String(value||'').trim()
 const classifyService=product=>{
@@ -52,8 +67,12 @@ const normalizeProduct=raw=>{
 
 export const getProducts = async service => {
   const key = service || 'all'
-  const existing = cache.get(key)
-  if (existing?.data && Date.now() - existing.savedAt < 120000) return existing.data
+  let existing = cache.get(key)
+  if(!existing){
+    existing=readStored(key)
+    if(existing)cache.set(key,existing)
+  }
+  if (existing?.data && Date.now() - existing.savedAt < STORAGE_TTL) return existing.data
   if (existing?.promise) return existing.promise
   // Katalog H2HR dapat berisi lebih dari sembilan ribu baris. Permintaan
   // pertama setelah deploy perlu waktu lebih lama untuk mengambil dan
@@ -65,7 +84,11 @@ export const getProducts = async service => {
       // Jangan menyimpan respons kosong sesaat setelah backend restart. Tanpa
       // ini halaman terus menampilkan 0 provider selama dua menit meskipun
       // katalog H2HR sudah selesai dimuat pada request berikutnya.
-      if(filtered.length>0)cache.set(key, {data:filtered, savedAt: Date.now()})
+      if(filtered.length>0){
+        const savedAt=Date.now()
+        cache.set(key,{data:filtered,savedAt})
+        writeStored(key,filtered,savedAt)
+      }
       else cache.delete(key)
       return filtered
     })

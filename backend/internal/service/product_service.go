@@ -25,12 +25,23 @@ type ProductService struct {
 	repo       productReader
 	h2h        *Pulsa24Service
 	mu         sync.RWMutex
+	refreshMu  sync.Mutex
 	live       []domain.Product
 	liveLoaded time.Time
 }
 
 func NewProductService(r productReader) *ProductService   { return &ProductService{repo: r} }
 func (s *ProductService) UseH2H(provider *Pulsa24Service) { s.h2h = provider }
+
+// Warm starts loading the provider catalogue before the first customer opens a
+// purchase page. It only fills the in-memory cache and never changes stored
+// products, balances, accounts, or transaction data.
+func (s *ProductService) Warm() {
+	if s.h2h == nil || !s.h2h.Enabled() {
+		return
+	}
+	go func() { _, _ = s.liveProducts() }()
+}
 func (s *ProductService) List() []domain.Product {
 	h2hOnce.Do(func() {
 		if err := json.Unmarshal(h2hCatalogJSON, &h2hProducts); err != nil {
@@ -164,6 +175,18 @@ func (s *ProductService) liveProducts() ([]domain.Product, error) {
 	if s.h2h == nil || !s.h2h.Enabled() {
 		return nil, fmt.Errorf("H2HR tidak aktif")
 	}
+	s.mu.RLock()
+	if len(s.live) > 0 && time.Since(s.liveLoaded) < 5*time.Minute {
+		result := append([]domain.Product(nil), s.live...)
+		s.mu.RUnlock()
+		return result, nil
+	}
+	s.mu.RUnlock()
+	// Only one PRODUK request may run at a time. A cold server is commonly hit
+	// by several mobile pages together; without this guard each request downloads
+	// and parses the same large H2HR catalogue independently.
+	s.refreshMu.Lock()
+	defer s.refreshMu.Unlock()
 	s.mu.RLock()
 	if len(s.live) > 0 && time.Since(s.liveLoaded) < 5*time.Minute {
 		result := append([]domain.Product(nil), s.live...)
