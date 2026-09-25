@@ -1,5 +1,6 @@
 import {request} from './http'
 import {canonicalRole} from '../utils/role'
+import {env} from '../config/env'
 
 function normalizeAuth(result,{requireToken=true}={}){
   const payload=result?.data??result
@@ -68,41 +69,8 @@ export async function resetPassword(profile){
   return request('/auth/reset-password',{method:'POST',body:JSON.stringify({identity,password:profile.password})})
 }
 
-let googleScriptPromise
-function loadGoogleIdentity(){
-  if(globalThis.google?.accounts?.id)return Promise.resolve(globalThis.google)
-  if(!googleScriptPromise)googleScriptPromise=new Promise((resolve,reject)=>{
-    const script=document.createElement('script')
-    script.src='https://accounts.google.com/gsi/client'
-    script.async=true
-    script.defer=true
-    script.dataset.kuotakitaGoogle='true'
-    script.onload=()=>resolve(globalThis.google)
-    script.onerror=()=>reject(new Error('Google Login gagal dimuat.'))
-    document.head.appendChild(script)
-  })
-  return googleScriptPromise
-}
-
-export async function googleLogin(){
-  const clientId=import.meta.env.VITE_GOOGLE_CLIENT_ID
-  if(!clientId)throw new Error('Google Client ID belum dikonfigurasi.')
-  const google=await loadGoogleIdentity()
-  const credential=await new Promise((resolve,reject)=>{
-    let settled=false
-    google.accounts.id.initialize({client_id:clientId,callback:response=>{
-      if(settled)return
-      settled=true
-      if(response?.credential)resolve(response.credential)
-      else reject(new Error('Credential Google tidak diterima.'))
-    }})
-    google.accounts.id.prompt(notification=>{
-      if(settled)return
-      if(notification.isNotDisplayed?.()||notification.isSkippedMoment?.()){
-        settled=true
-        reject(new Error('Jendela Google Login tidak dapat ditampilkan. Izinkan pop-up/cookie lalu coba lagi.'))
-      }
-    })
-  })
-  return normalizeAuth(await request('/auth/google',{method:'POST',body:JSON.stringify({credential})}))
+export function googleLogin(){
+  // Server owns the OAuth state cookie and exchanges Google's authorization
+  // code. Starting this flow with POST made both Go and Cloudflare return 405.
+  window.location.assign(new URL(`${env.apiURL}/auth/google`,window.location.origin).toString())
 }

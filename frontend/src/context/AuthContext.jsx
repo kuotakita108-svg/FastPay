@@ -9,7 +9,7 @@ export function AuthProvider({children}){
 const[session,setSession]=useState(readSession);
 const save=result=>{writeTabSession(result);setSession(result);return result};
 const login=async credentials=>save(await loginRequest(credentials));
-const googleLogin=async()=>save(await googleLoginRequest());
+const googleLogin=()=>googleLoginRequest();
 const register=async profile=>save(await registerRequest(profile));
 const updateUser=user=>{const next={...session,user:{...session.user,...user}};save(next);return next.user};
 const setBalance=balance=>{const next=updateUser({balance:Number(balance)});return next.balance};

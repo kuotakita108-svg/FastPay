@@ -67,11 +67,9 @@ export default function LoginPage() {
     setError('')
     setNotice('')
     try {
-      const result=await googleLogin()
-      navigate(['user','agent','marketing'].includes(result.user.role)?'/app':['master','operator','analis'].includes(result.user.role)?'/credit-applications':'/dashboard',{replace:true})
+      googleLogin()
     } catch(current) {
       setError(current.message)
-    } finally {
       setLoading(false)
     }
   }

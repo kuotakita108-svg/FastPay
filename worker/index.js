@@ -77,7 +77,7 @@ async function googleAuth(request,env,url){
       await env.DB.prepare('INSERT INTO accounts(id,username,password_hash,name,phone,email,role,balance) VALUES(?,?,?,?,?,?,?,?)').bind(user.id,user.username,`google:${profile.sub}`,user.name,user.phone,user.email,user.role,user.balance).run()
     }
     const session=JSON.stringify(authResult(user)).replace(/</g,'\\u003c')
-    return new Response(`<!doctype html><meta charset="utf-8"><title>Masuk ke KuotaKita</title><script>localStorage.setItem('kuotakita_session',${JSON.stringify(session)});location.replace('/app')</script><p>Menyiapkan akun KuotaKita...</p>`,{headers:{'content-type':'text/html;charset=UTF-8','set-cookie':'kuotakita_oauth_state=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0'}})
+    return new Response(`<!doctype html><meta charset="utf-8"><title>Masuk ke KuotaKita</title><script>sessionStorage.setItem('kuotakita_session',${JSON.stringify(session)});location.replace('/app')</script><p>Menyiapkan akun KuotaKita...</p>`,{headers:{'content-type':'text/html;charset=UTF-8','set-cookie':'kuotakita_oauth_state=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0'}})
   }
   const state=crypto.randomUUID(),authorize=new URL('https://accounts.google.com/o/oauth2/v2/auth')
   authorize.search=new URLSearchParams({client_id:env.GOOGLE_CLIENT_ID,redirect_uri:redirectURI,response_type:'code',scope:'openid email profile',state,prompt:'select_account'}).toString()
