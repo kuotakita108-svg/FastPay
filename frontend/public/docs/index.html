@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#5b42c9">
+  <title>Dokumentasi API KuotaKita</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#f5f3ff;color:#172033;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.page{width:min(920px,calc(100% - 28px));margin:0 auto;padding:36px 0 64px}.hero{padding:30px;border-radius:24px;background:linear-gradient(135deg,#5137c7,#785de8);color:#fff;box-shadow:0 20px 50px #39249d30}.hero small{font-weight:800;letter-spacing:.12em}.hero h1{margin:10px 0 8px;font-size:clamp(28px,7vw,48px)}.hero p{max-width:680px;margin:0;line-height:1.7;color:#eeeaff}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:20px}.card{display:flex;min-height:170px;flex-direction:column;padding:22px;border:1px solid #e5e0f5;border-radius:18px;background:#fff;color:inherit;text-decoration:none;box-shadow:0 10px 30px #24167510}.card span{width:max-content;padding:6px 10px;border-radius:999px;background:#eeeaff;color:#5137c7;font-size:11px;font-weight:900}.card h2{margin:16px 0 7px;font-size:18px}.card p{margin:0;color:#687086;font-size:13px;line-height:1.6}.card b{margin-top:auto;padding-top:18px;color:#5b42c9}.notice{margin-top:18px;padding:18px;border-radius:16px;background:#fff;border:1px solid #e5e0f5;font-size:13px;line-height:1.65;color:#596176}.notice strong{color:#19243a}.footer{padding-top:25px;text-align:center;color:#858ca0;font-size:12px}@media(max-width:650px){.page{padding-top:14px}.hero{padding:24px 20px;border-radius:20px}.grid{grid-template-columns:1fr}.card{min-height:150px}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <small>KUOTAKITA DEVELOPER</small>
+      <h1>Dokumentasi API &amp; Android</h1>
+      <p>Panduan resmi integrasi backend, autentikasi token, transaksi, aplikasi Android Capacitor, dan persiapan rilis Google Play.</p>
+    </section>
+    <section class="grid">
+      <a class="card" href="/docs/API-ANDROID-INTEGRATION.md"><span>API + TOKEN</span><h2>Integrasi Android</h2><p>Endpoint, role, bearer token, payment, polling, upload dokumen, serta contoh Retrofit dan OkHttp.</p><b>Buka dokumen →</b></a>
+      <a class="card" href="/docs/ANDROID-PLAYSTORE-RELEASE.md"><span>ANDROID</span><h2>Rilis Play Store</h2><p>Build Capacitor, AAB, signing, keamanan, Google Login, dan checklist pengiriman Play Console.</p><b>Buka panduan →</b></a>
+      <a class="card" href="/docs/openapi.yaml"><span>OPENAPI 3.0</span><h2>Kontrak Mesin</h2><p>Spesifikasi seluruh operasi HTTP untuk Swagger UI, Postman, Insomnia, dan generator SDK.</p><b>Buka OpenAPI →</b></a>
+      <a class="card" href="https://github.com/kuotakita108-svg/FastPay/tree/main/docs"><span>GITHUB</span><h2>Source Repository</h2><p>Dokumentasi versi terbaru yang tersimpan bersama source code KuotaKita.</p><b>Buka GitHub →</b></a>
+    </section>
+    <aside class="notice"><strong>Keamanan:</strong> token contoh, password, API key Pulsa24Jam, PIN provider, secret Google, dan kredensial database tidak pernah disertakan dalam dokumentasi. Token pengguna diperoleh melalui endpoint login.</aside>
+    <footer class="footer">KuotaKita API Documentation</footer>
+  </main>
+</body>
+</html>
