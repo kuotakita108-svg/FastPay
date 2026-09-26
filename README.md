@@ -4,6 +4,12 @@ KuotaKita adalah platform PPOB dan operasional kredit saldo agent yang menghubun
 
 Data operasional disimpan di server agar akun, pengajuan kredit, saldo, transaksi, keputusan, dan pelunasan tetap sama ketika dibuka dari HP atau komputer berbeda. Penyimpanan browser hanya digunakan sebagai cache dan migrasi data lama, bukan sumber utama.
 
+## Dokumentasi Integrasi
+
+- [API backend, token, dan contoh Android](docs/API-ANDROID-INTEGRATION.md)
+- [Kontrak OpenAPI](docs/openapi.yaml)
+- [Build Android dan rilis Play Store](docs/ANDROID-PLAYSTORE-RELEASE.md)
+
 ## Komponen Utama
 
 | Komponen | Teknologi | Fungsi |

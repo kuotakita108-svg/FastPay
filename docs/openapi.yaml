@@ -1,0 +1,652 @@
+openapi: 3.0.3
+info:
+  title: KuotaKita API
+  version: 1.0.0
+  description: Kontrak API backend KuotaKita untuk web dan Android. Endpoint legacy/internal ditandai pada deskripsi.
+servers:
+  - url: https://kuotakita.com/api/v1
+    description: Production
+security:
+  - bearerAuth: []
+tags:
+  - name: System
+  - name: Auth
+  - name: Products
+  - name: Payments
+  - name: H2H
+  - name: Preferences
+  - name: Credit
+  - name: Internal
+paths:
+  /health:
+    get:
+      tags: [System]
+      security: []
+      summary: Health check
+      responses:
+        '200': {description: Backend sehat}
+  /auth/login:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Login dan terbitkan token sesi 7 hari
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/LoginRequest'}
+      responses:
+        '200':
+          description: Login berhasil
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AuthResult'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+  /auth/register:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Registrasi akun
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/RegisterRequest'}
+      responses:
+        '201':
+          description: Akun berhasil dibuat
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AuthResult'}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+  /auth/google:
+    get:
+      tags: [Auth]
+      security: []
+      summary: Mulai OAuth Google berbasis browser
+      responses:
+        '302': {description: Redirect ke Google}
+        '503': {$ref: '#/components/responses/Unavailable'}
+  /auth/google/callback:
+    get:
+      tags: [Auth]
+      security: []
+      summary: Callback OAuth Google
+      responses:
+        '200': {description: HTML yang menyimpan sesi web dan redirect ke aplikasi}
+  /me:
+    get:
+      tags: [Auth]
+      summary: Profil dan saldo akun aktif
+      responses:
+        '200':
+          description: User aktif
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/User'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+    patch:
+      tags: [Auth]
+      summary: Perbarui profil
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ProfileRequest'}
+      responses:
+        '200':
+          description: Profil terbaru
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/User'}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+  /auth/agents:
+    get:
+      tags: [Auth]
+      summary: Daftar agent terkelola
+      responses:
+        '200': {description: Daftar agent}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+    post:
+      tags: [Auth]
+      summary: Buat agent terkelola
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/RegisterRequest'}
+      responses:
+        '201': {description: Agent dibuat}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+  /auth/agents/{id}/follow-up:
+    patch:
+      tags: [Auth]
+      summary: Perbarui follow-up agent
+      parameters: [{$ref: '#/components/parameters/Id'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: {type: string}
+                note: {type: string}
+      responses:
+        '200': {description: Follow-up tersimpan}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /auth/agents/{id}/access:
+    patch:
+      tags: [Auth]
+      summary: Atur akses agent
+      parameters: [{$ref: '#/components/parameters/Id'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                suspended: {type: boolean}
+                reason: {type: string}
+      responses:
+        '200': {description: Akses diperbarui}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+  /auth/downlines:
+    get:
+      tags: [Auth]
+      summary: Daftar downline
+      responses:
+        '200': {description: Daftar downline}
+    post:
+      tags: [Auth]
+      summary: Buat downline
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/RegisterRequest'}
+      responses:
+        '201': {description: Downline dibuat}
+  /auth/marketing:
+    post:
+      tags: [Auth]
+      summary: Buat akun marketing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/RegisterRequest'}
+      responses:
+        '201': {description: Marketing dibuat}
+  /auth/accounts:
+    get:
+      tags: [Auth]
+      summary: Daftar akun
+      responses:
+        '200': {description: Daftar akun sesuai role}
+  /auth/accounts/{id}/access:
+    patch:
+      tags: [Auth]
+      summary: Suspend atau aktifkan akun
+      parameters: [{$ref: '#/components/parameters/Id'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [suspended]
+              properties:
+                suspended: {type: boolean}
+      responses:
+        '200': {description: Status akses diperbarui}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /auth/accounts/{id}:
+    delete:
+      tags: [Auth]
+      summary: Hapus akun sesuai izin
+      parameters: [{$ref: '#/components/parameters/Id'}]
+      responses:
+        '204': {description: Akun dihapus}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /products:
+    get:
+      tags: [Products]
+      security: []
+      summary: Daftar produk aktif
+      parameters:
+        - in: query
+          name: service
+          schema: {type: string}
+      responses:
+        '200':
+          description: Daftar produk
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/Product'}
+  /services/lookup:
+    post:
+      tags: [Products]
+      security: []
+      summary: Validasi target layanan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/LookupRequest'}
+      responses:
+        '200': {description: Hasil lookup}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+  /services/recipient-lookup:
+    post:
+      tags: [Products]
+      security: []
+      summary: Verifikasi penerima (belum aktif)
+      responses:
+        '503': {$ref: '#/components/responses/Unavailable'}
+  /me/transactions:
+    get:
+      tags: [Payments]
+      summary: Riwayat transaksi pengguna
+      responses:
+        '200':
+          description: Riwayat transaksi
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/Transaction'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+    post:
+      tags: [Payments]
+      summary: Pencatatan manual (dinonaktifkan)
+      responses:
+        '405': {description: Gunakan endpoint pembayaran H2H}
+  /me/payments:
+    post:
+      tags: [Payments]
+      summary: Bayar produk H2H
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/PaymentRequest'}
+      responses:
+        '200': {description: Provider menolak; dana telah dipulihkan}
+        '202': {description: Diterima, sukses atau masih diproses}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+  /me/payments/pending:
+    post:
+      tags: [Payments]
+      summary: Buat invoice pembayaran pending tanpa debit saldo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/PaymentRequest'}
+      responses:
+        '201': {description: Invoice pending dibuat}
+  /me/payments/pending/{id}:
+    get:
+      tags: [Payments]
+      summary: Status invoice pending
+      parameters: [{$ref: '#/components/parameters/Id'}]
+      responses:
+        '200': {description: Status invoice}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /me/topups:
+    post:
+      tags: [Payments]
+      summary: Top-up saldo (belum aktif)
+      responses:
+        '503': {$ref: '#/components/responses/Unavailable'}
+  /h2h/pulsa24jam/status:
+    get:
+      tags: [H2H]
+      summary: Verifikasi status order pengguna
+      parameters:
+        - in: query
+          name: refid
+          required: true
+          schema: {type: string}
+      responses:
+        '200': {description: Status terverifikasi}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '502': {description: Provider belum dapat dihubungi}
+  /h2h/pulsa24jam/inquiry:
+    post:
+      tags: [H2H]
+      summary: Inquiry tagihan pascabayar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sku, target]
+              properties:
+                sku: {type: string}
+                target: {type: string}
+      responses:
+        '200': {description: Hasil inquiry}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+        '502': {description: Inquiry provider gagal}
+  /h2h/pulsa24jam/products:
+    get:
+      tags: [H2H]
+      summary: Katalog mentah Pulsa24Jam untuk user terautentikasi
+      parameters:
+        - in: query
+          name: product
+          schema: {type: string}
+      responses:
+        '200': {description: Respons katalog provider}
+  /h2h/pulsa24jam/balance:
+    get:
+      tags: [H2H]
+      summary: Saldo induk provider; master only
+      responses:
+        '200': {description: Saldo induk}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /h2h/pulsa24jam/operations:
+    get:
+      tags: [H2H]
+      summary: Ledger operasi H2H; master/operator
+      responses:
+        '200': {description: Ringkasan dan order H2H}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /h2h/pulsa24jam/operations/{refid}/refund:
+    post:
+      tags: [H2H]
+      summary: Refund order final gagal; master only
+      parameters:
+        - in: path
+          name: refid
+          required: true
+          schema: {type: string}
+      responses:
+        '200': {description: Refund diproses idempoten}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {description: Order belum final gagal}
+  /webhooks/pulsa24jam:
+    post:
+      tags: [H2H]
+      security: []
+      summary: Callback provider; bukan endpoint aplikasi Android
+      responses:
+        '200': {description: Callback diterima}
+  /me/preferences:
+    get:
+      tags: [Preferences]
+      summary: Preferensi akun
+      responses:
+        '200': {description: Data preferensi}
+    put:
+      tags: [Preferences]
+      summary: Merge preferensi akun
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, additionalProperties: true}
+      responses:
+        '200': {description: Preferensi terbaru}
+  /me/agent-credit:
+    get:
+      tags: [Credit]
+      summary: Pengajuan kredit akun
+      responses:
+        '200': {description: Daftar pengajuan}
+    post:
+      tags: [Credit]
+      summary: Simpan pengajuan kredit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, additionalProperties: true}
+      responses:
+        '200': {description: Pengajuan tersimpan}
+  /agent-credit/applications:
+    get:
+      tags: [Credit]
+      summary: Daftar pengajuan untuk reviewer
+      parameters:
+        - in: query
+          name: summary
+          schema: {type: integer, enum: [1]}
+      responses:
+        '200': {description: Daftar pengajuan}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /agent-credit/applications/{id}:
+    get:
+      tags: [Credit]
+      summary: Detail pengajuan kredit
+      parameters: [{$ref: '#/components/parameters/Id'}]
+      responses:
+        '200': {description: Detail pengajuan}
+        '404': {$ref: '#/components/responses/NotFound'}
+    put:
+      tags: [Credit]
+      summary: Perbarui pengajuan/review
+      parameters: [{$ref: '#/components/parameters/Id'}]
+      requestBody:
+        content:
+          application/json:
+            schema: {type: object, additionalProperties: true}
+      responses:
+        '200': {description: Data tersimpan}
+  /agent-credit/applications/{id}/documents/{documentKey}:
+    get:
+      tags: [Credit]
+      summary: Ambil dokumen pengajuan
+      parameters:
+        - {$ref: '#/components/parameters/Id'}
+        - {$ref: '#/components/parameters/DocumentKey'}
+      responses:
+        '200': {description: Data dokumen}
+    patch:
+      tags: [Credit]
+      summary: Review dokumen
+      parameters:
+        - {$ref: '#/components/parameters/Id'}
+        - {$ref: '#/components/parameters/DocumentKey'}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: {type: string}
+                note: {type: string}
+      responses:
+        '200': {description: Review tersimpan}
+  /agent-credit/applications/{id}/payments:
+    post:
+      tags: [Credit]
+      summary: Catat pembayaran kredit
+      parameters: [{$ref: '#/components/parameters/Id'}]
+      requestBody:
+        content:
+          application/json:
+            schema: {type: object, additionalProperties: true}
+      responses:
+        '200': {description: Pembayaran tercatat}
+  /dashboard:
+    get:
+      tags: [Internal]
+      security: []
+      summary: Legacy dashboard; jangan diekspos ke aplikasi sampai auth middleware ditambahkan
+      responses:
+        '200': {description: Dashboard internal}
+  /transactions:
+    get:
+      tags: [Internal]
+      security: []
+      summary: Legacy transaksi global; jangan diekspos ke aplikasi
+      responses:
+        '200': {description: Transaksi global}
+    post:
+      tags: [Internal]
+      security: []
+      summary: Legacy pembuatan transaksi; jangan dipakai Android
+      responses:
+        '201': {description: Transaksi dibuat}
+  /customers:
+    get:
+      tags: [Internal]
+      security: []
+      summary: Legacy customer global; jangan diekspos ke aplikasi
+      responses:
+        '200': {description: Customer global}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: KuotaKita-HMAC-Session
+  parameters:
+    Id:
+      in: path
+      name: id
+      required: true
+      schema: {type: string}
+    DocumentKey:
+      in: path
+      name: documentKey
+      required: true
+      schema: {type: string}
+  responses:
+    BadRequest:
+      description: Request tidak valid
+      content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+    Unauthorized:
+      description: Token hilang, invalid, kedaluwarsa, atau akun dinonaktifkan
+      content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+    Forbidden:
+      description: Role tidak diizinkan
+      content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+    NotFound:
+      description: Data tidak ditemukan
+      content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+    Unprocessable:
+      description: Data valid secara JSON tetapi melanggar aturan bisnis
+      content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+    Unavailable:
+      description: Integrasi atau fitur belum tersedia
+      content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: {type: string}
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username: {type: string, description: Username, nomor HP, atau email}
+        password: {type: string, format: password}
+    RegisterRequest:
+      type: object
+      required: [name, password]
+      properties:
+        name: {type: string}
+        username: {type: string}
+        phone: {type: string}
+        email: {type: string, format: email}
+        password: {type: string, format: password, minLength: 6}
+        account_type: {type: string, enum: [user, agent]}
+        store_name: {type: string}
+        province: {type: string}
+        city: {type: string}
+        district: {type: string}
+    ProfileRequest:
+      type: object
+      properties:
+        name: {type: string}
+        phone: {type: string}
+        email: {type: string, format: email}
+    AuthResult:
+      type: object
+      required: [token, user]
+      properties:
+        token: {type: string}
+        user: {$ref: '#/components/schemas/User'}
+    User:
+      type: object
+      required: [id, username, name, role, balance]
+      properties:
+        id: {type: string}
+        username: {type: string}
+        name: {type: string}
+        role: {type: string}
+        balance: {type: integer, format: int64}
+        phone: {type: string}
+        email: {type: string}
+        h2h_direct: {type: boolean}
+        store_name: {type: string}
+        province: {type: string}
+        city: {type: string}
+        district: {type: string}
+        access_status: {type: string}
+        access_reason: {type: string}
+        access_updated_at: {type: string}
+    Product:
+      type: object
+      properties:
+        id: {type: string}
+        sku: {type: string}
+        service: {type: string}
+        operator: {type: string}
+        name: {type: string}
+        group: {type: string}
+        category: {type: string}
+        nominal: {type: integer, format: int64}
+        price: {type: integer, format: int64}
+        stock: {type: integer}
+        status: {type: string}
+    LookupRequest:
+      type: object
+      required: [service, target, provider]
+      properties:
+        service: {type: string}
+        target: {type: string}
+        provider: {type: string}
+    PaymentRequest:
+      type: object
+      required: [title, target, provider, product, amount, sku]
+      properties:
+        title: {type: string}
+        target: {type: string}
+        provider: {type: string}
+        product: {type: string}
+        email: {type: string}
+        amount: {type: integer, format: int64}
+        sku: {type: string}
+        qty: {type: integer, format: int64, minimum: 1}
+        request_id: {type: string, description: UUID idempotency dari klien}
+    Transaction:
+      type: object
+      properties:
+        id: {type: string}
+        customer: {type: string}
+        customer_name: {type: string}
+        email: {type: string}
+        method: {type: string}
+        amount: {type: integer, format: int64}
+        status: {type: string}
+        target: {type: string}
+        provider: {type: string}
+        title: {type: string}
+        product: {type: string}
+        order_number: {type: string}
+        sn: {type: string}
+        created_at: {type: string, format: date-time}
+        expires_at: {type: string, format: date-time}
