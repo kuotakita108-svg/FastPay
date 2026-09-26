@@ -1,9 +1,9 @@
-import bca from 'idn-finlogos/icons/bca.svg'
-import bri from 'idn-finlogos/icons/bri.svg'
-import bni from 'idn-finlogos/icons/bni.svg'
-import mandiri from 'idn-finlogos/icons/bank-mandiri.svg'
+import bca from '../../assets/providers/official/bca.png'
+import bri from '../../assets/providers/official/bri.png'
+import bni from '../../assets/providers/official/bni.png'
+import mandiri from '../../assets/providers/official/mandiri.png'
 import cimb from '../../assets/providers/official/cimb-niaga.svg'
-import bsi from 'idn-finlogos/icons/bsi.svg'
+import bsi from '../../assets/providers/official/bsi.png'
 import danamon from '../../assets/providers/official/danamon.svg'
 import permatabank from '../../assets/providers/official/permatabank.svg'
 import seabank from '../../assets/providers/official/seabank.svg'
@@ -308,7 +308,10 @@ export default function ProviderLogo({name,className='',priority=false,service='
   const automatic=findAutomaticLogo(clean)
   const bundled=(clean==='Voucher'?voucherBrand:null)||findLogoMatch(clean,imageLogos)?.[1]||automatic
   const telkomImage=/indihome/i.test(clean)?indihomeOfficial:/\btelkom\b/i.test(clean)&&!/telkomsel/i.test(clean)?telkomOfficial:null
-  const image=telkomImage||(service==='gas'&&/pgn|perusahaan gas negara/i.test(clean)?pgnOfficial:null)||(service==='pdam'?pdamLogo:null)||(service==='tax'?pajak:null)||findLogoMatch(clean,officialInsuranceLogos)?.[1]||findLogoMatch(clean,highResolutionBankLogos)?.[1]||bundled
+  // Daftar transfer bank harus selalu memakai aset yang sudah dibundel agar
+  // logo langsung tampil, tajam, dan tidak bergantung pada host gambar luar.
+  const remoteBankLogo=service==='bank'?null:findLogoMatch(clean,highResolutionBankLogos)?.[1]
+  const image=telkomImage||(service==='gas'&&/pgn|perusahaan gas negara/i.test(clean)?pgnOfficial:null)||(service==='pdam'?pdamLogo:null)||(service==='tax'?pajak:null)||findLogoMatch(clean,officialInsuranceLogos)?.[1]||bundled||remoteBankLogo
   const useBundledFallback=event=>{if(bundled&&event.currentTarget.src!==bundled)event.currentTarget.src=bundled}
   if(image)return <i className={`${className} provider-logo-rendered provider-logo-image`} data-brand={slug(clean)}><img src={image} alt={`Logo ${name}`} loading={priority?'eager':'lazy'} fetchPriority={priority?'high':'auto'} decoding="async" onError={useBundledFallback}/></i>
   if(automatic)return <i className={`${className} provider-logo-rendered provider-logo-image`} data-brand={slug(clean)}><img src={automatic} alt={`Logo ${name}`} loading={priority?'eager':'lazy'} fetchPriority={priority?'high':'auto'} decoding="async"/></i>
