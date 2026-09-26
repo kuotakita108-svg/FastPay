@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 72" role="img" aria-labelledby="title">
+  <title id="title">CAR Life Insurance</title>
+  <defs>
+    <linearGradient id="shield" x1="18" y1="10" x2="57" y2="62" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1b75bb"/>
+      <stop offset="1" stop-color="#063f78"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#shield)" d="M38 6 62 15v18c0 16-10 27-24 34C24 60 14 49 14 33V15L38 6Z"/>
+  <path fill="#fff" d="M45 24a14 14 0 1 0 0 20l-5-6a6 6 0 1 1 0-8l5-6Z"/>
+  <path fill="#e2212d" d="m53 23 10 21h-8l-2-5h-8l3-6h3l-2-4 4-6Z"/>
+  <path fill="#103d69" d="M68 24h13c7 0 11 4 11 10 0 4-2 7-6 9l8 12H83l-6-10h-1v10h-8V24Zm8 7v8h4c3 0 4-2 4-4s-1-4-4-4h-4Z"/>
+</svg>

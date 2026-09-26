@@ -77,8 +77,11 @@ const ReviewOnly=({children})=> <ProtectedRoute roles={['master','admin','operat
 export default function App(){
  const location=useLocation(),backgroundLocation=location.state?.backgroundLocation
  useEffect(()=>{
+  // Rute pembelian adalah interaksi utama di HP. Mulai unduh segera setelah
+  // area aplikasi terbuka agar klik layanan tidak menunggu idle callback.
+  if(location.pathname.startsWith('/app'))loadServicePurchase()
   const warmRoutes=()=>{
-   if(location.pathname.startsWith('/app'))[loadUserHome,loadHistory,loadProfile,loadAgentCredit,loadAllServices,loadServicePurchase].forEach(load=>load())
+   if(location.pathname.startsWith('/app'))[loadUserHome,loadHistory,loadProfile,loadAgentCredit,loadAllServices].forEach(load=>load())
    if(location.pathname.startsWith('/marketing'))[loadMarketingApp,loadCreditApplications].forEach(load=>load())
    if(!location.pathname.startsWith('/app') && !location.pathname.startsWith('/marketing') && location.pathname !== '/login') [loadCreditApplications,loadProducts,loadTransactions,loadCustomers,loadAnalytics,loadPaymentMethods,loadInvoices,loadSettings].forEach(load=>load())
   }

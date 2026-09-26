@@ -15,7 +15,7 @@ export const serviceConfig={
   bank:config('Transfer Bank','Transfer Bank','Nomor Rekening','Masukkan nomor rekening',['BCA','BRI','BNI','Mandiri','Bank Syariah Indonesia','Danamon','PermataBank','SeaBank','Bank Jago']),
   voucher:config('Voucher Digital','Voucher Digital','Nomor Handphone / Email','Masukkan data penerima',['Google Play','Apple Gift Card','Spotify','Vidio','Canva Pro','ChatGPT','TikTok','UniPin']),
   school:config('Pembayaran Pendidikan','Pendidikan','Nomor Siswa / Mahasiswa','Masukkan nomor pelajar',['Sekolah','Universitas','Bimbel']),
-  insurance:config('Pembayaran Asuransi','Asuransi','Nomor Polis','Masukkan nomor polis',['Prudential','Allianz','Manulife']),
+  insurance:config('Pembayaran Asuransi','Asuransi','Nomor Polis','Masukkan nomor polis',['CAR','IFG Life','Jiwasraya','Tokio Marine','Prudential']),
   vehicle:config('Cicilan Kendaraan','Cicilan','Nomor Kontrak','Masukkan nomor kontrak',['Adira Finance','FIF Group','WOM Finance']),
   multifinance:config('Cicilan Multifinance','Multifinance','Nomor Kontrak','Masukkan nomor kontrak',['Multifinance']),
   property:config('Pajak Bumi & Bangunan','Pajak','Nomor Objek Pajak','Masukkan NOP',['PBB Kota/Kabupaten']),
