@@ -9,6 +9,8 @@ import {request} from '../services/http'
 import AgentAccountForm from '../components/credit/AgentAccountForm'
 import MarketingAccountForm from '../components/credit/MarketingAccountForm'
 import SuperAdminOverview from '../components/credit/SuperAdminOverview'
+import SuperAdminBusinessReport from '../components/credit/SuperAdminBusinessReport'
+import {getCustomers} from '../services/customerService'
 import {getPulsa24Balance, getPulsa24Operations, refundPulsa24Order} from '../services/transactionService'
 import {listManagedAgents} from '../services/authService'
 import OperatorCapitalConsole from './OperatorCapitalConsole'
@@ -300,6 +302,7 @@ export default function CreditApplicationsPage() {
   const [h2hRefresh, setH2hRefresh] = useState(0)
   const [h2hPage, setH2hPage] = useState(1)
   const [h2hSelected, setH2hSelected] = useState(null)
+  const [ownerAccounts, setOwnerAccounts] = useState([])
   const [helpdeskFilter, setHelpdeskFilter] = useState('Semua')
   const [helpdeskQuery, setHelpdeskQuery] = useState('')
   const isMarketing = user?.role === 'marketing'
@@ -398,7 +401,7 @@ export default function CreditApplicationsPage() {
   }, [])
 
   useEffect(() => {
-    if (!isOwner || !['overview', 'transaksi-agent', 'helpdesk', 'h2h'].includes(view)) return undefined
+    if (!isOwner || !['overview', 'laporan-bisnis', 'transaksi-agent', 'helpdesk', 'h2h'].includes(view)) return undefined
     let active = true
     const loadH2H = async () => {
       setH2hMonitor(current => ({...current, loading: true, error: ''}))
@@ -414,6 +417,13 @@ export default function CreditApplicationsPage() {
     const timer = window.setInterval(loadH2H, 30000)
     return () => { active = false; window.clearInterval(timer) }
   }, [view, isOperator, isAdmin, isOwner, h2hRefresh])
+
+  useEffect(() => {
+    if (!isOwner || !['overview', 'laporan-bisnis'].includes(view)) return undefined
+    let active = true
+    getCustomers().then(rows => { if (active) setOwnerAccounts(Array.isArray(rows) ? rows : []) }).catch(() => {})
+    return () => { active = false }
+  }, [isOwner, view, h2hRefresh])
 
   useEffect(() => {
     if (view === 'input') {
@@ -1060,7 +1070,8 @@ export default function CreditApplicationsPage() {
 
   return <>
     <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''} ${isMarketing ? 'marketing-review' : ''} ${(isOperator || isAdmin) ? 'analyst-review operator-review' : ''} ${isOwner ? 'owner-review' : ''}`}>
-      {view === 'overview' && isOwner && <SuperAdminOverview user={user} items={items} agents={managedAgents} marketingPerformance={marketingPerformance} h2h={h2hMonitor} onOpen={next=>String(next).startsWith('/')?navigate(next):goToView(next)}/>}
+      {view === 'overview' && isOwner && <SuperAdminOverview user={user} items={items} agents={managedAgents} accounts={ownerAccounts} marketingPerformance={marketingPerformance} h2h={h2hMonitor} onOpen={next=>String(next).startsWith('/')?navigate(next):goToView(next)}/>}
+      {view === 'laporan-bisnis' && isOwner && <SuperAdminBusinessReport h2h={h2hMonitor} accounts={ownerAccounts} onRefresh={()=>setH2hRefresh(value=>value+1)}/>}
       {view === 'overview' && isMarketing && <section className="marketing-profile-header">
         <div><span>PROFIL AKTIF</span><h1>{String(user?.name || 'Marketing KuotaKita').toUpperCase()}</h1><p>Akun marketing aktif untuk pendampingan agent, survei lapangan, dokumen, dan pemantauan kredit.</p><footer><b><CheckCircle2/>Marketing</b><b><ShieldCheck/>Role aktif di sesi ini</b></footer></div>
         <i><UserCheck/></i>

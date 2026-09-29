@@ -1,5 +1,5 @@
 import {useState} from 'react'
-import {Activity, AlertTriangle, ArrowRight, BarChart3, Boxes, CreditCard, Headphones, Landmark, ReceiptText, Settings, ShieldCheck, TrendingUp, Users, WalletCards} from 'lucide-react'
+import {Activity, AlertTriangle, ArrowRight, BarChart3, Boxes, Landmark, ShieldCheck, TrendingUp, Users, WalletCards} from 'lucide-react'
 import {rupiah} from '../../utils/currency'
 import {useAsync} from '../../hooks/useAsync'
 import {getDashboard} from '../../services/dashboardService'
@@ -13,7 +13,7 @@ const loadOwnerSnapshot=async()=>{
   return {dashboard:dashboard.status==='fulfilled'?dashboard.value:{},products:products.status==='fulfilled'?products.value:[],customers:customers.status==='fulfilled'?customers.value:[]}
 }
 
-export default function SuperAdminOverview({user,items=[],agents=[],marketingPerformance=[],h2h={},onOpen}){
+export default function SuperAdminOverview({user,items=[],agents=[],accounts=[],marketingPerformance=[],h2h={},onOpen}){
   const {data:snapshot}=useAsync(loadOwnerSnapshot)
   const [snapshotTime]=useState(()=>Date.now())
   const business=snapshot?.dashboard||{}
@@ -26,40 +26,38 @@ export default function SuperAdminOverview({user,items=[],agents=[],marketingPer
   const success=orders.filter(order=>statusOf(order)==='success').length
   const failed=orders.filter(order=>statusOf(order)==='failed').length
   const pending=orders.filter(order=>statusOf(order)==='pending').length
+  const knownAccounts=accounts.length?accounts:customers
+  const retailAccounts=knownAccounts.filter(account=>['user','agent'].includes(String(account.role||'').toLowerCase()))
+  const memberBalance=knownAccounts.reduce((total,account)=>total+Number(account.balance||0),0)
+  const providers=new Set(products.map(product=>product.provider||product.operator||product.category).filter(Boolean))
   const cards=[
-    {label:'Nilai transaksi',value:rupiah(business.revenue||0),note:`${business.transactions||orders.length} transaksi aplikasi`,icon:Activity,tone:'emerald',route:'/transactions'},
-    {label:'Pengguna terdaftar',value:customers.length||agents.length,note:'Akun pengguna dan agent',icon:Users,tone:'cyan',route:'/customers'},
-    {label:'Produk tersedia',value:products.length,note:'Seluruh katalog layanan',icon:Boxes,tone:'blue',route:'/products'},
+    {label:'Jumlah akun H2H',value:agents.length,note:'Agent KuotaKita terdaftar',icon:Users,tone:'cyan',route:'/customers'},
+    {label:'Jumlah akun retail',value:retailAccounts.length,note:'User dan agent aktif',icon:Users,tone:'emerald',route:'/customers'},
+    {label:'Provider aktif',value:providers.size,note:`${products.length} produk tersedia`,icon:Boxes,tone:'violet',route:'/products'},
+    {label:'Nilai transaksi',value:rupiah(business.revenue||0),note:`${business.transactions||orders.length} transaksi tercatat`,icon:Activity,tone:'cyan',route:'/transactions'},
+    {label:'Total saldo member',value:rupiah(memberBalance),note:`${knownAccounts.length} akun terpantau`,icon:WalletCards,tone:'emerald',route:'/customers'},
     {label:'Saldo provider H2H',value:h2h.balance==null?'Belum tersambung':rupiah(h2h.balance),note:h2h.connected?'Pulsa24Jam terhubung':'Periksa koneksi provider',icon:Landmark,tone:'amber',view:'h2h'},
     {label:'Kredit berjalan',value:rupiah(outstanding),note:`${activeCredits.length} agent aktif`,icon:WalletCards,tone:'violet',view:'peminjam'},
+    {label:'Transaksi H2H berhasil',value:success,note:`${pending} diproses · ${failed} gagal`,icon:TrendingUp,tone:'blue',view:'h2h'},
     {label:'Tagihan berisiko',value:overdue.length,note:overdue.length?`${overdue.length} agent lewat jatuh tempo`:'Tidak ada tunggakan',icon:AlertTriangle,tone:'rose',view:'jatuh-tempo'},
   ]
   const actions=[
-    {title:'Transaksi seluruh aplikasi',note:'Status pembelian pengguna dan agent',icon:Activity,route:'/transactions'},
-    {title:'Katalog produk & harga',note:`${products.length} produk tersusun per layanan`,icon:Boxes,route:'/products'},
-    {title:'Invoice & pembayaran',note:'Pantau tagihan dan kanal pembayaran',icon:ReceiptText,route:'/invoices'},
-    {title:'Analitik bisnis',note:'Ringkasan pertumbuhan dan performa',icon:BarChart3,route:'/analytics'},
-    {title:'Pengguna & akun',note:`${customers.length} akun pelanggan tercatat`,icon:Users,route:'/customers'},
-    {title:'Kanal pembayaran',note:'Pantau metode pembayaran yang aktif',icon:CreditCard,route:'/payment-methods'},
-    {title:'Portofolio kredit',note:`${activeCredits.length} kredit sedang berjalan`,icon:WalletCards,view:'peminjam'},
-    {title:'Kinerja tim',note:`${marketingPerformance.length} marketing terukur`,icon:Users,view:'kinerja-marketing'},
-    {title:'Kesehatan sistem',note:'Konfigurasi dan koneksi layanan',icon:Settings,route:'/settings'},
+    {title:'Komisi & Laporan',note:'Rekap transaksi harian tiga bulan terakhir',icon:BarChart3,view:'laporan-bisnis'},
+    {title:'Aktivitas Wallet',note:'Pantau saldo dan transaksi member',icon:WalletCards,route:'/transactions'},
+    {title:'Log Status Member',note:'Lihat akun dan status akses member',icon:Users,route:'/customers'},
   ]
   const topMarketing=[...marketingPerformance].sort((a,b)=>b.approved-a.approved||b.registered-a.registered).slice(0,4)
 
   return <div className="owner-dashboard">
     <section className="owner-profile">
-      <div><span>PROFIL AKTIF</span><h1>{String(user?.name||'Super Admin KuotaKita').toUpperCase()}</h1><p>Pemantauan pusat untuk operasional aplikasi, kredit agent, tim lapangan, transaksi, risiko, dan koneksi H2H.</p><footer><b><ShieldCheck/>Super Admin</b><b>Hak pantau owner aktif</b></footer></div>
+      <div><span>PROFIL AKTIF</span><h1>{user?.name||'Super Admin KuotaKita'}</h1><p>Akun admin aktif dengan akses penuh ke operasional, audit, wallet, provider, dan master data KuotaKita.</p><footer><b><ShieldCheck/>Super Admin</b><b>Role aktif di sesi ini</b></footer></div>
       <i><ShieldCheck/></i>
     </section>
 
-    <section className="owner-section owner-health">
-      <header><div><span>KONDISI BISNIS</span><h2>Pantauan pusat secara langsung</h2><p>Semua angka berasal dari data server dan diperbarui otomatis.</p></div><em className={h2h.connected?'online':'offline'}><i/>{h2h.connected?'Sistem terhubung':'Perlu pemeriksaan'}</em></header>
-      <div className="owner-metric-grid">{cards.map(({label,value,note,icon:Icon,tone,view,route})=><button type="button" className={tone} onClick={()=>onOpen(route||view)} key={label}><i><Icon/></i><span>{label}</span><strong>{value}</strong><small>{note}</small><ArrowRight/></button>)}</div>
-    </section>
+    <section className="owner-metric-grid owner-summary-metrics">{cards.map(({label,value,note,icon:Icon,tone,view,route})=><button type="button" className={tone} onClick={()=>onOpen(route||view)} key={label}><i><Icon/></i><span>{label}</span><strong>{value}</strong><small>{note}</small><ArrowRight/></button>)}</section>
 
     <section className="owner-section owner-control">
-      <header><div><span>PUSAT PEMANTAUAN</span><h2>Informasi penting untuk keputusan owner</h2><p>Super Admin memantau hasil kerja tim tanpa mengambil alih pekerjaan Marketing atau Operator.</p></div></header>
+      <header><div><span>PUSAT PEMANTAUAN</span><h2>Kontrol utama Super Admin</h2><p>Buka laporan, aktivitas wallet, dan status member langsung dari ringkasan.</p></div></header>
       <div className="owner-action-grid">{actions.map(({title,note,icon:Icon,view,route})=><button type="button" onClick={()=>onOpen(route||view)} key={title}><i><Icon/></i><span><b>{title}</b><small>{note}</small></span><ArrowRight/></button>)}</div>
     </section>
 

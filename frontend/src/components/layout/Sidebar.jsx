@@ -41,7 +41,8 @@ const operatorNavigation = [
 
 const superAdminNavigation = [
   {section: 'RINGKASAN', items: [
-    {to: '/credit-applications', label: 'Dashboard Super Admin', icon: ShieldCheck},
+    {to: '/credit-applications', label: 'Dashboard', icon: ShieldCheck},
+    {to: '/credit-applications?view=laporan-bisnis', label: 'Laporan Bisnis', icon: BarChart3},
   ]},
   {section: 'BISNIS APLIKASI', items: [
     {to: '/transactions', label: 'Monitor Transaksi User', icon: Activity},
