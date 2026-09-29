@@ -64,6 +64,7 @@
 @import './owner-h2h-transactions.css';
 @import './owner-deposit-requests.css';
 @import './owner-va-deposit.css';
+@import './owner-member-wallet.css';
 @import './product-admin.css';
 @import './marketing-app.css';
 @import './operator-dashboard.css';

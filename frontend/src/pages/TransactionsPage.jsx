@@ -1,5 +1,5 @@
 import {useMemo,useState} from 'react'
-import {useSearchParams,useOutletContext} from 'react-router-dom'
+import {useSearchParams,useOutletContext,useNavigate} from 'react-router-dom'
 import {Plus,Search} from 'lucide-react'
 import PageHeader from '../components/common/PageHeader'
 import TransactionTable from '../components/transactions/TransactionTable'
@@ -7,6 +7,7 @@ import LoadingState from '../components/common/LoadingState'
 import ErrorState from '../components/common/ErrorState'
 import {useAsync} from '../hooks/useAsync'
 import {getTransactions} from '../services/transactionService'
+import {getCustomers} from '../services/customerService'
 import {useAuth} from '../context/AuthContext'
 
 export default function TransactionsPage(){
@@ -14,6 +15,7 @@ export default function TransactionsPage(){
   const{openPayment}=useOutletContext(),{user}=useAuth(),isOwner=user?.role==='master'
   const{data=[],loading,error,reload}=useAsync(getTransactions)
   const filtered=useMemo(()=>data?.filter(transaction=>(String(transaction.id||'').toLowerCase().includes(query.toLowerCase())||String(transaction.customer||'').toLowerCase().includes(query.toLowerCase()))&&(!status||transaction.status===status))||[],[data,query,status])
+  if(isOwner&&params.get('scope')==='member-wallet')return <MemberWalletWorkspace/>
   if(isOwner)return loading?<LoadingState cards={2}/>:error?<ErrorState message={error} onRetry={reload}/>:params.get('scope')==='fulfillment'?<RetailFulfillmentWorkspace items={data}/>:<RetailOrderWorkspace items={data}/>
   return <><PageHeader eyebrow="Operasional" title="Seluruh Transaksi" description="Kelola dan pantau seluruh pembayaran pelanggan." action={<button className="primary-button" onClick={openPayment}><Plus size={17}/>Tambah Transaksi</button>}/>{loading?<LoadingState cards={2}/>:error?<ErrorState message={error} onRetry={reload}/>:<section className="panel"><div className="toolbar"><div><Search size={16}/><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Cari ID atau pelanggan..."/></div><select value={status} onChange={event=>setStatus(event.target.value)}><option value="">Semua status</option><option>Berhasil</option><option>Diproses</option><option>Gagal</option></select></div><TransactionTable items={filtered}/></section>}</>
 }
@@ -56,5 +58,22 @@ function RetailFulfillmentWorkspace({items=[]}){
     <div className="retail-order-filters fulfillment-filters"><input value={invoice} onChange={update(setInvoice)} placeholder="Cari invoice"/><input value={reference} onChange={update(setReference)} placeholder="Cari ref ID atau kode provider"/><select value={status} onChange={update(setStatus)}><option value="">Semua status</option><option value="berhasil">Berhasil</option><option value="diproses">Diproses provider</option><option value="gagal">Gagal</option></select><input type="date" value={from} max={to||undefined} onChange={update(setFrom)}/><input type="date" value={to} min={from||undefined} onChange={update(setTo)}/><button className="apply" type="button" onClick={()=>setPage(1)}>Terapkan</button><button type="button" onClick={reset}>Reset</button></div>
     <div className="retail-order-scroll"><div className="retail-order-table fulfillment-table"><div className="head"><span>No</span><span>Waktu</span><span>Invoice</span><span>Kode provider</span><span>Tujuan</span><span>Harga provider</span><span>Status</span></div>{rows.map((item,index)=><article key={item.id||index}><span>{(safePage-1)*pageSize+index+1}</span><time>{dateTime(item.created_at)}</time><code>{item.order_number||item.id||'-'}</code><strong title={providerRefOf(item)}>{item.product||item.provider||providerRefOf(item)}</strong><span>{item.target||'-'}</span><span>{currency(item.provider_amount??item.amount)}</span><em className={normalizeStatus(item.status)}>{statusLabel(item.status)}</em></article>)}{!rows.length&&<p>Belum ada transaksi provider yang sesuai dengan filter.</p>}</div></div>
     <footer><span>Halaman {safePage} / {totalPages} · {filtered.length} transaksi provider</span><nav><button disabled={safePage===1} onClick={()=>setPage(1)}>Awal</button><button disabled={safePage===1} onClick={()=>setPage(value=>Math.max(1,value-1))}>Sebelumnya</button><b>{safePage}</b><button disabled={safePage===totalPages} onClick={()=>setPage(value=>Math.min(totalPages,value+1))}>Berikutnya</button><button disabled={safePage===totalPages} onClick={()=>setPage(totalPages)}>Akhir</button></nav></footer>
+  </section>
+}
+
+function MemberWalletWorkspace(){
+  const navigate=useNavigate(),{data,loading,error,reload}=useAsync(getCustomers)
+  const[query,setQuery]=useState(''),[appliedQuery,setAppliedQuery]=useState(''),[page,setPage]=useState(1)
+  const accounts=useMemo(()=>(Array.isArray(data)?data:[]).filter(account=>['user','agent'].includes(String(account.role||'').toLowerCase())),[data])
+  const filtered=useMemo(()=>accounts.filter(account=>`${account.name||''} ${account.email||''} ${account.username||''} ${account.phone||''}`.toLowerCase().includes(appliedQuery.toLowerCase())),[accounts,appliedQuery])
+  const totalBalance=accounts.reduce((total,account)=>total+Number(account.balance||0),0),pageSize=10,totalPages=Math.max(1,Math.ceil(filtered.length/pageSize)),safePage=Math.min(page,totalPages),rows=filtered.slice((safePage-1)*pageSize,safePage*pageSize)
+  const reset=()=>{setQuery('');setAppliedQuery('');setPage(1)}
+  if(loading)return <LoadingState cards={2}/>
+  if(error)return <ErrorState message={error} onRetry={reload}/>
+  return <section className="member-wallet-workspace">
+    <header><div><span>WALLET KUOTAKITA</span><h1>Dompet Member</h1><p>Operasional wallet: koreksi saldo dan lihat riwayat member tanpa transaksi fiktif.</p></div><strong><small>Total Saldo Member</small>{currency(totalBalance)}</strong></header>
+    <div className="member-wallet-search"><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Cari nama atau email member"/><button className="apply" onClick={()=>{setAppliedQuery(query);setPage(1)}}>Cari</button><button onClick={reset}>Reset</button></div>
+    <div className="member-wallet-scroll"><div className="member-wallet-table"><div className="head"><span>No</span><span>Member</span><span>Saldo</span><span>Status</span><span>Dibuat</span><span>Aksi</span></div>{rows.map((account,index)=><article key={account.id}><span>{(safePage-1)*pageSize+index+1}</span><div><b>{account.name||account.username||'Member KuotaKita'}</b><small>{account.email||account.phone||'-'}</small></div><strong>{currency(account.balance)}</strong><em className={account.access_status==='suspended'?'inactive':'active'}>{account.access_status==='suspended'?'Nonaktif':'Aktif'}</em><time>{dateTime(account.created_at)}</time><nav><button onClick={()=>navigate(`/transactions?q=${encodeURIComponent(account.email||account.name||'')}`)}>Transaksi</button><button onClick={()=>navigate(`/customers?q=${encodeURIComponent(account.email||account.name||'')}`)}>Profil</button><button className="correction" disabled title="Menunggu endpoint audit koreksi saldo">Koreksi Saldo</button></nav></article>)}{!rows.length&&<p>Member tidak ditemukan.</p>}</div></div>
+    <footer><span>Halaman {safePage} / {totalPages}</span><nav><button disabled={safePage===1} onClick={()=>setPage(1)}>«</button><button disabled={safePage===1} onClick={()=>setPage(value=>value-1)}>‹</button><b>{safePage}</b><button disabled={safePage===totalPages} onClick={()=>setPage(value=>value+1)}>›</button><button disabled={safePage===totalPages} onClick={()=>setPage(totalPages)}>»</button></nav></footer>
   </section>
 }
