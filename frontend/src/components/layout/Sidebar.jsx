@@ -61,12 +61,9 @@ const superAdminNavigation = [
   ]},
   {section: 'KREDIT RETAIL', items: [
     {to: '/credit-applications?view=pinjaman-retail', label: 'Kredit Retail', icon: CreditCard},
-    {to: '/transactions?scope=points', label: 'Riwayat Penukaran Poin', icon: Activity},
     {to: '/credit-applications?view=migrasi-data', label: 'Migrasi Data Lama', icon: FileCheck2},
-    {to: '/customers?scope=assignment', label: 'Perpindahan Master/Marketing', icon: Users},
     {to: '/credit-applications?view=konter-tidak-transaksi', label: 'Konter Tidak Transaksi', icon: CalendarClock},
     {to: '/credit-applications?view=perputaran-uang', label: 'Perputaran Uang Konter', icon: WalletCards},
-    {to: '/customers?scope=terminated', label: 'Laporan Putus Mitra', icon: FileCheck2},
   ]},
   {section: 'PRODUK & HARGA', items: [
     {to: '/products', label: 'Produk', icon: Boxes},
