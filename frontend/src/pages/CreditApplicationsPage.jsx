@@ -1066,7 +1066,7 @@ export default function CreditApplicationsPage() {
     win.document.close()
   }
 
-  if (isOperator) return <OperatorCapitalConsole/>
+  if (isOperator || (isOwner && ['pinjaman-retail', 'migrasi-data', 'konter-tidak-transaksi', 'perputaran-uang'].includes(view))) return <OperatorCapitalConsole/>
 
   return <>
     <section className={`panel credit-review-panel ${isStandaloneDetail ? 'detail-mode' : ''} ${isMarketing ? 'marketing-review' : ''} ${(isOperator || isAdmin) ? 'analyst-review operator-review' : ''} ${isOwner ? 'owner-review' : ''}`}>

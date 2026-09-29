@@ -1,7 +1,7 @@
 import {useState} from 'react'
 import {Link, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
-import {Activity, BarChart3, BookOpenCheck, Boxes, CalendarClock, Camera, CheckCircle2, ChevronDown, CircleHelp, CreditCard, FileCheck2, Headphones, Landmark, LockKeyhole, LogOut, PhoneCall, Settings, ShieldCheck, UserCheck, UserPlus, Users, WalletCards} from 'lucide-react'
+import {Activity, BarChart3, BookOpenCheck, Boxes, CalendarClock, CheckCircle2, ChevronDown, CircleHelp, CreditCard, FileCheck2, Headphones, Landmark, LogOut, PhoneCall, Settings, ShieldCheck, UserPlus, Users, WalletCards} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
 
@@ -41,29 +41,39 @@ const operatorNavigation = [
 
 const superAdminNavigation = [
   {section: 'RINGKASAN', items: [
-    {to: '/credit-applications', label: 'Dashboard', icon: ShieldCheck},
+    {to: '/dashboard', label: 'Dashboard', icon: ShieldCheck},
     {to: '/credit-applications?view=laporan-bisnis', label: 'Laporan Bisnis', icon: BarChart3},
   ]},
-  {section: 'BISNIS APLIKASI', items: [
-    {to: '/transactions', label: 'Monitor Transaksi User', icon: Activity},
-    {to: '/products', label: 'Kelola Produk & Harga', icon: Boxes},
-    {to: '/customers', label: 'Kelola Akun & Role', icon: Users},
+  {section: 'AKUN & KOMISI', items: [
+    {to: '/customers', label: 'Akun & Role', icon: Users},
+    {to: '/analytics', label: 'Komisi Retail', icon: BarChart3},
+  ]},
+  {section: 'OPERASIONAL TRANSAKSI', items: [
+    {to: '/transactions', label: 'Transaksi Retail', icon: Activity},
+    {to: '/transactions?scope=fulfillment', label: 'Fulfillment Retail', icon: CheckCircle2},
+    {to: '/invoices?scope=refund', label: 'Refund Guest Pending', icon: FileCheck2},
+    {to: '/credit-applications?view=h2h', label: 'Transaksi H2H', icon: Landmark},
   ]},
   {section: 'KEUANGAN', items: [
-    {to: '/analytics', label: 'Arus Keuangan', icon: BarChart3},
-    {to: '/invoices', label: 'Invoice & Refund', icon: FileCheck2},
-    {to: '/payment-methods', label: 'Kanal Pembayaran', icon: CreditCard},
-    {to: '/credit-applications?view=h2h', label: 'Saldo Provider H2H', icon: Landmark},
+    {to: '/payment-methods', label: 'Permintaan Deposit', icon: CreditCard},
+    {to: '/invoices?scope=va', label: 'Deposit VA', icon: Landmark},
+    {to: '/transactions?scope=member-wallet', label: 'Dompet Member', icon: WalletCards},
   ]},
-  {section: 'TIM & KREDIT', items: [
-    {to: '/credit-applications?view=peminjam', label: 'Monitor Kredit Agent', icon: WalletCards},
-    {to: '/credit-applications?view=jatuh-tempo', label: 'Tagihan & Risiko', icon: CalendarClock},
-    {to: '/credit-applications?view=pelunasan', label: 'Audit Pelunasan', icon: FileCheck2},
-    {to: '/credit-applications?view=kinerja-marketing', label: 'Kinerja Tim Lapangan', icon: Users},
+  {section: 'KREDIT RETAIL', items: [
+    {to: '/credit-applications?view=pinjaman-retail', label: 'Kredit Retail', icon: CreditCard},
+    {to: '/transactions?scope=points', label: 'Riwayat Penukaran Poin', icon: Activity},
+    {to: '/credit-applications?view=migrasi-data', label: 'Migrasi Data Lama', icon: FileCheck2},
+    {to: '/customers?scope=assignment', label: 'Perpindahan Master/Marketing', icon: Users},
+    {to: '/credit-applications?view=konter-tidak-transaksi', label: 'Konter Tidak Transaksi', icon: CalendarClock},
+    {to: '/credit-applications?view=perputaran-uang', label: 'Perputaran Uang Konter', icon: WalletCards},
+    {to: '/customers?scope=terminated', label: 'Laporan Putus Mitra', icon: FileCheck2},
   ]},
-  {section: 'KEAMANAN & SISTEM', items: [
-    {to: '/credit-applications?view=transaksi-agent', label: 'Log Transaksi Agent', icon: Activity},
-    {to: '/credit-applications?view=helpdesk', label: 'Tiket Komplain', icon: Headphones},
+  {section: 'PRODUK & HARGA', items: [
+    {to: '/products', label: 'Produk', icon: Boxes},
+  ]},
+  {section: 'AUDIT & SISTEM', items: [
+    {to: '/credit-applications?view=transaksi-agent', label: 'Audit Transaksi', icon: Activity},
+    {to: '/credit-applications?view=helpdesk', label: 'Tiket & Komplain', icon: Headphones},
     {to: '/settings', label: 'Pengaturan Sistem', icon: Settings},
   ]},
 ]
@@ -82,7 +92,7 @@ export default function Sidebar({open, onClose}) {
   const isSuperAdmin = role === 'master'
   const isCreditAdmin = isOperator || role === 'admin' || role === 'master'
   const visibleNavigation = isMarketing ? marketingNavigation : isSuperAdmin ? superAdminNavigation : isCreditAdmin ? operatorNavigation : navigation
-  const home = isMarketing || isCreditAdmin ? '/credit-applications' : '/dashboard'
+  const home = isSuperAdmin ? '/dashboard' : isMarketing || isCreditAdmin ? '/credit-applications' : '/dashboard'
   const roleLabel = role === 'master' ? 'Super Admin / Owner' : role === 'marketing' ? 'Marketing Kredit' : isOperator || role === 'admin' ? 'Operator Kredit' : 'Panel Administrator'
   const current = `${location.pathname}${location.search}`
   const active = to => current === to || (!to.includes('?') && location.pathname === to && !location.search)
