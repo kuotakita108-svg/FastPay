@@ -1,7 +1,7 @@
 import {useEffect,useState} from 'react'
 import {Link, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
-import {Activity, BarChart3, BookOpenCheck, Boxes, CalendarClock, CheckCircle2, ChevronDown, CircleHelp, CreditCard, FileCheck2, Headphones, Landmark, LogOut, PhoneCall, Settings, ShieldCheck, UserPlus, Users, WalletCards} from 'lucide-react'
+import {Activity, BarChart3, BookOpenCheck, Boxes, CalendarClock, CheckCircle2, ChevronDown, CircleHelp, CreditCard, FileCheck2, Landmark, LogOut, PhoneCall, ShieldCheck, UserPlus, Users, WalletCards} from 'lucide-react'
 import {useAuth} from '../../context/AuthContext'
 import {initials} from '../../utils/name'
 
@@ -68,10 +68,10 @@ const superAdminNavigation = [
   {section: 'PRODUK & HARGA', items: [
     {to: '/products', label: 'Produk', icon: Boxes},
   ]},
-  {section: 'AUDIT & SISTEM', items: [
-    {to: '/admin/audit-transactions', label: 'Audit Transaksi', icon: Activity},
-    {to: '/admin/tickets', label: 'Tiket & Komplain', icon: Headphones},
-    {to: '/settings', label: 'Pengaturan Sistem', icon: Settings},
+  {section: 'MONITORING & AUDIT', items: [
+    {to: '/transactions?scope=daily-success', label: 'Produk Sukses Harian', icon: CheckCircle2},
+    {to: '/transactions?scope=wallet-activity', label: 'Aktivitas Wallet', icon: WalletCards},
+    {to: '/customers?scope=status-log', label: 'Log Status Member', icon: Users},
   ]},
 ]
 
