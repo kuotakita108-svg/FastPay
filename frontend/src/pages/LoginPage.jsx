@@ -91,7 +91,7 @@ export default function LoginPage() {
         <div className="auth-light-trail trail-two"/>
         <KuotaKitaLogo className="auth-title-logo" />
         <div className="auth-welcome-copy">
-          <span>AMAN Â· CEPAT Â· TERPERCAYA</span>
+          <span>AMAN · CEPAT · TERPERCAYA</span>
           <h1>{title}</h1>
           <p>{subtitle}</p>
           <div className="auth-trust"><b><ShieldCheck/>Akun terlindungi</b><b><Sparkles/>Aktif 24 jam</b></div>
