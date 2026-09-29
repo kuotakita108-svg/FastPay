@@ -101,7 +101,44 @@
 .owner-system-shell .owner-workspace-nav .nav-item{gap:0!important}
 .owner-system-shell .owner-workspace-nav .nav-item>svg{display:none!important}
 
+/* Sidebar owner harus identik pada seluruh halaman. Kredit Retail menambahkan
+   panel-workspace-shell, jadi aturan ini sengaja mengunci ulang geometri agar
+   navigasi tidak bergeser ketika route berubah. */
+.owner-system-shell .sidebar.credit-sidebar{
+  display:flex!important;flex-direction:column!important;width:220px!important;
+  height:100vh!important;min-height:100vh!important;padding:0 10px 10px!important;
+  overflow:hidden!important;background:#071522!important;border-right:1px solid #17384f!important;
+}
+.owner-system-shell .credit-sidebar .console-brand{
+  flex:0 0 72px!important;width:100%!important;min-height:72px!important;height:72px!important;
+  padding:7px!important;border-bottom:1px solid #17344b!important;
+}
+.owner-system-shell .credit-sidebar .console-brand-image{width:100%!important;max-width:150px!important;height:43px!important}
+.owner-system-shell .credit-sidebar .sidebar-role-panel{display:block!important;flex:0 0 auto!important;margin:0 0 7px!important}
+.owner-system-shell .credit-sidebar .owner-workspace-nav{
+  display:block!important;flex:1 1 auto!important;min-height:0!important;
+  padding:2px 0 8px!important;overflow-x:hidden!important;overflow-y:auto!important;
+  scrollbar-gutter:stable!important;
+}
+.owner-system-shell .credit-sidebar .owner-workspace-nav>div{display:grid!important;gap:3px!important;margin:0!important;padding:3px 0 10px!important}
+.owner-system-shell .credit-sidebar .owner-workspace-nav>div+div{margin-top:0!important;padding-top:10px!important;border-top:1px solid #122f43!important}
+.owner-system-shell .credit-sidebar .owner-workspace-nav .nav-section-toggle{min-height:34px!important;padding:0 10px!important}
+.owner-system-shell .credit-sidebar .owner-workspace-nav .nav-section-items{padding-top:4px!important}
+.owner-system-shell .credit-sidebar .owner-workspace-nav .nav-item{min-height:34px!important;padding:0 10px!important;font-size:9px!important}
+.owner-system-shell .credit-sidebar .sidebar-bottom{flex:0 0 auto!important;padding:8px 0 0!important;border-top:1px solid #17344b!important;background:#071522!important}
+.owner-system-shell .owner-sidebar-logout{display:flex;align-items:center;justify-content:center;width:100%;height:34px;border:1px solid #703244;border-radius:7px;background:#281522;color:#ffdbe2;font-size:9px;font-weight:900;cursor:pointer}
+.owner-system-shell .owner-sidebar-logout:hover{border-color:#b94d69;background:#391a2a;color:#fff}
+
+/* Dashboard owner memakai tipografi dan data sebagai fokus utama. */
+.owner-system-shell .owner-dashboard svg,.owner-system-shell .owner-dashboard i{display:none!important}
+.owner-system-shell .owner-profile{display:block!important}
+.owner-system-shell .owner-metric-grid button{grid-template-columns:minmax(0,1fr) auto!important;padding:13px 14px!important}
+.owner-system-shell .owner-metric-grid button>span,.owner-system-shell .owner-metric-grid button>strong,.owner-system-shell .owner-metric-grid button>small{grid-column:1!important}
+.owner-system-shell .owner-action-grid button{grid-template-columns:minmax(0,1fr)!important;padding:13px 14px!important}
+.owner-system-shell .owner-system-strip{display:block!important}
+
 /* Dashboard dan laporan bisnis khusus role Super Admin KuotaKita (release). */
 :root[data-release='2026-09-29-superadmin'] .owner-business-report{isolation:isolate}
 .owner-summary-metrics{padding:0}.owner-summary-metrics button{min-height:88px}.owner-business-report{display:grid;gap:10px;color:#edf7ff}.owner-report-head,.owner-report-filters,.owner-report-metrics article,.owner-report-ledger{border:1px solid #1b4058;background:#071522;border-radius:10px}.owner-report-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:15px}.owner-report-head span,.owner-report-ledger header span{color:#57dcec;font-size:8px;font-weight:900;letter-spacing:1.2px}.owner-report-head h1{margin:4px 0;font-size:17px}.owner-report-head p{margin:0;color:#91acbe;font-size:9px}.owner-report-tabs{display:flex;gap:5px}.owner-report-tabs button,.owner-report-filters button{display:flex;align-items:center;gap:5px;min-height:31px;border:1px solid #284a62;border-radius:7px;background:#0a1d2e;padding:0 10px;color:#dcecf5;font-size:8px;font-weight:800}.owner-report-tabs button.active,.owner-report-filters button.primary{border-color:#2469f2;background:#1555dc;color:#fff}.owner-report-filters{display:flex;align-items:end;gap:7px;padding:10px}.owner-report-filters label{display:grid;gap:4px;color:#91aabd;font-size:7px;font-weight:800;text-transform:uppercase}.owner-report-filters input{height:32px;border:1px solid #27475d;border-radius:6px;background:#081827;padding:0 8px;color:#fff;color-scheme:dark;font-size:8px}.owner-report-filters svg{width:12px}.owner-report-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.owner-report-metrics article{min-height:68px;padding:11px}.owner-report-metrics span{display:block;color:#8fa9ba;font-size:8px;text-transform:uppercase}.owner-report-metrics strong{display:block;overflow:hidden;margin-top:8px;color:#fff;font-size:13px;text-overflow:ellipsis;white-space:nowrap}.owner-report-ledger{overflow:hidden}.owner-report-ledger>header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid #18384e}.owner-report-ledger h2{margin:3px 0 0;font-size:14px}.owner-report-ledger header small{color:#8fa9ba;font-size:8px}.owner-report-scroll{overflow-x:auto}.owner-report-table{min-width:1020px}.owner-report-table .head,.owner-report-table .row{display:grid;grid-template-columns:105px 80px 140px 75px 75px 65px 145px 145px 140px;align-items:center}.owner-report-table .head{min-height:34px;background:linear-gradient(90deg,#073e57,#171a52);color:#cde5f1;font-size:7px;font-weight:900;text-transform:uppercase}.owner-report-table .head span,.owner-report-table .row>*{padding:0 9px}.owner-report-table .row{min-height:39px;border-top:1px solid #142c3d;font-size:8px}.owner-report-table .row strong{color:#fff}.owner-report-table .row em{font-style:normal;font-weight:900}.owner-report-table .success{color:#42e0a9}.owner-report-table .pending{color:#ffd066}.owner-report-table .failed{color:#ff7185}.owner-report-table>p{margin:0;padding:30px;text-align:center;color:#91acbe;font-size:9px}
 @media(max-width:760px){.owner-report-head{display:grid;padding:11px}.owner-report-tabs{width:100%}.owner-report-tabs button{flex:1;justify-content:center}.owner-report-filters{display:grid;grid-template-columns:1fr 1fr}.owner-report-filters input,.owner-report-filters button{width:100%}.owner-report-filters button{justify-content:center}.owner-report-metrics{grid-template-columns:1fr 1fr;gap:6px}.owner-report-metrics article{min-height:60px;padding:9px}.owner-report-metrics strong{font-size:11px}.owner-summary-metrics{grid-template-columns:1fr 1fr!important}.owner-summary-metrics button{min-height:74px}}
+@media(max-width:760px){.owner-system-shell .sidebar.credit-sidebar{width:min(82vw,280px)!important}.owner-system-shell .credit-sidebar .console-brand{flex-basis:72px!important;min-height:72px!important;height:72px!important}.owner-system-shell .owner-metric-grid button{grid-template-columns:minmax(0,1fr)!important}}

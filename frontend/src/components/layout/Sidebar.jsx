@@ -129,7 +129,9 @@ export default function Sidebar({open, onClose}) {
     </div>})}</nav>
     <div className="sidebar-bottom">
       <div className="help-card"><CircleHelp/><strong>Pusat Bantuan</strong><small>Tim KuotaKita siap membantu 24/7</small><button>Hubungi Support</button></div>
-      <div className="user-card"><span className="avatar coral">{initials(displayName)}</span><div><strong>{displayName}</strong><small>{roleLabel}</small></div><button onClick={signOut} title="Keluar"><LogOut size={16}/></button></div>
+      {isSuperAdmin
+        ? <button type="button" className="owner-sidebar-logout" onClick={signOut}>Logout</button>
+        : <div className="user-card"><span className="avatar coral">{initials(displayName)}</span><div><strong>{displayName}</strong><small>{roleLabel}</small></div><button onClick={signOut} title="Keluar"><LogOut size={16}/></button></div>}
     </div>
   </aside>
 }
