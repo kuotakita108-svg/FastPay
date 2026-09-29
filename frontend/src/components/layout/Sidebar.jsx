@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import {useEffect,useState} from 'react'
 import {Link, useLocation, useNavigate} from 'react-router-dom'
 import {navigation} from '../../constants/navigation'
 import {Activity, BarChart3, BookOpenCheck, Boxes, CalendarClock, CheckCircle2, ChevronDown, CircleHelp, CreditCard, FileCheck2, Headphones, Landmark, LogOut, PhoneCall, Settings, ShieldCheck, UserPlus, Users, WalletCards} from 'lucide-react'
@@ -42,7 +42,7 @@ const operatorNavigation = [
 const superAdminNavigation = [
   {section: 'RINGKASAN', items: [
     {to: '/dashboard', label: 'Dashboard', icon: ShieldCheck},
-    {to: '/credit-applications?view=laporan-bisnis', label: 'Laporan Bisnis', icon: BarChart3},
+    {to: '/admin/business-report', label: 'Laporan Bisnis', icon: BarChart3},
   ]},
   {section: 'AKUN & KOMISI', items: [
     {to: '/customers', label: 'Akun & Role', icon: Users},
@@ -52,7 +52,7 @@ const superAdminNavigation = [
     {to: '/transactions', label: 'Transaksi Retail', icon: Activity},
     {to: '/transactions?scope=fulfillment', label: 'Fulfillment Retail', icon: CheckCircle2},
     {to: '/invoices?scope=refund', label: 'Refund Guest Pending', icon: FileCheck2},
-    {to: '/credit-applications?view=h2h', label: 'Transaksi H2H', icon: Landmark},
+    {to: '/admin/h2h', label: 'Transaksi H2H', icon: Landmark},
   ]},
   {section: 'KEUANGAN', items: [
     {to: '/payment-methods', label: 'Permintaan Deposit', icon: CreditCard},
@@ -72,8 +72,8 @@ const superAdminNavigation = [
     {to: '/products', label: 'Produk', icon: Boxes},
   ]},
   {section: 'AUDIT & SISTEM', items: [
-    {to: '/credit-applications?view=transaksi-agent', label: 'Audit Transaksi', icon: Activity},
-    {to: '/credit-applications?view=helpdesk', label: 'Tiket & Komplain', icon: Headphones},
+    {to: '/admin/audit-transactions', label: 'Audit Transaksi', icon: Activity},
+    {to: '/admin/tickets', label: 'Tiket & Komplain', icon: Headphones},
     {to: '/settings', label: 'Pengaturan Sistem', icon: Settings},
   ]},
 ]
@@ -101,6 +101,10 @@ export default function Sidebar({open, onClose}) {
     [visibleNavigation[0]?.section || '']: true,
     ...(activeWorkspaceSection ? {[activeWorkspaceSection]: true} : {}),
   }))
+  useEffect(() => {
+    if (!activeWorkspaceSection) return
+    setOpenWorkspaceSections(sections => sections[activeWorkspaceSection] ? sections : {...sections,[activeWorkspaceSection]:true})
+  }, [activeWorkspaceSection])
   const activeLabel = visibleNavigation.flatMap(group => group.items).find(item => active(item.to))?.label || (isCreditAdmin ? 'Dashboard' : 'Ringkasan Kerja')
   const rolePanel = isMarketing
     ? {eyebrow: 'MODE MARKETING', title: 'Onboarding lapangan', description: 'Daftarkan Agent dan pantau aktivitas sederhana Agent binaan tanpa akses data finansial.'}

@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from 'react'
-import {useNavigate,useSearchParams} from 'react-router-dom'
+import {useLocation,useNavigate,useSearchParams} from 'react-router-dom'
 import {Activity, AlertCircle, ArrowRight, Ban, Banknote, BarChart3, CalendarClock, CalendarDays, Camera, Check, CheckCircle2, ChevronRight, CircleHelp, ClipboardCheck, Clock3, CreditCard, Eye, FileCheck2, Filter, Gauge, HandCoins, Headphones, Images, Landmark, LockKeyhole, PenLine, PhoneCall, PlusCircle, Printer, QrCode, Search, ShieldCheck, Stamp, Trash2, TrendingUp, Upload, UserCheck, UserPlus, WalletCards, X, XCircle} from 'lucide-react'
 import {QRCodeSVG} from 'qrcode.react'
 import PageHeader from '../components/common/PageHeader'
@@ -257,6 +257,7 @@ function SignatureStep({title, note, signed, icon: Icon}) {
 export default function CreditApplicationsPage() {
   const {user} = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [params, setSearchParams] = useSearchParams()
   const canvasRef = useRef(null)
   const directoryScrollRef = useRef(null)
@@ -311,7 +312,8 @@ export default function CreditApplicationsPage() {
   const isOperator = ['operator', 'analis'].includes(user?.role)
   const isAdmin = ['master', 'admin'].includes(user?.role)
   const isOwner = user?.role === 'master'
-  const view = params.get('view') || 'overview'
+  const adminView = {'/admin/business-report':'laporan-bisnis','/admin/h2h':'h2h','/admin/audit-transactions':'transaksi-agent','/admin/tickets':'helpdesk'}[location.pathname]
+  const view = adminView || params.get('view') || 'overview'
   const isDetail = view === 'detail'
   const isInstallmentDetail = view === 'angsuran-detail'
   const isStandaloneDetail = isDetail || isInstallmentDetail

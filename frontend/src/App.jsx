@@ -119,6 +119,7 @@ export default function App(){
   <Route path="products" element={<AdminOnly><ProductsPage/></AdminOnly>}/>
   <Route path="transactions" element={<AdminOnly><TransactionsPage/></AdminOnly>}/>
   <Route path="credit-applications" element={<ReviewOnly><CreditApplicationsPage/></ReviewOnly>}/>
+  <Route path="admin/:section" element={<AdminOnly><CreditApplicationsPage/></AdminOnly>}/>
   <Route path="customers" element={<AdminOnly><CustomersPage/></AdminOnly>}/>
   <Route path="analytics" element={<AdminOnly><AnalyticsPage/></AdminOnly>}/>
   <Route path="payment-methods" element={<AdminOnly><PaymentMethodsPage/></AdminOnly>}/>

@@ -35,22 +35,22 @@ function OwnerApplicationDashboard({data}){
     ['Saldo seluruh member',rupiah(memberBalance),'Dompet pengguna dan agent',WalletCards,'emerald','/transactions?scope=member-wallet'],
     ['Provider aktif',providers.size,`${data.products.length} produk tersedia`,Boxes,'violet','/products'],
     ['Nilai transaksi',rupiah(data.business.revenue||0),`${data.business.transactions||orders.length} transaksi tercatat`,Activity,'blue','/transactions'],
-    ['Saldo provider H2H',data.provider?rupiah(data.provider.balance||0):'Belum terhubung','Saldo Pulsa24Jam',Landmark,'amber','/credit-applications?view=h2h'],
-    ['Transaksi berhasil',success,`${pending} transaksi diproses`,CheckCircle2,'emerald','/credit-applications?view=h2h'],
+    ['Saldo provider H2H',data.provider?rupiah(data.provider.balance||0):'Belum terhubung','Saldo Pulsa24Jam',Landmark,'amber','/admin/h2h'],
+    ['Transaksi berhasil',success,`${pending} transaksi diproses`,CheckCircle2,'emerald','/admin/h2h'],
   ]
   const controls=[
     ['Operasional Transaksi','Pantau retail, fulfillment, refund, dan H2H.',Activity,'/transactions'],
     ['Akun & Role','Kelola akses seluruh akun KuotaKita.',Users,'/customers'],
     ['Keuangan & Deposit','Pantau deposit, VA, wallet, dan kanal pembayaran.',CreditCard,'/payment-methods'],
     ['Produk & Harga','Kelola katalog produk dan harga jual.',Boxes,'/products'],
-    ['Laporan Bisnis','Rekap transaksi nyata dan ekspor laporan.',BarChart3,'/credit-applications?view=laporan-bisnis'],
+    ['Laporan Bisnis','Rekap transaksi nyata dan ekspor laporan.',BarChart3,'/admin/business-report'],
     ['Audit & Sistem','Periksa log, komplain, dan konfigurasi.',Settings,'/settings'],
   ]
   return <div className="owner-dashboard owner-app-dashboard">
     <section className="owner-profile"><div><span>SUPER ADMIN KUOTAKITA</span><h1>{user?.name||'Super Admin'}</h1><p>Pusat kendali seluruh aplikasi KuotaKita: akun, transaksi, wallet, provider, produk, keuangan, kredit, audit, dan sistem.</p><footer><b><ShieldCheck/>Akses penuh</b><b>Data server aktif</b></footer></div><i><ShieldCheck/></i></section>
     <section className="owner-metric-grid owner-summary-metrics">{metrics.map(([label,value,note,Icon,tone,to])=><button type="button" className={tone} onClick={()=>navigate(to)} key={label}><i><Icon/></i><span>{label}</span><strong>{value}</strong><small>{note}</small><ArrowRight/></button>)}</section>
     <section className="owner-section owner-control"><header><div><span>KONTROL APLIKASI</span><h2>Seluruh operasional dalam satu panel</h2><p>Kredit Retail tetap tersedia sebagai bagian tersendiri di sidebar.</p></div></header><div className="owner-action-grid">{controls.map(([title,note,Icon,to])=><button type="button" onClick={()=>navigate(to)} key={title}><i><Icon/></i><span><b>{title}</b><small>{note}</small></span><ArrowRight/></button>)}</div></section>
-    <section className="owner-system-strip"><ShieldCheck/><span><b>Panel Super Admin berfokus pada seluruh aplikasi</b><small>Gunakan kelompok menu di kiri untuk bisnis, keuangan, transaksi, produk, kredit, audit, dan pengaturan tanpa mencampur tugas operator.</small></span><button type="button" onClick={()=>navigate('/credit-applications?view=transaksi-agent')}><Activity/>Buka audit</button></section>
+    <section className="owner-system-strip"><ShieldCheck/><span><b>Panel Super Admin berfokus pada seluruh aplikasi</b><small>Gunakan kelompok menu di kiri untuk bisnis, keuangan, transaksi, produk, kredit, audit, dan pengaturan tanpa mencampur tugas operator.</small></span><button type="button" onClick={()=>navigate('/admin/audit-transactions')}><Activity/>Buka audit</button></section>
   </div>
 }
 
