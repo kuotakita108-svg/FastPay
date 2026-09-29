@@ -29,13 +29,13 @@ function OwnerApplicationDashboard({data}){
   const success=orders.filter(order=>String(order.Status).toLowerCase()==='success').length
   const pending=orders.filter(order=>String(order.Status).toLowerCase()==='pending').length
   const memberBalance=data.accounts.reduce((total,account)=>total+Number(account.balance||0),0)
-  const providers=new Set(data.products.map(product=>product.provider||product.operator||product.category).filter(Boolean))
+  const activeProducts=data.products.filter(product=>!['inactive','nonaktif','disabled','off'].includes(String(product.status||'').toLowerCase())&&Number(product.stock??1)!==0)
   const metrics=[
     ['Akun terdaftar',data.accounts.length,'Seluruh role aplikasi',Users,'cyan','/customers'],
     ['Saldo seluruh member',rupiah(memberBalance),'Dompet pengguna dan agent',WalletCards,'emerald','/transactions?scope=member-wallet'],
-    ['Provider aktif',providers.size,`${data.products.length} produk tersedia`,Boxes,'violet','/products'],
+    ['Produk aktif',activeProducts.length,`${data.products.length} produk dalam katalog`,Boxes,'violet','/products'],
     ['Nilai transaksi',rupiah(data.business.revenue||0),`${data.business.transactions||orders.length} transaksi tercatat`,Activity,'blue','/transactions'],
-    ['Saldo provider H2H',data.provider?rupiah(data.provider.balance||0):'Belum terhubung','Saldo Pulsa24Jam',Landmark,'amber','/admin/h2h'],
+    ['Saldo H2H Pulsa24Jam',data.provider?rupiah(data.provider.balance||0):'Belum terhubung','Saldo provider transaksi utama',Landmark,'amber','/admin/h2h'],
     ['Transaksi berhasil',success,`${pending} transaksi diproses`,CheckCircle2,'emerald','/admin/h2h'],
   ]
   const controls=[

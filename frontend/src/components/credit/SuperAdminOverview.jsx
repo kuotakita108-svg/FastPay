@@ -29,14 +29,14 @@ export default function SuperAdminOverview({user,items=[],agents=[],accounts=[],
   const knownAccounts=accounts.length?accounts:customers
   const retailAccounts=knownAccounts.filter(account=>['user','agent'].includes(String(account.role||'').toLowerCase()))
   const memberBalance=knownAccounts.reduce((total,account)=>total+Number(account.balance||0),0)
-  const providers=new Set(products.map(product=>product.provider||product.operator||product.category).filter(Boolean))
+  const activeProducts=products.filter(product=>!['inactive','nonaktif','disabled','off'].includes(String(product.status||'').toLowerCase())&&Number(product.stock??1)!==0)
   const cards=[
     {label:'Jumlah akun H2H',value:agents.length,note:'Agent KuotaKita terdaftar',icon:Users,tone:'cyan',route:'/customers'},
     {label:'Jumlah akun retail',value:retailAccounts.length,note:'User dan agent aktif',icon:Users,tone:'emerald',route:'/customers'},
-    {label:'Provider aktif',value:providers.size,note:`${products.length} produk tersedia`,icon:Boxes,tone:'violet',route:'/products'},
+    {label:'Produk aktif',value:activeProducts.length,note:`${products.length} produk dalam katalog`,icon:Boxes,tone:'violet',route:'/products'},
     {label:'Nilai transaksi',value:rupiah(business.revenue||0),note:`${business.transactions||orders.length} transaksi tercatat`,icon:Activity,tone:'cyan',route:'/transactions'},
     {label:'Total saldo member',value:rupiah(memberBalance),note:`${knownAccounts.length} akun terpantau`,icon:WalletCards,tone:'emerald',route:'/customers'},
-    {label:'Saldo provider H2H',value:h2h.balance==null?'Belum tersambung':rupiah(h2h.balance),note:h2h.connected?'Pulsa24Jam terhubung':'Periksa koneksi provider',icon:Landmark,tone:'amber',view:'h2h'},
+    {label:'Saldo H2H Pulsa24Jam',value:h2h.balance==null?'Belum tersambung':rupiah(h2h.balance),note:h2h.connected?'Saldo transaksi provider utama':'Periksa koneksi H2H',icon:Landmark,tone:'amber',view:'h2h'},
     {label:'Kredit berjalan',value:rupiah(outstanding),note:`${activeCredits.length} agent aktif`,icon:WalletCards,tone:'violet',view:'peminjam'},
     {label:'Transaksi H2H berhasil',value:success,note:`${pending} diproses · ${failed} gagal`,icon:TrendingUp,tone:'blue',view:'h2h'},
     {label:'Tagihan berisiko',value:overdue.length,note:overdue.length?`${overdue.length} agent lewat jatuh tempo`:'Tidak ada tunggakan',icon:AlertTriangle,tone:'rose',view:'jatuh-tempo'},
