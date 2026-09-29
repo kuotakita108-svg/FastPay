@@ -11,6 +11,8 @@ import {clearRecoveryMarker,recoverApplication} from './utils/recoverApplication
 import heroImage from './assets/images/kuotakita-ppob-hero-v4.webp'
 import './styles/global.css'
 
+document.documentElement.dataset.release='2026-09-29-superadmin'
+
 // Hero adalah gambar pertama yang terlihat pada login dan beranda.
 // Preload membuatnya mulai diunduh tanpa menunggu komponen selesai dirender.
 if (window.location.pathname === '/login') {
@@ -32,6 +34,8 @@ window.addEventListener('vite:preloadError',event=>{
 })
 window.setTimeout(clearRecoveryMarker,12000)
 
+// Keep the application shell registration close to bootstrap so every release
+// receives fresh hashed JavaScript after a production deployment.
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js?v=7').then(registration => registration.update()).catch(() => {})
