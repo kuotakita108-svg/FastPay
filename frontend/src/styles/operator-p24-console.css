@@ -1265,6 +1265,19 @@ body .operator-payment-overlay .operator-payment-dialog .submit{border:0!importa
  .operator-capital-console .operator-retail-loans .operator-loan-history-actions button{flex:1 1 auto!important}
 }
 /* Final retail decision colors: keep these last so legacy operator button rules cannot neutralize them. */
+.operator-capital-console .operator-legacy-migration{display:grid;gap:14px;width:100%;color:#edf7ff}
+.operator-capital-console .operator-legacy-migration>header{min-height:112px;border:1px solid #193b55;border-radius:13px;background:linear-gradient(105deg,#081a2b 0%,#0b1830 54%,#122349 100%);padding:24px 28px;box-sizing:border-box}
+.operator-capital-console .operator-legacy-migration>header span{display:block;color:#50d9ec;font-size:10px;font-weight:900;letter-spacing:.2em}
+.operator-capital-console .operator-legacy-migration>header h2{margin:7px 0;color:#f7fbff;font-size:25px;line-height:1.15}
+.operator-capital-console .operator-legacy-migration>header p{margin:0;color:#a9bfd2;font-size:12px}
+.operator-capital-console .operator-legacy-migration>form{display:grid;gap:11px;border:1px solid #dce7ef;border-radius:13px;background:#fff;padding:17px 18px;color:#10233d}
+.operator-capital-console .operator-legacy-migration>form>b{font-size:15px}
+.operator-capital-console .operator-legacy-migration>form>div{display:grid;grid-template-columns:minmax(0,1fr) 110px;gap:10px}
+.operator-capital-console .operator-legacy-migration input{width:100%;min-width:0;height:42px;box-sizing:border-box;border:1px solid #cbd9e5;border-radius:8px;background:#fff;padding:0 13px;color:#10233d;outline:0}
+.operator-capital-console .operator-legacy-migration input:focus{border-color:#1594d0;box-shadow:0 0 0 3px #1594d019}
+.operator-capital-console .operator-legacy-migration button{height:42px;border:0;border-radius:8px;background:#168fd1;color:#fff;font-size:10px;font-weight:900}
+.operator-capital-console .operator-legacy-migration form>small{color:#ad3349;font-size:10px}
+@media(max-width:760px){.operator-capital-console .operator-legacy-migration{gap:9px}.operator-capital-console .operator-legacy-migration>header{min-height:0;border-radius:10px;padding:15px}.operator-capital-console .operator-legacy-migration>header h2{margin:5px 0;font-size:18px}.operator-capital-console .operator-legacy-migration>header p{font-size:9px;line-height:1.4}.operator-capital-console .operator-legacy-migration>form{border-radius:10px;padding:12px}.operator-capital-console .operator-legacy-migration>form>div{grid-template-columns:1fr}.operator-capital-console .operator-legacy-migration button{width:100%}}
 .panel-workspace-shell .operator-capital-console .operator-retail-loans .operator-loan-history-actions > button.operator-retail-approve {
   border-color: #079c62 !important;
   background: #079c62 !important;
