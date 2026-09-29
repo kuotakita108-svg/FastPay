@@ -16,10 +16,13 @@ import {getCustomers} from '../services/customerService'
 import {getPulsa24Balance,getPulsa24Operations} from '../services/transactionService'
 import {rupiah,shortRupiah} from '../utils/currency'
 
+const within=(promise,milliseconds)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error('Batas waktu ringkasan')),milliseconds))])
 const loadOwnerDashboard=async()=>{
-  const results=await Promise.allSettled([getDashboard(),getProducts(),getCustomers(),getPulsa24Balance(),getPulsa24Operations()])
+  // Dashboard harus segera terbuka walaupun katalog/provider sedang lambat.
+  // Permintaan tetap berjalan dan mengisi cache untuk menu detail berikutnya.
+  const results=await Promise.allSettled([within(getDashboard(),3500),within(getProducts(),3500),within(getCustomers(),3500),within(getPulsa24Balance(),3500),within(getPulsa24Operations(),3500)])
   const value=index=>results[index].status==='fulfilled'?results[index].value:null
-  return {business:value(0)||{},products:Array.isArray(value(1))?value(1):[],accounts:Array.isArray(value(2))?value(2):[],provider:value(3),operations:value(4)||{}}
+  return {business:value(0)||{},products:Array.isArray(value(1))?value(1):[],productsLoaded:Array.isArray(value(1)),accounts:Array.isArray(value(2))?value(2):[],provider:value(3),operations:value(4)||{}}
 }
 
 function OwnerApplicationDashboard({data}){
@@ -33,7 +36,7 @@ function OwnerApplicationDashboard({data}){
   const metrics=[
     ['Akun terdaftar',data.accounts.length,'Seluruh role aplikasi',Users,'cyan','/customers'],
     ['Saldo seluruh member',rupiah(memberBalance),'Dompet pengguna dan agent',WalletCards,'emerald','/transactions?scope=member-wallet'],
-    ['Produk aktif',activeProducts.length,`${data.products.length} produk dalam katalog`,Boxes,'violet','/products'],
+    ['Produk aktif',data.productsLoaded?activeProducts.length:'Buka katalog',data.productsLoaded?`${data.products.length} produk dalam katalog`:'Katalog lengkap dimuat di menu Produk',Boxes,'violet','/products'],
     ['Nilai transaksi',rupiah(data.business.revenue||0),`${data.business.transactions||orders.length} transaksi tercatat`,Activity,'blue','/transactions'],
     ['Saldo H2H Pulsa24Jam',data.provider?rupiah(data.provider.balance||0):'Belum terhubung','Saldo provider transaksi utama',Landmark,'amber','/admin/h2h'],
     ['Transaksi berhasil',success,`${pending} transaksi diproses`,CheckCircle2,'emerald','/admin/h2h'],

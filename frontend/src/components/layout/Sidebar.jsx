@@ -113,7 +113,7 @@ export default function Sidebar({open, onClose}) {
 
   return <aside className={`sidebar ${open ? 'open' : ''}${rolePanel ? ' credit-sidebar' : ''}`}>
     <Link className="brand console-brand" to={home} onClick={onClose} aria-label="KuotaKita">
-      <img className="console-brand-image" src="/branding/kuotakita-console-logo.png" alt="KuotaKita"/>
+      <img className="console-brand-image" src="/branding/kuotakita-console-logo.png?v=20260929-3" alt="KuotaKita" width="440" height="151" decoding="async"/>
       {rolePanel && <small className="console-brand-role">{isMarketing ? 'Marketing Console' : isSuperAdmin ? 'Owner Console' : 'Operator Console'}</small>}
     </Link>
     {rolePanel && <div className={`sidebar-role-panel ${isCreditAdmin ? 'analis-role-panel' : ''}`}>
