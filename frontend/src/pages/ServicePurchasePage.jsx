@@ -82,6 +82,7 @@ export default function ServicePurchasePage(){
  const [favoriteContacts,setFavoriteContacts]=useState(()=>getFavoriteContacts(user?.id)),[contactHint,setContactHint]=useState('')
  const [providerQuery,setProviderQuery]=useState(''),[providerLimit,setProviderLimit]=useState(18),[productQuery,setProductQuery]=useState(restored.productQuery||''),[productLimit,setProductLimit]=useState(restored.productLimit||40),[catalogGroup,setCatalogGroup]=useState(restored.catalogGroup||'')
  const providerEffectReady=useRef(false)
+ const previousType=useRef(type)
  const supportsContacts=type==='pulsa'||type==='ewallet'
  const matchingFavorites=useMemo(()=>favoriteContacts.filter(item=>item.service===type),[favoriteContacts,type])
  const favorite=favoriteContacts.some(item=>item.id===`${normalizeNumber(target)}-${type}`)
@@ -92,14 +93,14 @@ export default function ServicePurchasePage(){
  useEffect(()=>{if(user?.id)loadFavoriteContacts(user.id).then(setFavoriteContacts).catch(()=>setContactHint('Favorit belum dapat dimuat dari server.'))},[user?.id])
  const normalize=value=>String(value||'').trim().toLocaleLowerCase('id-ID')
  const serviceProducts=useMemo(()=>Array.isArray(data)?data.filter(item=>item.service?item.service===type:normalize(item.category)===normalize(config.category)).filter(item=>type!=='pln'||/^(?:PLN\s*(?:TOKEN|PREPAID|PRABAYAR|PASKABAYAR|POSTPAID|POST)|CEK PLN)/i.test(item.name||'')).filter(item=>type!=='tax'||(normalize(item.operator)==='pbb'&&normalize(item.category)==='pajak daerah')).filter(item=>type!=='bank'||normalize(item.category)==='bank transfer'):[],[data,type,config.category])
- const availableProviders=useMemo(()=>{const catalogProviders=serviceProducts.map(item=>type==='tax'?item.name:item.operator),source=catalogProviders.length?catalogProviders:(config.providers||[]),seen=new Set();const nonGameProviders=new Set(['telkomsel','k-vision','nex parabola','transvision']);return source.filter(name=>{const key=normalize(name);if(!key||(type==='voucher'&&key==='samsat')||((type==='pulsa'||type==='data')&&!mobileProviderKeys.has(key))||key==='garena'||key==='xl/axis'||(type==='bank'&&key==='bank')||(type==='game'&&nonGameProviders.has(key))||(type==='tv'&&key==='tv berlangganan')||seen.has(key))return false;seen.add(key);return true})},[serviceProducts,type,config.providers])
+ const availableProviders=useMemo(()=>{const catalogProviders=serviceProducts.map(item=>type==='tax'?item.name:item.operator),source=productsLoading?[]:(catalogProviders.length?catalogProviders:(config.providers||[])),seen=new Set();const nonGameProviders=new Set(['telkomsel','k-vision','nex parabola','transvision']);return source.filter(name=>{const key=normalize(name);if(!key||(type==='voucher'&&key==='samsat')||((type==='pulsa'||type==='data')&&!mobileProviderKeys.has(key))||key==='garena'||key==='xl/axis'||(type==='bank'&&key==='bank')||(type==='game'&&nonGameProviders.has(key))||(type==='tv'&&key==='tv berlangganan')||seen.has(key))return false;seen.add(key);return true})},[serviceProducts,type,config.providers,productsLoading])
  const matchingProviders=useMemo(()=>availableProviders.filter(name=>normalize(name).includes(normalize(providerQuery))),[availableProviders,providerQuery])
  const visibleProviders=matchingProviders.slice(0,providerLimit)
  const products=useMemo(()=>{const seen=new Set();return serviceProducts.filter(product=>(type==='tax'?normalize(product.name)===normalize(provider):normalize(product.operator)===normalize(provider))&&product.sku&&(type!=='pln'||plnMode==='bill'||/^(?:PLN\s*(?:TOKEN|PREPAID|PRABAYAR))/i.test(product.name||''))).filter(product=>{const key=`sku:${normalize(product.sku)}`;if(seen.has(key))return false;seen.add(key);return true})},[serviceProducts,provider,type,plnMode])
  const catalogGroups=useMemo(()=>[...new Set(products.map(product=>product.group).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id')),[products])
  const filteredProducts=useMemo(()=>products.filter(product=>(!catalogGroup||product.group===catalogGroup)&&normalize(`${product.name} ${product.sku||''} ${product.group||''}`).includes(normalize(productQuery))),[products,productQuery,catalogGroup])
  const visibleProducts=filteredProducts.slice(0,productLimit)
- useEffect(()=>{setProviderQuery('');setProviderLimit(18)},[type])
+ useEffect(()=>{setProviderQuery('');setProviderLimit(18);if(previousType.current!==type){previousType.current=type;setProvider(type==='pln'?'PLN':'');setTarget('');setSelected(null);setFreeAmount('');setCatalog(false)}},[type])
  useEffect(()=>{if(!providerEffectReady.current){providerEffectReady.current=true;return}setProductQuery('');setProductLimit(40);setCatalogGroup('')},[provider])
  const selectedVariable=isVariableProduct(selected)
  const selectedOpen=isOpenProduct(selected)
@@ -261,7 +262,7 @@ export default function ServicePurchasePage(){
     {productsError&&<p className="pdam-flow-error">Katalog Transfer Bank H2HR belum dapat dimuat.</p>}
     {productsLoading&&<p className="pdam-flow-hint">Memuat daftar bank dari Pulsa24Jam...</p>}
     {!productsLoading&&!productsError&&matchingProviders.length===0&&<p className="pdam-flow-hint">Bank tidak ditemukan dalam katalog aktif.</p>}
-    <div className="pdam-list bank-transfer-list">{visibleProviders.map(name=><button type="button" key={name} onClick={()=>{setProvider(name);setTarget('');setFreeAmount('');setSelected(null)}}><ProviderLogo name={name} service="bank"/><span>{name}</span><ChevronRight/></button>)}</div>
+    {!productsLoading&&<div className="pdam-list bank-transfer-list">{visibleProviders.map(name=><button type="button" key={normalize(name)} onClick={()=>{setProvider(name);setTarget('');setFreeAmount('');setSelected(null)}}><ProviderLogo name={name} service="bank"/><span>{name}</span><ChevronRight/></button>)}</div>}
     {visibleProviders.length<matchingProviders.length&&<button type="button" className="pdam-more" onClick={()=>setProviderLimit(limit=>limit+30)}>Tampilkan bank lainnya</button>}
    </>:<section className="pdam-detail-card bank-transfer-card">
     <div className="pdam-detail-heading"><ProviderLogo name={provider} service="bank" priority/><div><strong>{provider}</strong><small>Transfer memakai produk resmi Pulsa24Jam.</small></div></div>
