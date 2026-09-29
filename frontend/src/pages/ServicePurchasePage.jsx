@@ -83,6 +83,7 @@ export default function ServicePurchasePage(){
  const [providerQuery,setProviderQuery]=useState(''),[providerLimit,setProviderLimit]=useState(18),[productQuery,setProductQuery]=useState(restored.productQuery||''),[productLimit,setProductLimit]=useState(restored.productLimit||40),[catalogGroup,setCatalogGroup]=useState(restored.catalogGroup||'')
  const providerEffectReady=useRef(false)
  const previousType=useRef(type)
+ const pressedBank=useRef('')
  const supportsContacts=type==='pulsa'||type==='ewallet'
  const matchingFavorites=useMemo(()=>favoriteContacts.filter(item=>item.service===type),[favoriteContacts,type])
  const favorite=favoriteContacts.some(item=>item.id===`${normalizeNumber(target)}-${type}`)
@@ -123,6 +124,7 @@ export default function ServicePurchasePage(){
   } catch { /* pengguna membatalkan pemilih kontak */ }
  }
  const changePlnMode=value=>{setPlnMode(value);closeCatalog();setSelected(null);setFreeAmount('');setPlnBill(null);if(value==='bill')setProvider('PLN Pascabayar');else setProvider('PLN')}
+ const chooseBank=name=>{if(!name)return;pressedBank.current='';setProvider(name);setTarget('');setFreeAmount('');setSelected(null)}
  const checkPlnBill=async()=>{
   // The input is visually grouped (e.g. "1210 1050 9274"), but P24 expects
   // the raw numeric IDPEL as dest. Spaces caused an otherwise valid INQ to fail.
@@ -262,8 +264,8 @@ export default function ServicePurchasePage(){
     {productsError&&<p className="pdam-flow-error">Katalog Transfer Bank H2HR belum dapat dimuat.</p>}
     {productsLoading&&<p className="pdam-flow-hint">Memuat daftar bank dari Pulsa24Jam...</p>}
     {!productsLoading&&!productsError&&matchingProviders.length===0&&<p className="pdam-flow-hint">Bank tidak ditemukan dalam katalog aktif.</p>}
-    {!productsLoading&&<div className="pdam-list bank-transfer-list">{visibleProviders.map(name=><button type="button" key={normalize(name)} onClick={()=>{setProvider(name);setTarget('');setFreeAmount('');setSelected(null)}}><ProviderLogo name={name} service="bank"/><span>{name}</span><ChevronRight/></button>)}</div>}
-    {visibleProviders.length<matchingProviders.length&&<button type="button" className="pdam-more" onClick={()=>setProviderLimit(limit=>limit+30)}>Tampilkan bank lainnya</button>}
+    {!productsLoading&&<div className="pdam-list bank-transfer-list">{visibleProviders.map(name=><button type="button" key={normalize(name)} data-provider={name} onPointerDown={()=>{pressedBank.current=name}} onPointerUp={event=>{event.preventDefault();chooseBank(pressedBank.current)}} onClick={event=>{if(event.detail===0)chooseBank(name);else event.preventDefault()}}><ProviderLogo name={name} service="bank"/><span>{name}</span><ChevronRight/></button>)}</div>}
+    {visibleProviders.length<matchingProviders.length&&<button type="button" className="pdam-more" onPointerUp={event=>{event.preventDefault();pressedBank.current='';setProviderLimit(limit=>limit+30)}} onClick={event=>{if(event.detail===0)setProviderLimit(limit=>limit+30);else event.preventDefault()}}>Tampilkan bank lainnya</button>}
    </>:<section className="pdam-detail-card bank-transfer-card">
     <div className="pdam-detail-heading"><ProviderLogo name={provider} service="bank" priority/><div><strong>{provider}</strong><small>Transfer memakai produk resmi Pulsa24Jam.</small></div></div>
     <label className="pdam-input-label" htmlFor="bank-account-number">Nomor Rekening</label>
