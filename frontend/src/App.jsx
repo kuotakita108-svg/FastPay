@@ -34,6 +34,7 @@ const loadRetailFeeWithdraw=()=>import('./pages/RetailFeeWithdrawPage')
 const loadRetailNetwork=()=>import('./pages/RetailNetworkPage')
 const loadMarketingApplicationStatus=()=>import('./pages/MarketingApplicationStatusPage')
 const loadMarketingFollowUp=()=>import('./pages/MarketingFollowUpPage')
+const loadMonitoringAudit=()=>import('./pages/MonitoringAuditPage')
 const UserHomePage=lazy(loadUserHome)
 const HistoryPage=lazy(loadHistory)
 const ProfilePage=lazy(loadProfile)
@@ -63,6 +64,7 @@ const RetailFeeWithdrawPage=lazy(loadRetailFeeWithdraw)
 const RetailNetworkPage=lazy(loadRetailNetwork)
 const MarketingApplicationStatusPage=lazy(loadMarketingApplicationStatus)
 const MarketingFollowUpPage=lazy(loadMarketingFollowUp)
+const MonitoringAuditPage=lazy(loadMonitoringAudit)
 
 // Halaman awal dibuat langsung tersedia. Jangan menahan pengguna di splash screen.
 const RouteLoading=()=> <div className="route-loading" role="status" aria-label="Memuat halaman"/>
@@ -125,6 +127,7 @@ export default function App(){
   <Route path="payment-methods" element={<AdminOnly><PaymentMethodsPage/></AdminOnly>}/>
   <Route path="invoices" element={<AdminOnly><InvoicesPage/></AdminOnly>}/>
   <Route path="settings" element={<AdminOnly><SettingsPage/></AdminOnly>}/>
+  <Route path="monitoring-audit/:view" element={<AdminOnly><MonitoringAuditPage/></AdminOnly>}/>
  </Route>
  <Route path="/" element={<Navigate to="/login" replace/>}/>
  <Route path="*" element={<NotFoundPage/>}/>

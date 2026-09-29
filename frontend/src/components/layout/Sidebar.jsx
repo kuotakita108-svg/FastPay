@@ -69,9 +69,9 @@ const superAdminNavigation = [
     {to: '/products', label: 'Produk', icon: Boxes},
   ]},
   {section: 'MONITORING & AUDIT', items: [
-    {to: '/transactions?scope=daily-success', label: 'Produk Sukses Harian', icon: CheckCircle2},
-    {to: '/transactions?scope=wallet-activity', label: 'Aktivitas Wallet', icon: WalletCards},
-    {to: '/customers?scope=status-log', label: 'Log Status Member', icon: Users},
+    {to: '/monitoring-audit/products', label: 'Produk Sukses Harian', icon: CheckCircle2},
+    {to: '/monitoring-audit/wallet', label: 'Aktivitas Wallet', icon: WalletCards},
+    {to: '/monitoring-audit/status', label: 'Log Status Member', icon: Users},
   ]},
 ]
 
