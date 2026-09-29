@@ -19,7 +19,7 @@ if (window.location.pathname === '/login') {
   const heroPreload=document.createElement('link')
   heroPreload.rel='preload'
   heroPreload.as='image'
-  heroPreload.href=heroImage
+  heroPreload.href=`${heroImage}?v=20260929-2`
   heroPreload.fetchPriority='high'
   document.head.appendChild(heroPreload)
 }
