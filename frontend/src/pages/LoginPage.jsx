@@ -135,6 +135,14 @@ export default function LoginPage() {
         {mode === 'register' && <div className="register-benefits"><span><CheckCircle2/>Tanpa Gmail</span><span><CheckCircle2/>Saldo awal Rp0</span><span><CheckCircle2/>{form.account_type === 'agent' ? 'Survei oleh Marketing' : 'Langsung aktif'}</span></div>}
         <p className="auth-switch">{mode === 'login' ? 'Belum punya akun?' : mode === 'register' ? 'Sudah punya akun?' : 'Ingat kata sandi?'} <button type="button" onClick={() => switchMode(mode === 'login' ? 'register' : 'login')}>{mode === 'login' ? 'Daftar sekarang' : 'Masuk di sini'}</button></p>
         <small className="auth-terms">Dengan melanjutkan, kamu menyetujui Syarat Layanan dan Kebijakan Privasi KuotaKita.</small>
+        <footer className="auth-company-footer">
+          <p>© 2024 PT Pesona Anggun Megaraya. All Right Reserved.</p>
+          <address>
+            <strong>PT Pesona Anggun Megaraya</strong>
+            <span>JL. Mampang Prapatan Raya No 73A lantai 3</span>
+            <span>Jakarta Selatan, Indonesia</span>
+          </address>
+        </footer>
       </section>
     </section>
   </main>
